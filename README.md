@@ -1,5 +1,5 @@
 # intro
-game content copy from arcade gemini wings
+shooter game ( keyboard ASDW move control , mouse left button fire )
 
 # language
 c++20 with coroutine
@@ -63,4 +63,4 @@ emmake make -j24
 emrun gemini.html
 
 # online view:
-https://denghe.github.io/xx2dw_gemini/
+https://denghe.github.io/xx2dw_shooter/

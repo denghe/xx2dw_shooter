@@ -807,7 +807,6 @@ struct EngineBase {
     Shader_QuadInstance shader;
     Rnd rnd;
 
-    static constexpr float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
     double nowSecs{}, delta{};
     double timePool{};
     int frameNumber{};
@@ -1698,7 +1697,8 @@ template <typename T> concept Has_OnMouseLeave = requires(T t) { { t.OnMouseLeav
 template <typename T> concept Has_OnMouseOver = requires(T t) { { t.OnMouseOver(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnMouseOut = requires(T t) { { t.OnMouseOut(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 
-
+// Derived content requires:
+// constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 template<typename Derived>
 struct Engine : EngineBase {
     xx::Tasks tasks;
@@ -1783,12 +1783,12 @@ int main() {
 
         GLUpdate();
 
-        if (delta > maxFrameDelay) {
-            delta = maxFrameDelay;
+        if (delta > ((Derived*)this)->maxFrameDelay) {
+            delta = ((Derived*)this)->maxFrameDelay;
         }
         timePool += delta;
-        while (timePool >= frameDelay) {
-            timePool -= frameDelay;
+        while (timePool >= ((Derived*)this)->frameDelay) {
+            timePool -= ((Derived*)this)->frameDelay;
             ++frameNumber;
             if constexpr(Has_Update<Derived>) {
                 ((Derived*)this)->Update();
