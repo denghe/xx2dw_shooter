@@ -1,0 +1,6 @@
+build
+.idea
+cmake-build-*
+.vs
+web
+pch.*.TMP
