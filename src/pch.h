@@ -1687,6 +1687,10 @@ template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std:
 template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
 template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } -> std::same_as<xx::Task<>>; };
 
+template <typename T> concept Has_OnKeyPress = requires(T t) { { t.OnKeyPress(std::declval<EmscriptenKeyboardEvent const&>()) } -> std::same_as<EM_BOOL>; };
+template <typename T> concept Has_OnKeyDown = requires(T t) { { t.OnKeyDown(std::declval<EmscriptenKeyboardEvent const&>()) } -> std::same_as<EM_BOOL>; };
+template <typename T> concept Has_OnKeyUp = requires(T t) { { t.OnKeyUp(std::declval<EmscriptenKeyboardEvent const&>()) } -> std::same_as<EM_BOOL>; };
+
 template <typename T> concept Has_OnMouseDown = requires(T t) { { t.OnMouseDown(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnMouseUp = requires(T t) { { t.OnMouseUp(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnClick = requires(T t) { { t.OnClick(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
@@ -1705,6 +1709,25 @@ struct Engine : EngineBase {
 
     Engine() {
         // EM_BOOL OnMouseXXXXXXXXXXX(EmscriptenMouseEvent const& e) { return EM_TRUE; } 
+
+        if constexpr (Has_OnKeyPress<Derived>) {
+            printf("Has_OnKeyPress\n");
+            emscripten_set_keypress_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnKeyPress(*e);
+            });
+        }
+        if constexpr (Has_OnKeyDown<Derived>) {
+            printf("Has_OnKeyDown\n");
+            emscripten_set_keydown_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnKeyDown(*e);
+            });
+        }
+        if constexpr (Has_OnKeyUp<Derived>) {
+            printf("Has_OnKeyUp\n");
+            emscripten_set_keyup_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnKeyUp(*e);
+            });
+        }
 
         if constexpr (Has_OnMouseDown<Derived>) {
             emscripten_set_mousedown_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
@@ -1907,5 +1930,42 @@ int main() {
 
 };
 
+template<int width_, int height_>
+struct GDesign {
+    static constexpr float width = width_;
+    static constexpr float height = height_;
+    static constexpr float width_2 = width / 2;
+    static constexpr float height_2 = height / 2;
+    /*
+        screen design anchor point
+       ┌───────────────────────────────┐
+       │ 7             8             9 │
+       │                               │
+       │                               │
+       │ 4             5             6 │
+       │                               │
+       │                               │
+       │ 1             2             3 │
+       └───────────────────────────────┘
+    */
+    static constexpr float x1 = -width_2;
+    static constexpr float y1 = -height_2;
+    static constexpr float x2 = 0.f;
+    static constexpr float y2 = -height_2;
+    static constexpr float x3 = width_2;
+    static constexpr float y3 = -height_2;
+    static constexpr float x4 = -width_2;
+    static constexpr float y4 = 0.f;
+    static constexpr float x5 = 0.f;
+    static constexpr float y5 = 0.f;
+    static constexpr float x6 = width_2;
+    static constexpr float y6 = 0.f;
+    static constexpr float x7 = -width_2;
+    static constexpr float y7 = height_2;
+    static constexpr float x8 = 0.f;
+    static constexpr float y8 = height_2;
+    static constexpr float x9 = width_2;
+    static constexpr float y9 = height_2;
+};
 
 #endif
