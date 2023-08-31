@@ -26,12 +26,19 @@ struct GameLooper : Engine<GameLooper> {
 	std::array<bool, 16> mouseBtnStates{};
 	std::array<bool, (int)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
 
+    EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
+    EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
+
     EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
     EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
     EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
 
-    EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
-    EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
+	EM_BOOL OnTouchStart(EmscriptenTouchEvent const& e);
+	EM_BOOL OnTouchMove(EmscriptenTouchEvent const& e);
+	EM_BOOL OnTouchEnd(EmscriptenTouchEvent const& e);
+	EM_BOOL OnTouchCancel(EmscriptenTouchEvent const& e);
+
+	// todo: virtual joy?
 
 	bool Pressed(KeyboardKeys k) const;
 

@@ -1701,6 +1701,12 @@ template <typename T> concept Has_OnMouseLeave = requires(T t) { { t.OnMouseLeav
 template <typename T> concept Has_OnMouseOver = requires(T t) { { t.OnMouseOver(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnMouseOut = requires(T t) { { t.OnMouseOut(std::declval<EmscriptenMouseEvent const&>()) } -> std::same_as<EM_BOOL>; };
 
+template <typename T> concept Has_OnTouchStart = requires(T t) { { t.OnTouchStart(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
+template <typename T> concept Has_OnTouchMove = requires(T t) { { t.OnTouchMove(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
+template <typename T> concept Has_OnTouchEnd = requires(T t) { { t.OnTouchEnd(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
+template <typename T> concept Has_OnTouchCancel = requires(T t) { { t.OnTouchCancel(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
+
+
 // Derived content requires:
 // constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 template<typename Derived>
@@ -1708,26 +1714,26 @@ struct Engine : EngineBase {
     xx::Tasks tasks;
 
     Engine() {
-        // EM_BOOL OnMouseXXXXXXXXXXX(EmscriptenMouseEvent const& e) { return EM_TRUE; } 
+
+        // EM_BOOL OnKeyXXXXXXXXXXX(EmscriptenKeyboardEvent const& e) { return EM_TRUE; }
 
         if constexpr (Has_OnKeyPress<Derived>) {
-            printf("Has_OnKeyPress\n");
             emscripten_set_keypress_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
                 return ((Derived*)ud)->OnKeyPress(*e);
             });
         }
         if constexpr (Has_OnKeyDown<Derived>) {
-            printf("Has_OnKeyDown\n");
             emscripten_set_keydown_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
                 return ((Derived*)ud)->OnKeyDown(*e);
             });
         }
         if constexpr (Has_OnKeyUp<Derived>) {
-            printf("Has_OnKeyUp\n");
             emscripten_set_keyup_callback("body", this, true, [](int, const EmscriptenKeyboardEvent* e, void* ud)->EM_BOOL {
                 return ((Derived*)ud)->OnKeyUp(*e);
             });
         }
+
+        // EM_BOOL OnMouseXXXXXXXXXXX(EmscriptenMouseEvent const& e) { return EM_TRUE; }
 
         if constexpr (Has_OnMouseDown<Derived>) {
             emscripten_set_mousedown_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
@@ -1775,8 +1781,50 @@ struct Engine : EngineBase {
             });
         }
 
-        //typedef EM_BOOL(*em_wheel_callback_func)(int eventType, const EmscriptenWheelEvent* wheelEvent, void* userData);
-        //emscripten_set_wheel_callback("canvas", this, true, ??????);
+        // EM_BOOL OnTouchXXXXXXXXXXX(EmscriptenTouchEvent const& e) { return EM_TRUE; }
+
+        if constexpr (Has_OnTouchStart<Derived>) {
+            emscripten_set_touchstart_callback("canvas", this, true, [](int, const EmscriptenTouchEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnTouchStart(*e);
+            });
+        }
+        if constexpr (Has_OnTouchMove<Derived>) {
+            emscripten_set_touchmove_callback("canvas", this, true, [](int, const EmscriptenTouchEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnTouchMove(*e);
+            });
+        }
+        if constexpr (Has_OnTouchEnd<Derived>) {
+            emscripten_set_touchend_callback("canvas", this, true, [](int, const EmscriptenTouchEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnTouchEnd(*e);
+            });
+        }
+        if constexpr (Has_OnTouchCancel<Derived>) {
+            emscripten_set_touchcancel_callback("canvas", this, true, [](int, const EmscriptenTouchEvent* e, void* ud)->EM_BOOL {
+                return ((Derived*)ud)->OnTouchCancel(*e);
+            });
+        }
+
+        // todo:
+        // emscripten_set_wheel_callback(target, userData, useCapture, callback)             
+        // emscripten_set_resize_callback(target, userData, useCapture, callback)            
+        // emscripten_set_scroll_callback(target, userData, useCapture, callback)            
+        // emscripten_set_blur_callback(target, userData, useCapture, callback)              
+        // emscripten_set_focus_callback(target, userData, useCapture, callback)             
+        // emscripten_set_focusin_callback(target, userData, useCapture, callback)           
+        // emscripten_set_focusout_callback(target, userData, useCapture, callback)          
+        // emscripten_set_deviceorientation_callback(userData, useCapture, callback)         
+        // emscripten_set_devicemotion_callback(userData, useCapture, callback)              
+        // emscripten_set_orientationchange_callback(userData, useCapture, callback)         
+        // emscripten_set_fullscreenchange_callback(target, userData, useCapture, callback)  
+        // emscripten_set_pointerlockchange_callback(target, userData, useCapture, callback) 
+        // emscripten_set_pointerlockerror_callback(target, userData, useCapture, callback)  
+        // emscripten_set_visibilitychange_callback(userData, useCapture, callback)          
+        // emscripten_set_gamepadconnected_callback(userData, useCapture, callback)          
+        // emscripten_set_gamepaddisconnected_callback(userData, useCapture, callback)       
+        // emscripten_set_batterychargingchange_callback(userData, callback)                 
+        // emscripten_set_batterylevelchange_callback(userData, callback)              
+        // emscripten_set_beforeunload_callback(userData, callback)                    
+
 
         if constexpr(Has_Init<Derived>) {
             ((Derived*)this)->Init();

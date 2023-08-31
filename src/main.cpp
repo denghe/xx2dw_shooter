@@ -22,6 +22,29 @@ EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
     return EM_TRUE;
 }
 
+EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
+	auto&& t = e.touches[0];
+	mousePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+	mouseBtnStates[0] = true;
+	return EM_TRUE;
+}
+
+EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
+	auto&& t = e.touches[0];
+	mousePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+	return EM_TRUE;
+}
+
+EM_BOOL GameLooper::OnTouchEnd(EmscriptenTouchEvent const& e) {
+	mouseBtnStates[0] = false;
+	return EM_TRUE;
+}
+
+EM_BOOL GameLooper::OnTouchCancel(EmscriptenTouchEvent const& e) {
+	mouseBtnStates[0] = false;
+	return EM_TRUE;
+}
+
 EM_BOOL GameLooper::OnKeyDown(EmscriptenKeyboardEvent const& e) {
 	if (e.which >= (int)KeyboardKeys::A && e.which <= (int)KeyboardKeys::Z) {
 		keyboardKeysStates[e.which] = true;
