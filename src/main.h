@@ -27,6 +27,7 @@ struct GameLooper : Engine<GameLooper> {
 	std::array<bool, (int)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
+	bool touchMode{};
 
     EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
     EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
@@ -92,11 +93,12 @@ struct Shooter : ObjBase {
 	constexpr static float radius{ 32 }, diameter = radius * 2, speed{ 2 };
 	constexpr static float bulletRadius{ 8 }, bulletSpeed{ 4 };
 	constexpr static float fireDistance{ 30 };
+	constexpr static float touchDistance{ 40 };
+	float touchLastRotation{};
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();
 	std::optional<XY> GetKeyboardMoveInc();
-	std::optional<XY> GetTouchMoveInc();
 };
 
 

@@ -13,10 +13,12 @@ GameLooper gLooper;
 /*****************************************************************************************************/
 
 EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
+	touchMode = {};
     mousePos = { (float)e.targetX - w / 2, h - (float)e.targetY - h / 2 };
     return EM_TRUE;
 }
 EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
+	touchMode = {};
 	mouseBtnStates[e.button] = true;
     return EM_TRUE;
 }
@@ -29,6 +31,7 @@ EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
 /*****************************************************************************************************/
 
 EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
+	touchMode = true;
 	if (e.numTouches == 1) {
 		auto&& t = e.touches[0];
 		aimTouchId = t.identifier;
@@ -46,6 +49,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 }
 
 EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
+	touchMode = true;
 	for (int i = 0; i < e.numTouches; ++i) {
 		auto&& t = e.touches[i];
 		if (!t.isChanged) continue;
@@ -179,23 +183,36 @@ void Shooter::Draw() {
 }
 xx::Task<> Shooter::MainLogic() {
 	while (true) {
-		std::optional<XY> inc;
-		XY v;
-		if (gLooper.aimTouchId != -1) {
-			inc = GetTouchMoveInc();
-			v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
+		float r, sr, cr;
+		bool needFire{};
+
+		if (gLooper.touchMode) {
+			if (gLooper.aimTouchMovePos == gLooper.aimTouchStartPos) {
+				r = touchLastRotation;
+			} else {
+				auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
+				touchLastRotation = r = std::atan2(v.y, v.x);
+				if (v.x * v.x + v.y * v.y > touchDistance * touchDistance) {
+					cr = std::cos(r);
+					sr = std::sin(r);
+					AddPosition({ cr * speed, sr * speed });
+				}
+			}
+			needFire = gLooper.fireTouchId != -1;
 		} else {
-			inc = GetKeyboardMoveInc();
-			v = gLooper.mousePos - pos;
+			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
+				AddPosition(*inc);
+			}
+			auto v = gLooper.mousePos - pos;
+			r = std::atan2(v.y, v.x);
+			sr = std::sin(r);
+			cr = std::cos(r);
+			needFire = gLooper.mouseBtnStates[0];
 		}
-		if (inc.has_value()) {
-			AddPosition(*inc);
-		}
-		float r = std::atan2(v.y, v.x);
 		SetRotate(M_PI * 2 - r);
 
-		if (gLooper.fireTouchId != -1 || gLooper.mouseBtnStates[0]) {
-			XY inc{ std::cos(r), std::sin(r) };
+		if (needFire) {
+			XY inc{ cr, sr };
 			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * fireDistance, inc * bulletSpeed, r);
 			for (size_t i = 1; i <= 5; ++i) {
 				auto r1 = r + 0.1f * (float)i;
@@ -266,12 +283,6 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 	}
 
 	return v * speed;
-}
-
-std::optional<XY> Shooter::GetTouchMoveInc() {
-	auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
-
-	return {};
 }
 
 /*****************************************************************************************************/
