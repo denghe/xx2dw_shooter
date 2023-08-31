@@ -2,6 +2,30 @@
 
 int main();
 
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+enum class ObjTypes : int {
+	Unknown,
+	Shooter,
+	ShooterBullet1,
+	Monster1,
+	Monster2,
+	Monster3,
+	// ...
+};
+
+struct ObjBase : Quad, xx::Tasks {
+	ObjTypes type{};
+	float radius{};
+	float frameIndex{};
+	bool disposing{};
+};
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 struct Shooter;
 struct Monster1;
 struct Monster2;
@@ -60,19 +84,17 @@ struct GameLooper : Engine<GameLooper> {
 		;
 	// ...
 
-	// objs
+	// player objs
 	xx::Shared<Shooter> shooter;
+	xx::ListLink<xx::Shared<ShooterBullet1>, int> bullets_shooter1;
 
-	xx::ListLink<xx::Shared<Monster1>, int> monsters_1;
-	xx::ListLink<xx::Shared<Monster2>, int> monsters_2;
-	xx::ListLink<xx::Shared<Monster3>, int> monsters_3;
-	// ...
+	// monster objs
+	xx::ListLink<xx::Shared<ObjBase>, int> monsters;
+	//xx::ListLink<xx::Shared<XXXXXXXXXXX>, int> bullets_monster1;
 
+	// effects
 	xx::ListLink<xx::Shared<Explosion>, int> effects_explosion;
 	xx::ListLink<xx::Shared<DamageText>, int> effects_damageText;
-	// ...
-
-	xx::ListLink<xx::Shared<ShooterBullet1>, int> bullets_shooter1;
 	// ...
 };
 
@@ -84,64 +106,82 @@ static constexpr const float gSQ = 0.7071067811865475244;
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-struct ObjBase : Quad, xx::Tasks {
-	float frameIndex{};
-	bool disposing{};
-};
-
-
 struct Shooter : ObjBase {
-	constexpr static float radius{ 32 }, diameter = radius * 2, speed{ 2 };
-	constexpr static float bulletRadius{ 8 }, bulletSpeed{ 4 };
-	constexpr static float fireDistance{ 30 };
-	constexpr static float touchDistance{ 40 };
+	constexpr static ObjTypes cType{ ObjTypes::Shooter };
+	constexpr static float cRadius{ 32 }, cSpeed{ 2 };
+	constexpr static float cBulletRadius{ 8 }, cBulletSpeed{ 4 };
+	constexpr static float cFireDistance{ 30 };
+	constexpr static float cTouchDistance{ 40 };
+
 	float touchLastRotation{};
+
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();
 	std::optional<XY> GetKeyboardMoveInc();
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct ShooterBullet1 : ObjBase {
-	constexpr static float radius{ 16 }, diameter = radius * 2;
+	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet1 };
+	constexpr static float cRadius{ 16 };
+
 	XY inc{};
-	Quad body;
-	void Init(XY const& pos_, XY const& inc_, float radians_);
+
+	void Init(XY const& bornPos, XY const& inc_, float radians_);
 	void Draw();
 	xx::Task<> MainLogic();
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct DamageText : ObjBase {
-	constexpr static int defaultLife{ 30 };
-	int hp{}, life{ defaultLife };
-	XY inc;
+	constexpr static int cLife{ 30 };
+
 	std::string txt;
-	void Init(XY const& pos_, int hp_);
+
+	void Init(XY const& bornPos, int hp);
 	void Draw();
 	xx::Task<> MainLogic();
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct Monster1 : ObjBase {
-	constexpr static float frameMaxIndex{ 6.f };
-	constexpr static float frameInc{ 0.1f };
-	constexpr static int defaultLife{ 60 * 3 };
-	int life{ defaultLife };
+	constexpr static ObjTypes cType{ ObjTypes::Monster1 };
+	constexpr static float cRadius{ 10.f };
+	constexpr static float cFrameMaxIndex{ 6.f };
+	constexpr static float cFrameInc{ 0.1f };
+	constexpr static int cLife{ 60 * 3 };
+
+	int life{ cLife };
 	float frameIndex{};
+
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();
 };
 
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+// todo
+
 struct Monster2 : ObjBase {
+	constexpr static ObjTypes cType{ ObjTypes::Monster2 };
+	constexpr static float cRadius{ 10.f };
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();
 };
 
 struct Monster3 : ObjBase {
+	constexpr static ObjTypes cType{ ObjTypes::Monster3 };
+	constexpr static float cRadius{ 10.f };
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();

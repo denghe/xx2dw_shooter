@@ -129,7 +129,7 @@ xx::Task<> GameLooper::MainTask() {
 	// todo: monsters gen
 	while (true) {
 		for (size_t i = 0; i < 100; i++) {
-			monsters_1.Emplace().Emplace()->Init();
+			monsters.Emplace().Emplace<Monster1>()->Init();
 		}
 
 		co_yield 0;
@@ -145,9 +145,7 @@ void GameLooper::Update() {
 		shooter();
 	}
 	bullets_shooter1.Foreach([&](auto& o) { return !o() || o->disposing; });
-	monsters_1.Foreach([&](auto& o) { return !o() || o->disposing; });
-	monsters_2.Foreach([&](auto& o) { return !o() || o->disposing; });
-	monsters_3.Foreach([&](auto& o) { return !o() || o->disposing; });
+	monsters.Foreach([&](auto& o) { return !o() || o->disposing; });
 	effects_explosion.Foreach([&](auto& o) { return !o() || o->disposing; });
 	effects_damageText.Foreach([&](auto& o) { return !o() || o->disposing; });
 
@@ -157,12 +155,17 @@ void GameLooper::Update() {
 void GameLooper::Draw() {
 	if (!frame_shooter) return;
 
+	monsters.Foreach([&](auto& o) {
+		switch (o->type) {
+		case ObjTypes::Monster1: ((xx::Shared<Monster1>&)o)->Draw(); break;
+		case ObjTypes::Monster2: ((xx::Shared<Monster2>&)o)->Draw(); break;
+		case ObjTypes::Monster3: ((xx::Shared<Monster3>&)o)->Draw(); break;
+		default: xx_assert(false);
+		}
+	});
 	if (shooter) {
 		shooter->Draw();
 	}
-	monsters_1.Foreach([&](auto& o) { o->Draw(); });
-	monsters_2.Foreach([&](auto& o) { o->Draw(); });
-	monsters_3.Foreach([&](auto& o) { o->Draw(); });
 	bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
 	effects_explosion.Foreach([&](auto& o) { o->Draw(); });
 	effects_damageText.Foreach([&](auto& o) { o->Draw(); });
@@ -193,10 +196,10 @@ xx::Task<> Shooter::MainLogic() {
 			} else {
 				auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
 				touchLastRotation = r = std::atan2(v.y, v.x);
-				if (v.x * v.x + v.y * v.y > touchDistance * touchDistance) {
+				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
 					cr = std::cos(r);
 					sr = std::sin(r);
-					AddPosition({ cr * speed, sr * speed });
+					AddPosition({ cr * cSpeed, sr * cSpeed });
 				}
 			}
 			needFire = gLooper.fireTouchId != -1;
@@ -214,14 +217,14 @@ xx::Task<> Shooter::MainLogic() {
 
 		if (needFire) {
 			XY inc{ cr, sr };
-			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * fireDistance, inc * bulletSpeed, r);
+			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
 			for (size_t i = 1; i <= 5; ++i) {
 				auto r1 = r + 0.1f * (float)i;
 				inc = { std::cos(r1), std::sin(r1) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * fireDistance, inc * bulletSpeed, r);
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
 				auto r2 = r - 0.1f * (float)i;
 				inc = { std::cos(r2), std::sin(r2) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * fireDistance, inc * bulletSpeed, r);
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
 			}
 		}
 
@@ -283,18 +286,20 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 		}
 	}
 
-	return v * speed;
+	return v * cSpeed;
 }
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void ShooterBullet1::Init(XY const& pos_, XY const& inc_, float radians_) {
+void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
+	type = cType;
+	radius = cRadius;
 	Add(MainLogic());
 	SetFrame(gLooper.frames_monster_3[2]).SetScale(gScale);
 	radians = radians_;
 	inc = inc_;
-	pos = pos_;
+	pos = bornPos;
 }
 void ShooterBullet1::Draw() {
 	Quad::Draw();
@@ -302,8 +307,8 @@ void ShooterBullet1::Draw() {
 xx::Task<> ShooterBullet1::MainLogic() {
 	while (true) {
 		AddPosition(inc);
-		if ((pos.x > gLooper.w / 2 + diameter) || (pos.x < -gLooper.w / 2 - diameter) || 
-			(pos.y > gLooper.h / 2 + diameter) || (pos.y < -gLooper.h / 2 - diameter)) break;
+		if ((pos.x > gLooper.w / 2 + cRadius * 2) || (pos.x < -gLooper.w / 2 - cRadius * 2) ||
+			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
 		// todo: hit check?
 		if (gLooper.rnd.Next<bool>()) {
 			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int>(100, 500));
@@ -315,17 +320,17 @@ xx::Task<> ShooterBullet1::MainLogic() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void DamageText::Init(XY const& pos_, int hp_) {
+void DamageText::Init(XY const& bornPos, int hp) {
 	Add(MainLogic());
-	pos = pos_;
-	hp = hp_;
+	pos = bornPos;
 	txt = std::to_string(hp);
-	inc = { 0, 1 };
 }
 void DamageText::Draw() {
 	gLooper.ctc24.Draw(pos, txt);
 }
 xx::Task<> DamageText::MainLogic() {
+	XY inc{ 0, 1 };
+	int life{ cLife };
 	while (--life >= 0) {
 		AddPosition(inc);
 		co_yield 0;
@@ -337,6 +342,8 @@ xx::Task<> DamageText::MainLogic() {
 /*****************************************************************************************************/
 
 void Monster1::Init() {
+	type = cType;
+	radius = cRadius;
 	Add(MainLogic());
 	pos.x = gLooper.rnd.Next<float>(-gLooper.w / 2, gLooper.w / 2);
 	pos.y = gLooper.rnd.Next<float>(-gLooper.h / 2, gLooper.h / 2);
@@ -354,9 +361,9 @@ xx::Task<> Monster1::MainLogic() {
 	scale = { 1, 1 };
 
 	while (--life > 0) {
-		frameIndex += frameInc;
-		if (frameIndex >= frameMaxIndex) {
-			frameIndex -= frameMaxIndex;
+		frameIndex += cFrameInc;
+		if (frameIndex >= cFrameMaxIndex) {
+			frameIndex -= cFrameMaxIndex;
 		}
 		co_yield 0;
 	}
@@ -371,14 +378,22 @@ xx::Task<> Monster1::MainLogic() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Monster2::Init() {}
+void Monster2::Init() {
+	type = cType;
+	radius = cRadius;
+	Add(MainLogic());
+}
 void Monster2::Draw() {}
 xx::Task<> Monster2::MainLogic() { co_return; }
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Monster3::Init() {}
+void Monster3::Init() {
+	type = cType;
+	radius = cRadius;
+	Add(MainLogic());
+}
 void Monster3::Draw() {}
 xx::Task<> Monster3::MainLogic() { co_return; }
 
