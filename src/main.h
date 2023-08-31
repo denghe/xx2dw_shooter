@@ -19,7 +19,8 @@ enum class KeyboardKeys {
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 
-    CharTexCache<24,32,32,2048,2048> ctc24;
+    CharTexCache<24> ctc24;
+    CharTexCache<72> ctc72;
     FpsViewer fv;
 
     XY mousePos;

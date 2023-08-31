@@ -1070,7 +1070,7 @@ struct CharInfo {
     uint16_t texRectX{}, texRectY{}, texRectW{}, texRectH{};
 };
 
-template<int charSize_ = 24, int canvasWidth_ = 32, int canvasHeight_ = 32, int texWidth_ = 2048, int texHeight_ = 2048>
+template<int charSize_ = 24, int canvasWidth_ = int(charSize_ / 0.75), int canvasHeight_ = int(charSize_ / 0.75), int texWidth_ = 2048, int texHeight_ = 2048>
 struct CharTexCache {
     static constexpr int charSize = charSize_, canvasWidth = canvasWidth_, canvasHeight = canvasHeight_, texWidth = texWidth_, texHeight = texHeight_;
     std::vector<xx::Shared<GLTexture>> texs;

@@ -112,6 +112,7 @@ void GameLooper::Init() {
 
 xx::Task<> GameLooper::MainTask() {
     ctc24.Init();
+    ctc72.Init();
 
 	// preload texs
     auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
@@ -127,7 +128,7 @@ xx::Task<> GameLooper::MainTask() {
 
 	// todo: monsters gen
 	while (true) {
-		for (size_t i = 0; i < 10; i++) {
+		for (size_t i = 0; i < 100; i++) {
 			monsters_1.Emplace().Emplace()->Init();
 		}
 
@@ -168,7 +169,7 @@ void GameLooper::Draw() {
 
 	// todo: more Draw
 
-	fv.Draw(ctc24);       // draw fps at corner
+	fv.Draw(ctc72);       // draw fps at corner
 }
 
 /*****************************************************************************************************/
