@@ -108,6 +108,10 @@ void GameLooper::Init() {
     h = gDesign.height;
 }
 
+
+
+
+
 xx::Task<> GameLooper::MainTask() {
     ctc24.Init();
     ctc72.Init();
@@ -127,15 +131,50 @@ xx::Task<> GameLooper::MainTask() {
 
 	shooter.Emplace()->Init();	// make player char
 
-	while (true) {
-		for (size_t i = 0; i < 20; i++) {
-			auto&& m = monsters.Emplace().Emplace<Monster1>();
-			m->owner = &monsters;
-			m->ivAtOwner = monsters.Tail();
-			m->Init();
+	// generate monsters
+
+	xx::List<int> lens;
+	xx::List<Vec2<int32_t>> idxs;
+
+	constexpr float step = gGridDiameter / M_PI;
+	//NewMonster<Monster1>({});
+	lens.Add(1);
+	idxs.Add(Vec2<int32_t>{});
+	for (int r = 0; r < gDesign.height_2; r += step) {
+		auto c = 2 * M_PI * r;
+		if (c < step) continue;
+		auto lenBak = idxs.len;
+		for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
+			XY pos{ r * cos(a), r * sin(a) };
+			//NewMonster<Monster1>(pos);
+			auto idx = pos.MakeAdd(gGridRadius, gGridRadius).As<int32_t>() / 64;
+			if (idxs.Find(idx) == -1) {
+				idxs.Add(idx);
+			}
+		}
+		if (idxs.len > lenBak) {
+			lens.Add(idxs.len);
+		}
+		//co_yield 0;
+	}
+
+	int i = 0;
+	for (auto& n : lens) {
+		//printf("n = %d\n", n);
+		for (; i < n; ++i) {
+			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+			NewMonster<Monster1>(idxs[i].As<float>() * gGridDiameter);
 		}
 		co_yield 0;
 	}
+
+	//while (true) {
+	//	for (size_t i = 0; i < 20; i++) {
+	//		NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+	//			, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+	//	}
+	//	co_yield 0;
+	//}
 }
 
 void GameLooper::Update() {
@@ -391,13 +430,12 @@ xx::Task<> Explosion::MainLogic() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Monster1::Init() {
+void Monster1::Init(XY const& bornPos) {
 	type = cType;
 	radius = cRadius;
 	Add(MainLogic());
-	pos.x = gLooper.rnd.Next<float>(-gLooper.w / 2, gLooper.w / 2);
-	pos.y = gLooper.rnd.Next<float>(-gLooper.h / 2, gLooper.h / 2);
 	scale = {};
+	pos = bornPos;
 	GridInit();
 }
 void Monster1::Draw() {

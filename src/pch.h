@@ -2305,6 +2305,16 @@ struct GDesign {
     static constexpr float y8 = height_2;
     static constexpr float x9 = width_2;
     static constexpr float y9 = height_2;
+
+    static constexpr XY xy1{ x1, y1 };
+    static constexpr XY xy2{ x2, y2 };
+    static constexpr XY xy3{ x3, y3 };
+    static constexpr XY xy4{ x4, y4 };
+    static constexpr XY xy5{ x5, y5 };
+    static constexpr XY xy6{ x6, y6 };
+    static constexpr XY xy7{ x7, y7 };
+    static constexpr XY xy8{ x8, y8 };
+    static constexpr XY xy9{ x9, y9 };
 };
 
 #endif

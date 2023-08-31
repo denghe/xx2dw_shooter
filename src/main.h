@@ -104,6 +104,15 @@ struct GameLooper : Engine<GameLooper> {
 	xx::ListDoubleLink<xx::Shared<GridObjBase>, int32_t, uint32_t> monsters;
 	//xx::ListLink<xx::Shared<XXXXXXXXXXX>, int32_t> bullets_monster1;
 
+	template<typename MT>
+	xx::Shared<MT>& NewMonster(XY const& bornPos) {
+		auto&& m = monsters.Emplace().Emplace<MT>();
+		m->owner = &monsters;
+		m->ivAtOwner = monsters.Tail();
+		m->Init(bornPos);
+		return m;
+	}
+
 	// effects
 	xx::ListLink<xx::Shared<Explosion>, int32_t> effects_explosion;
 	xx::ListLink<xx::Shared<DamageText>, int32_t> effects_damageText;
@@ -113,7 +122,7 @@ struct GameLooper : Engine<GameLooper> {
 extern GameLooper gLooper;
 constexpr GDesign<1024, 768> gDesign;
 constexpr float gScale = 4;	// scale texture
-constexpr int32_t gGridDiameter = 64, gGridWidth = 512, gGridHeight = 512;
+constexpr int32_t gGridDiameter = 64, gGridRadius = gGridDiameter / 2, gGridWidth = 512, gGridHeight = 512;
 constexpr Vec2<int32_t> gGridBasePos{ gGridDiameter * gGridWidth / 2, gGridDiameter * gGridHeight / 2};
 constexpr float gSQ = 0.7071067811865475244;
 
@@ -185,7 +194,7 @@ struct Monster1 : GridObjBase {
 	int32_t life{ cLife };
 	float frameIndex{};
 
-	void Init();
+	void Init(XY const& bornPos);
 	void Draw();
 	xx::Task<> MainLogic();
 };
