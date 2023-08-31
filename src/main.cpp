@@ -182,9 +182,6 @@ void Shooter::Init() {
 	Add(MainLogic());
 	SetFrame(gLooper.frame_shooter).SetScale(gScale);
 }
-void Shooter::Draw() {
-	Quad::Draw();
-}
 xx::Task<> Shooter::MainLogic() {
 	while (true) {
 		float r, sr, cr;
@@ -300,9 +297,6 @@ void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	radians = radians_;
 	inc = inc_;
 	pos = bornPos;
-}
-void ShooterBullet1::Draw() {
-	Quad::Draw();
 }
 xx::Task<> ShooterBullet1::MainLogic() {
 	while (true) {

@@ -16,7 +16,7 @@ enum class ObjTypes : int {
 	// ...
 };
 
-struct ObjBase : Quad, xx::Tasks {
+struct ObjBase : SpaceGridCItem<ObjBase>, Quad, xx::Tasks {
 	ObjTypes type{};
 	float radius{};
 	float frameIndex{};
@@ -116,7 +116,6 @@ struct Shooter : ObjBase {
 	float touchLastRotation{};
 
 	void Init();
-	void Draw();
 	xx::Task<> MainLogic();
 	std::optional<XY> GetKeyboardMoveInc();
 };
@@ -131,7 +130,6 @@ struct ShooterBullet1 : ObjBase {
 	XY inc{};
 
 	void Init(XY const& bornPos, XY const& inc_, float radians_);
-	void Draw();
 	xx::Task<> MainLogic();
 };
 
