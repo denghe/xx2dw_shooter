@@ -1,8 +1,7 @@
 ﻿#include "pch.h"
 #include "main.h"
 
-int main() {
-	printf("main()\n");
+int32_t main() {
     emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
         return gLooper.JsLoopCallback(ms);
     }, nullptr);
@@ -37,7 +36,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 		aimTouchId = t.identifier;
 		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
 	} else {
-		for (int i = 0; i < e.numTouches; ++i) {
+		for (int32_t i = 0; i < e.numTouches; ++i) {
 			auto&& t = e.touches[i];
 			if (!t.isChanged) continue;
 			fireTouchId = t.identifier;
@@ -50,7 +49,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 
 EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
 	touchMode = true;
-	for (int i = 0; i < e.numTouches; ++i) {
+	for (int32_t i = 0; i < e.numTouches; ++i) {
 		auto&& t = e.touches[i];
 		if (!t.isChanged) continue;
 		if (aimTouchId == t.identifier) {
@@ -61,7 +60,7 @@ EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
 }
 
 EM_BOOL GameLooper::OnTouchEnd(EmscriptenTouchEvent const& e) {
-	for (int i = 0; i < e.numTouches; ++i) {
+	for (int32_t i = 0; i < e.numTouches; ++i) {
 		auto&& t = e.touches[i];
 		if (!t.isChanged) continue;
 		if (aimTouchId == t.identifier) {
@@ -83,14 +82,14 @@ EM_BOOL GameLooper::OnTouchCancel(EmscriptenTouchEvent const& e) {
 /*****************************************************************************************************/
 
 EM_BOOL GameLooper::OnKeyDown(EmscriptenKeyboardEvent const& e) {
-	if (e.which >= (int)KeyboardKeys::A && e.which <= (int)KeyboardKeys::Z) {
+	if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
 		keyboardKeysStates[e.which] = true;
 		return EM_TRUE;
 	}
 	return EM_FALSE;
 }
 EM_BOOL GameLooper::OnKeyUp(EmscriptenKeyboardEvent const& e) {
-	if (e.which >= (int)KeyboardKeys::A && e.which <= (int)KeyboardKeys::Z) {
+	if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
 		keyboardKeysStates[e.which] = false;
 		return EM_TRUE;
 	}
@@ -98,7 +97,7 @@ EM_BOOL GameLooper::OnKeyUp(EmscriptenKeyboardEvent const& e) {
 }
 
 bool GameLooper::Pressed(KeyboardKeys k) const {
-	return keyboardKeysStates[(int)k];
+	return keyboardKeysStates[(int32_t)k];
 }
 
 /*****************************************************************************************************/
@@ -107,7 +106,6 @@ bool GameLooper::Pressed(KeyboardKeys k) const {
 void GameLooper::Init() {
     w = gDesign.width;
     h = gDesign.height;
-	printf("Init()\n");
 }
 
 xx::Task<> GameLooper::MainTask() {
@@ -122,20 +120,22 @@ xx::Task<> GameLooper::MainTask() {
 	tp->GetToByPrefix(frames_monster_2, "mb");
 	tp->GetToByPrefix(frames_monster_3, "mc");
 	tp->GetToByPrefix(frames_explosion, "e");
+	tp->GetToByPrefix(frames_bullets, "b");
 	frame_shooter = tp->TryGet("p");			// ready flag
+
+	sgc.Init(400, 400, 64);	// init physics grid
 
 	shooter.Emplace()->Init();	// make player char
 
-	// todo: monsters gen
 	while (true) {
-		for (size_t i = 0; i < 100; i++) {
-			monsters.Emplace().Emplace<Monster1>()->Init();
+		for (size_t i = 0; i < 20; i++) {
+			auto&& m = monsters.Emplace().Emplace<Monster1>();
+			m->owner = &monsters;
+			m->ivAtOwner = monsters.Tail();
+			m->Init();
 		}
-
 		co_yield 0;
 	}
-
-    co_return;
 }
 
 void GameLooper::Update() {
@@ -175,10 +175,31 @@ void GameLooper::Draw() {
 	fv.Draw(ctc72);       // draw fps at corner
 }
 
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+void GridObjBase::RemoveFromOwner() {
+	owner->Remove(ivAtOwner);
+}
+
+void GridObjBase::GridInit() {
+	SGCInit(&gLooper.sgc, gGridBasePos.MakeAdd(pos));
+}
+
+void GridObjBase::GridUpdate() {
+	SGCUpdate(gGridBasePos.MakeAdd(pos));
+}
+
+GridObjBase::~GridObjBase() {
+	SGCTryRemove();
+}
+
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
 void Shooter::Init() {
+	type = cType;
 	Add(MainLogic());
 	SetFrame(gLooper.frame_shooter).SetScale(gScale);
 }
@@ -214,14 +235,14 @@ xx::Task<> Shooter::MainLogic() {
 
 		if (needFire) {
 			XY inc{ cr, sr };
-			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
+			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
 			for (size_t i = 1; i <= 5; ++i) {
 				auto r1 = r + 0.1f * (float)i;
 				inc = { std::cos(r1), std::sin(r1) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
 				auto r2 = r - 0.1f * (float)i;
 				inc = { std::cos(r2), std::sin(r2) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * cBulletSpeed, r);
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
 			}
 		}
 
@@ -236,7 +257,7 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 		};
 		uint32_t all{};
 	} flags;
-	int n = 0;
+	int32_t n = 0;
 
 	if (gLooper.Pressed(KeyboardKeys::A)) { flags.a = 1; ++n; }
 	if (gLooper.Pressed(KeyboardKeys::S)) { flags.s = 1; ++n; }
@@ -291,10 +312,9 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	type = cType;
-	radius = cRadius;
 	Add(MainLogic());
-	SetFrame(gLooper.frames_monster_3[2]).SetScale(gScale);
-	radians = radians_;
+	SetFrame(gLooper.frames_bullets[0]).SetScale(gScale);
+	radians = M_PI * 2 - radians_;
 	inc = inc_;
 	pos = bornPos;
 }
@@ -303,10 +323,30 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		AddPosition(inc);
 		if ((pos.x > gLooper.w / 2 + cRadius * 2) || (pos.x < -gLooper.w / 2 - cRadius * 2) ||
 			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
-		// todo: hit check?
-		if (gLooper.rnd.Next<bool>()) {
-			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int>(100, 500));
+
+		auto p = gGridBasePos.MakeAdd(pos);
+		auto idx = gLooper.sgc.PosToIndex(p);
+		GridObjBase* r{};
+		int32_t limit = 0x7FFFFFFF;
+		gLooper.sgc.Foreach9NeighborCells<true>(idx, [&](GridObjBase* const& m) {
+			auto d = m->pos - pos;
+			//printf("d = %f %f\n", d.x, d.y);
+			auto rr = (m->radius + cRadius) * (m->radius + cRadius);
+			auto dd = d.x * d.x + d.y * d.y;
+			if (dd < rr) {
+				r = m;
+				limit = 0;	// break foreach
+			}
+		}, &limit);
+
+		if (r) {
+			// todo: - hp ?
+			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
+			r->RemoveFromOwner();	// dispose monster
+			break;	// suicide
 		}
+
 		co_yield 0;
 	}
 }
@@ -314,7 +354,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void DamageText::Init(XY const& bornPos, int hp) {
+void DamageText::Init(XY const& bornPos, int32_t hp) {
 	Add(MainLogic());
 	pos = bornPos;
 	txt = std::to_string(hp);
@@ -324,12 +364,28 @@ void DamageText::Draw() {
 }
 xx::Task<> DamageText::MainLogic() {
 	XY inc{ 0, 1 };
-	int life{ cLife };
-	while (--life >= 0) {
-		AddPosition(inc);
+	int32_t life{ cLife };
+	do {
 		co_yield 0;
-	}
-	co_return;
+		AddPosition(inc);
+	} while (--life >= 0);
+}
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+void Explosion::Init(XY const& bornPos) {
+	Add(MainLogic());
+	pos = bornPos;
+}
+void Explosion::Draw() {
+	SetFrame(gLooper.frames_explosion[(int32_t)frameIndex]).Draw();
+}
+xx::Task<> Explosion::MainLogic() {
+	do {
+		co_yield 0;
+		frameIndex += cFrameInc;
+	} while (frameIndex < cFrameMaxIndex);
 }
 
 /*****************************************************************************************************/
@@ -342,11 +398,13 @@ void Monster1::Init() {
 	pos.x = gLooper.rnd.Next<float>(-gLooper.w / 2, gLooper.w / 2);
 	pos.y = gLooper.rnd.Next<float>(-gLooper.h / 2, gLooper.h / 2);
 	scale = {};
+	GridInit();
 }
 void Monster1::Draw() {
-	SetFrame(gLooper.frames_monster_1[(int)frameIndex]).Draw();
+	SetFrame(gLooper.frames_monster_1[(int32_t)frameIndex]).Draw();
 }
 xx::Task<> Monster1::MainLogic() {
+	//GridUpdate();
 	while (scale.x < 1.f) {
 		scale.x += 0.1f;
 		scale.y += 0.1f;
@@ -376,9 +434,16 @@ void Monster2::Init() {
 	type = cType;
 	radius = cRadius;
 	Add(MainLogic());
+	// set pos
+	GridInit();
 }
-void Monster2::Draw() {}
-xx::Task<> Monster2::MainLogic() { co_return; }
+void Monster2::Draw() {
+	SetFrame(gLooper.frames_monster_2[(int32_t)frameIndex]).Draw();
+}
+xx::Task<> Monster2::MainLogic() { 
+	//GridUpdate();
+	co_return;
+}
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/
@@ -387,13 +452,13 @@ void Monster3::Init() {
 	type = cType;
 	radius = cRadius;
 	Add(MainLogic());
+	// set pos
+	GridInit();
 }
-void Monster3::Draw() {}
-xx::Task<> Monster3::MainLogic() { co_return; }
-
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-
-void Explosion::Init() {}
-void Explosion::Draw() {}
-xx::Task<> Explosion::MainLogic() { co_return; }
+void Monster3::Draw() {
+	SetFrame(gLooper.frames_monster_3[(int32_t)frameIndex]).Draw();
+}
+xx::Task<> Monster3::MainLogic() {
+	//GridUpdate();
+	co_return;
+}

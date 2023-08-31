@@ -498,6 +498,9 @@ struct Vec2 {
         return x != v.x || y != v.y;
     }
 
+    Vec2 MakeAdd(HasFieldXY auto const& v) const {
+        return { x + v.x, y + v.y };
+    }
     Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) const {
         return { x + vx, y + vy };
     }
@@ -1294,6 +1297,7 @@ struct TexturePacker : Frames {
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSourceSize.x, (xx::RWFloatUInt16&)f->spriteSourceSize.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->textureRect.x, (xx::RWFloatUInt16&)f->textureRect.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->textureRect.wh.x, (xx::RWFloatUInt16&)f->textureRect.wh.y)) return r;
+            //printf("load frame key = %s\n", f->key.c_str());
             frames.emplace_back(std::move(f));
         }
         realTextureFileName = rootPath + realTextureFileName;
