@@ -25,6 +25,8 @@ struct GameLooper : Engine<GameLooper> {
     XY mousePos;
 	std::array<bool, 16> mouseBtnStates{};
 	std::array<bool, (int)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
+	long aimTouchId{ -1 }, fireTouchId{ -1 };
+	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
 
     EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
     EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
@@ -38,7 +40,6 @@ struct GameLooper : Engine<GameLooper> {
 	EM_BOOL OnTouchEnd(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchCancel(EmscriptenTouchEvent const& e);
 
-	// todo: virtual joy?
 
 	bool Pressed(KeyboardKeys k) const;
 
@@ -74,7 +75,7 @@ struct GameLooper : Engine<GameLooper> {
 };
 
 extern GameLooper gLooper;
-constexpr GDesign<1280, 800> gDesign;
+constexpr GDesign<1024, 768> gDesign;
 constexpr float gScale = 4;
 static constexpr const float gSQ = 0.7071067811865475244;
 
@@ -94,7 +95,8 @@ struct Shooter : ObjBase {
 	void Init();
 	void Draw();
 	xx::Task<> MainLogic();
-	std::pair<bool, XY> GetASDWMoveInc();
+	std::optional<XY> GetKeyboardMoveInc();
+	std::optional<XY> GetTouchMoveInc();
 };
 
 

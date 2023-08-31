@@ -9,6 +9,9 @@ int main() {
 }
 GameLooper gLooper;
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
     mousePos = { (float)e.targetX - w / 2, h - (float)e.targetY - h / 2 };
     return EM_TRUE;
@@ -22,28 +25,58 @@ EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
     return EM_TRUE;
 }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
-	auto&& t = e.touches[0];
-	mousePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
-	mouseBtnStates[0] = true;
+	if (e.numTouches == 1) {
+		auto&& t = e.touches[0];
+		aimTouchId = t.identifier;
+		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+	} else {
+		for (int i = 0; i < e.numTouches; ++i) {
+			auto&& t = e.touches[i];
+			if (!t.isChanged) continue;
+			fireTouchId = t.identifier;
+			mouseBtnStates[0] = true;
+			break;
+		}
+	}
 	return EM_TRUE;
 }
 
 EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
-	auto&& t = e.touches[0];
-	mousePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+	for (int i = 0; i < e.numTouches; ++i) {
+		auto&& t = e.touches[i];
+		if (!t.isChanged) continue;
+		if (aimTouchId == t.identifier) {
+			aimTouchMovePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+		}
+	}
 	return EM_TRUE;
 }
 
 EM_BOOL GameLooper::OnTouchEnd(EmscriptenTouchEvent const& e) {
-	mouseBtnStates[0] = false;
+	for (int i = 0; i < e.numTouches; ++i) {
+		auto&& t = e.touches[i];
+		if (!t.isChanged) continue;
+		if (aimTouchId == t.identifier) {
+			aimTouchId = -1;
+			aimTouchStartPos = aimTouchMovePos = {};
+		} else if (fireTouchId == t.identifier) {
+			fireTouchId = -1;
+			mouseBtnStates[0] = false;
+		}
+	}
 	return EM_TRUE;
 }
 
 EM_BOOL GameLooper::OnTouchCancel(EmscriptenTouchEvent const& e) {
-	mouseBtnStates[0] = false;
-	return EM_TRUE;
+	return OnTouchEnd(e);
 }
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 EM_BOOL GameLooper::OnKeyDown(EmscriptenKeyboardEvent const& e) {
 	if (e.which >= (int)KeyboardKeys::A && e.which <= (int)KeyboardKeys::Z) {
@@ -64,15 +97,14 @@ bool GameLooper::Pressed(KeyboardKeys k) const {
 	return keyboardKeysStates[(int)k];
 }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 void GameLooper::Init() {
     w = gDesign.width;
     h = gDesign.height;
 	printf("Init()\n");
 }
-
-
-/*****************************************************************************************************/
-/*****************************************************************************************************/
 
 xx::Task<> GameLooper::MainTask() {
     ctc24.Init();
@@ -135,6 +167,9 @@ void GameLooper::Draw() {
 	fv.Draw(ctc24);       // draw fps at corner
 }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 void Shooter::Init() {
 	Add(MainLogic());
 	SetFrame(gLooper.frame_shooter).SetScale(gScale);
@@ -144,16 +179,22 @@ void Shooter::Draw() {
 }
 xx::Task<> Shooter::MainLogic() {
 	while (true) {
-		if (auto [moved, inc] = GetASDWMoveInc(); moved) {
-			AddPosition(inc);
-			// todo: limit ?
+		std::optional<XY> inc;
+		XY v;
+		if (gLooper.aimTouchId != -1) {
+			inc = GetTouchMoveInc();
+			v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
+		} else {
+			inc = GetKeyboardMoveInc();
+			v = gLooper.mousePos - pos;
 		}
-
-		auto v = gLooper.mousePos - pos;
-		auto r = std::atan2(v.y, v.x);
+		if (inc.has_value()) {
+			AddPosition(*inc);
+		}
+		float r = std::atan2(v.y, v.x);
 		SetRotate(M_PI * 2 - r);
 
-		if (gLooper.mouseBtnStates[0]) {
+		if (gLooper.fireTouchId != -1 || gLooper.mouseBtnStates[0]) {
 			XY inc{ std::cos(r), std::sin(r) };
 			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * fireDistance, inc * bulletSpeed, r);
 			for (size_t i = 1; i <= 5; ++i) {
@@ -170,7 +211,7 @@ xx::Task<> Shooter::MainLogic() {
 	}
 }
 
-std::pair<bool, XY> Shooter::GetASDWMoveInc() {
+std::optional<XY> Shooter::GetKeyboardMoveInc() {
 	union Dirty {
 		struct {
 			uint8_t a, s, d, w;
@@ -194,7 +235,7 @@ std::pair<bool, XY> Shooter::GetASDWMoveInc() {
 			n -= 2;
 		}
 	}
-	if (n == 0) return { false, XY{} };
+	if (n == 0) return {};
 
 	XY v{};
 
@@ -224,8 +265,17 @@ std::pair<bool, XY> Shooter::GetASDWMoveInc() {
 		}
 	}
 
-	return { true, v * speed };
+	return v * speed;
 }
+
+std::optional<XY> Shooter::GetTouchMoveInc() {
+	auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
+
+	return {};
+}
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 void ShooterBullet1::Init(XY const& pos_, XY const& inc_, float radians_) {
 	Add(MainLogic());
@@ -250,7 +300,8 @@ xx::Task<> ShooterBullet1::MainLogic() {
 	}
 }
 
-
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 void DamageText::Init(XY const& pos_, int hp_) {
 	Add(MainLogic());
@@ -270,6 +321,8 @@ xx::Task<> DamageText::MainLogic() {
 	co_return;
 }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 void Monster1::Init() {
 	Add(MainLogic());
@@ -303,13 +356,22 @@ xx::Task<> Monster1::MainLogic() {
 	}
 }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 void Monster2::Init() {}
 void Monster2::Draw() {}
 xx::Task<> Monster2::MainLogic() { co_return; }
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 void Monster3::Init() {}
 void Monster3::Draw() {}
 xx::Task<> Monster3::MainLogic() { co_return; }
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 void Explosion::Init() {}
 void Explosion::Draw() {}
