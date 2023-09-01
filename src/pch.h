@@ -1747,6 +1747,7 @@ struct SpaceGridRingDiffuseData {
         constexpr float step = gridDiameter / M_PI;
         lens.Add(1);
         idxs.Add(Vec2<int32_t>{});
+        std::unordered_set<uint64_t> idxset;    // avoid duplicate
         for (int r = 0; r < gridDiameter * gridRadius; r += step) {
             auto c = 2 * M_PI * r;
             if (c < step) continue;
@@ -1754,22 +1755,8 @@ struct SpaceGridRingDiffuseData {
             for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
                 XY pos{ r * cos(a), r * sin(a) };
                 auto idx = pos.MakeAdd(gridRadius, gridRadius).As<int32_t>() / gridDiameter;
-
-                if (lens.len > 2) {
-                    bool exists{};
-                    for (int i = lens[lens.len - 2], e = lens[lens.len - 1]; i < e; ++i) {
-                        if (idxs[i] == idx) {
-                            exists = true;
-                            break;
-                        }
-                    }
-                    if (!exists) {
-                        idxs.Add(idx);
-                    }
-                } else {
-                    if (idxs.Find(idx) == -1) {
-                        idxs.Add(idx);
-                    }
+                if (idxset.insert((uint64_t&)idx).second) {
+                    idxs.Add(idx);
                 }
             }
             if (idxs.len > lenBak) {
