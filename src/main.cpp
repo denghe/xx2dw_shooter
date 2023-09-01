@@ -133,37 +133,40 @@ xx::Task<> GameLooper::MainTask() {
 
 	// generate monsters
 
-	xx::List<int> lens;
-	xx::List<Vec2<int32_t>> idxs;
+	//xx::List<int> lens;
+	//xx::List<Vec2<int32_t>> idxs;
 
-	constexpr float step = gGridDiameter / M_PI;
-	//NewMonster<Monster1>({});
-	lens.Add(1);
-	idxs.Add(Vec2<int32_t>{});
-	for (int r = 0; r < gDesign.height_2; r += step) {
-		auto c = 2 * M_PI * r;
-		if (c < step) continue;
-		auto lenBak = idxs.len;
-		for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
-			XY pos{ r * cos(a), r * sin(a) };
-			//NewMonster<Monster1>(pos);
-			auto idx = pos.MakeAdd(gGridRadius, gGridRadius).As<int32_t>() / 64;
-			if (idxs.Find(idx) == -1) {
-				idxs.Add(idx);
-			}
-		}
-		if (idxs.len > lenBak) {
-			lens.Add(idxs.len);
-		}
-		//co_yield 0;
-	}
+	//constexpr float step = gGridDiameter / M_PI;
+	////NewMonster<Monster1>({});
+	//lens.Add(1);
+	//idxs.Add(Vec2<int32_t>{});
+	//for (int r = 0; r < gDesign.height_2; r += step) {
+	//	auto c = 2 * M_PI * r;
+	//	if (c < step) continue;
+	//	auto lenBak = idxs.len;
+	//	for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
+	//		XY pos{ r * cos(a), r * sin(a) };
+	//		//NewMonster<Monster1>(pos);
+	//		auto idx = pos.MakeAdd(gGridRadius, gGridRadius).As<int32_t>() / 64;
+	//		if (idxs.Find(idx) == -1) {
+	//			idxs.Add(idx);
+	//		}
+	//	}
+	//	if (idxs.len > lenBak) {
+	//		lens.Add(idxs.len);
+	//	}
+	//	//co_yield 0;
+	//}
+
+	SpaceGridRingDiffuseData<100> sgrdd;
+	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
 
 	int i = 0;
-	for (auto& n : lens) {
+	for (auto& n : sgrdd.lens) {
 		//printf("n = %d\n", n);
 		for (; i < n; ++i) {
 			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-			NewMonster<Monster1>(idxs[i].As<float>() * gGridDiameter);
+			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 3);
 		}
 		co_yield 0;
 	}

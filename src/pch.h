@@ -1,6 +1,6 @@
 ﻿#pragma once
-#ifndef XX2DW_GEMINI_PCH_H_
-#define XX2DW_GEMINI_PCH_H_
+#ifndef XX2DW_SHOOTER_PCH_H_
+#define XX2DW_SHOOTER_PCH_H_
 
 #include <xx_task.h>
 #include <xx_queue.h>
@@ -1737,6 +1737,48 @@ struct SpaceGridCItem {
             _sgc = {};
         }
     }
+};
+
+template<int32_t gridRadius, int32_t gridDiameter = 64>
+struct SpaceGridRingDiffuseData {
+    xx::List<int32_t, int32_t> lens;
+    xx::List<Vec2<int32_t>, int32_t> idxs;
+    SpaceGridRingDiffuseData() {
+        constexpr float step = gridDiameter / M_PI;
+        lens.Add(1);
+        idxs.Add(Vec2<int32_t>{});
+        for (int r = 0; r < gridDiameter * gridRadius; r += step) {
+            auto c = 2 * M_PI * r;
+            if (c < step) continue;
+            auto lenBak = idxs.len;
+            for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
+                XY pos{ r * cos(a), r * sin(a) };
+                auto idx = pos.MakeAdd(gridRadius, gridRadius).As<int32_t>() / gridDiameter;
+
+                if (lens.len > 2) {
+                    bool exists{};
+                    for (int i = lens[lens.len - 2], e = lens[lens.len - 1]; i < e; ++i) {
+                        if (idxs[i] == idx) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        idxs.Add(idx);
+                    }
+                } else {
+                    if (idxs.Find(idx) == -1) {
+                        idxs.Add(idx);
+                    }
+                }
+            }
+            if (idxs.len > lenBak) {
+                lens.Add(idxs.len);
+            }
+        }
+    }
+    SpaceGridRingDiffuseData(SpaceGridRingDiffuseData const&) = delete;
+    SpaceGridRingDiffuseData& operator=(SpaceGridRingDiffuseData const&) = delete;
 };
 
 template<typename Item>
