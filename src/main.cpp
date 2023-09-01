@@ -108,10 +108,6 @@ void GameLooper::Init() {
     h = gDesign.height;
 }
 
-
-
-
-
 xx::Task<> GameLooper::MainTask() {
     ctc24.Init();
     ctc72.Init();
@@ -133,7 +129,7 @@ xx::Task<> GameLooper::MainTask() {
 
 	// generate monsters
 
-	SpaceGridRingDiffuseData<200> sgrdd;
+	SpaceGridRingDiffuseData<300> sgrdd;
 	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
 
 	int i = 0;
@@ -141,7 +137,7 @@ xx::Task<> GameLooper::MainTask() {
 		//printf("n = %d\n", n);
 		for (; i < n; ++i) {
 			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 3);
+			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 1);
 		}
 		co_yield 0;
 	}

@@ -1744,19 +1744,22 @@ struct SpaceGridRingDiffuseData {
     xx::List<int32_t, int32_t> lens;
     xx::List<Vec2<int32_t>, int32_t> idxs;
     SpaceGridRingDiffuseData() {
-        constexpr float step = gridDiameter / M_PI;
+        constexpr float step = gridDiameter / 2;
         lens.Add(1);
-        idxs.Add(Vec2<int32_t>{});
+        Vec2<int32_t> lastIdx{};
+        idxs.Add(lastIdx);
         std::unordered_set<uint64_t> idxset;    // avoid duplicate
         for (int r = 0; r < gridDiameter * gridRadius; r += step) {
             auto c = 2 * M_PI * r;
             if (c < step) continue;
             auto lenBak = idxs.len;
-            for (float a = 0; a < M_PI * 2; a += M_PI * 2 * (step / c)) {
+            auto astep = M_PI * 2 * (step / c) / 10;
+            for (float a = astep; a < M_PI * 2; a += astep) {
                 XY pos{ r * cos(a), r * sin(a) };
-                auto idx = pos.MakeAdd(gridRadius, gridRadius).As<int32_t>() / gridDiameter;
-                if (idxset.insert((uint64_t&)idx).second) {
+                auto idx = (pos / gridDiameter).As<int32_t>();
+                if (lastIdx != idx && idxset.insert((uint64_t&)idx).second) {
                     idxs.Add(idx);
+                    lastIdx = idx;
                 }
             }
             if (idxs.len > lenBak) {

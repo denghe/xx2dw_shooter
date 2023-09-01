@@ -122,7 +122,7 @@ struct GameLooper : Engine<GameLooper> {
 extern GameLooper gLooper;
 constexpr GDesign<1024, 768> gDesign;
 constexpr float gScale = 4;	// scale texture
-constexpr int32_t gGridDiameter = 64, gGridRadius = gGridDiameter / 2, gGridWidth = 512, gGridHeight = 512;
+constexpr int32_t gGridDiameter = 16, gGridRadius = gGridDiameter / 2, gGridWidth = 512, gGridHeight = 512;
 constexpr Vec2<int32_t> gGridBasePos{ gGridDiameter * gGridWidth / 2, gGridDiameter * gGridHeight / 2};
 constexpr float gSQ = 0.7071067811865475244;
 
