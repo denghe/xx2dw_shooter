@@ -6,6 +6,12 @@ int32_t main();
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
+constexpr GDesign<1024, 768> gDesign;
+constexpr float gScale = 4;	// scale texture
+constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 128, gGridNumRows = 128;
+constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
+constexpr float gSQ = 0.7071067811865475244;
+
 enum class ObjTypes : int32_t {
 	Unknown,
 	Shooter,
@@ -84,6 +90,7 @@ struct GameLooper : Engine<GameLooper> {
 
 	// physics containers ( Place on top of business objects )
 	SpaceGridC<GridObjBase> sgc;
+	SpaceGridRingDiffuseData<gGridNumRows, gGridCellDiameter> sgrdd;
 
 	// res
 	xx::Shared<Frame> frame_shooter;
@@ -120,11 +127,6 @@ struct GameLooper : Engine<GameLooper> {
 };
 
 extern GameLooper gLooper;
-constexpr GDesign<1024, 768> gDesign;
-constexpr float gScale = 4;	// scale texture
-constexpr int32_t gGridDiameter = 16, gGridRadius = gGridDiameter / 2, gGridWidth = 512, gGridHeight = 512;
-constexpr Vec2<int32_t> gGridBasePos{ gGridDiameter * gGridWidth / 2, gGridDiameter * gGridHeight / 2};
-constexpr float gSQ = 0.7071067811865475244;
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/

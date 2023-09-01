@@ -1658,16 +1658,16 @@ struct MovePathCache {
 /**********************************************************************************************************************************/
 
 struct FpsViewer {
-    double fpsTimePool{}, lastSecs{ xx::NowSteadyEpochSeconds() }, counter{}, fps{};
+    double lastSecs{}, counter{}, fps{};
 
     // CTC: char texture cache
     template<typename CTC>
     void Draw(CTC& cp) {
         ++counter;
-        fpsTimePool += xx::NowSteadyEpochSeconds(lastSecs);
-        if (fpsTimePool >= 1) {
-            fpsTimePool -= 1;
-            fps = counter;
+        auto nowSecs = xx::NowSteadyEpochSeconds();
+        if (auto elapsedSecs = nowSecs - lastSecs; elapsedSecs >= 1) {
+            lastSecs = nowSecs;
+            fps = counter / elapsedSecs;
             counter = 0;
         }
 
@@ -1887,7 +1887,8 @@ struct SpaceGridC {
         return CrIdxToCellIdx(PosToCrIdx(pos));
     }
 
-    // return true: break
+    // find target cell. return true: break
+    // F == [&](Item* o)->bool { ... return false; }
     template<typename F>
     bool Foreach(int32_t cellIndex, F&& f) {
         auto c = cells[cellIndex];
@@ -1905,57 +1906,69 @@ struct SpaceGridC {
         Vec2<int32_t>{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
     };
 
+    // find target cell + round 8 = 9 cells. return true: break
+    // F == [&](Item* o)->bool { ... return false; }
     template<typename F>
-    bool Foreach9(Vec2<int32_t> const& crIdx, F&& f) {
+    void Foreach9(Vec2<int32_t> const& crIdx, F&& f) {
         for (auto& offset : offsets9) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offset);
             if (cellIndex < 0 || cellIndex >= cells.size()) continue;
-            if (Foreach(cellIndex, f)) return true;
+            auto c = cells[cellIndex];
+            while (c) {
+                assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
+                assert(c->_sgcNext != c);
+                assert(c->_sgcPrev != c);
+                if (f(c)) return;
+                c = c->_sgcNext;
+            }
         }
-        return false;
     }
 
-    //template<typename F>
-    //bool ForeachRingDiffuse(SG& sg, Pos const& pos, F&& f, int32_t* limit = nullptr) {
-    //    int i = 0;
-    //    for (auto& n : lens) {
-    //        for (; i < n; ++i) {
-    //            auto idx = (pos / sg.maxDiameter).As<int32_t>() + idxs[i];
-    //            sg.template Foreach<enableLimit, false, F>(idx.x, idx.y, std::forward<F>(f), limit);
-    //        }
-    //        if constexpr (enableLimit) {
-    //            if (*limit <= 0) return;
-    //        }
-    //    }
-    //}
+    // find target cell + ring diffuse cells. return true: break
+    // F == [&](Item* o)->bool { ... return false; }
+    template<typename RDData, typename F>
+    void ForeachCells(Vec2<int32_t> const& crIdx, Vec2<int32_t> const* offsets, int size, F&& f) {
+        for (int i = 0; i < size; ++i) {
+            auto cellIndex = CrIdxToCellIdx(crIdx + offsets[i]);
+            if (cellIndex < 0 || cellIndex >= cells.size()) continue;
+            auto c = cells[cellIndex];
+            while (c) {
+                assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
+                assert(c->_sgcNext != c);
+                assert(c->_sgcPrev != c);
+                if (f(c)) return;
+                c = c->_sgcNext;
+            }
+        }
+    }
 };
 
-template<int32_t gridRadius, int32_t gridDiameter = 64>
+template<int32_t gridNumRows, int32_t gridCellDiameter>
 struct SpaceGridRingDiffuseData {
-    xx::List<int32_t, int32_t> lens;
+    xx::List<std::pair<int32_t, int32_t>, int32_t> lens;    // first: count   second: radius
     xx::List<Vec2<int32_t>, int32_t> idxs;
 
     SpaceGridRingDiffuseData() {
-        constexpr float step = gridDiameter / 2;
-        lens.Add(1);
+        constexpr float step = gridCellDiameter / 2;
+        lens.Emplace(1, 0);
         Vec2<int32_t> lastIdx{};
         idxs.Add(lastIdx);
         std::unordered_set<uint64_t> idxset;    // avoid duplicate
-        for (int r = 0; r < gridDiameter * gridRadius; r += step) {
+        for (int r = step; r < gridCellDiameter * gridNumRows; r += step) {
             auto c = 2 * M_PI * r;
             if (c < step) continue;
             auto lenBak = idxs.len;
             auto astep = M_PI * 2 * (step / c) / 10;
             for (float a = astep; a < M_PI * 2; a += astep) {
                 XY pos{ r * cos(a), r * sin(a) };
-                auto idx = (pos / gridDiameter).As<int32_t>();
+                auto idx = (pos / gridCellDiameter).As<int32_t>();
                 if (lastIdx != idx && idxset.insert((uint64_t&)idx).second) {
                     idxs.Add(idx);
                     lastIdx = idx;
                 }
             }
             if (idxs.len > lenBak) {
-                lens.Add(idxs.len);
+                lens.Emplace(idxs.len, r);
             }
         }
     }

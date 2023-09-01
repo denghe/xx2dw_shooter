@@ -123,32 +123,31 @@ xx::Task<> GameLooper::MainTask() {
 	tp->GetToByPrefix(frames_bullets, "b");
 	frame_shooter = tp->TryGet("p");			// ready flag
 
-	sgc.Init(400, 400, 64);	// init physics grid
+	sgc.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);	// init physics grid
 
 	shooter.Emplace()->Init();	// make player char
 
 	// generate monsters
 
-	SpaceGridRingDiffuseData<300> sgrdd;
 	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
 
-	//int i = 0;
-	//for (auto& n : sgrdd.lens) {
-	//	//printf("n = %d\n", n);
-	//	for (; i < n; ++i) {
-	//		//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-	//		NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 1);
-	//	}
-	//	co_yield 0;
-	//}
-
-	while (true) {
-		for (size_t i = 0; i < 20; i++) {
-			NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-				, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+	int i = 0;
+	for (auto& [n, r] : sgrdd.lens) {
+		//printf("n = %d\n", n);
+		for (; i < n; ++i) {
+			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
 		}
 		co_yield 0;
 	}
+
+	//while (true) {
+	//	for (size_t i = 0; i < 20; i++) {
+	//		NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+	//			, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+	//	}
+	//	co_yield 0;
+	//}
 }
 
 void GameLooper::Update() {
@@ -259,6 +258,19 @@ xx::Task<> Shooter::MainLogic() {
 			}
 		}
 
+		// shot follow bullet ?
+		if (gLooper.mouseBtnStates[1]) {
+			auto& lens = gLooper.sgrdd.lens;
+			auto& idxs = gLooper.sgrdd.idxs;
+			auto& sgc = gLooper.sgc;
+			for (int i = 0; i < lens.len; i++) {
+				if (lens[i].second > gDesign.width) break;
+				auto crIdx = sgc.PosToCrIdx(pos.As<int32_t>());
+				//auto idxBuf = idxs[lens[i].first]
+				//sgc.ForeachCells(crIdx, )
+			}
+		}
+
 		co_yield 0;
 	}
 }
@@ -340,7 +352,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		auto p = gGridBasePos.MakeAdd(pos);
 		auto crIdx = gLooper.sgc.PosToCrIdx(p);
 		GridObjBase* r{};
-		gLooper.sgc.Foreach9(crIdx, [&](GridObjBase* const& m)->bool {
+		gLooper.sgc.Foreach9(crIdx, [&](GridObjBase* m)->bool {
 			auto d = m->pos - pos;
 			auto rr = (m->radius + cRadius) * (m->radius + cRadius);
 			auto dd = d.x * d.x + d.y * d.y;
