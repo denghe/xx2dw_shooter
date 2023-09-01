@@ -132,23 +132,23 @@ xx::Task<> GameLooper::MainTask() {
 	SpaceGridRingDiffuseData<300> sgrdd;
 	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
 
-	int i = 0;
-	for (auto& n : sgrdd.lens) {
-		//printf("n = %d\n", n);
-		for (; i < n; ++i) {
-			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 1);
-		}
-		co_yield 0;
-	}
-
-	//while (true) {
-	//	for (size_t i = 0; i < 20; i++) {
-	//		NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-	//			, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+	//int i = 0;
+	//for (auto& n : sgrdd.lens) {
+	//	//printf("n = %d\n", n);
+	//	for (; i < n; ++i) {
+	//		//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+	//		NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 1);
 	//	}
 	//	co_yield 0;
 	//}
+
+	while (true) {
+		for (size_t i = 0; i < 20; i++) {
+			NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+				, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+		}
+		co_yield 0;
+	}
 }
 
 void GameLooper::Update() {
@@ -338,19 +338,18 @@ xx::Task<> ShooterBullet1::MainLogic() {
 			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
 
 		auto p = gGridBasePos.MakeAdd(pos);
-		auto idx = gLooper.sgc.PosToIndex(p);
+		auto crIdx = gLooper.sgc.PosToCrIdx(p);
 		GridObjBase* r{};
-		int32_t limit = 0x7FFFFFFF;
-		gLooper.sgc.Foreach9NeighborCells<true>(idx, [&](GridObjBase* const& m) {
+		gLooper.sgc.Foreach9(crIdx, [&](GridObjBase* const& m)->bool {
 			auto d = m->pos - pos;
-			//printf("d = %f %f\n", d.x, d.y);
 			auto rr = (m->radius + cRadius) * (m->radius + cRadius);
 			auto dd = d.x * d.x + d.y * d.y;
 			if (dd < rr) {
 				r = m;
-				limit = 0;	// break foreach
+				return true;
 			}
-		}, &limit);
+			return false;
+		});
 
 		if (r) {
 			// todo: - hp ?

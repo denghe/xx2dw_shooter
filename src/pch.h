@@ -1739,38 +1739,6 @@ struct SpaceGridCItem {
     }
 };
 
-template<int32_t gridRadius, int32_t gridDiameter = 64>
-struct SpaceGridRingDiffuseData {
-    xx::List<int32_t, int32_t> lens;
-    xx::List<Vec2<int32_t>, int32_t> idxs;
-    SpaceGridRingDiffuseData() {
-        constexpr float step = gridDiameter / 2;
-        lens.Add(1);
-        Vec2<int32_t> lastIdx{};
-        idxs.Add(lastIdx);
-        std::unordered_set<uint64_t> idxset;    // avoid duplicate
-        for (int r = 0; r < gridDiameter * gridRadius; r += step) {
-            auto c = 2 * M_PI * r;
-            if (c < step) continue;
-            auto lenBak = idxs.len;
-            auto astep = M_PI * 2 * (step / c) / 10;
-            for (float a = astep; a < M_PI * 2; a += astep) {
-                XY pos{ r * cos(a), r * sin(a) };
-                auto idx = (pos / gridDiameter).As<int32_t>();
-                if (lastIdx != idx && idxset.insert((uint64_t&)idx).second) {
-                    idxs.Add(idx);
-                    lastIdx = idx;
-                }
-            }
-            if (idxs.len > lenBak) {
-                lens.Add(idxs.len);
-            }
-        }
-    }
-    SpaceGridRingDiffuseData(SpaceGridRingDiffuseData const&) = delete;
-    SpaceGridRingDiffuseData& operator=(SpaceGridRingDiffuseData const&) = delete;
-};
-
 template<typename Item>
 struct SpaceGridC {
     int32_t numRows{}, numCols{}, maxDiameter{};
@@ -1863,7 +1831,7 @@ struct SpaceGridC {
         assert(c->_sgcPrev != c);
         //assert(cells[c->_sgcIdx] include c);
 
-        auto idx = CalcIndexByPosition(c->_sgcPos.x, c->_sgcPos.y);
+        auto idx = PosToCellIdx(c->_sgcPos);
         if (idx == c->_sgcIdx) return;	// no change
         assert(!cells[idx] || !cells[idx]->_sgcPrev);
         assert(!cells[c->_sgcIdx] || !cells[c->_sgcIdx]->_sgcPrev);
@@ -1902,104 +1870,98 @@ struct SpaceGridC {
         assert(c->_sgcPrev != c);
     }
 
-    int32_t CalcIndexByPosition(int32_t const& x, int32_t const& y) {
-        assert(x >= 0 && x < maxX);
-        assert(y >= 0 && y < maxY);
-        int32_t rIdx = y / maxDiameter, cIdx = x / maxDiameter;
-        auto idx = rIdx * numCols + cIdx;
-        assert(idx <= cells.size());
-        return idx;
+    // return x: col index   y: row index
+    XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(Vec2<int32_t> const& pos) {
+        assert(pos.x >= 0 && pos.x < maxX);
+        assert(pos.y >= 0 && pos.y < maxY);
+        return pos / maxDiameter;
     }
 
-    template<bool enableLimit = false, bool enableExcept = false, typename F>
-    void Foreach(int32_t const& idx, F&& f, int32_t* limit = nullptr, Item* const& except = nullptr) {
-        if constexpr (enableLimit) {
-            assert(limit);
-            if (*limit <= 0) return;
-        }
-        assert(idx >= 0 && idx < cells.size());
-        auto c = cells[idx];
+    // return cell's index
+    XX_FORCE_INLINE int32_t CrIdxToCellIdx(Vec2<int32_t> const& crIdx) {
+        return crIdx.y * numCols + crIdx.x;
+    }
+
+    // return cell's index
+    XX_FORCE_INLINE int32_t PosToCellIdx(Vec2<int32_t> const& pos) {
+        return CrIdxToCellIdx(PosToCrIdx(pos));
+    }
+
+    // return true: break
+    template<typename F>
+    bool Foreach(int32_t cellIndex, F&& f) {
+        auto c = cells[cellIndex];
         while (c) {
             assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
             assert(c->_sgcNext != c);
             assert(c->_sgcPrev != c);
-            if constexpr (enableExcept) {
-                if (c != except) {
-                    f(c);
-                }
-            } else {
-                f(c);
-            }
-            if constexpr (enableLimit) {
-                if (--*limit <= 0) return;
-            }
+            if (f(c)) return true;
             c = c->_sgcNext;
         }
+        return false;
     }
 
-    template<bool enableLimit = false, bool enableExcept = false, typename F>
-    void Foreach(int32_t const& rIdx, int32_t const& cIdx, F&& f, int32_t* limit = nullptr, Item* const& except = nullptr) {
-        if (rIdx < 0 || rIdx >= numRows) return;
-        if (cIdx < 0 || cIdx >= numCols) return;
-        Foreach<enableLimit, enableExcept>(rIdx * numCols + cIdx, std::forward<F>(f), limit, except);
+    constexpr static std::array<Vec2<int32_t>, 9> offsets9 = { 
+        Vec2<int32_t>{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
+    };
+
+    template<typename F>
+    bool Foreach9(Vec2<int32_t> const& crIdx, F&& f) {
+        for (auto& offset : offsets9) {
+            auto cellIndex = CrIdxToCellIdx(crIdx + offset);
+            if (cellIndex < 0 || cellIndex >= cells.size()) continue;
+            if (Foreach(cellIndex, f)) return true;
+        }
+        return false;
     }
 
-    template<bool enableLimit = false, typename F>
-    void Foreach8NeighborCells(int32_t const& rIdx, int32_t const& cIdx, F&& f, int32_t* limit = nullptr) {
-        Foreach<enableLimit>(rIdx + 1, cIdx, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx - 1, cIdx, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx, cIdx + 1, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx, cIdx - 1, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx + 1, cIdx + 1, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx + 1, cIdx - 1, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx - 1, cIdx + 1, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        Foreach<enableLimit>(rIdx - 1, cIdx - 1, f, limit);
-    }
-
-    template<bool enableLimit = false, typename F>
-    void Foreach9NeighborCells(Item* c, F&& f, int32_t* limit = nullptr) {
-        Foreach<enableLimit, true>(c->_sgcIdx, f, limit, c);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        auto rIdx = c->_sgcIdx / numCols;
-        auto cIdx = c->_sgcIdx - numCols * rIdx;
-        Foreach8NeighborCells<enableLimit>(rIdx, cIdx, f, limit);
-    }
-
-    template<bool enableLimit = false, typename F>
-    void Foreach9NeighborCells(int32_t const& idx, F&& f, int32_t* limit = nullptr) {
-        Foreach<enableLimit>(idx, f, limit);
-        if constexpr (enableLimit) {
-            if (*limit <= 0) return;
-        }
-        auto rIdx = idx / numCols;
-        auto cIdx = idx - numCols * rIdx;
-        Foreach8NeighborCells<enableLimit>(rIdx, cIdx, f, limit);
-    }
+    //template<typename F>
+    //bool ForeachRingDiffuse(SG& sg, Pos const& pos, F&& f, int32_t* limit = nullptr) {
+    //    int i = 0;
+    //    for (auto& n : lens) {
+    //        for (; i < n; ++i) {
+    //            auto idx = (pos / sg.maxDiameter).As<int32_t>() + idxs[i];
+    //            sg.template Foreach<enableLimit, false, F>(idx.x, idx.y, std::forward<F>(f), limit);
+    //        }
+    //        if constexpr (enableLimit) {
+    //            if (*limit <= 0) return;
+    //        }
+    //    }
+    //}
 };
 
+template<int32_t gridRadius, int32_t gridDiameter = 64>
+struct SpaceGridRingDiffuseData {
+    xx::List<int32_t, int32_t> lens;
+    xx::List<Vec2<int32_t>, int32_t> idxs;
+
+    SpaceGridRingDiffuseData() {
+        constexpr float step = gridDiameter / 2;
+        lens.Add(1);
+        Vec2<int32_t> lastIdx{};
+        idxs.Add(lastIdx);
+        std::unordered_set<uint64_t> idxset;    // avoid duplicate
+        for (int r = 0; r < gridDiameter * gridRadius; r += step) {
+            auto c = 2 * M_PI * r;
+            if (c < step) continue;
+            auto lenBak = idxs.len;
+            auto astep = M_PI * 2 * (step / c) / 10;
+            for (float a = astep; a < M_PI * 2; a += astep) {
+                XY pos{ r * cos(a), r * sin(a) };
+                auto idx = (pos / gridDiameter).As<int32_t>();
+                if (lastIdx != idx && idxset.insert((uint64_t&)idx).second) {
+                    idxs.Add(idx);
+                    lastIdx = idx;
+                }
+            }
+            if (idxs.len > lenBak) {
+                lens.Add(idxs.len);
+            }
+        }
+    }
+    SpaceGridRingDiffuseData(SpaceGridRingDiffuseData const&) = delete;
+    SpaceGridRingDiffuseData& operator=(SpaceGridRingDiffuseData const&) = delete;
+};
 
 /**********************************************************************************************************************************/
 /**********************************************************************************************************************************/
