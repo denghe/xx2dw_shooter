@@ -143,8 +143,8 @@ xx::Task<> GameLooper::MainTask() {
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
 			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+				NewMonster<Monster1>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
 			}
 			co_yield 0;
 		}
@@ -152,8 +152,8 @@ xx::Task<> GameLooper::MainTask() {
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
 			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster2>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+				NewMonster<Monster2>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
 			}
 			co_yield 0;
 		}
@@ -161,8 +161,8 @@ xx::Task<> GameLooper::MainTask() {
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
 			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster3>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+				NewMonster<Monster3>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
 			}
 			co_yield 0;
 		}
