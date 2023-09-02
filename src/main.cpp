@@ -129,24 +129,44 @@ xx::Task<> GameLooper::MainTask() {
 
 	// generate monsters
 
-	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
-	int i = 0;
-	for (auto& [n, r] : sgrdd.lens) {
-		//printf("n = %d\n", n);
-		for (; i < n; ++i) {
-			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
-		}
-		co_yield 0;
-	}
+	//printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
+	//int i = 0;
+	//for (auto& [n, r] : sgrdd.lens) {
+	//	//printf("n = %d\n", n);
+	//	for (; i < n; ++i) {
+	//		//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+	//		NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
+	//	}
+	//	co_yield 0;
+	//}
 
-	while (true) {
-		for (size_t i = 0; i < 20; i++) {
-			NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-				, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+	tasks.Add([this]()->xx::Task<> {
+		while (true) {
+			for (size_t i = 0; i < 5; i++) {
+				NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+			}
+			co_yield 0;
 		}
-		co_yield 0;
-	}
+	});
+	tasks.Add([this]()->xx::Task<> {
+		while (true) {
+			for (size_t i = 0; i < 5; i++) {
+				NewMonster<Monster2>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+			}
+			co_yield 0;
+		}
+	});
+	tasks.Add([this]()->xx::Task<> {
+		while (true) {
+			for (size_t i = 0; i < 5; i++) {
+				NewMonster<Monster3>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+					, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+			}
+			co_yield 0;
+		}
+	});
 }
 
 void GameLooper::Update() {
@@ -477,29 +497,50 @@ xx::Task<> Monster1::MainLogic() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Monster2::Init() {
+void Monster2::Init(XY const& bornPos) {
 	type = cType;
 	radius = cRadius;
 	Add(MainLogic());
-	// set pos
+	scale = {};
+	pos = bornPos;
 	GridInit();
 }
 void Monster2::Draw() {
 	SetFrame(gLooper.frames_monster_2[(int32_t)frameIndex]).Draw();
 }
-xx::Task<> Monster2::MainLogic() { 
+xx::Task<> Monster2::MainLogic() {
 	//GridUpdate();
-	co_return;
+	while (scale.x < 1.f) {
+		scale.x += 0.1f;
+		scale.y += 0.1f;
+		co_yield 0;
+	}
+	scale = { 1, 1 };
+
+	while (--life > 0) {
+		frameIndex += cFrameInc;
+		if (frameIndex >= cFrameMaxIndex) {
+			frameIndex -= cFrameMaxIndex;
+		}
+		co_yield 0;
+	}
+
+	while (scale.x > 0.1f) {
+		scale.x -= 0.1f;
+		scale.y -= 0.1f;
+		co_yield 0;
+	}
 }
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Monster3::Init() {
+void Monster3::Init(XY const& bornPos) {
 	type = cType;
 	radius = cRadius;
 	Add(MainLogic());
-	// set pos
+	scale = {};
+	pos = bornPos;
 	GridInit();
 }
 void Monster3::Draw() {
@@ -507,5 +548,24 @@ void Monster3::Draw() {
 }
 xx::Task<> Monster3::MainLogic() {
 	//GridUpdate();
-	co_return;
+	while (scale.x < 1.f) {
+		scale.x += 0.1f;
+		scale.y += 0.1f;
+		co_yield 0;
+	}
+	scale = { 1, 1 };
+
+	while (--life > 0) {
+		frameIndex += cFrameInc;
+		if (frameIndex >= cFrameMaxIndex) {
+			frameIndex -= cFrameMaxIndex;
+		}
+		co_yield 0;
+	}
+
+	while (scale.x > 0.1f) {
+		scale.x -= 0.1f;
+		scale.y -= 0.1f;
+		co_yield 0;
+	}
 }

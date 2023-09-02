@@ -251,6 +251,7 @@ struct Explosion : ObjBase {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
+// green
 struct Monster1 : GridObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Monster1 };
 	constexpr static float cRadius{ 7.f };
@@ -266,23 +267,40 @@ struct Monster1 : GridObjBase {
 	xx::Task<> MainLogic();
 };
 
-
 /*****************************************************************************************************/
 /*****************************************************************************************************/
-// todo
 
+// orange
 struct Monster2 : GridObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Monster2 };
-	constexpr static float cRadius{ 10.f };
-	void Init();
+	constexpr static float cRadius{ 7.f };
+	constexpr static float cFrameMaxIndex{ 5.f };
+	constexpr static float cFrameInc{ 0.1f };
+	constexpr static int32_t cLife{ 60 * 60 };
+
+	int32_t life{ cLife };
+	float frameIndex{};
+
+	void Init(XY const& bornPos);
 	void Draw();
 	xx::Task<> MainLogic();
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+// pink
 struct Monster3 : GridObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Monster3 };
-	constexpr static float cRadius{ 10.f };
-	void Init();
+	constexpr static float cRadius{ 7.f };
+	constexpr static float cFrameMaxIndex{ 4.f };
+	constexpr static float cFrameInc{ 0.1f };
+	constexpr static int32_t cLife{ 60 * 60 };
+
+	int32_t life{ cLife };
+	float frameIndex{};
+
+	void Init(XY const& bornPos);
 	void Draw();
 	xx::Task<> MainLogic();
 };
