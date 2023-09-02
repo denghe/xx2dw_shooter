@@ -1158,7 +1158,7 @@ struct CharTexCache {
     }
 
     // anchor: {0, 0.5}   todo: anchor, max width limit ?
-    void Draw(XY pos, std::u32string_view const& s) {
+    void Draw(XY pos, std::u32string_view const& s, RGBA8 color = { 255,255,255,255 }) {
         Quad q;
         q.SetAnchor({ 0.f, 0.5f });
 
@@ -1172,6 +1172,7 @@ struct CharTexCache {
         for (size_t i = 0; i < e; ++i) {
             auto&& ci = *cis[i];
             q.tex = ci.tex;
+            q.color = color;
             q.texRectX = ci.texRectX;
             q.texRectY = ci.texRectY;
             q.texRectW = ci.texRectW;
@@ -1181,8 +1182,8 @@ struct CharTexCache {
         }
     }
 
-    void Draw(XY const& pos, std::string_view const& s) {
-        Draw(pos, xx::StringU8ToU32(s));
+    void Draw(XY const& pos, std::string_view const& s, RGBA8 color = {255,255,255,255}) {
+        Draw(pos, xx::StringU8ToU32(s), color);
     }
 
     float Measure(std::u32string_view const& s) {

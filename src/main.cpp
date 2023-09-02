@@ -130,7 +130,6 @@ xx::Task<> GameLooper::MainTask() {
 	// generate monsters
 
 	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
-
 	int i = 0;
 	for (auto& [n, r] : sgrdd.lens) {
 		//printf("n = %d\n", n);
@@ -141,13 +140,13 @@ xx::Task<> GameLooper::MainTask() {
 		co_yield 0;
 	}
 
-	//while (true) {
-	//	for (size_t i = 0; i < 20; i++) {
-	//		NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-	//			, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
-	//	}
-	//	co_yield 0;
-	//}
+	while (true) {
+		for (size_t i = 0; i < 20; i++) {
+			NewMonster<Monster1>({ gLooper.rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+				, gLooper.rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+		}
+		co_yield 0;
+	}
 }
 
 void GameLooper::Update() {
@@ -249,21 +248,16 @@ xx::Task<> Shooter::MainLogic() {
 
 		if (needFire) {
 			XY inc{ cr, sr };
-			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
+
+			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
 			for (size_t i = 1; i <= 5; ++i) {
 				auto r1 = r + 0.1f * (float)i;
 				inc = { std::cos(r1), std::sin(r1) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
+				gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
 				auto r2 = r - 0.1f * (float)i;
 				inc = { std::cos(r2), std::sin(r2) };
-				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet1::cSpeed, r);
+				gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
 			}
-		}
-
-		// shot follow bullet ?
-		if (gLooper.mouseBtnStates[1] || gLooper.keyboardKeysStates[(int)KeyboardKeys::X]) {
-			XY inc{ cr, sr };
-			gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet2::cSpeed, r);
 		}
 
 		co_yield 0;
@@ -333,9 +327,9 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	type = cType;
 	Add(MainLogic());
-	SetFrame(gLooper.frames_bullets[0]).SetScale(gScale);
-	radians = M_PI * 2 - radians_;
-	inc = inc_;
+	SetFrame(gLooper.frames_bullets[cFrameIndex]).SetScale(gScale);
+	radians = M_PI * 2 + M_PI / 2 - radians_;
+	inc = inc_ * cSpeed;
 	pos = bornPos;
 }
 xx::Task<> ShooterBullet1::MainLogic() {
@@ -362,52 +356,24 @@ xx::Task<> ShooterBullet1::MainLogic() {
 void ShooterBullet2::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	type = cType;
 	Add(MainLogic());
-	SetFrame(gLooper.frames_bullets[2]).SetScale(gScale);
-	radians = M_PI * 2 - radians_;
+	SetFrame(gLooper.frames_bullets[cFrameIndex]).SetScale(gScale);
+	radians = M_PI * 2 + M_PI / 2 - radians_;
 	pos = bornPos;
-	inc = inc_;
+	inc = inc_ * cSpeed;
 }
 xx::Task<> ShooterBullet2::MainLogic() {
-
-	// begin search near monster set target & move
 	xx::Weak<GridObjBase> tar;
-	{
-		auto& lens = gLooper.sgrdd.lens;
-		auto& idxs = gLooper.sgrdd.idxs;
-		auto& sgc = gLooper.sgc;
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
-		auto crIdx = gLooper.sgc.PosToCrIdx(p);					// calc grid col row index
-
-		constexpr float maxDistance = 100;
-		float minVxxyy = maxDistance * maxDistance;
-		GridObjBase* o{};
-		XY ov;
-
-		for (int i = 1; i < lens.len; i++) {
-			if (lens[i].radius > maxDistance) break;			// limit search range
-
-			auto offsets = &idxs[lens[i - 1].count];
-			auto size = lens[i].count - lens[i - 1].count;
-			sgc.ForeachCells(crIdx, offsets, size, [&](GridObjBase* m)->bool {
-				auto v = m->pos - pos;
-				if (auto xxyy = v.x * v.x + v.y * v.y; xxyy < minVxxyy) {
-					minVxxyy = xxyy;
-					o = m;
-					ov = v;
-				}
-				return false;
-			});
-
-			if (o) {
+	while (true) {
+		if (!tar) {
+			if (auto o = gLooper.FindNearestMonster(pos, cMaxLookupDistance)) {
 				tar = xx::WeakFromThis(o);
-				break;											// found. stop ring diffuse step
 			}
 		}
-	}
-
-	while (true) {
 		if (tar) {
-			inc = (tar->pos - pos).MakeNormalize() * cSpeed;
+			auto v = tar->pos - pos;
+			auto r = std::atan2(v.y, v.x);
+			radians = M_PI * 2 + M_PI / 2 - r;
+			inc = XY{ std::cos(r), std::sin(r) } * cSpeed;
 		}
 
 		AddPosition(inc);
@@ -431,11 +397,12 @@ xx::Task<> ShooterBullet2::MainLogic() {
 
 void DamageText::Init(XY const& bornPos, int32_t hp) {
 	Add(MainLogic());
+	SetColor({255,0,0,255});
 	pos = bornPos;
 	txt = std::to_string(hp);
 }
 void DamageText::Draw() {
-	gLooper.ctc24.Draw(pos, txt);
+	gLooper.ctc24.Draw(pos, txt, color);
 }
 xx::Task<> DamageText::MainLogic() {
 	XY inc{ 0, 1 };
@@ -444,6 +411,12 @@ xx::Task<> DamageText::MainLogic() {
 		co_yield 0;
 		AddPosition(inc);
 	} while (--life >= 0);
+	constexpr int step = 255 / cLife;
+	for (int i = 255; i >= 0; i -= step) {
+		SetColorA((uint32_t)i);
+		co_yield 0;
+	}
+	SetColorA(0);
 }
 
 /*****************************************************************************************************/

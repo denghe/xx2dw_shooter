@@ -140,6 +140,36 @@ struct GameLooper : Engine<GameLooper> {
 		return r;
 	}
 
+	GridObjBase* FindNearestMonster(XY const& pos, float maxDistance) {
+		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto crIdx = sgc.PosToCrIdx(p);							// calc grid col row index
+
+		float minVxxyy = maxDistance * maxDistance;
+		GridObjBase* o{};
+		XY ov;
+
+		auto& lens = sgrdd.lens;
+		auto& idxs = sgrdd.idxs;
+		for (int i = 1; i < lens.len; i++) {
+			if (lens[i].radius > maxDistance) break;			// limit search range
+
+			auto offsets = &idxs[lens[i - 1].count];
+			auto size = lens[i].count - lens[i - 1].count;
+			sgc.ForeachCells(crIdx, offsets, size, [&](GridObjBase* m)->bool {
+				auto v = m->pos - pos;
+				if (auto xxyy = v.x * v.x + v.y * v.y; xxyy < minVxxyy) {
+					minVxxyy = xxyy;
+					o = m;
+					ov = v;
+				}
+				return false;
+				});
+
+			if (o) return o;									// found. stop ring diffuse step
+		}
+		return nullptr;
+	}
+
 	// effects
 	xx::ListLink<xx::Shared<Explosion>, int32_t> effects_explosion;
 	xx::ListLink<xx::Shared<DamageText>, int32_t> effects_damageText;
@@ -169,6 +199,7 @@ struct Shooter : ObjBase {
 
 struct ShooterBullet1 : ObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet1 };
+	constexpr static int cFrameIndex{ 0 };
 	constexpr static float cRadius{ 8.f };
 	constexpr static float cSpeed{ 4 };
 
@@ -183,8 +214,8 @@ struct ShooterBullet1 : ObjBase {
 
 struct ShooterBullet2 : ObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet2 };
-	constexpr static float cRadius{ 8.f };
-	constexpr static float cSpeed{ 4 };
+	constexpr static int cFrameIndex{ 4 };
+	constexpr static float cRadius{ 8.f }, cSpeed{ 3 }, cMaxLookupDistance{ 300 };
 
 	XY inc{};
 
