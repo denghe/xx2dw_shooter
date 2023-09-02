@@ -129,16 +129,16 @@ xx::Task<> GameLooper::MainTask() {
 
 	// generate monsters
 
-	//printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
-	//int i = 0;
-	//for (auto& [n, r] : sgrdd.lens) {
-	//	//printf("n = %d\n", n);
-	//	for (; i < n; ++i) {
-	//		//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-	//		NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
-	//	}
-	//	co_yield 0;
-	//}
+	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
+	int i = 0;
+	for (auto& [n, r] : sgrdd.lens) {
+		//printf("n = %d\n", n);
+		for (; i < n; ++i) {
+			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
+		}
+		co_yield 0;
+	}
 
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
