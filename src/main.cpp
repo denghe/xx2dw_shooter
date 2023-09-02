@@ -16,7 +16,7 @@ EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
     mousePos = { (float)e.targetX - w / 2, h - (float)e.targetY - h / 2 };
     return EM_TRUE;
 }
-EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
+EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {	// known issue: mouse button right click can't work
 	touchMode = {};
 	mouseBtnStates[e.button] = true;
     return EM_TRUE;
@@ -157,6 +157,7 @@ void GameLooper::Update() {
 		shooter();
 	}
 	bullets_shooter1.Foreach([&](auto& o) { return !o() || o->disposing; });
+	bullets_shooter2.Foreach([&](auto& o) { return !o() || o->disposing; });
 	monsters.Foreach([&](auto& o) { return !o() || o->disposing; });
 	effects_explosion.Foreach([&](auto& o) { return !o() || o->disposing; });
 	effects_damageText.Foreach([&](auto& o) { return !o() || o->disposing; });
@@ -179,6 +180,7 @@ void GameLooper::Draw() {
 		shooter->Draw();
 	}
 	bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
+	bullets_shooter2.Foreach([&](auto& o) { o->Draw(); });
 	effects_explosion.Foreach([&](auto& o) { o->Draw(); });
 	effects_damageText.Foreach([&](auto& o) { o->Draw(); });
 
@@ -259,16 +261,9 @@ xx::Task<> Shooter::MainLogic() {
 		}
 
 		// shot follow bullet ?
-		if (gLooper.mouseBtnStates[1]) {
-			auto& lens = gLooper.sgrdd.lens;
-			auto& idxs = gLooper.sgrdd.idxs;
-			auto& sgc = gLooper.sgc;
-			for (int i = 0; i < lens.len; i++) {
-				if (lens[i].second > gDesign.width) break;
-				auto crIdx = sgc.PosToCrIdx(pos.As<int32_t>());
-				//auto idxBuf = idxs[lens[i].first]
-				//sgc.ForeachCells(crIdx, )
-			}
+		if (gLooper.mouseBtnStates[1] || gLooper.keyboardKeysStates[(int)KeyboardKeys::X]) {
+			XY inc{ cr, sr };
+			gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc * ShooterBullet2::cSpeed, r);
 		}
 
 		co_yield 0;
@@ -349,21 +344,77 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		if ((pos.x > gLooper.w / 2 + cRadius * 2) || (pos.x < -gLooper.w / 2 - cRadius * 2) ||
 			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
 
-		auto p = gGridBasePos.MakeAdd(pos);
-		auto crIdx = gLooper.sgc.PosToCrIdx(p);
-		GridObjBase* r{};
-		gLooper.sgc.Foreach9(crIdx, [&](GridObjBase* m)->bool {
-			auto d = m->pos - pos;
-			auto rr = (m->radius + cRadius) * (m->radius + cRadius);
-			auto dd = d.x * d.x + d.y * d.y;
-			if (dd < rr) {
-				r = m;
-				return true;
-			}
-			return false;
-		});
+		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
+			// todo: - hp ?
+			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
+			r->RemoveFromOwner();	// dispose monster
+			break;	// suicide
+		}
 
-		if (r) {
+		co_yield 0;
+	}
+}
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+void ShooterBullet2::Init(XY const& bornPos, XY const& inc_, float radians_) {
+	type = cType;
+	Add(MainLogic());
+	SetFrame(gLooper.frames_bullets[2]).SetScale(gScale);
+	radians = M_PI * 2 - radians_;
+	pos = bornPos;
+	inc = inc_;
+}
+xx::Task<> ShooterBullet2::MainLogic() {
+
+	// begin search near monster set target & move
+	xx::Weak<GridObjBase> tar;
+	{
+		auto& lens = gLooper.sgrdd.lens;
+		auto& idxs = gLooper.sgrdd.idxs;
+		auto& sgc = gLooper.sgc;
+		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto crIdx = gLooper.sgc.PosToCrIdx(p);					// calc grid col row index
+
+		constexpr float maxDistance = 100;
+		float minVxxyy = maxDistance * maxDistance;
+		GridObjBase* o{};
+		XY ov;
+
+		for (int i = 1; i < lens.len; i++) {
+			if (lens[i].radius > maxDistance) break;			// limit search range
+
+			auto offsets = &idxs[lens[i - 1].count];
+			auto size = lens[i].count - lens[i - 1].count;
+			sgc.ForeachCells(crIdx, offsets, size, [&](GridObjBase* m)->bool {
+				auto v = m->pos - pos;
+				if (auto xxyy = v.x * v.x + v.y * v.y; xxyy < minVxxyy) {
+					minVxxyy = xxyy;
+					o = m;
+					ov = v;
+				}
+				return false;
+			});
+
+			if (o) {
+				tar = xx::WeakFromThis(o);
+				break;											// found. stop ring diffuse step
+			}
+		}
+	}
+
+	while (true) {
+		if (tar) {
+			inc = (tar->pos - pos).MakeNormalize() * cSpeed;
+		}
+
+		AddPosition(inc);
+		if ((pos.x > gLooper.w / 2 + cRadius * 2) || (pos.x < -gLooper.w / 2 - cRadius * 2) ||
+			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
+
+		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
 			// todo: - hp ?
 			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
 			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);

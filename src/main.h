@@ -16,6 +16,7 @@ enum class ObjTypes : int32_t {
 	Unknown,
 	Shooter,
 	ShooterBullet1,
+	ShooterBullet2,
 	Monster1,
 	Monster2,
 	Monster3,
@@ -45,6 +46,7 @@ struct GridObjBase : SpaceGridCItem<GridObjBase>, ObjBase {
 
 struct Shooter;
 struct ShooterBullet1;
+struct ShooterBullet2;
 struct Explosion;
 struct DamageText;
 
@@ -106,6 +108,7 @@ struct GameLooper : Engine<GameLooper> {
 	// player objs
 	xx::Shared<Shooter> shooter;
 	xx::ListLink<xx::Shared<ShooterBullet1>, int32_t> bullets_shooter1;
+	xx::ListLink<xx::Shared<ShooterBullet2>, int32_t> bullets_shooter2;
 
 	// monster objs
 	xx::ListDoubleLink<xx::Shared<GridObjBase>, int32_t, uint32_t> monsters;
@@ -118,6 +121,23 @@ struct GameLooper : Engine<GameLooper> {
 		m->ivAtOwner = monsters.Tail();
 		m->Init(bornPos);
 		return m;
+	}
+
+	GridObjBase* FindNeighborMonster(XY const& pos, float radius) {
+		auto p = gGridBasePos.MakeAdd(pos);
+		auto crIdx = sgc.PosToCrIdx(p);
+		GridObjBase* r{};
+		sgc.Foreach9(crIdx, [&](GridObjBase* m)->bool {
+			auto d = m->pos - pos;
+			auto rr = (m->radius + radius) * (m->radius + radius);
+			auto dd = d.x * d.x + d.y * d.y;
+			if (dd < rr) {
+				r = m;
+				return true;
+			}
+			return false;
+		});
+		return r;
 	}
 
 	// effects
@@ -149,6 +169,20 @@ struct Shooter : ObjBase {
 
 struct ShooterBullet1 : ObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet1 };
+	constexpr static float cRadius{ 8.f };
+	constexpr static float cSpeed{ 4 };
+
+	XY inc{};
+
+	void Init(XY const& bornPos, XY const& inc_, float radians_);
+	xx::Task<> MainLogic();
+};
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+struct ShooterBullet2 : ObjBase {
+	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet2 };
 	constexpr static float cRadius{ 8.f };
 	constexpr static float cSpeed{ 4 };
 

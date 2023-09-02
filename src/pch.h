@@ -1926,7 +1926,7 @@ struct SpaceGridC {
 
     // find target cell + ring diffuse cells. return true: break
     // F == [&](Item* o)->bool { ... return false; }
-    template<typename RDData, typename F>
+    template<typename F>
     void ForeachCells(Vec2<int32_t> const& crIdx, Vec2<int32_t> const* offsets, int size, F&& f) {
         for (int i = 0; i < size; ++i) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offsets[i]);
@@ -1943,9 +1943,11 @@ struct SpaceGridC {
     }
 };
 
+struct CountRadius { int32_t count, radius; };
+
 template<int32_t gridNumRows, int32_t gridCellDiameter>
 struct SpaceGridRingDiffuseData {
-    xx::List<std::pair<int32_t, int32_t>, int32_t> lens;    // first: count   second: radius
+    xx::List<CountRadius, int32_t> lens;
     xx::List<Vec2<int32_t>, int32_t> idxs;
 
     SpaceGridRingDiffuseData() {
