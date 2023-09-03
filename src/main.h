@@ -215,7 +215,7 @@ struct ShooterBullet1 : ObjBase {
 struct ShooterBullet2 : ObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet2 };
 	constexpr static int cFrameIndex{ 4 };
-	constexpr static float cRadius{ 8.f }, cSpeed{ 3 }, cMaxLookupDistance{ 300 };
+	constexpr static float cRadius{ 8.f }, cSpeed{ 3 }, cMaxLookupDistance{ 100 };
 
 	XY inc{};
 

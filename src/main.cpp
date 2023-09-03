@@ -16,9 +16,9 @@ EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
     mousePos = { (float)e.targetX - w / 2, h - (float)e.targetY - h / 2 };
     return EM_TRUE;
 }
-EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {	// known issue: mouse button right click can't work
+EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
 	touchMode = {};
-	mouseBtnStates[e.button] = true;
+	mouseBtnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
     return EM_TRUE;
 }
 EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
@@ -142,9 +142,10 @@ xx::Task<> GameLooper::MainTask() {
 
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
-			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster1>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+			for (size_t i = 0; i < 7; i++) {
+				auto a = rnd.Next<float>(M_PI * 2);
+				auto r = rnd.Next<float>(256, 384);
+				NewMonster<Monster1>(XY{ std::cos(a), std::sin(a) } * r);
 			}
 			co_yield 0;
 		}
@@ -152,8 +153,11 @@ xx::Task<> GameLooper::MainTask() {
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
 			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster2>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+				for (size_t i = 0; i < 5; i++) {
+					auto a = rnd.Next<float>(M_PI * 2);
+					auto r = rnd.Next<float>(128, 256);
+					NewMonster<Monster2>(XY{ std::cos(a), std::sin(a) } *r);
+				}
 			}
 			co_yield 0;
 		}
@@ -161,12 +165,17 @@ xx::Task<> GameLooper::MainTask() {
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
 			for (size_t i = 0; i < 5; i++) {
-				NewMonster<Monster3>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-					, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
+				for (size_t i = 0; i < 3; i++) {
+					auto a = rnd.Next<float>(M_PI * 2);
+					auto r = rnd.Next<float>(64, 128);
+					NewMonster<Monster3>(XY{ std::cos(a), std::sin(a) } *r);
+				}
 			}
 			co_yield 0;
 		}
 	});
+				//NewMonster<Monster3>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
+				//	, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
 }
 
 void GameLooper::Update() {
@@ -239,7 +248,7 @@ void Shooter::Init() {
 xx::Task<> Shooter::MainLogic() {
 	while (true) {
 		float r, sr, cr;
-		bool needFire{};
+		bool needFire{}, needFire2{};
 
 		if (gLooper.touchMode) {
 			if (gLooper.aimTouchMovePos == gLooper.aimTouchStartPos) {
@@ -254,6 +263,7 @@ xx::Task<> Shooter::MainLogic() {
 				}
 			}
 			needFire = gLooper.fireTouchId != -1;
+			// todo: touch special area for special fire ?
 		} else {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
 				AddPosition(*inc);
@@ -263,6 +273,7 @@ xx::Task<> Shooter::MainLogic() {
 			sr = std::sin(r);
 			cr = std::cos(r);
 			needFire = gLooper.mouseBtnStates[0];
+			needFire2 = gLooper.mouseBtnStates[2];
 		}
 		SetRotate(M_PI * 2 - r);
 
@@ -271,6 +282,20 @@ xx::Task<> Shooter::MainLogic() {
 
 			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
 			for (size_t i = 1; i <= 5; ++i) {
+				auto r1 = r + 0.1f * (float)i;
+				inc = { std::cos(r1), std::sin(r1) };
+				gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+				auto r2 = r - 0.1f * (float)i;
+				inc = { std::cos(r2), std::sin(r2) };
+				gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+			}
+		}
+
+		if (needFire2) {
+			XY inc{ cr, sr };
+
+			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+			for (size_t i = 1; i <= 50; ++i) {
 				auto r1 = r + 0.1f * (float)i;
 				inc = { std::cos(r1), std::sin(r1) };
 				gLooper.bullets_shooter2.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
