@@ -24,7 +24,7 @@ if (EMSCRIPTEN)
 	set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
 	# Link in the JS library file for support code
-	append_linker_flags("--js-library ${CMAKE_CURRENT_LIST_DIR}/src/library_js.js")
+	append_linker_flags("--js-library ${CMAKE_CURRENT_LIST_DIR}/engine/library_js.js")
 
 	# Link in to WebGL/GLES system library
 	append_linker_flags("-lGL")
@@ -102,6 +102,10 @@ if (EMSCRIPTEN)
 endif()
 
 file(GLOB_RECURSE sources
+	engine/*.cpp
+	engine/*.c
+	engine/*.hpp
+	engine/*.h
 	xxlib/*.cpp
 	xxlib/*.c
 	xxlib/*.hpp
@@ -126,6 +130,7 @@ if(MSVC)
 endif()
 
 include_directories(
+	engine
 	3rd
 	xxlib
 	src
@@ -143,4 +148,4 @@ foreach(asset ${assets})
 endforeach()
 
 file(COPY "favicon.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-file(COPY "src/index.html" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+file(COPY "engine/index.html" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")

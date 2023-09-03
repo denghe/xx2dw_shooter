@@ -520,7 +520,7 @@ xx::Task<> Monster1::MainLogic() {
 		// physics simulate
 		// calc neighbor cross force
 		XY combineForce{};										// for move vector
-		int numCross{}, limit = 10;
+		int numCross{}, limit = 8;
 		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
 		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
 		_sgc->Foreach9(crIdx, [&](GridObjBase* m) {
