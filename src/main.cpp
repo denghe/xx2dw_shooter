@@ -129,53 +129,58 @@ xx::Task<> GameLooper::MainTask() {
 
 	// generate monsters
 
-	printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
-	int i = 0;
-	for (auto& [n, r] : sgrdd.lens) {
-		//printf("n = %d\n", n);
-		for (; i < n; ++i) {
-			//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
-			NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
+	//// cake
+	//printf("sgrdd.idxs.len = %d\n", (int)sgrdd.idxs.len);
+	//int i = 0;
+	//for (auto& [n, r] : sgrdd.lens) {
+	//	//printf("n = %d\n", n);
+	//	for (; i < n; ++i) {
+	//		//printf("idx = %d %d\n", idxs[i].x, idxs[i].y);
+	//		NewMonster<Monster1>(sgrdd.idxs[i].As<float>() * 2);
+	//	}
+	//	co_yield 0;
+	//}
+
+	//// doughnut
+	//tasks.Add([this]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 7; i++) {
+	//			auto a = rnd.Next<float>(M_PI * 2);
+	//			auto r = rnd.Next<float>(256, 384);
+	//			NewMonster<Monster1>(XY{ std::cos(a), std::sin(a) } * r);
+	//		}
+	//		co_yield 0;
+	//	}
+	//});
+	//tasks.Add([this]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 5; i++) {
+	//			auto a = rnd.Next<float>(M_PI * 2);
+	//			auto r = rnd.Next<float>(128, 256);
+	//			NewMonster<Monster2>(XY{ std::cos(a), std::sin(a) } *r);
+	//		}
+	//		co_yield 0;
+	//	}
+	//});
+	//tasks.Add([this]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 3; i++) {
+	//			auto a = rnd.Next<float>(M_PI * 2);
+	//			auto r = rnd.Next<float>(64, 128);
+	//			NewMonster<Monster3>(XY{ std::cos(a), std::sin(a) } *r);
+	//		}
+	//		co_yield 0;
+	//	}
+	//});
+	
+	while (true) {
+		for (size_t i = 0; i < 30; i++) {
+			auto a = rnd.Next<float>(M_PI * 2);
+			auto r = rnd.Next<float>(384, 400);
+			NewMonster<Monster1>(XY{ std::cos(a), std::sin(a) } *r);
 		}
 		co_yield 0;
 	}
-
-	tasks.Add([this]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 7; i++) {
-				auto a = rnd.Next<float>(M_PI * 2);
-				auto r = rnd.Next<float>(256, 384);
-				NewMonster<Monster1>(XY{ std::cos(a), std::sin(a) } * r);
-			}
-			co_yield 0;
-		}
-	});
-	tasks.Add([this]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 5; i++) {
-				for (size_t i = 0; i < 5; i++) {
-					auto a = rnd.Next<float>(M_PI * 2);
-					auto r = rnd.Next<float>(128, 256);
-					NewMonster<Monster2>(XY{ std::cos(a), std::sin(a) } *r);
-				}
-			}
-			co_yield 0;
-		}
-	});
-	tasks.Add([this]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 5; i++) {
-				for (size_t i = 0; i < 3; i++) {
-					auto a = rnd.Next<float>(M_PI * 2);
-					auto r = rnd.Next<float>(64, 128);
-					NewMonster<Monster3>(XY{ std::cos(a), std::sin(a) } *r);
-				}
-			}
-			co_yield 0;
-		}
-	});
-				//NewMonster<Monster3>({ rnd.Next<float>(-gDesign.width_2, gDesign.width_2)
-				//	, rnd.Next<float>(-gDesign.height_2, gDesign.height_2) });
 }
 
 void GameLooper::Update() {
@@ -496,7 +501,7 @@ void Monster1::Draw() {
 	SetFrame(gLooper.frames_monster_1[(int32_t)frameIndex]).Draw();
 }
 xx::Task<> Monster1::MainLogic() {
-	//GridUpdate();
+	// scale in
 	while (scale.x < 1.f) {
 		scale.x += 0.1f;
 		scale.y += 0.1f;
@@ -505,13 +510,74 @@ xx::Task<> Monster1::MainLogic() {
 	scale = { 1, 1 };
 
 	while (--life > 0) {
+
+		// step frame anim
 		frameIndex += cFrameInc;
 		if (frameIndex >= cFrameMaxIndex) {
 			frameIndex -= cFrameMaxIndex;
 		}
+
+		// physics simulate
+		// calc neighbor cross force
+		XY combineForce{};										// for move vector
+		int numCross{}, limit = 10;
+		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
+		_sgc->Foreach9(crIdx, [&](GridObjBase* m) {
+			if (m == this) return false;						// skip self
+			auto d = pos - m->pos;
+			auto rr = (m->radius + radius) * (m->radius + radius);
+			auto dd = d.x * d.x + d.y * d.y;
+			if (rr > dd) {										// cross?
+				++numCross;
+				if (dd) {
+					combineForce += d / std::sqrt(dd);			// normalize
+				}
+			}
+			return --limit < 0;									// number limit
+		});
+		//printf("numCross = %d  combineForce %f %f\n", numCross, combineForce.x, combineForce.y);
+
+		// calc ship follow force
+		auto d = gLooper.shooter->pos - pos;
+		auto dd = d.x * d.x + d.y * d.y;
+
+		// calc new pos
+		XY newPos = pos;
+		if (numCross) {											// cross?
+			if (dd) {
+				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
+				//printf("combineForce = %f %f\n", combineForce.x, combineForce.y);
+			}
+			//if (combineForce.IsZero()) {						// move by random angle
+			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
+				auto r = gLooper.rnd.Next<float>(M_PI * 2);
+				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 5;
+				//printf("r = %f   pos = %f %f   newPos = %f %f\n", r, pos.x, pos.y, newPos.x, newPos.y);
+			} else {
+				newPos += combineForce.MakeNormalize() * cSpeed;
+				//printf("pos = %f %f   newPos = %f %f\n", pos.x, pos.y, newPos.x, newPos.y);
+			}
+			newPos += XY{ -0.5f, 0.34f };	// fix group effect
+		} else {
+			if (dd > cSpeed * cSpeed) {							// follow shooter directly
+				newPos += d / std::sqrt(dd) * cSpeed;			// normalize
+			} else {
+				newPos = gLooper.shooter->pos;
+			}
+		}
+
+		// upgrade space grid
+		if (newPos != pos) {
+			//printf("pos = %f %f    newPos = %f %f\n", pos.x, pos.y, newPos.x, newPos.y);
+			pos = newPos;
+			GridUpdate();
+		}
+
 		co_yield 0;
 	}
 
+	// scale out
 	while (scale.x > 0.1f) {
 		scale.x -= 0.1f;
 		scale.y -= 0.1f;

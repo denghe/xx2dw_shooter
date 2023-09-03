@@ -8,7 +8,7 @@ int32_t main();
 
 constexpr GDesign<1024, 768> gDesign;
 constexpr float gScale = 4;	// scale texture
-constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 128, gGridNumRows = 128;
+constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
 constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 constexpr float gSQ = 0.7071067811865475244;
 
@@ -128,10 +128,11 @@ struct GameLooper : Engine<GameLooper> {
 		auto crIdx = sgc.PosToCrIdx(p);
 		GridObjBase* r{};
 		sgc.Foreach9(crIdx, [&](GridObjBase* m)->bool {
+			// (r1 + r2) * (r1 + r2) > (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
 			auto d = m->pos - pos;
 			auto rr = (m->radius + radius) * (m->radius + radius);
 			auto dd = d.x * d.x + d.y * d.y;
-			if (dd < rr) {
+			if (rr > dd) {
 				r = m;
 				return true;
 			}
@@ -183,7 +184,7 @@ extern GameLooper gLooper;
 
 struct Shooter : ObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Shooter };
-	constexpr static float cRadius{ 32 }, cSpeed{ 2 };
+	constexpr static float cRadius{ 32 }, cSpeed{ 5 };
 	constexpr static float cFireDistance{ 30 };
 	constexpr static float cTouchDistance{ 40 };
 
@@ -254,10 +255,10 @@ struct Explosion : ObjBase {
 // green
 struct Monster1 : GridObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Monster1 };
-	constexpr static float cRadius{ 7.f };
+	constexpr static float cRadius{ 7.f }, cSpeed{ 2 };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f };
-	constexpr static int32_t cLife{ 60 * 60 };
+	constexpr static int32_t cLife{ 60 * 20 };
 
 	int32_t life{ cLife };
 	float frameIndex{};
