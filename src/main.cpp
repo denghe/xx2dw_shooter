@@ -491,9 +491,9 @@ xx::Task<> Explosion::MainLogic() {
 
 void Monster1::Init(XY const& bornPos) {
 	type = cType;
-	radius = cRadius;
+	radius = cRadius * cScale;
 	Add(MainLogic());
-	scale = {};
+	scale = { cScale / gSQ, cScale / gSQ };
 	pos = bornPos;
 	GridInit();
 }
@@ -502,12 +502,12 @@ void Monster1::Draw() {
 }
 xx::Task<> Monster1::MainLogic() {
 	// scale in
-	while (scale.x < 1.f) {
-		scale.x += 0.1f;
-		scale.y += 0.1f;
+	while (scale.x < cScale) {
+		scale.x += cScale / 10;
+		scale.y += cScale / 10;
 		co_yield 0;
 	}
-	scale = { 1, 1 };
+	scale = { cScale, cScale };
 
 	while (--life > 0) {
 
@@ -552,13 +552,13 @@ xx::Task<> Monster1::MainLogic() {
 			//if (combineForce.IsZero()) {						// move by random angle
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
 				auto r = gLooper.rnd.Next<float>(M_PI * 2);
-				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 5;
+				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 				//printf("r = %f   pos = %f %f   newPos = %f %f\n", r, pos.x, pos.y, newPos.x, newPos.y);
 			} else {
 				newPos += combineForce.MakeNormalize() * cSpeed;
 				//printf("pos = %f %f   newPos = %f %f\n", pos.x, pos.y, newPos.x, newPos.y);
 			}
-			newPos += XY{ -0.5f, 0.34f };	// fix group effect
+			//newPos += XY{ -0.5f, 0.34f };	// fix group effect	  todo: change calc step to update
 		} else {
 			if (dd > cSpeed * cSpeed) {							// follow shooter directly
 				newPos += d / std::sqrt(dd) * cSpeed;			// normalize
@@ -578,9 +578,9 @@ xx::Task<> Monster1::MainLogic() {
 	}
 
 	// scale out
-	while (scale.x > 0.1f) {
-		scale.x -= 0.1f;
-		scale.y -= 0.1f;
+	while (scale.x > cScale / 10) {
+		scale.x -= cScale / 10;
+		scale.y -= cScale / 10;
 		co_yield 0;
 	}
 }

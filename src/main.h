@@ -255,7 +255,7 @@ struct Explosion : ObjBase {
 // green
 struct Monster1 : GridObjBase {
 	constexpr static ObjTypes cType{ ObjTypes::Monster1 };
-	constexpr static float cRadius{ 7.f }, cSpeed{ 2 };
+	constexpr static float cScale{ 0.5f },cRadius{ 7.f }, cSpeed{ 2 };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f };
 	constexpr static int32_t cLife{ 60 * 20 };
