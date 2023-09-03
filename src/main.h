@@ -12,33 +12,30 @@ constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256
 constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 constexpr float gSQ = 0.7071067811865475244;
 
-enum class ObjTypes : int32_t {
+struct ObjBase : Quad, xx::Tasks {
+	float frameIndex{};
+	bool disposing{};
+};
+
+enum class MonsterTypes : int32_t {
 	Unknown,
-	Shooter,
-	ShooterBullet1,
-	ShooterBullet2,
 	Monster1,
 	Monster2,
 	Monster3,
 	// ...
 };
 
-struct ObjBase : Quad, xx::Tasks {
-	ObjTypes type{};
+struct MonsterBase : SpaceGridCItem<MonsterBase>, ObjBase {
+	MonsterTypes type{};
 	float radius{};
-	float frameIndex{};
-	bool disposing{};
-};
 
-struct GridObjBase : SpaceGridCItem<GridObjBase>, ObjBase {
-
-	xx::ListDoubleLink<xx::Shared<GridObjBase>, int32_t, uint32_t>* owner{};	// fill before init
+	xx::ListDoubleLink<xx::Shared<MonsterBase>, int32_t, uint32_t>* owner{};	// fill before init
 	xx::ListDoubleLinkIndexAndVersion<int32_t, uint32_t> ivAtOwner;				// fill before init
 	void RemoveFromOwner();		// remove from all containers
 
 	void GridInit();		// call it before: set pos
 	void GridUpdate();		// call it before: set pos
-	~GridObjBase();
+	~MonsterBase();
 };
 
 /*****************************************************************************************************/
@@ -91,7 +88,7 @@ struct GameLooper : Engine<GameLooper> {
 	void Draw();
 
 	// physics containers ( Place on top of business objects )
-	SpaceGridC<GridObjBase> sgc;
+	SpaceGridC<MonsterBase> sgc;
 	SpaceGridRingDiffuseData<gGridNumRows, gGridCellDiameter> sgrdd;
 
 	// res
@@ -111,7 +108,7 @@ struct GameLooper : Engine<GameLooper> {
 	xx::ListLink<xx::Shared<ShooterBullet2>, int32_t> bullets_shooter2;
 
 	// monster objs
-	xx::ListDoubleLink<xx::Shared<GridObjBase>, int32_t, uint32_t> monsters;
+	xx::ListDoubleLink<xx::Shared<MonsterBase>, int32_t, uint32_t> monsters;
 	//xx::ListLink<xx::Shared<XXXXXXXXXXX>, int32_t> bullets_monster1;
 
 	template<typename MT>
@@ -123,11 +120,11 @@ struct GameLooper : Engine<GameLooper> {
 		return m;
 	}
 
-	GridObjBase* FindNeighborMonster(XY const& pos, float radius) {
+	MonsterBase* FindNeighborMonster(XY const& pos, float radius) {
 		auto p = gGridBasePos.MakeAdd(pos);
 		auto crIdx = sgc.PosToCrIdx(p);
-		GridObjBase* r{};
-		sgc.Foreach9(crIdx, [&](GridObjBase* m)->bool {
+		MonsterBase* r{};
+		sgc.Foreach9(crIdx, [&](MonsterBase* m)->bool {
 			// (r1 + r2) * (r1 + r2) > (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
 			auto d = m->pos - pos;
 			auto rr = (m->radius + radius) * (m->radius + radius);
@@ -141,12 +138,12 @@ struct GameLooper : Engine<GameLooper> {
 		return r;
 	}
 
-	GridObjBase* FindNearestMonster(XY const& pos, float maxDistance) {
+	MonsterBase* FindNearestMonster(XY const& pos, float maxDistance) {
 		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
 		auto crIdx = sgc.PosToCrIdx(p);							// calc grid col row index
 
 		float minVxxyy = maxDistance * maxDistance;
-		GridObjBase* o{};
+		MonsterBase* o{};
 		XY ov;
 
 		auto& lens = sgrdd.lens;
@@ -156,7 +153,7 @@ struct GameLooper : Engine<GameLooper> {
 
 			auto offsets = &idxs[lens[i - 1].count];
 			auto size = lens[i].count - lens[i - 1].count;
-			sgc.ForeachCells(crIdx, offsets, size, [&](GridObjBase* m)->bool {
+			sgc.ForeachCells(crIdx, offsets, size, [&](MonsterBase* m)->bool {
 				auto v = m->pos - pos;
 				if (auto xxyy = v.x * v.x + v.y * v.y; xxyy < minVxxyy) {
 					minVxxyy = xxyy;
@@ -183,7 +180,6 @@ extern GameLooper gLooper;
 /*****************************************************************************************************/
 
 struct Shooter : ObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::Shooter };
 	constexpr static float cRadius{ 32 }, cSpeed{ 5 };
 	constexpr static float cFireDistance{ 30 };
 	constexpr static float cTouchDistance{ 40 };
@@ -199,7 +195,6 @@ struct Shooter : ObjBase {
 /*****************************************************************************************************/
 
 struct ShooterBullet1 : ObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet1 };
 	constexpr static int cFrameIndex{ 0 };
 	constexpr static float cRadius{ 8.f };
 	constexpr static float cSpeed{ 4 };
@@ -214,7 +209,6 @@ struct ShooterBullet1 : ObjBase {
 /*****************************************************************************************************/
 
 struct ShooterBullet2 : ObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::ShooterBullet2 };
 	constexpr static int cFrameIndex{ 4 };
 	constexpr static float cRadius{ 8.f }, cSpeed{ 3 }, cMaxLookupDistance{ 100 };
 
@@ -253,8 +247,8 @@ struct Explosion : ObjBase {
 /*****************************************************************************************************/
 
 // green
-struct Monster1 : GridObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::Monster1 };
+struct Monster1 : MonsterBase {
+	constexpr static MonsterTypes cType{ MonsterTypes::Monster1 };
 	constexpr static float cScale{ 0.5f },cRadius{ 7.f }, cSpeed{ 2 };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f };
@@ -272,8 +266,8 @@ struct Monster1 : GridObjBase {
 /*****************************************************************************************************/
 
 // orange
-struct Monster2 : GridObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::Monster2 };
+struct Monster2 : MonsterBase {
+	constexpr static MonsterTypes cType{ MonsterTypes::Monster2 };
 	constexpr static float cRadius{ 7.f };
 	constexpr static float cFrameMaxIndex{ 5.f };
 	constexpr static float cFrameInc{ 0.1f };
@@ -291,8 +285,8 @@ struct Monster2 : GridObjBase {
 /*****************************************************************************************************/
 
 // pink
-struct Monster3 : GridObjBase {
-	constexpr static ObjTypes cType{ ObjTypes::Monster3 };
+struct Monster3 : MonsterBase {
+	constexpr static MonsterTypes cType{ MonsterTypes::Monster3 };
 	constexpr static float cRadius{ 7.f };
 	constexpr static float cFrameMaxIndex{ 4.f };
 	constexpr static float cFrameInc{ 0.1f };

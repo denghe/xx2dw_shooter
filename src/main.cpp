@@ -203,9 +203,9 @@ void GameLooper::Draw() {
 
 	monsters.Foreach([&](auto& o) {
 		switch (o->type) {
-		case ObjTypes::Monster1: ((xx::Shared<Monster1>&)o)->Draw(); break;
-		case ObjTypes::Monster2: ((xx::Shared<Monster2>&)o)->Draw(); break;
-		case ObjTypes::Monster3: ((xx::Shared<Monster3>&)o)->Draw(); break;
+		case MonsterTypes::Monster1: ((xx::Shared<Monster1>&)o)->Draw(); break;
+		case MonsterTypes::Monster2: ((xx::Shared<Monster2>&)o)->Draw(); break;
+		case MonsterTypes::Monster3: ((xx::Shared<Monster3>&)o)->Draw(); break;
 		default: xx_assert(false);
 		}
 	});
@@ -226,19 +226,19 @@ void GameLooper::Draw() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void GridObjBase::RemoveFromOwner() {
+void MonsterBase::RemoveFromOwner() {
 	owner->Remove(ivAtOwner);
 }
 
-void GridObjBase::GridInit() {
+void MonsterBase::GridInit() {
 	SGCInit(&gLooper.sgc, gGridBasePos.MakeAdd(pos));
 }
 
-void GridObjBase::GridUpdate() {
+void MonsterBase::GridUpdate() {
 	SGCUpdate(gGridBasePos.MakeAdd(pos));
 }
 
-GridObjBase::~GridObjBase() {
+MonsterBase::~MonsterBase() {
 	SGCTryRemove();
 }
 
@@ -246,7 +246,6 @@ GridObjBase::~GridObjBase() {
 /*****************************************************************************************************/
 
 void Shooter::Init() {
-	type = cType;
 	Add(MainLogic());
 	SetFrame(gLooper.frame_shooter).SetScale(gScale);
 }
@@ -375,7 +374,6 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 /*****************************************************************************************************/
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
-	type = cType;
 	Add(MainLogic());
 	SetFrame(gLooper.frames_bullets[cFrameIndex]).SetScale(gScale);
 	radians = M_PI * 2 + M_PI / 2 - radians_;
@@ -404,7 +402,6 @@ xx::Task<> ShooterBullet1::MainLogic() {
 /*****************************************************************************************************/
 
 void ShooterBullet2::Init(XY const& bornPos, XY const& inc_, float radians_) {
-	type = cType;
 	Add(MainLogic());
 	SetFrame(gLooper.frames_bullets[cFrameIndex]).SetScale(gScale);
 	radians = M_PI * 2 + M_PI / 2 - radians_;
@@ -412,7 +409,7 @@ void ShooterBullet2::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	inc = inc_ * cSpeed;
 }
 xx::Task<> ShooterBullet2::MainLogic() {
-	xx::Weak<GridObjBase> tar;
+	xx::Weak<MonsterBase> tar;
 	while (true) {
 		if (!tar) {
 			if (auto o = gLooper.FindNearestMonster(pos, cMaxLookupDistance)) {
@@ -523,7 +520,7 @@ xx::Task<> Monster1::MainLogic() {
 		int numCross{}, limit = 8;
 		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
 		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
-		_sgc->Foreach9(crIdx, [&](GridObjBase* m) {
+		_sgc->Foreach9(crIdx, [&](MonsterBase* m) {
 			if (m == this) return false;						// skip self
 			auto d = pos - m->pos;
 			auto rr = (m->radius + radius) * (m->radius + radius);
