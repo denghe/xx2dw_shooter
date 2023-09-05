@@ -32,21 +32,16 @@ xx::Task<> GameLooper::MainTask() {
 		tasks.Add([this, &n, img = img, url = std::string("res/") + img->source]()->xx::Task<> {
 			img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
 			--n;
+			printf("url loaded: %s\n", url.c_str());
 		});
 	}
 	while (n) co_yield 0;	// wait all pic download
 
 	// generate gid cache data
-	tiledMap.FillGidInfos();
+	tiledMap.FillExts();
 
-	//std::vector<TMX::Layer_Tile*> lts;
-	//TMX::FillTo(lts, tiledMap.layers);
-
-	//layerBG.layer = xx::TMX::FindLayer(lts, "bg"sv);
-	//assert(layerBG.layer);
-	//layerTrees.layer = xx::TMX::FindLayer(lts, "trees"sv);
-	//assert(layerTrees.layer);
-
+	layerBG = (TMX::Layer_Tile*)tiledMap.FindLayer("bg");
+	layerTrees = (TMX::Layer_Tile*)tiledMap.FindLayer("trees");
 
 	shooter.Emplace()->Init();	// make player plane
 
@@ -66,7 +61,30 @@ void GameLooper::Update() {
 
 void GameLooper::Draw() {
 	if (ready) {
+		for (auto& a : tiledMap.anims) {
+			a->Update(delta);
+		}
 
+		constexpr float scale = 1;
+		Quad q;
+		q.SetScale(scale).SetAnchor({0, 0});
+		//XY mapSize{ (float)tiledMap.tileHeight * tiledMap.height, (float)tiledMap.tileWidth * tiledMap.width };
+		XY basePos{ -gDesign.width_2, -gDesign.height_2 };
+
+		for (uint32_t y = 0; y < tiledMap.height; ++y) {
+			for (uint32_t x = 0; x < tiledMap.width; ++x) {
+				if (auto info = tiledMap.GetGidInfo(layerBG, y, x)) {
+					q.SetPosition(basePos + XY{ (float)x * tiledMap.tileWidth * scale, (float)y * tiledMap.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+				}
+			}
+		}
+		for (uint32_t y = tiledMap.height - 1; y != -1 ; --y) {
+			for (uint32_t x = 0; x < tiledMap.width; ++x) {
+				if (auto info = tiledMap.GetGidInfo(layerTrees, y, x)) {
+					q.SetPosition(basePos + XY{ (float)x * tiledMap.tileWidth * scale, (float)y * tiledMap.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+				}
+			}
+		}
 
 		shooter->Draw();
 		bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
@@ -76,4 +94,3 @@ void GameLooper::Draw() {
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }
-

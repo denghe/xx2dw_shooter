@@ -69,6 +69,7 @@ struct GameLooper : Engine<GameLooper> {
 	
 	// tiled map container
 	TMX::Map tiledMap;
+	TMX::Layer_Tile* layerBG{}, *layerTrees{};
 
 	// res
 	xx::Shared<Frame> frame_shooter;

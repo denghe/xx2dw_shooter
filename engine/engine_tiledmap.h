@@ -345,13 +345,12 @@ namespace TMX {
 			return tile && tile->image == image;
 		}
 
-		xx::Shared<::Anim> anim;
+		xx::Shared<Anim> anim;
 		xx::Shared<::Frame> frame;
 		xx::Shared<::Frame> const& GetFrame() const {
 			if (anim) return anim->GetCurrentAnimFrame().frame;
 			else return frame;
 		}
-
 	};
 	/****************************************************/
 
@@ -382,131 +381,136 @@ namespace TMX {
 		std::vector<xx::Shared<Tileset>> tilesets;
 		std::vector<xx::Shared<Layer>> layers;
 
+
 		/****************************************************/
 		// ext
-		std::vector<xx::Shared<Image>> images;	// all textures here
-		std::vector<GidInfo> gidInfos;			// all gid info here. index == gid
-		std::vector<::Anim*> allAnims;			// point to all gid info's anim for easy update anims
+		std::vector<xx::Shared<Image>> images;											// all textures here
+		std::vector<GidInfo> gidInfos;														// all gid info here. index == gid
+		std::vector<Anim*> anims;														// point to all gid info's anim for easy update anims
+		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
 
-		// need fill images GLTexture first
-		void FillGidInfos() {
-			gidInfos.clear();
-			if (tilesets.empty()) return;
+		void FillExts();																// fill above containers
+		Layer* FindLayer(std::string_view const& name) const;							// find layer by name( from flatLayers )
+		void FillFlatLayers(std::vector<xx::Shared<Layer>>& ls);
 
-			uint32_t numCells = 0;
-			for (auto&& tileset : tilesets) {
-				numCells += tileset->tilecount;
-			}
-			gidInfos.resize(numCells + tilesets[0]->firstgid);
-
-			// fill info
-			for (auto&& tileset : tilesets) {
-				uint32_t numRows = 1, numCols = tileset->tilecount;
-
-				TMX::Image* img = nullptr;
-				if (tileset->image) {
-					numCols = tileset->columns;
-					numRows = tileset->tilecount / numCols;
-					img = tileset->image;
-				}
-
-				for (uint32_t y = 0; y < numRows; ++y) {
-					for (uint32_t x = 0; x < numCols; ++x) {
-
-						auto id = y * numCols + x;
-						auto gid = tileset->firstgid + id;
-						auto& info = gidInfos[gid];
-
-						info.tileset = tileset;
-						info.tile = nullptr;
-						info.image = img;
-
-						for (auto& t : tileset->tiles) {	// search tile
-							if (t->id == id) {
-								info.tile = t.get();
-								if (t->image) {
-									info.image = t->image;	// override to single image
-								}
-								break;
-							}
-						}
-
-						auto& f = info.frame.Emplace();
-						f->tex = info.image->texture;
-						f->anchor = { 0.5, 0.5 };
-						if (info.IsSingleImage()) {
-							auto w = (float)info.image->width;
-							auto h = (float)info.image->height;
-							f->anchor = { 0, tileHeight / h };
-							f->spriteSize = { w, h };
-							f->textureRect = { 0, 0, w, h };
-						} else {
-							auto u = (float)tileset->margin + (tileset->spacing + tileset->tilewidth) * x;
-							auto v = (float)tileset->margin + (tileset->spacing + tileset->tileheight) * y;
-							auto w = (float)tileset->tilewidth;
-							auto h = (float)tileset->tileheight;
-							f->anchor = { 0, tileHeight / h };
-							f->spriteSize = { w, h };
-							f->textureRect = { u, v, w, h };
-						}
-					}
-				}
-			}
-
-			// fill anim
-			for (size_t gid = 1, siz = gidInfos.size(); gid < siz; ++gid) {
-				auto& info = gidInfos[gid];
-				if (info.tile) {
-					auto& tas = info.tile->animation;
-					if (auto&& numAnims = tas.size()) {
-						auto& afs = info.anim.Emplace()->animFrames;
-						afs.resize(numAnims);
-						for (size_t x = 0; x < numAnims; ++x) {
-							afs[x].frame = gidInfos[tas[x].gid].frame;
-							afs[x].durationSeconds = tas[x].duration / 1000.f;
-						}
-						//anims.emplace_back(gidInfos[gid].anim);   todo
-					}
-				}
-			}
-		}
+		GidInfo const* GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const;	// for Layer_Tile gidInfos[rowIdx * map.w + colIdx]
 		/****************************************************/
 	};
 
-	template<typename LT>
-	constexpr LayerTypes GetLayerType() {
-		if constexpr (std::is_same_v<LT, Layer_Tile>) {
-			return LayerTypes::TileLayer;
-		} else if constexpr (std::is_same_v<LT, Layer_Object>) {
-			return LayerTypes::ObjectLayer;
-		} else if constexpr (std::is_same_v<LT, Layer_Image>) {
-			return LayerTypes::ImageLayer;
-		} else if constexpr (std::is_same_v<LT, Layer_Group>) {
-			return LayerTypes::GroupLayer;
-		} else return LayerTypes::MAX_VALUE_UNKNOWN;
-	}
-	template<typename LT>
-	constexpr LayerTypes LayerTypeEnum_v = GetLayerType<LT>();
-
 	// find all LayerType from ls, fill to out
-	template<typename LT>
-	void FillTo(std::vector<LT*>& out, std::vector<xx::Shared<Layer>>& ls) {
+	inline void Map::FillFlatLayers(std::vector<xx::Shared<Layer>>& ls) {
 		for (auto& l : ls) {
 			if (l->type == LayerTypes::GroupLayer) {
-				Fill(out, ((Layer_Group&)*l).layers);
-			} else if (l->type == LayerTypeEnum_v<LT>) {
-				out.push_back((LT*)&*l);
+				FillFlatLayers(((Layer_Group&)*l).layers);
+			} else {
+				flatLayers.push_back(l.pointer);
 			}
 		}
 	}
 
 	// search LayerType + layer name & return
-	template<typename LT>
-	LT* FindLayer(std::vector<LT*> ls, std::string_view const& name) {
-		for (auto& l : ls) {
+	inline Layer* Map::FindLayer(std::string_view const& name) const {
+		for (auto& l : flatLayers) {
 			if (l->name == name) return l;
 		}
 		return nullptr;
 	}
 
+	inline GidInfo const* Map::GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const {
+		assert(L);
+		assert(L->type == LayerTypes::TileLayer);
+		assert(rowIdx < height);
+		assert(colIdx < width);
+		assert(!infinite);	// if (infinite) todo
+		auto gid = ((Layer_Tile&)*L).gids[rowIdx * height + colIdx];
+		if (!gid) return nullptr;
+		return &gidInfos[gid];
+	}
+
+	// need fill images GLTexture first
+	inline void Map::FillExts() {
+		gidInfos.clear();
+		anims.clear();
+		if (tilesets.empty()) return;
+
+		uint32_t numCells = 0;
+		for (auto&& tileset : tilesets) {
+			numCells += tileset->tilecount;
+		}
+		gidInfos.resize(numCells + tilesets[0]->firstgid);
+
+		// fill info
+		for (auto&& tileset : tilesets) {
+			uint32_t numRows = 1, numCols = tileset->tilecount;
+
+			TMX::Image* img = nullptr;
+			if (tileset->image) {
+				numCols = tileset->columns;
+				numRows = tileset->tilecount / numCols;
+				img = tileset->image;
+			}
+
+			for (uint32_t y = 0; y < numRows; ++y) {
+				for (uint32_t x = 0; x < numCols; ++x) {
+
+					auto id = y * numCols + x;
+					auto gid = tileset->firstgid + id;
+					auto& info = gidInfos[gid];
+
+					info.tileset = tileset;
+					info.tile = nullptr;
+					info.image = img;
+
+					for (auto& t : tileset->tiles) {	// search tile
+						if (t->id == id) {
+							info.tile = t.get();
+							if (t->image) {
+								info.image = t->image;	// override to single image
+							}
+							break;
+						}
+					}
+
+					auto& f = info.frame.Emplace();
+					f->tex = info.image->texture;
+					f->anchor = { 0.5, 0.5 };
+					if (info.IsSingleImage()) {
+						auto w = (float)info.image->width;
+						auto h = (float)info.image->height;
+						f->anchor = { 0, tileHeight / h };
+						f->spriteSize = { w, h };
+						f->textureRect = { 0, 0, w, h };
+					} else {
+						auto u = (float)tileset->margin + (tileset->spacing + tileset->tilewidth) * x;
+						auto v = (float)tileset->margin + (tileset->spacing + tileset->tileheight) * y;
+						auto w = (float)tileset->tilewidth;
+						auto h = (float)tileset->tileheight;
+						f->anchor = { 0, tileHeight / h };
+						f->spriteSize = { w, h };
+						f->textureRect = { u, v, w, h };
+					}
+				}
+			}
+		}
+
+		// fill anim
+		for (size_t gid = 1, siz = gidInfos.size(); gid < siz; ++gid) {
+			auto& info = gidInfos[gid];
+			if (info.tile) {
+				auto& tas = info.tile->animation;
+				if (auto&& numAnims = tas.size()) {
+					auto& afs = info.anim.Emplace()->animFrames;
+					afs.resize(numAnims);
+					for (size_t x = 0; x < numAnims; ++x) {
+						afs[x].frame = gidInfos[tas[x].gid].frame;
+						afs[x].durationSeconds = tas[x].duration / 1000.f;
+					}
+					anims.emplace_back(gidInfos[gid].anim.pointer);
+				}
+			}
+		}
+
+		// fill flatLayers
+		FillFlatLayers(layers);
+	}
 };
