@@ -1,1 +1,25 @@
-<!doctypehtml><html lang=en-us><head><meta charset=utf-8></head><body><canvas oncontextmenu="return false;" style=display:block;margin:auto></canvas><script>var Module={};function binary(e){return new Promise(((n,r)=>{var t=new XMLHttpRequest;t.open("GET",e,!0),t.responseType="arraybuffer",t.onload=()=>{n(t.response)},t.send(null)}))}function script(e){return new Promise(((n,r)=>{var t=document.createElement("script");t.src=e,t.onload=()=>{n()},document.body.appendChild(t)}))}Promise.all([binary("shooter.js"),binary("shooter.wasm")]).then((e=>{Module.wasm=e[1];var n=URL.createObjectURL(new Blob([e[0]],{type:"application/javascript"}));script(n).then((()=>{URL.revokeObjectURL(n)}))}))</script></body></html>
+<!doctypehtml>
+<html lang=en-us>
+<head>
+    <meta charset=utf-8>
+    <title>shooter demos</title>
+    <style type="text/css">
+        p a pre {
+            font-size: 144px;
+        }
+    </style>
+</head>
+<body>
+    <p>shooter demos</p>
+    <p>mobile: touch1 control move, touch2 shoot</p>
+    <p>pc: keyboard ASDW move, mouse shoot</p>
+    <p>
+        <a href="s1.htm">s1</a>
+        <pre>test follow bullet effect</pre>
+    </p>
+    <p>
+        <a href="s2.htm">s2</a>
+        <pre>test 256 fps. every second shoot 256 times</pre>
+    </p>
+</body>
+</html>

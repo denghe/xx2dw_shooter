@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(name shooter1)
+set(name s1)
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -144,4 +144,4 @@ foreach(asset ${assets})
 endforeach()
 
 file(COPY "../engine/favicon.ico" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
-file(COPY "../engine/index.html" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")
+file(COPY "${name}.htm" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/")

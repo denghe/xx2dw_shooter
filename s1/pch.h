@@ -1,4 +1,17 @@
-﻿#include "pch.h"
+﻿#pragma once
+#ifndef XX2DW_SHOOTER_PCH_H_
+#define XX2DW_SHOOTER_PCH_H_
+
+#include "engine_engine.h"
+#include "engine_gdesign.h"
+#include "engine_chartexcache.h"
+#include "engine_fpsviewer.h"
+#include "engine_dynamictexturepacker.h"
+#include "engine_curvemovepath.h"
+#include "engine_spacegrid_box.h"
+#include "engine_spacegrid_circle.h"
+#include "engine_spacegrid_ringdiffuse.h"
+
 
 int32_t main();
 
@@ -49,30 +62,30 @@ struct DamageText;
 
 enum class KeyboardKeys {
 	A = 65,
-	B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z
+	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
 	, MAX_VALUE
 };
 
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 
-    CharTexCache<24> ctc24;
-    CharTexCache<72> ctc72;
-    FpsViewer fv;
+	CharTexCache<24> ctc24;
+	CharTexCache<72> ctc72;
+	FpsViewer fv;
 
-    XY mousePos;
+	XY mousePos;
 	std::array<bool, 16> mouseBtnStates{};
 	std::array<bool, (int32_t)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
 	bool touchMode{};
 
-    EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
-    EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
+	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
+	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
 
-    EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
-    EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
-    EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
+	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
+	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
+	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
 
 	EM_BOOL OnTouchStart(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchMove(EmscriptenTouchEvent const& e);
@@ -93,7 +106,7 @@ struct GameLooper : Engine<GameLooper> {
 
 	// res
 	xx::Shared<Frame> frame_shooter;
-	std::vector<xx::Shared<Frame>> 
+	std::vector<xx::Shared<Frame>>
 		frames_monster_1
 		, frames_monster_2
 		, frames_monster_3
@@ -134,7 +147,7 @@ struct GameLooper : Engine<GameLooper> {
 				return true;
 			}
 			return false;
-		});
+			});
 		return r;
 	}
 
@@ -249,7 +262,7 @@ struct Explosion : ObjBase {
 // green
 struct Monster1 : MonsterBase {
 	constexpr static MonsterTypes cType{ MonsterTypes::Monster1 };
-	constexpr static float cScale{ 0.5f },cRadius{ 7.f }, cSpeed{ 2 };
+	constexpr static float cScale{ 0.5f }, cRadius{ 7.f }, cSpeed{ 2 };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f };
 	constexpr static int32_t cLife{ 60 * 20 };
@@ -299,3 +312,6 @@ struct Monster3 : MonsterBase {
 	void Draw();
 	xx::Task<> MainLogic();
 };
+
+
+#endif

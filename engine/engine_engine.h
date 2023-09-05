@@ -168,7 +168,8 @@ int main() {
 }
     */
     EM_BOOL JsLoopCallback(double ms) {
-        auto s = ms / 1000;
+        (void)ms;
+        auto s = xx::NowSteadyEpochSeconds();
         delta = s - nowSecs;
         nowSecs = s;
 

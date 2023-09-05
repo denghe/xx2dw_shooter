@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "engine_prims.h"
 
-template<int width_, int height_>
+template<int width_, int height_, int fps_ = 60>
 struct GDesign {
+    static constexpr float fps = fps_;
+
     static constexpr float width = width_;
     static constexpr float height = height_;
     static constexpr float width_2 = width / 2;
@@ -47,4 +49,6 @@ struct GDesign {
     static constexpr XY xy7{ x7, y7 };
     static constexpr XY xy8{ x8, y8 };
     static constexpr XY xy9{ x9, y9 };
+
+    static constexpr float sqr2 = 0.7071067811865475244;
 };

@@ -7,5 +7,5 @@ endif()
 
 project(xx2dw_shooter)
 
-add_subdirectory(shooter1)
-add_subdirectory(shooter2)
+add_subdirectory(s1)
+add_subdirectory(s2)
