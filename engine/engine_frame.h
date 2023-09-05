@@ -32,3 +32,40 @@ struct Frame {
         return f;
     }
 };
+
+
+struct AnimFrame {
+    xx::Shared<Frame> frame;
+    float durationSeconds;
+};
+
+using AnimFrames = std::vector<AnimFrame>;
+
+struct Anim {
+    std::vector<AnimFrame> animFrames;
+    size_t cursor{};
+    float timePool{};
+
+    void Step() {
+        if (++cursor == animFrames.size()) {
+            cursor = 0;
+        }
+    }
+
+    bool Update(float const& delta) {
+        auto bak = cursor;
+        timePool += delta;
+    LabBegin:
+        auto&& af = animFrames[cursor];
+        if (timePool >= af.durationSeconds) {
+            timePool -= af.durationSeconds;
+            Step();
+            goto LabBegin;
+        }
+        return bak != cursor;
+    }
+
+    AnimFrame& GetCurrentAnimFrame() const {
+        return (AnimFrame&)animFrames[cursor];
+    }
+};

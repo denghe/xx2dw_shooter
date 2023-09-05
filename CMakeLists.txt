@@ -9,3 +9,4 @@ project(xx2dw_shooter)
 
 add_subdirectory(s1)
 add_subdirectory(s2)
+add_subdirectory(s3)
