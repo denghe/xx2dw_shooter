@@ -14,7 +14,7 @@
 
 int32_t main();
 
-constexpr GDesign<1280, 800, 60> gDesign;
+constexpr GDesign<1280, 800, 600> gDesign;
 constexpr float gScale = 2;	// scale texture
 
 struct ObjBase : Quad, xx::Tasks {
@@ -80,7 +80,7 @@ struct GameLooper : Engine<GameLooper> {
 extern GameLooper gLooper;
 
 struct Shooter : ObjBase {
-	constexpr static float cRadius{ 32 }, cSpeed{ 3 * 60 / gDesign.fps }, cFrameMaxChangeRadian{ 0.1 * 60 / gDesign.fps };
+	constexpr static float cRadius{ 32 }, cSpeed{ 3 * 60 / gDesign.fps }, cFrameMaxChangeRadian{ 0.5 * 60 / gDesign.fps };
 	constexpr static float cFireDistance{ 30 * 60 / gDesign.fps };
 	constexpr static float cTouchDistance{ 40 };
 
