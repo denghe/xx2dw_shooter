@@ -33,7 +33,6 @@ xx::Task<> Shooter::MainLogic() {
 			needFire = gLooper.mouseBtnStates[0];
 		}
 
-		// a0 = r0, a90 = rPI/2, a180 = rPI, a181 = r-PI-, a240 = r-PI/2
 		r = -r;
 		auto d = r - radians;
 		if (d * d > M_PI * M_PI) {
@@ -63,55 +62,9 @@ xx::Task<> Shooter::MainLogic() {
 			}
 		}
 
-		//auto d = r - radians;
-		//if (d * d > M_PI * M_PI) { 
-		//	if (r < radians) {
-		//		r += M_PI * 2;
-		//	} else {
-		//		r -= M_PI * 2;
-		//	}
-		//}
-		//if (r > radians) {
-		//	if (d > cFrameMaxChangeRadian) {
-		//		radians += cFrameMaxChangeRadian;
-		//	} else {
-		//		radians = r;
-		//	}
-		//	if (radians > M_PI) {
-		//		radians -= M_PI * 2;
-		//	}
-		//} else {
-		//	if (d < -cFrameMaxChangeRadian) {
-		//		radians += -cFrameMaxChangeRadian;
-		//	} else {
-		//		radians = r;
-		//	}
-		//	if (radians < -M_PI) {
-		//		radians += M_PI * 2;
-		//	}
-		//}
-
 		r = -radians;
 		sr = std::sin(r);
 		cr = std::cos(r);
-		//	radians -= cFrameMaxChangeRadian;
-		//} else {
-		//	radians += cFrameMaxChangeRadian;
-		//}
-		
-		// todo
-		//if (r >= 0 && radians > 0) {
-		//	auto v = radians - r;
-		//	if (v * v > cFrameMaxChangeRadian * cFrameMaxChangeRadian) {
-		//		radians += v < 0 ? cFrameMaxChangeRadian : -cFrameMaxChangeRadian;
-		//		sr = std::sin(-radians);
-		//		cr = std::cos(-radians);
-		//	} else {
-		//		radians = r;
-		//	}
-		//} else {
-		//	
-		//}
 
 		if (needFire) {
 			XY inc{ cr, sr };

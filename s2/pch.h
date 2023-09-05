@@ -14,7 +14,7 @@
 
 int32_t main();
 
-constexpr GDesign<1280, 800, 600> gDesign;
+constexpr GDesign<1280, 800, 256> gDesign;
 constexpr float gScale = 2;	// scale texture
 
 struct ObjBase : Quad, xx::Tasks {
@@ -34,7 +34,6 @@ enum class KeyboardKeys {
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
 
-	CharTexCache<24> ctc24;
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
@@ -80,8 +79,8 @@ struct GameLooper : Engine<GameLooper> {
 extern GameLooper gLooper;
 
 struct Shooter : ObjBase {
-	constexpr static float cRadius{ 32 }, cSpeed{ 3 * 60 / gDesign.fps }, cFrameMaxChangeRadian{ 0.5 * 60 / gDesign.fps };
-	constexpr static float cFireDistance{ 30 * 60 / gDesign.fps };
+	constexpr static float cRadius{ 8 * gScale }, cSpeed{ 180 / gDesign.fps }, cFrameMaxChangeRadian{ M_PI * 10 / gDesign.fps };
+	constexpr static float cFireDistance{ cRadius };
 	constexpr static float cTouchDistance{ 40 };
 
 	float touchLastRotation{};

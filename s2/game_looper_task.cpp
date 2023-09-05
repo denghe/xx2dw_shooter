@@ -6,7 +6,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc24.Init();
     ctc72.Init();
 
 	// preload texs
