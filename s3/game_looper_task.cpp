@@ -45,22 +45,23 @@ void GameLooper::Draw() {
 		}
 
 		constexpr float scale = 1;
+		float tw = tm.tileWidth * scale;
+		float th = tm.tileHeight * scale;
+		XY basePos{ -gDesign.width_2, -gDesign.height_2 };
 		Quad q;
 		q.SetScale(scale).SetAnchor({0, 0});
-		//XY mapSize{ (float)tm.tileHeight * tm.height, (float)tm.tileWidth * tm.width };
-		XY basePos{ -gDesign.width_2, -gDesign.height_2 };
 
-		for (uint32_t y = 0; y < tm.height; ++y) {
-			for (uint32_t x = 0; x < tm.width; ++x) {
-				if (auto info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY{ (float)x * tm.tileWidth * scale, (float)y * tm.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+		for (uint32_t y = 0, ye = tm.height; y < ye; ++y) {
+			for (uint32_t x = 0, xe = tm.width; x < xe; ++x) {
+				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
+					q.SetPosition(basePos + XY{ x * tw, y * th }).SetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
 		for (uint32_t y = tm.height - 1; y != -1 ; --y) {
-			for (uint32_t x = 0; x < tm.width; ++x) {
-				if (auto info = tm.GetGidInfo(layerTrees, y, x)) {
-					q.SetPosition(basePos + XY{ (float)x * tm.tileWidth * scale, (float)y * tm.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+			for (uint32_t x = 0, xe = tm.width; x < xe; ++x) {
+				if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
+					q.SetPosition(basePos + XY{ x * tw, y * th }).SetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
