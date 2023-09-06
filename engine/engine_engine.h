@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "engine_base.h"
 #include "engine_texturepacker.h"
+#include "engine_tiledmap_sede.h"
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -277,24 +278,51 @@ int main() {
         co_return sd;
     }
 
-    xx::Task<xx::Shared<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* plistUrl) {
-        auto plistData = co_await AsyncDownloadFromUrl(plistUrl);
-        if (!plistData) co_return xx::Shared<TexturePacker>{};
+    // blist == texture packer export cocos plist file's bin version, use xx2d's tools: plist 2 blist convert
+    xx::Task<xx::Shared<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* blistUrl) {
+        auto blistData = co_await AsyncDownloadFromUrl(blistUrl);
+        if (!blistData) co_return xx::Shared<TexturePacker>{};
 
         auto tp = xx::Make<TexturePacker>();
-        if (int r = tp->Load(*plistData, plistUrl)) {
-            throw std::logic_error(xx::ToString("parse plist file content error: r = ", r, ", url = ", plistUrl));
-        }
+        int r = tp->Load(*blistData, blistUrl);
+        xx_assert(!r);
 
         auto tex = co_await AsyncLoadTextureFromUrl(tp->realTextureFileName.c_str());
-        if (!tex) {
-            throw std::logic_error(xx::ToString("async load texturepacker's texture timeout. url = ", tp->realTextureFileName));
-        }
+        xx_assert(tex);
+
         for (auto& f : tp->frames) {
             f->tex = tex;
         }
-
         co_return tp;
     }
 
+    // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
+    xx::Task<xx::Shared<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl) {
+        auto map = xx::Make<TMX::Map>();
+        // download bmx & fill
+        {
+            auto sd = co_await AsyncDownloadFromUrl("res/m.bmx");
+            xx_assert(sd);
+
+            xx::TmxData td;
+            td = std::move(*sd);
+            auto r = td.Read(*map);
+            xx_assert(!r);
+        }
+        // download textures
+        auto n = map->images.size();
+        for (auto& img : map->images) {
+            tasks.Add([this, &n, img = img, url = std::string("res/") + img->source]()->xx::Task<> {
+                img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
+                --n;
+                //printf("url loaded: %s\n", url.c_str());
+            });
+        }
+        while (n) co_yield 0;	// wait all
+
+        // fill ext data for easy use
+        map->FillExts();
+
+        co_return map;
+    }
 };

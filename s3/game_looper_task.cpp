@@ -6,42 +6,20 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();
+    ctc72.Init();	// font init
 
-	// preload texs
-    auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
+    auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");		// load texture packer data
 	xx_assert(tp);
-
 	tp->GetToByPrefix(frames_bullets, "b");
-	frame_shooter = tp->TryGet("p");			// ready flag
+	frame_shooter = tp->TryGet("p");
+	xx_assert(frame_shooter);
 
-	// load tiled map data
-	auto sd = co_await AsyncDownloadFromUrl("res/m.bmx");
-	xx_assert(sd);
-
-	// data fill to tiled map
-	xx::TmxData td;
-	td = std::move(*sd);
-	auto r = td.Read(tiledMap);
-	xx_assert(!r);
-	td.Clear(true);
-
-	// download tiled map's textures
-	auto n = tiledMap.images.size();
-	for (auto& img : tiledMap.images) {
-		tasks.Add([this, &n, img = img, url = std::string("res/") + img->source]()->xx::Task<> {
-			img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
-			--n;
-			printf("url loaded: %s\n", url.c_str());
-		});
-	}
-	while (n) co_yield 0;	// wait all pic download
-
-	// generate gid cache data
-	tiledMap.FillExts();
-
-	layerBG = (TMX::Layer_Tile*)tiledMap.FindLayer("bg");
-	layerTrees = (TMX::Layer_Tile*)tiledMap.FindLayer("trees");
+	tiledMap = co_await AsyncLoadTiledMapFromUrl("res/m.bmx");	// load tiled map data
+	xx_assert(tiledMap);
+	layerBG = tiledMap->FindLayer<TMX::Layer_Tile>("bg");
+	xx_assert(layerBG);
+	layerTrees = tiledMap->FindLayer<TMX::Layer_Tile>("trees");
+	xx_assert(layerTrees);
 
 	shooter.Emplace()->Init();	// make player plane
 
@@ -61,27 +39,28 @@ void GameLooper::Update() {
 
 void GameLooper::Draw() {
 	if (ready) {
-		for (auto& a : tiledMap.anims) {
+		auto& tm = *tiledMap;
+		for (auto& a : tm.anims) {
 			a->Update(delta);
 		}
 
 		constexpr float scale = 1;
 		Quad q;
 		q.SetScale(scale).SetAnchor({0, 0});
-		//XY mapSize{ (float)tiledMap.tileHeight * tiledMap.height, (float)tiledMap.tileWidth * tiledMap.width };
+		//XY mapSize{ (float)tm.tileHeight * tm.height, (float)tm.tileWidth * tm.width };
 		XY basePos{ -gDesign.width_2, -gDesign.height_2 };
 
-		for (uint32_t y = 0; y < tiledMap.height; ++y) {
-			for (uint32_t x = 0; x < tiledMap.width; ++x) {
-				if (auto info = tiledMap.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY{ (float)x * tiledMap.tileWidth * scale, (float)y * tiledMap.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+		for (uint32_t y = 0; y < tm.height; ++y) {
+			for (uint32_t x = 0; x < tm.width; ++x) {
+				if (auto info = tm.GetGidInfo(layerBG, y, x)) {
+					q.SetPosition(basePos + XY{ (float)x * tm.tileWidth * scale, (float)y * tm.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
-		for (uint32_t y = tiledMap.height - 1; y != -1 ; --y) {
-			for (uint32_t x = 0; x < tiledMap.width; ++x) {
-				if (auto info = tiledMap.GetGidInfo(layerTrees, y, x)) {
-					q.SetPosition(basePos + XY{ (float)x * tiledMap.tileWidth * scale, (float)y * tiledMap.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
+		for (uint32_t y = tm.height - 1; y != -1 ; --y) {
+			for (uint32_t x = 0; x < tm.width; ++x) {
+				if (auto info = tm.GetGidInfo(layerTrees, y, x)) {
+					q.SetPosition(basePos + XY{ (float)x * tm.tileWidth * scale, (float)y * tm.tileHeight * scale }).SetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}

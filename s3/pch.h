@@ -68,7 +68,7 @@ struct GameLooper : Engine<GameLooper> {
 	bool ready{};
 	
 	// tiled map container
-	TMX::Map tiledMap;
+	xx::Shared<TMX::Map> tiledMap;
 	TMX::Layer_Tile* layerBG{}, *layerTrees{};
 
 	// res

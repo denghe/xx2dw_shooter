@@ -390,14 +390,14 @@ namespace TMX {
 		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
 
 		void FillExts();																// fill above containers
-		Layer* FindLayer(std::string_view const& name) const;							// find layer by name( from flatLayers )
+		template<std::convertible_to<Layer> LT>
+		LT* FindLayer(std::string_view const& name) const;								// find layer by name( from flatLayers )
 		void FillFlatLayers(std::vector<xx::Shared<Layer>>& ls);
 
 		GidInfo const* GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const;	// for Layer_Tile gidInfos[rowIdx * map.w + colIdx]
 		/****************************************************/
 	};
 
-	// find all LayerType from ls, fill to out
 	inline void Map::FillFlatLayers(std::vector<xx::Shared<Layer>>& ls) {
 		for (auto& l : ls) {
 			if (l->type == LayerTypes::GroupLayer) {
@@ -408,10 +408,16 @@ namespace TMX {
 		}
 	}
 
-	// search LayerType + layer name & return
-	inline Layer* Map::FindLayer(std::string_view const& name) const {
+	template<std::convertible_to<Layer> LT>
+	LT* Map::FindLayer(std::string_view const& name) const {
 		for (auto& l : flatLayers) {
-			if (l->name == name) return l;
+			if (l->name == name) {
+				if constexpr (std::is_same_v<LT, Layer_Group>) xx_assert(l->type == LayerTypes::GroupLayer);
+				if constexpr (std::is_same_v<LT, Layer_Image>) xx_assert(l->type == LayerTypes::ImageLayer);
+				if constexpr (std::is_same_v<LT, Layer_Object>) xx_assert(l->type == LayerTypes::ObjectLayer);
+				if constexpr (std::is_same_v<LT, Layer_Tile>) xx_assert(l->type == LayerTypes::TileLayer);
+				return (LT*)l;
+			}
 		}
 		return nullptr;
 	}
