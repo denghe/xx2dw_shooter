@@ -2,6 +2,7 @@
 #include "engine_base.h"
 #include "engine_texturepacker.h"
 #include "engine_tiledmap_sede.h"
+#include "zstd.h"
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -196,6 +197,28 @@ int main() {
         return running;
     }
 
+    // utils
+    void ZstdDecompress(std::string_view const& src, xx::Data& dst) {
+        auto&& siz = ZSTD_getFrameContentSize(src.data(), src.size());
+        if (ZSTD_CONTENTSIZE_UNKNOWN == siz) throw std::logic_error("ZstdDecompress error: unknown content size.");
+        if (ZSTD_CONTENTSIZE_ERROR == siz) throw std::logic_error("ZstdDecompress read content size error.");
+        dst.Resize(siz);
+        if (0 == siz) return;
+        siz = ZSTD_decompress(dst.buf, siz, src.data(), src.size());
+        if (ZSTD_isError(siz)) throw std::logic_error("ZstdDecompress decompress error.");
+        dst.Resize(siz);
+    }
+
+    void TryZstdDecompress(xx::Data& d) {
+        if (d.len >= 4) {
+            if (d[0] == 0x28 && d[1] == 0xB5 && d[2] == 0x2F && d[3] == 0xFD) {
+                xx::Data d2;
+                ZstdDecompress(d, d2);
+                std::swap(d, d2);
+            }
+        }
+    }
+
     // task utils
     xx::Task<> AsyncSleep(double secs) {
         auto e = nowSecs + secs;
@@ -244,7 +267,7 @@ int main() {
     }
 
     // todo: timeout support
-    xx::Task<xx::Shared<xx::Data>> AsyncDownloadFromUrl(char const* url) {
+    xx::Task<xx::Shared<xx::Data>> AsyncDownloadFromUrl(char const* url, bool autoDecompress = true) {
         emscripten_fetch_attr_t attr;
         emscripten_fetch_attr_init(&attr);
         strcpy(attr.requestMethod, "GET");
@@ -274,6 +297,10 @@ int main() {
         
         while (!callbacked) {
             co_yield 0;
+        }
+
+        if (autoDecompress) {
+            TryZstdDecompress(*sd);
         }
         co_return sd;
     }
