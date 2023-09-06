@@ -81,6 +81,7 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
+	fv.Update();
 	if (!frame_shooter) return;
 
 	if (shooter) {
