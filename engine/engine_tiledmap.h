@@ -428,7 +428,7 @@ namespace TMX {
 		assert(rowIdx < height);
 		assert(colIdx < width);
 		assert(!infinite);	// if (infinite) todo
-		auto gid = ((Layer_Tile&)*L).gids[rowIdx * height + colIdx];
+		auto gid = ((Layer_Tile&)*L).gids[rowIdx * width + colIdx];
 		if (!gid) return nullptr;
 		return &gidInfos[gid];
 	}
@@ -519,4 +519,117 @@ namespace TMX {
 		// fill flatLayers
 		FillFlatLayers(layers);
 	}
+
+
+	/*
+┌─────────────────┐                                    ┌──────────────────┐
+│   screen        │                                    │     screen       │
+│                 │                                    │                  │
+│        ┌────────┼────────────────────────────────────┼─────────┐        │
+│        │0,0     │                                    │         │        │
+│        │        │                 map                │         │        │
+└────────┼────────┘                                    └─────────┼────────┘
+		 │                  ┌──────────────────┐                 │
+		 │                  │  screen          │                 │
+		 │                  │                  │                 │
+		 │                  │         *        │                 │
+		 │                  │        pos       │                 │
+		 │                  │                  │                 │
+		 │                  └──────────────────┘                 │
+┌────────┼─────────┐                                   ┌─────────┼────────┐
+│        │         │                                   │         │        │
+│        │         │                                   │         │        │
+│        └─────────┼───────────────────────────────────┼─────────┘        │
+│    screen        │                                   │     screen       │
+│                  │                                   │                  │
+└──────────────────┘                                   └──────────────────┘
+	*/
+	struct Camera {
+		// fill by Init
+		int32_t tileWidth = 0, tileHeight = 0;
+		int32_t worldRowCount = 0, worldColumnCount = 0;
+		XY worldPixel{};
+		XY screenSize{};
+
+		AffineTransform at;
+		XY pos{}, scale{ 1, 1 };
+		bool dirty = true;
+
+		/*
+			for (uint32_t y = cam.rowFrom; y < cam.rowTo; ++y) {
+				for (uint32_t x = cam.columnFrom; x < cam.columnTo; ++x) {
+					auto&& s = ss[y * cam.worldColumnCount + x];
+		*/
+		int32_t rowFrom = 0, rowTo = 0, columnFrom = 0, columnTo = 0;
+
+		void Init(XY const& screenSize, Map& map) {
+			tileWidth = map.tileWidth;
+			tileHeight = map.tileHeight;
+
+			worldRowCount = map.height;
+			worldColumnCount = map.width;
+
+			worldPixel.x = tileWidth * worldColumnCount;
+			worldPixel.y = tileHeight * worldRowCount;
+
+			this->screenSize = screenSize;
+
+			Commit();
+		}
+
+		void SetScale(float const& scale) {
+			this->scale = { scale, scale };
+			dirty = true;
+		}
+
+		void SetScreenSize(XY const& wh) {
+			this->screenSize = wh;
+			dirty = true;
+		}
+
+		void SetPosition(XY const& xy) {
+			this->pos = xy;
+			dirty = true;
+		}
+
+		void SetPositionX(float const& x) {
+			this->pos.x = x;
+			dirty = true;
+		}
+
+		void SetPositionY(float const& y) {
+			this->pos.y = y;
+			dirty = true;
+		}
+
+		// call after set xxxx ...
+		void Commit() {
+			if (!dirty) return;
+			dirty = false;
+
+			auto halfNumRows = screenSize.y / scale.y / tileHeight / 2;
+			int32_t posRowIndex = pos.y / tileHeight;
+			rowFrom = posRowIndex - halfNumRows;
+			rowTo = posRowIndex + halfNumRows + 2;
+			if (rowFrom < 0) {
+				rowFrom = 0;
+			}
+			if (rowTo > worldRowCount) {
+				rowTo = worldRowCount;
+			}
+
+			auto halfNumColumns = screenSize.x / scale.x / tileWidth / 2;
+			int32_t posColumnIndex = pos.x / tileWidth;
+			columnFrom = posColumnIndex - halfNumColumns;
+			columnTo = posColumnIndex + halfNumColumns + 2;
+			if (columnFrom < 0) {
+				columnFrom = 0;
+			}
+			if (columnTo > worldColumnCount) {
+				columnTo = worldColumnCount;
+			}
+
+			at = at.MakePosScale(XY{ -pos.x, pos.y } *scale, scale);
+		}
+	};
 };

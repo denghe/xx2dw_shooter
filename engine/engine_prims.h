@@ -220,3 +220,51 @@ namespace xx {
         }
     };
 }
+
+
+struct AffineTransform {
+    float a, b, c, d;
+    float tx, ty;
+
+    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        if (!anchorSize.IsZero()) {
+            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
+            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
+        }
+        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+    }
+
+    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+    }
+
+    inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
+        return { scale.x, 0, 0, scale.y, pos.x, pos.y };
+    }
+
+    inline static AffineTransform MakePos(XY const& pos) {
+        return { 1.0, 0.0, 0.0, 1.0, pos.x, pos.y };
+    }
+
+    inline static AffineTransform MakeIdentity() {
+        return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    }
+
+    XY Apply(XY const& point) const {
+        return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
+    }
+};

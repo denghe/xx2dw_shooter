@@ -16,9 +16,11 @@
 int32_t main();
 
 constexpr GDesign<1280, 800, 60> gDesign;
-constexpr float gScale = 2;	// scale texture
+constexpr float gScale = 1;	// scale texture
 
-struct ObjBase : Quad, xx::Tasks {
+struct ObjBase : xx::Tasks {
+	XY pos{};
+	float radians{};
 	float frameIndex{};
 	bool disposing{};
 };
@@ -70,6 +72,8 @@ struct GameLooper : Engine<GameLooper> {
 	// tiled map container
 	xx::Shared<TMX::Map> tiledMap;
 	TMX::Layer_Tile* layerBG{}, *layerTrees{};
+	//TMX::Camera cam;
+	float scale{ 1 }, zoom{ 1 };
 
 	// res
 	xx::Shared<Frame> frame_shooter;
@@ -87,21 +91,25 @@ struct Shooter : ObjBase {
 	constexpr static float cFireDistance{ cRadius };
 	constexpr static float cTouchDistance{ 40 };
 
+	Quad body;
 	float touchLastRotation{};
 
-	void Init();
+	void Init(XY const& bornPos);
+	void Draw();
 	xx::Task<> MainLogic();
 	std::optional<XY> GetKeyboardMoveInc();
 };
 
 struct ShooterBullet1 : ObjBase {
-	constexpr static int cFrameIndex{ 0 };
+	constexpr static int cFrameIndex{ 0 }, cLife{ 200 / 60 * gDesign.fps };
 	constexpr static float cRadius{ 8.f };
 	constexpr static float cSpeed{ 2 * 60 / gDesign.fps };
 
+	Quad body;
 	XY inc{};
 
 	void Init(XY const& bornPos, XY const& inc_, float radians_);
+	void Draw();
 	xx::Task<> MainLogic();
 };
 

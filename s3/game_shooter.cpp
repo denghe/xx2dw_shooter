@@ -1,9 +1,16 @@
 ﻿#include "pch.h"
 
-void Shooter::Init() {
+void Shooter::Init(XY const& bornPos) {
 	Add(MainLogic());
-	SetFrame(gLooper.frame_shooter).SetScale(gScale);
+	pos = bornPos;
+
+	body.SetFrame(gLooper.frame_shooter).SetScale(gScale);
 }
+
+void Shooter::Draw() {
+	body.SetRotate(radians).Draw();
+}
+
 xx::Task<> Shooter::MainLogic() {
 	while (true) {
 		float r, sr, cr;
@@ -18,15 +25,15 @@ xx::Task<> Shooter::MainLogic() {
 				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
 					cr = std::cos(r);
 					sr = std::sin(r);
-					AddPosition({ cr * cSpeed, sr * cSpeed });
+					pos += XY{ cr, sr } * cSpeed * gScale / 4;
 				}
 			}
 			needFire = gLooper.fireTouchId != -1;								// todo: touch special area for special fire ?
 		} else {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
-				AddPosition(*inc);
+				pos += *inc;
 			}
-			auto v = gLooper.mousePos - pos;
+			auto v = gLooper.mousePos/* - pos*/;
 			r = std::atan2(v.y, v.x);
 			sr = std::sin(r);
 			cr = std::cos(r);
@@ -129,5 +136,5 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 		}
 	}
 
-	return v * cSpeed;
+	return v * cSpeed * gScale / 4;
 }
