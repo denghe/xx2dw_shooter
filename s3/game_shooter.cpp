@@ -1,8 +1,7 @@
 ﻿#include "pch.h"
 
 void Shooter::Draw() {
-	// todo: in screen check
-	body.SetScale(gScale * gLooper.scale).SetRotate(radians).Draw();	// always 0,0  no need set pos
+	body.SetScale(gScale * gLooper.camera.scale).SetRotate(radians).Draw();	// always 0,0  no need set pos
 }
 
 void Shooter::Init(XY const& bornPos) {

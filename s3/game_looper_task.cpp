@@ -31,18 +31,14 @@ xx::Task<> GameLooper::MainTask() {
 void GameLooper::Update() {
 	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.2)) {
-		scale -= 0.25;
-		if (scale < 0.25) {
-			scale = 0.25;
+		camera.scale -= 0.25;
+		if (camera.scale < 0.25) {
+			camera.scale = 0.25;
 		}
-		zoom = 1 / scale;
-		//w2 = w / 2 * zoom;
-		//h2 = h / 2 * zoom;
+		camera.zoom = 1 / camera.scale;
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.2)) {
-		scale += 0.25;
-		zoom = 1 / scale;
-		//w2 = w / 2 * zoom;
-		//h2 = h / 2 * zoom;
+		camera.scale += 0.25;
+		camera.zoom = 1 / camera.scale;
 	}
 	if (!ready) return;
 
@@ -53,45 +49,38 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
+
 	if (ready) {
+		camera.original = shooter->pos;
+		camera.Calc(gMaxFramePixelWidth, gMaxFramePixelHeight);
+
 		auto& tm = *tiledMap;
 		for (auto& a : tm.anims) {
 			a->Update(delta);
 		}
 
-		int mapTileWidth = tm.tileWidth, mapTileHeight = tm.tileHeight;
-		float mapScaledTileWidth = mapTileWidth * scale, mapScaledTileHeight = mapTileHeight * scale;
-		int mapNumColumns = tm.width, mapNumRows = tm.height;
-
-		auto& sp = shooter->pos;
-		auto basePos = XY{ -sp.x, float(-mapTileHeight) + sp.y } * scale;
+		auto scaledTileSize = tm.GetScaledTileSize(camera);
+		auto basePos = tm.GetBasePos(camera);
 		Quad q;
-		q.SetScale(scale).SetAnchor({0, 0});
-
-		auto w2 = windowWidth / 2 * zoom, h2 = windowHeight / 2 * zoom;
-		auto minX = (sp.x - w2) / mapTileWidth;
-		auto maxX = (sp.x + w2) / mapTileWidth;
-		auto minY = (sp.y - h2) / mapTileHeight;
-		auto maxY = (sp.y + h2) / mapTileHeight;
-		auto maxTreeY = maxY + 1;	// tree tile height == mapTileHeight * 2
-		if (minX < 0) minX = 0; else if (minX > mapNumColumns) minX = mapNumColumns;
-		if (maxX < 0) maxX = 0; else if (maxX > mapNumColumns) maxX = mapNumColumns;
-		if (minY < 0) minY = 0; else if (minY > mapNumRows) minY = mapNumRows;
-		if (maxY < 0) maxY = 0; else if (maxY > mapNumRows) maxY = mapNumRows;
-		if (maxTreeY < 0) maxTreeY = 0; else if (maxTreeY > mapNumRows) maxTreeY = mapNumRows;
-
+		q.SetScale(camera.scale).SetAnchor({ 0, 0 });
+		
+		int minX = tm.GetMinColumnIndex(camera);
+		int maxX = tm.GetMaxColumnIndex(camera, 1);
+		int minY = tm.GetMinRowIndex(camera);
+		int maxY = tm.GetMaxRowIndex(camera, 1);
 		for (int y = minY; y < maxY; ++y) {
 			for (int x = minX; x < maxX; ++x) {
 				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).TrySetFrame(info->GetFrame()).Draw();
+					q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).TrySetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
-
+		
+		int maxTreeY = tm.GetMaxRowIndex(camera, 2);
 		for (int y = minY; y < maxTreeY; ++y) {
 			for (int x = minX; x < maxX; ++x) {
 				if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).TrySetFrame(info->GetFrame()).Draw();
+					q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).TrySetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}

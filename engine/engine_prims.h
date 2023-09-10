@@ -95,10 +95,15 @@ struct Vec2 {
         return x != v.x || y != v.y;
     }
 
+    static Vec2 Make(IsArithmetic auto const& vx, IsArithmetic auto const& vy) {
+        return { T(vx), T(vy) };
+    }
+
     Vec2 MakeAdd(HasFieldXY auto const& v) const {
         return { x + v.x, y + v.y };
     }
-    Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) const {
+
+    Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) {
         return { x + vx, y + vy };
     }
 

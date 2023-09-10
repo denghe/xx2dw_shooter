@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_frame.h"
+#include "engine_camera.h"
 
 // tiled map xml version data loader & container. full supported to version 1.9x( compress algorithm only support zstandard )
 // https://doc.mapeditor.org/en/stable/reference/tmx-map-format/#
@@ -383,6 +383,15 @@ namespace TMX {
 
 
 		/****************************************************/
+		// calc utils. before call, camera need Calc()
+		int GetMinColumnIndex(Camera const& cam, int offset = 0) const;
+		int GetMaxColumnIndex(Camera const& cam, int offset = 0) const;
+		int GetMinRowIndex(Camera const& cam, int offset = 0) const;
+		int GetMaxRowIndex(Camera const& cam, int offset = 0) const;
+		XY GetBasePos(Camera const& cam) const;
+		XY GetScaledTileSize(Camera const& cam) const;
+
+		/****************************************************/
 		// ext
 		std::vector<xx::Shared<Image>> images;											// all textures here
 		std::vector<GidInfo> gidInfos;														// all gid info here. index == gid
@@ -390,13 +399,44 @@ namespace TMX {
 		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
 
 		void FillExts();																// fill above containers
+
 		template<std::convertible_to<Layer> LT>
 		LT* FindLayer(std::string_view const& name) const;								// find layer by name( from flatLayers )
+
 		void FillFlatLayers(std::vector<xx::Shared<Layer>>& ls);
 
 		GidInfo const* GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const;	// for Layer_Tile gidInfos[rowIdx * map.w + colIdx]
+	
 		/****************************************************/
 	};
+
+	inline XX_FORCE_INLINE int Map::GetMinColumnIndex(Camera const& camera, int offset) const {
+		int r = camera.minX / tileWidth + offset;
+		return r < 0 ? 0 : r;
+	}
+
+	inline XX_FORCE_INLINE int Map::GetMaxColumnIndex(Camera const& camera, int offset) const {
+		int r = camera.maxX / tileWidth + offset;
+		return r > width ? width : r;
+	}
+
+	inline XX_FORCE_INLINE int Map::GetMinRowIndex(Camera const& camera, int offset) const {
+		int r = camera.minY / tileHeight + offset;
+		return r < 0 ? 0 : r;
+	}
+
+	inline XX_FORCE_INLINE int Map::GetMaxRowIndex(Camera const& camera, int offset) const {
+		int r = camera.maxY / tileHeight + offset;
+		return r > height ? height : r;
+	}
+
+	inline XX_FORCE_INLINE XY Map::GetBasePos(Camera const& camera) const {
+		return XY{ -camera.original.x, float(-(int)tileHeight) + camera.original.y } * camera.scale;
+	}
+
+	inline XX_FORCE_INLINE XY Map::GetScaledTileSize(Camera const& camera) const {
+		return { tileWidth * camera.scale, tileHeight * camera.scale };
+	}
 
 	inline void Map::FillFlatLayers(std::vector<xx::Shared<Layer>>& ls) {
 		for (auto& l : ls) {
@@ -422,7 +462,7 @@ namespace TMX {
 		return nullptr;
 	}
 
-	inline GidInfo const* Map::GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const {
+	inline XX_FORCE_INLINE GidInfo const* Map::GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const {
 		assert(L);
 		assert(L->type == LayerTypes::TileLayer);
 		assert(rowIdx < height);
@@ -519,66 +559,4 @@ namespace TMX {
 		// fill flatLayers
 		FillFlatLayers(layers);
 	}
-
-
-	// some examples:
-	/*
-
-init:
-	
-		tiledMap = co_await AsyncLoadTiledMapFromUrl("res/m.bmx");	// load tiled map data
-		xx_assert(tiledMap);
-		layerBG = tiledMap->FindLayer<TMX::Layer_Tile>("bg");
-		xx_assert(layerBG);
-		layerTrees = tiledMap->FindLayer<TMX::Layer_Tile>("trees");
-		xx_assert(layerTrees);
-		for (auto& img : tiledMap->images) img->texture->SetGLTexParm<GL_LINEAR>();	// set bg texture draw parm
-
-draw:
-
-		auto& tm = *tiledMap;
-		for (auto& a : tm.anims) {
-			a->Update(delta);
-		}
-
-		int mapTileWidth = tm.tileWidth, mapTileHeight = tm.tileHeight;
-		float mapScaledTileWidth = mapTileWidth * scale, mapScaledTileHeight = mapTileHeight * scale;
-		int mapNumColumns = tm.width, mapNumRows = tm.height;
-
-		auto& sp = shooter->pos;
-		auto basePos = XY{ -sp.x, float(-mapTileHeight) + sp.y } * scale;
-		Quad q;
-		q.SetScale(scale).SetAnchor({0, 0});
-
-		auto w2 = w / 2 * zoom, h2 = h / 2 * zoom;
-		auto minX = (sp.x - w2) / mapTileWidth;
-		auto maxX = (sp.x + w2) / mapTileWidth;
-		auto minY = (sp.y - h2) / mapTileHeight;
-		auto maxY = (sp.y + h2) / mapTileHeight;
-		auto maxTreeY = maxY + 1;	// tree tile height == mapTileHeight * 2
-		if (minX < 0) minX = 0; else if (minX > mapNumColumns) minX = mapNumColumns;
-		if (maxX < 0) maxX = 0; else if (maxX > mapNumColumns) maxX = mapNumColumns;
-		if (minY < 0) minY = 0; else if (minY > mapNumRows) minY = mapNumRows;
-		if (maxY < 0) maxY = 0; else if (maxY > mapNumRows) maxY = mapNumRows;
-		if (maxTreeY < 0) maxTreeY = 0; else if (maxTreeY > mapNumRows) maxTreeY = mapNumRows;
-
-		for (int y = minY; y < maxY; ++y) {
-			for (int x = minX; x < maxX; ++x) {
-				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).SetFrame(info->GetFrame()).Draw();
-				}
-			}
-		}
-
-		for (int y = minY; y < maxTreeY; ++y) {
-			for (int x = minX; x < maxX; ++x) {
-				if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).SetFrame(info->GetFrame()).Draw();
-				}
-			}
-		}
-	
-	
-	*/
-
 };

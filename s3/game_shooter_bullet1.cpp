@@ -1,8 +1,12 @@
 ﻿#include "pch.h"
 
 void ShooterBullet1::Draw() {
-	// todo: in screen check
-	body.SetScale(gScale * gLooper.scale).SetRotate(radians).SetPosition((pos - gLooper.shooter->pos).MakeFlipY() * gLooper.scale).Draw();
+	if (gLooper.camera.InArea(pos)) {
+		body.SetScale(gScale * gLooper.camera.scale)
+			.SetRotate(radians)
+			.SetPosition(gLooper.camera.GetGLPos(pos))
+			.Draw();
+	}
 }
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {

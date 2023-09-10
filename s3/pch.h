@@ -12,11 +12,14 @@
 #include "engine_spacegrid_circle.h"
 #include "engine_spacegrid_ringdiffuse.h"
 #include "engine_tiledmap_sede.h"
+#include "engine_camera.h"
 
 int32_t main();
 
 constexpr GDesign<1280, 800, 60> gDesign;
 constexpr float gScale = 4;	// for pixel texture
+constexpr float gMaxFramePixelWidth = 64;
+constexpr float gMaxFramePixelHeight = 128;
 
 struct ObjBase : xx::Tasks {
 	XY pos{};
@@ -74,9 +77,7 @@ struct GameLooper : Engine<GameLooper> {
 	// tiled map container
 	xx::Shared<TMX::Map> tiledMap;
 	TMX::Layer_Tile* layerBG{}, *layerTrees{};
-	//TMX::Camera cam;
-	float scale{ 1 }, zoom{ 1 };
-	//float w{}, h{}, w2{}, h2{};		// logic width, height, width / 2, height / 2
+	Camera camera;
 
 	// res
 	xx::Shared<Frame> frame_shooter;
