@@ -31,14 +31,9 @@ xx::Task<> GameLooper::MainTask() {
 void GameLooper::Update() {
 	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.2)) {
-		camera.scale -= 0.25;
-		if (camera.scale < 0.25) {
-			camera.scale = 0.25;
-		}
-		camera.zoom = 1 / camera.scale;
+		camera.DecreaseScale(0.25, 0.25);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.2)) {
-		camera.scale += 0.25;
-		camera.zoom = 1 / camera.scale;
+		camera.IncreaseScale(0.25, 10);
 	}
 	if (!ready) return;
 
@@ -51,7 +46,7 @@ void GameLooper::Update() {
 void GameLooper::Draw() {
 
 	if (ready) {
-		camera.original = shooter->pos;
+		camera.SetOriginal(shooter->pos);
 		camera.Calc(gMaxFramePixelWidth, gMaxFramePixelHeight);
 
 		auto& tm = *tiledMap;
