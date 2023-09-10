@@ -75,7 +75,7 @@ struct Camera {
 	}
 
 	// need calc
-	XX_FORCE_INLINE XY GetGLPos(XY const& logicPos) {
+	XX_FORCE_INLINE XY ToGLPos(XY const& logicPos) {
 		return (logicPos - original).MakeFlipY() * scale;
 	}
 };

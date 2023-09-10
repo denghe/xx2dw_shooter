@@ -5,28 +5,28 @@
 template<typename Item>
 struct SpaceGridAB;
 
-template<typename SpaceGridABItemDeriveType>
+template<typename T>
 struct SpaceGridABItemCellInfo {
-	SpaceGridABItemDeriveType* self{};
+	T* self{};
 	size_t idx{};
 	SpaceGridABItemCellInfo* prev{}, * next{};
 };
 
 // for inherit
-template<typename SpaceGridABItemDeriveType>
+template<typename Derived>
 struct SpaceGridABItem {
-	using SGABCoveredCellInfo = SpaceGridABItemCellInfo<SpaceGridABItemDeriveType>;
-	SpaceGridAB<SpaceGridABItemDeriveType>* _sgab{};
+	using SGABCoveredCellInfo = SpaceGridABItemCellInfo<Derived>;
+	SpaceGridAB<Derived>* _sgab{};
 	Vec2<int32_t> _sgabPos, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
 	Vec2<int32_t> _sgabCRIdxFrom, _sgabCRIdxTo;	// backup for Update speed up
 	std::vector<SGABCoveredCellInfo> _sgabCoveredCellInfos;	// todo: change to custom single buf container ?
 	size_t _sgabFlag{};	// avoid duplication when Foreach
 
-	void SGABInit(SpaceGridAB<SpaceGridABItemDeriveType>* const& sgab) {
+	void SGABInit(SpaceGridAB<Derived>& sgab) {
 		assert(!_sgab);
 		assert(!_sgabFlag);
 		assert(_sgabCoveredCellInfos.empty());
-		_sgab = sgab;
+		_sgab = &sgab;
 	}
 
 	void SGABSetPosSiz(Vec2<int32_t> const& pos, Vec2<int32_t> const& siz) {
@@ -47,21 +47,22 @@ struct SpaceGridABItem {
 
 	void SGABAdd() {
 		assert(_sgab);
-		_sgab->Add(((SpaceGridABItemDeriveType*)(this)));
+		_sgab->Add(((Derived*)(this)));
 	}
 	void SGABUpdate() {
 		assert(_sgab);
-		_sgab->Update(((SpaceGridABItemDeriveType*)(this)));
+		_sgab->Update(((Derived*)(this)));
 	}
 	void SGABRemove() {
 		assert(_sgab);
-		_sgab->Remove(((SpaceGridABItemDeriveType*)(this)));
+		_sgab->Remove(((Derived*)(this)));
+		_sgab = nullptr;
 	}
 };
 
 template<typename Item>
 struct SpaceGridAB {
-	using ItemCellInfo = typename Item::SGABCoveredCellInfo;
+	using ItemCellInfo = SpaceGridABItemCellInfo<Item>;
 	Vec2<int32_t> cellSize;
 	int32_t numRows{}, numCols{};
 	int32_t maxY{}, maxX{}, numItems{}, numActives{};	// for easy check & stat
@@ -205,6 +206,7 @@ struct SpaceGridAB {
 	}
 
 	// fill items to results. need ClearResults()
+	// auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 	template<bool enableLimit = false, bool enableExcept = false>
 	void ForeachAABB(Vec2<int32_t> const& minXY, Vec2<int32_t> const& maxXY, int32_t* limit = nullptr, Item* const& except = nullptr) {
 		assert(minXY.x < maxXY.x);

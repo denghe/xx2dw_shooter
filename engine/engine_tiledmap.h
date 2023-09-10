@@ -519,6 +519,7 @@ namespace TMX {
 
 					auto& f = info.frame.Emplace();
 					f->tex = info.image->texture;
+					f->key = f->tex->FileName();
 					f->anchor = { 0.5, 0.5 };
 					if (info.IsSingleImage()) {
 						auto w = (float)info.image->width;

@@ -4,7 +4,7 @@ void ShooterBullet1::Draw() {
 	if (gLooper.camera.InArea(pos)) {
 		body.SetScale(gScale * gLooper.camera.scale)
 			.SetRotate(radians)
-			.SetPosition(gLooper.camera.GetGLPos(pos))
+			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.Draw();
 	}
 }
