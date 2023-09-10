@@ -30,7 +30,7 @@ Tree::~Tree() {
 
 xx::Task<> Tree::MainLogic() {
 	// shake effect
-	constexpr float r1 = -0.07f, r2 = 0.07f, step = 0.03f / 60 * gDesign.fps;
+	constexpr float r1 = -0.07f, r2 = 0.07f, step = 0.03f * 60 / gDesign.fps;
 	while (true) {	// repeat forever
 		for (radians = r1; radians < r2; radians += step) {
 			co_yield 0;

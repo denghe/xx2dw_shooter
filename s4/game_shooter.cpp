@@ -20,7 +20,7 @@ xx::Task<> Shooter::MainLogic() {
 			if (gLooper.aimTouchMovePos == gLooper.aimTouchStartPos) {
 				r = touchLastRotation;
 			} else {
-				auto v = gLooper.aimTouchMovePos.MakeFlipY() - gLooper.aimTouchStartPos.MakeFlipY();
+				auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
 				touchLastRotation = r = std::atan2(v.y, v.x);
 				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
 					cr = std::cos(r);

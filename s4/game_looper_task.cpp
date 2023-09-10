@@ -96,16 +96,26 @@ void GameLooper::Draw() {
 		//		}
 		//	}
 		//}
+		//for (auto& tree : trees) {
+		//	tree->Draw();
+		//}
+		//shooter->Draw();
+		//bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
 
-		// todo: draw tree order by Y with bullet & plane
+		// order by Y draw shooter + tree + bullets
 
 		tmpsPosYObj.emplace_back(shooter->pos.y, shooter.pointer);
 
 		for (auto& tree : trees) {
-			tmpsPosYObj.emplace_back(tree->pos.y, tree.pointer);
+			if (camera.InArea(tree->pos)) {
+				tmpsPosYObj.emplace_back(tree->pos.y, tree.pointer);
+			}
 		}
+
 		bullets_shooter1.Foreach([&](auto& o) {
-			tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
+			if (camera.InArea(o->pos)) {
+				tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
+			}
 		});
 
 		std::sort(tmpsPosYObj.begin(), tmpsPosYObj.end(), [](auto const& a, auto const& b) {
@@ -117,18 +127,6 @@ void GameLooper::Draw() {
 		}
 		tmpsPosYObj.clear();
 
-		//// show debug area on tree
-		//q.SetFrame(frames_bullets[8]).SetScale(gScale * camera.scale).SetAnchor({ 0.5, 0.5 });
-		//for (auto& tree : trees) {
-		//	auto&& p = camera.ToGLPos(tree->_sgabPos.As<float>());
-		//	q.SetPosition(p).Draw();
-		//}
-
-		//for (auto& tree : trees) {
-		//	tree->Draw();
-		//}
-		//shooter->Draw();
-		//bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
 
 		// todo: more Draw
 

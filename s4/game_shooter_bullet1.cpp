@@ -2,12 +2,10 @@
 
 void ShooterBullet1::Draw() {
 	auto& c = gLooper.camera;
-	if (c.InArea(pos)) {
-		body.SetScale(gScale * c.scale)
-			.SetRotate(radians)
-			.SetPosition(c.ToGLPos(pos))
-			.Draw();
-	}
+	body.SetScale(gScale * c.scale)
+		.SetRotate(radians)
+		.SetPosition(c.ToGLPos(pos))
+		.Draw();
 }
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
