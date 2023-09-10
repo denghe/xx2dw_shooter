@@ -77,7 +77,7 @@ void main() {
         aTexRect = glGetAttribLocation(p, "aTexRect");
         CheckGLError();
 
-        glGenVertexArrays(1, va.Get());
+        glGenVertexArrays(1, va.GetValuePointer());
         glBindVertexArray(va);
 
         glGenBuffers(1, (GLuint*)&ib);
@@ -144,18 +144,18 @@ void main() {
         quadCount = 0;
     }
 
-    QuadInstanceData* Draw(GLTexture const& tex, int numQuads) {
+    QuadInstanceData* Draw(GLuint texId, int numQuads) {
         assert(numQuads <= maxQuadNums);
-        if (quadCount + numQuads > maxQuadNums || (lastTextureId && lastTextureId != tex)) {
+        if (quadCount + numQuads > maxQuadNums || (lastTextureId && lastTextureId != texId)) {
             Commit();
         }
-        lastTextureId = tex;
+        lastTextureId = texId;
         auto r = &quadInstanceDatas[quadCount];
         quadCount += numQuads;
         return r;
     }
 
-    void Draw(GLTexture const& tex, QuadInstanceData const& qv) {
-        memcpy(Draw(tex, 1), &qv, sizeof(QuadInstanceData));
+    void Draw(GLuint texId, QuadInstanceData const& qv) {
+        memcpy(Draw(texId, 1), &qv, sizeof(QuadInstanceData));
     }
 };

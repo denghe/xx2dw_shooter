@@ -43,8 +43,8 @@ struct FrameBuffer {
 protected:
     void Begin(xx::Shared<GLTexture>& t, std::optional<RGBA8> const& c = {}) {
         gEngine->GLShaderEnd();
-        bak.x = std::exchange(gEngine->w, t->Width());
-        bak.y = std::exchange(gEngine->h, t->Height());
+        bak.x = std::exchange(gEngine->windowWidth, t->Width());
+        bak.y = std::exchange(gEngine->windowHeight, t->Height());
         gEngine->flipY = -1;
         BindGLFrameBufferTexture(fb, *t);
         gEngine->GLViewport();
@@ -56,8 +56,8 @@ protected:
     void End() {
         gEngine->GLShaderEnd();
         UnbindGLFrameBuffer();
-        gEngine->w = bak.x;
-        gEngine->h = bak.y;
+        gEngine->windowWidth = bak.x;
+        gEngine->windowHeight = bak.y;
         gEngine->flipY = 1;
         gEngine->GLViewport();
         gEngine->GLShaderBegin();

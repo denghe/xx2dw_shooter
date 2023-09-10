@@ -28,7 +28,8 @@ struct GLRes {
     GLRes(GLuint i, Args&&... args) : vs(std::make_tuple(i, std::forward<Args>(args)...)) {}
 
     operator GLuint const& () const { return std::get<0>(vs); }
-    GLuint* Get() { return &std::get<0>(vs); }
+    GLuint const& GetValue() const { return std::get<0>(vs); }
+    GLuint* GetValuePointer() { return &std::get<0>(vs); }
 
     GLRes(GLRes const&) = delete;
     GLRes& operator=(GLRes const&) = delete;

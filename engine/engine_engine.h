@@ -150,6 +150,8 @@ struct Engine : EngineBase {
 
         if constexpr(Has_Init<Derived>) {
             ((Derived*)this)->Init();
+            windowWidth_2 = windowWidth / 2;
+            windowHeight_2 = windowHeight / 2;
         }
         GLInit();
 

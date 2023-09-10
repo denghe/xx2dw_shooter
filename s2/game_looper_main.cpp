@@ -12,7 +12,7 @@ GameLooper gLooper;
 
 EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
 	touchMode = {};
-    mousePos = { (float)e.targetX - w / 2, h - (float)e.targetY - h / 2 };
+    mousePos = { (float)e.targetX - windowWidth_2, windowHeight - (float)e.targetY - windowHeight_2 };
     return EM_TRUE;
 }
 EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
@@ -33,7 +33,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 	if (e.numTouches == 1) {
 		auto&& t = e.touches[0];
 		aimTouchId = t.identifier;
-		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - windowWidth_2, windowHeight - (float)t.targetY - windowHeight_2 };
 	} else {
 		for (int32_t i = 0; i < e.numTouches; ++i) {
 			auto&& t = e.touches[i];
@@ -52,7 +52,7 @@ EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
 		auto&& t = e.touches[i];
 		if (!t.isChanged) continue;
 		if (aimTouchId == t.identifier) {
-			aimTouchMovePos = { (float)t.targetX - w / 2, h - (float)t.targetY - h / 2 };
+			aimTouchMovePos = { (float)t.targetX - windowWidth_2, windowHeight - (float)t.targetY - windowHeight_2 };
 		}
 	}
 	return EM_TRUE;

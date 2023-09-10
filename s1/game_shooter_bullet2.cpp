@@ -23,8 +23,8 @@ xx::Task<> ShooterBullet2::MainLogic() {
 		}
 
 		AddPosition(inc);
-		if ((pos.x > gLooper.w / 2 + cRadius * 2) || (pos.x < -gLooper.w / 2 - cRadius * 2) ||
-			(pos.y > gLooper.h / 2 + cRadius * 2) || (pos.y < -gLooper.h / 2 - cRadius * 2)) break;
+		if ((pos.x > gLooper.windowWidth_2 + cRadius * 2) || (pos.x < -gLooper.windowWidth_2 - cRadius * 2) ||
+			(pos.y > gLooper.windowHeight_2 + cRadius * 2) || (pos.y < -gLooper.windowHeight_2 - cRadius * 2)) break;
 
 		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
 			// todo: - hp ?

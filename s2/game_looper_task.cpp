@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 
 void GameLooper::Init() {
-    w = gDesign.width;
-    h = gDesign.height;
+	windowWidth = gDesign.width;
+	windowHeight = gDesign.height;
 }
 
 xx::Task<> GameLooper::MainTask() {

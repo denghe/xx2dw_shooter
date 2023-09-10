@@ -1,14 +1,15 @@
 ﻿#include "pch.h"
 
+void Shooter::Draw() {
+	// todo: in screen check
+	body.SetScale(gScale * gLooper.scale).SetRotate(radians).Draw();	// always 0,0  no need set pos
+}
+
 void Shooter::Init(XY const& bornPos) {
 	Add(MainLogic());
 	pos = bornPos;
 
-	body.SetFrame(gLooper.frame_shooter).SetScale(gScale);
-}
-
-void Shooter::Draw() {
-	body.SetRotate(radians).Draw();
+	body.SetFrame(gLooper.frame_shooter);
 }
 
 xx::Task<> Shooter::MainLogic() {
@@ -20,18 +21,20 @@ xx::Task<> Shooter::MainLogic() {
 			if (gLooper.aimTouchMovePos == gLooper.aimTouchStartPos) {
 				r = touchLastRotation;
 			} else {
-				auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
+				auto v = gLooper.aimTouchMovePos.MakeFlipY() - gLooper.aimTouchStartPos.MakeFlipY();
 				touchLastRotation = r = std::atan2(v.y, v.x);
 				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
 					cr = std::cos(r);
 					sr = std::sin(r);
-					pos += XY{ cr, sr } * cSpeed * gScale / 4;
+					pos += XY{ cr, sr } * cSpeed;
 				}
 			}
 			needFire = gLooper.fireTouchId != -1;								// todo: touch special area for special fire ?
 		} else {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
 				pos += *inc;
+				//printf("Shooter inc %f %f\n", inc->x, inc->y);
+				//printf("Shooter pos %f %f\n", pos.x, pos.y);
 			}
 			auto v = gLooper.mousePos/* - pos*/;
 			r = std::atan2(v.y, v.x);
@@ -74,7 +77,7 @@ xx::Task<> Shooter::MainLogic() {
 		cr = std::cos(r);
 
 		if (needFire) {
-			XY inc{ cr, sr };
+			XY inc{ cr, -sr };
 			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
 		}
 
@@ -91,10 +94,10 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 	} flags;
 	int32_t n = 0;
 
-	if (gLooper.Pressed(KeyboardKeys::A)) { flags.a = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::S)) { flags.s = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::D)) { flags.d = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::W)) { flags.w = 1; ++n; }
+	if (gLooper.KeyDown(KeyboardKeys::A)) { flags.a = 1; ++n; }
+	if (gLooper.KeyDown(KeyboardKeys::S)) { flags.s = 1; ++n; }
+	if (gLooper.KeyDown(KeyboardKeys::D)) { flags.d = 1; ++n; }
+	if (gLooper.KeyDown(KeyboardKeys::W)) { flags.w = 1; ++n; }
 
 	if (n > 2) {
 		if (flags.a && flags.d) {
@@ -113,22 +116,22 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 	if (n == 2) {
 		if (flags.w) {
 			if (flags.d) {
-				v = { gDesign.sqr2, gDesign.sqr2 };	// up right
+				v = { gDesign.sqr2, -gDesign.sqr2 };	// up right
 			} else if (flags.a) {
-				v = { -gDesign.sqr2, gDesign.sqr2 };	// up left
+				v = { -gDesign.sqr2, -gDesign.sqr2 };	// up left
 			}
 		} else if (flags.s) {
 			if (flags.d) {
-				v = { gDesign.sqr2, -gDesign.sqr2 };	// right down
+				v = { gDesign.sqr2, gDesign.sqr2 };		// right down
 			} else if (flags.a) {
-				v = { -gDesign.sqr2, -gDesign.sqr2 };	// left down
+				v = { -gDesign.sqr2, gDesign.sqr2 };	// left down
 			}
 		}
 	} else if (n == 1) {
 		if (flags.w) {
-			v.y = 1;	// up
+			v.y = -1;	// up
 		} else if (flags.s) {
-			v.y = -1;	// down
+			v.y = 1;	// down
 		} else if (flags.a) {
 			v.x = -1;	// left
 		} else if (flags.d) {
@@ -136,5 +139,5 @@ std::optional<XY> Shooter::GetKeyboardMoveInc() {
 		}
 	}
 
-	return v * cSpeed * gScale / 4;
+	return v * cSpeed;
 }

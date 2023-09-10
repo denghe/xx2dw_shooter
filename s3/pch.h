@@ -16,7 +16,7 @@
 int32_t main();
 
 constexpr GDesign<1280, 800, 60> gDesign;
-constexpr float gScale = 1;	// scale texture
+constexpr float gScale = 4;	// for pixel texture
 
 struct ObjBase : xx::Tasks {
 	XY pos{};
@@ -28,7 +28,10 @@ struct ObjBase : xx::Tasks {
 struct Shooter;
 struct ShooterBullet1;
 
-enum class KeyboardKeys {
+// type same as EmscriptenKeyboardEvent.what
+using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
+enum class KeyboardKeys : KeyboardKeys_t {
+	Unknown = 0,
 	A = 65,
 	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
 	, MAX_VALUE
@@ -39,27 +42,26 @@ struct GameLooper : Engine<GameLooper> {
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
-	XY mousePos;
-	std::array<bool, 16> mouseBtnStates{};
-	std::array<bool, (int32_t)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
-	long aimTouchId{ -1 }, fireTouchId{ -1 };
-	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
-	bool touchMode{};
-
+	std::array<bool, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysStates{};
+	std::array<double, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysDelays{};
 	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
 	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
+	bool KeyDown(KeyboardKeys k) const;
+	bool KeyDownDelay(KeyboardKeys k, double delaySecs);
 
+	XY mousePos;
+	std::array<bool, 16> mouseBtnStates{};
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
 
+	long aimTouchId{ -1 }, fireTouchId{ -1 };
+	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
+	bool touchMode{};
 	EM_BOOL OnTouchStart(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchMove(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchEnd(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchCancel(EmscriptenTouchEvent const& e);
-
-
-	bool Pressed(KeyboardKeys k) const;
 
 	void Init();
 	void Update();
@@ -74,6 +76,7 @@ struct GameLooper : Engine<GameLooper> {
 	TMX::Layer_Tile* layerBG{}, *layerTrees{};
 	//TMX::Camera cam;
 	float scale{ 1 }, zoom{ 1 };
+	//float w{}, h{}, w2{}, h2{};		// logic width, height, width / 2, height / 2
 
 	// res
 	xx::Shared<Frame> frame_shooter;
@@ -87,7 +90,9 @@ struct GameLooper : Engine<GameLooper> {
 extern GameLooper gLooper;
 
 struct Shooter : ObjBase {
-	constexpr static float cRadius{ 8 * gScale }, cSpeed{ 180 / gDesign.fps }, cFrameMaxChangeRadian{ M_PI * 10 / gDesign.fps };
+	constexpr static float cRadius{ 8 * gScale };
+	constexpr static float cSpeed{ 40 * gScale / gDesign.fps };
+	constexpr static float cFrameMaxChangeRadian{ M_PI * 10 / gDesign.fps };
 	constexpr static float cFireDistance{ cRadius };
 	constexpr static float cTouchDistance{ 40 };
 
@@ -101,9 +106,10 @@ struct Shooter : ObjBase {
 };
 
 struct ShooterBullet1 : ObjBase {
-	constexpr static int cFrameIndex{ 0 }, cLife{ 200 / 60 * gDesign.fps };
-	constexpr static float cRadius{ 8.f };
-	constexpr static float cSpeed{ 2 * 60 / gDesign.fps };
+	constexpr static int cFrameIndex{ 0 };
+	constexpr static int cLife{ 5 * gDesign.fps };
+	constexpr static float cRadius{ 2 * gScale };
+	constexpr static float cSpeed{ 60 * gScale / gDesign.fps };
 
 	Quad body;
 	XY inc{};

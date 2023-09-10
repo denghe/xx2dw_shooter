@@ -9,7 +9,8 @@
 #include "engine_js_funcs.h"
 
 struct EngineBase {
-    inline static float w = 800, h = 600;          // can change at Init()
+    inline static float windowWidth = 800, windowHeight = 600;          // can change at Init()
+    inline static float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
     float flipY{ 1 };   // -1: flip  for ogl frame buffer
     Shader_QuadInstance shader;
@@ -21,7 +22,7 @@ struct EngineBase {
     EM_BOOL running{ EM_TRUE };
 
     void GLInit() {
-        emscripten_set_canvas_element_size("canvas", (int)w, (int)h);
+        emscripten_set_canvas_element_size("canvas", (int)windowWidth, (int)windowHeight);
         EmscriptenWebGLContextAttributes attrs;
         emscripten_webgl_init_context_attributes(&attrs);
         attrs.alpha = 0;
@@ -37,7 +38,7 @@ struct EngineBase {
     }
 
     void GLViewport() {
-        glViewport(0, 0, (int)w, (int)h);
+        glViewport(0, 0, (int)windowWidth, (int)windowHeight);
     }
 
     void GLClear(RGBA8 c) {
@@ -57,7 +58,7 @@ struct EngineBase {
     }
 
     void GLShaderBegin() {
-        shader.Begin(w, h * flipY);
+        shader.Begin(windowWidth, windowHeight * flipY);
     }
 
     void GLShaderEnd() {

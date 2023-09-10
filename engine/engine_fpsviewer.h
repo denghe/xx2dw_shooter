@@ -31,6 +31,6 @@ struct FpsViewer {
                  + " VC:" + std::to_string(Shader::drawVerts);
         gEngine->GLShaderBegin();
 
-        ctc.Draw({ -gEngine->w / 2, -gEngine->h / 2 + ctc.canvasHeight / 2 }, s);
+        ctc.Draw({ -gEngine->windowWidth_2, -gEngine->windowHeight_2 + ctc.canvasHeight_2 }, s);
     }
 };

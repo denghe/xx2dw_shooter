@@ -11,8 +11,9 @@ struct CharInfo {
 template<int charSize_ = 24, int canvasWidth_ = int(charSize_ / 0.75), int canvasHeight_ = int(charSize_ / 0.75), int texWidth_ = 2048, int texHeight_ = 2048>
 struct CharTexCache {
     static constexpr int charSize = charSize_, canvasWidth = canvasWidth_, canvasHeight = canvasHeight_, texWidth = texWidth_, texHeight = texHeight_;
+    static constexpr int canvasWidth_2 = canvasWidth / 2, canvasHeight_2 = canvasHeight / 2;
     std::vector<xx::Shared<GLTexture>> texs;
-    xx::Shared<GLTexture> ct;
+    Quad cq;
     FrameBuffer fb;
     float cw{};
     XY p{ 0, texHeight - 1 };
@@ -26,7 +27,8 @@ struct CharTexCache {
         init_gCanvas(charSize, canvasWidth, canvasHeight);
 
         texs.emplace_back(FrameBuffer::MakeTexture(Vec2{ texWidth, texHeight }));
-        ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
+        auto ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
+        cq.SetFrame(Frame::Create(std::move(ct))).SetAnchor({ 0, 1 });
 
         char buf[16];
         for (char32_t c = 0; c < 256; ++c) {
@@ -37,7 +39,7 @@ struct CharTexCache {
     void FillCharTex(char32_t c) {
         char buf[16];
         buf[xx::Char32ToUtf8(c, buf)] = '\0';
-        glBindTexture(GL_TEXTURE_2D, *ct);
+        glBindTexture(GL_TEXTURE_2D, cq.texId);
         cw = upload_unicode_char_to_texture(charSize, buf);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
@@ -69,7 +71,7 @@ struct CharTexCache {
 
         auto& t = texs.back();
         fb.DrawTo(t, {}, [&]() {
-            Quad().SetAnchor({0, 1}).SetPosition(cp + XY{-texWidth / 2, -texHeight / 2}).SetTexture(ct).Draw();
+            cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();
         });
 
         ci->tex = t;
@@ -106,7 +108,7 @@ struct CharTexCache {
 
         for (size_t i = 0; i < e; ++i) {
             auto&& ci = *cis[i];
-            q.tex = ci.tex;
+            q.texId = ci.tex->GetValue();
             q.color = color;
             q.texRectX = ci.texRectX;
             q.texRectY = ci.texRectY;

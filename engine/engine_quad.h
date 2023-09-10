@@ -5,88 +5,97 @@
 
 // sprite
 struct Quad : QuadInstanceData {
-    xx::Shared<GLTexture> tex;
+    xx::Shared<Frame> frame;
+    GLuint texId{};   // cache: == *frame->tex
 
-    Quad& SetTexture(xx::Shared<GLTexture> const& t) {
-        tex = t;
-        texRectX = 0;
-        texRectY = 0;
-        texRectW = t->Width();
-        texRectH = t->Height();
-        return *this;
-    }
-    Quad& SetFrame(xx::Shared<Frame> const& f) {
-        assert(f && !f->textureRotated);	// known issue: not support now
-        tex = f->tex;
+    XX_FORCE_INLINE Quad& SetFrame(xx::Shared<Frame> f) {
+        assert(f);
+        assert(f->tex);
         texRectX = f->textureRect.x;
         texRectY = f->textureRect.y;
         texRectW = (uint16_t)f->textureRect.wh.x;
         texRectH = (uint16_t)f->textureRect.wh.y;
+        texId = f->tex->GetValue();
+        frame = std::move(f);
         return *this;
     }
+
+    XX_FORCE_INLINE Quad& TrySetFrame(xx::Shared<Frame> const& f) {
+        if (frame != f) {
+            SetFrame(f);
+        }
+        return *this;
+    }
+
+    XX_FORCE_INLINE Quad& ClearFrame() {
+        frame.Reset();
+        texId = 0;
+    }
+
     template<typename T = float>
-    XY Size() const {
-        assert(tex);
+    XX_FORCE_INLINE XY Size() const {
+        assert(frame);
         return { (T)texRectW, (T)texRectH };
     }
-    Quad& SetAnchor(XY const& a) {
+    XX_FORCE_INLINE Quad& SetAnchor(XY const& a) {
         anchor = a;
         return *this;
     }
-    Quad& SetRotate(float const& r) {
+    XX_FORCE_INLINE Quad& SetRotate(float const& r) {
         radians = r;
         return *this;
     }
-    Quad& AddRotate(float const& r) {
+    XX_FORCE_INLINE Quad& AddRotate(float const& r) {
         radians += r;
         return *this;
     }
-    Quad& SetScale(XY const& s) {
+    XX_FORCE_INLINE Quad& SetScale(XY const& s) {
         scale = s;
         return *this;
     }
-    Quad& SetScale(float const& s) {
+    XX_FORCE_INLINE Quad& SetScale(float const& s) {
         scale = { s, s };
         return *this;
     }
-    Quad& SetPosition(XY const& p) {
+    XX_FORCE_INLINE Quad& SetPosition(XY const& p) {
         pos = p;
         return *this;
     }
-    Quad& SetPositionX(float const& x) {
+    XX_FORCE_INLINE Quad& SetPositionX(float const& x) {
         pos.x = x;
         return *this;
     }
-    Quad& SetPositionY(float const& y) {
+    XX_FORCE_INLINE Quad& SetPositionY(float const& y) {
         pos.y = y;
         return *this;
     }
-    Quad& AddPosition(XY const& p) {
+    XX_FORCE_INLINE Quad& AddPosition(XY const& p) {
         pos += p;
         return *this;
     }
-    Quad& AddPositionX(float const& x) {
+    XX_FORCE_INLINE Quad& AddPositionX(float const& x) {
         pos.x += x;
         return *this;
     }
-    Quad& AddPositionY(float const& y) {
+    XX_FORCE_INLINE Quad& AddPositionY(float const& y) {
         pos.y += y;
         return *this;
     }
-    Quad& SetColor(RGBA8 const& c) {
+    XX_FORCE_INLINE Quad& SetColor(RGBA8 const& c) {
         color = c;
         return *this;
     }
-    Quad& SetColorA(uint8_t const& a) {
+    XX_FORCE_INLINE Quad& SetColorA(uint8_t const& a) {
         color.a = a;
         return *this;
     }
-    Quad& SetColorAf(float const& a) {
+    XX_FORCE_INLINE Quad& SetColorAf(float const& a) {
         color.a = 255 * a;
         return *this;
     }
-    Quad& Draw() {
-        gEngine->shader.Draw(*tex, *this);
-        return *this;
+    XX_FORCE_INLINE Quad& Draw() const {
+        assert(texId);
+        gEngine->shader.Draw(texId, *this);
+        return (Quad&)*this;
     }
 };

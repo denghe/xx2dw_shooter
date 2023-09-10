@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 
 void GameLooper::Init() {
-    w = gDesign.width;
-    h = gDesign.height;
+    windowWidth = gDesign.width;
+    windowHeight = gDesign.height;
 }
 
 xx::Task<> GameLooper::MainTask() {
@@ -21,11 +21,6 @@ xx::Task<> GameLooper::MainTask() {
 	layerTrees = tiledMap->FindLayer<TMX::Layer_Tile>("trees");
 	xx_assert(layerTrees);
 	for (auto& img : tiledMap->images) img->texture->SetGLTexParm<GL_LINEAR>();	// set bg texture draw parm
-	//cam.Init({w, h}, *tiledMap);
-	//cam.SetPosition({ 830, 510 });
-	//shooter.Emplace()->Init(cam.pos);	// make player plane
-	scale = gScale / 4;
-	zoom = 1 / scale;
 
 	shooter.Emplace()->Init({});	// make player plane
 
@@ -35,6 +30,20 @@ xx::Task<> GameLooper::MainTask() {
 
 void GameLooper::Update() {
 	fv.Update();
+	if (KeyDownDelay(KeyboardKeys::Z, 0.2)) {
+		scale -= 0.25;
+		if (scale < 0.25) {
+			scale = 0.25;
+		}
+		zoom = 1 / scale;
+		//w2 = w / 2 * zoom;
+		//h2 = h / 2 * zoom;
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.2)) {
+		scale += 0.25;
+		zoom = 1 / scale;
+		//w2 = w / 2 * zoom;
+		//h2 = h / 2 * zoom;
+	}
 	if (!ready) return;
 
 	shooter();
@@ -50,59 +59,42 @@ void GameLooper::Draw() {
 			a->Update(delta);
 		}
 
-		float tiw = tm.tileWidth * scale, tih = tm.tileHeight * scale;
-		float tmw = tm.width, tmh = tm.height;
-		float totalWidth = tiw * tmw, totalHeight = tih * tmh;
+		int mapTileWidth = tm.tileWidth, mapTileHeight = tm.tileHeight;
+		float mapScaledTileWidth = mapTileWidth * scale, mapScaledTileHeight = mapTileHeight * scale;
+		int mapNumColumns = tm.width, mapNumRows = tm.height;
 
+		auto& sp = shooter->pos;
+		auto basePos = XY{ -sp.x, float(-mapTileHeight) + sp.y } * scale;
 		Quad q;
 		q.SetScale(scale).SetAnchor({0, 0});
-		auto basePos = XY{ 0, -tih } - shooter->pos;
 
-		for (int y = 0; y < (int)tmh; ++y) {
-			for (int x = 0; x < (int)tmw; ++x) {
+		auto w2 = windowWidth / 2 * zoom, h2 = windowHeight / 2 * zoom;
+		auto minX = (sp.x - w2) / mapTileWidth;
+		auto maxX = (sp.x + w2) / mapTileWidth;
+		auto minY = (sp.y - h2) / mapTileHeight;
+		auto maxY = (sp.y + h2) / mapTileHeight;
+		auto maxTreeY = maxY + 1;	// tree tile height == mapTileHeight * 2
+		if (minX < 0) minX = 0; else if (minX > mapNumColumns) minX = mapNumColumns;
+		if (maxX < 0) maxX = 0; else if (maxX > mapNumColumns) maxX = mapNumColumns;
+		if (minY < 0) minY = 0; else if (minY > mapNumRows) minY = mapNumRows;
+		if (maxY < 0) maxY = 0; else if (maxY > mapNumRows) maxY = mapNumRows;
+		if (maxTreeY < 0) maxTreeY = 0; else if (maxTreeY > mapNumRows) maxTreeY = mapNumRows;
+
+		for (int y = minY; y < maxY; ++y) {
+			for (int x = minX; x < maxX; ++x) {
 				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY{ x * tiw, -y * tih }).SetFrame(info->GetFrame()).Draw();
+					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).TrySetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
-		for (int y = 0; y < (int)tmh; ++y) {
-			for (int x = 0; x < (int)tmw; ++x) {
+
+		for (int y = minY; y < maxTreeY; ++y) {
+			for (int x = minX; x < maxX; ++x) {
 				if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-					q.SetPosition(basePos + XY{ x * tiw, -y * tih }).SetFrame(info->GetFrame()).Draw();
+					q.SetPosition(basePos + XY{ x * mapScaledTileWidth, -y * mapScaledTileHeight }).TrySetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
-
-		//cam.SetPosition(cam.worldPixel - shooter->pos);
-		//cam.Commit();
-
-		////// tiled map data orientation == right down, need flip y
-		////constexpr float scale = 0.5;
-		//float tw = tm.tileWidth * cam.scale.x, th = tm.tileHeight * cam.scale.y;
-		//float tmw = tm.width, tmh = tm.height;
-		////XY basePos{ gDesign.x7, gDesign.y7 - th };	// -th for flip y
-
-		//auto yFrom = cam.rowFrom;
-		//auto yTo = cam.rowTo;
-		//auto xFrom = cam.columnFrom;
-		//auto xTo = cam.columnTo;
-
-		//for (int y = yFrom; y < yTo; ++y) {
-		//	for (int x = xFrom; x < xTo; ++x) {
-		//		if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-		//			auto&& pos = cam.at.Apply({ x * tw, -y * th });
-		//			q.SetPosition(pos).SetFrame(info->GetFrame()).Draw();
-		//		}
-		//	}
-		//}
-		//for (int y = 0; y < (int)tmh; ++y) {
-		//	for (int x = 0; x < (int)tmw; ++x) {
-		//		if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-		//			printf("%d %d \n", y, x);
-		//			q.SetPosition(basePos + XY{ x * tw, -y * th }).SetFrame(info->GetFrame()).Draw();
-		//		}
-		//	}
-		//}
 
 		shooter->Draw();
 		bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
