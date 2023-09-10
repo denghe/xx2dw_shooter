@@ -25,20 +25,16 @@ xx::Task<> Shooter::MainLogic() {
 				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
 					cr = std::cos(r);
 					sr = std::sin(r);
-					pos += XY{ cr, sr } * cSpeed;
+					pos += XY{ cr, -sr } * cSpeed;
 				}
 			}
 			needFire = gLooper.fireTouchId != -1;								// todo: touch special area for special fire ?
 		} else {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
 				pos += *inc;
-				//printf("Shooter inc %f %f\n", inc->x, inc->y);
-				//printf("Shooter pos %f %f\n", pos.x, pos.y);
 			}
 			auto v = gLooper.mousePos/* - pos*/;
 			r = std::atan2(v.y, v.x);
-			sr = std::sin(r);
-			cr = std::cos(r);
 			needFire = gLooper.mouseBtnStates[0];
 		}
 
@@ -72,8 +68,8 @@ xx::Task<> Shooter::MainLogic() {
 		}
 
 		r = -radians;
-		sr = std::sin(r);
 		cr = std::cos(r);
+		sr = std::sin(r);
 
 		if (needFire) {
 			XY inc{ cr, -sr };
