@@ -7,6 +7,7 @@ void GameLooper::Init() {
 
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();	// font init
+	camera.SetMaxFrameSize({ gMaxFramePixelWidth, gMaxFramePixelHeight });	// camera init
 
     auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");		// load texture packer data
 	xx_assert(tp);
@@ -47,7 +48,7 @@ void GameLooper::Draw() {
 
 	if (ready) {
 		camera.SetOriginal(shooter->pos);
-		camera.Calc(gMaxFramePixelWidth, gMaxFramePixelHeight);
+		camera.Calc();
 
 		auto& tm = *tiledMap;
 		for (auto& a : tm.anims) {

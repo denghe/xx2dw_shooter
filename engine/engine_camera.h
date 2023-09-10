@@ -3,16 +3,22 @@
 
 struct Camera {
 	// need set
-	XY original;
 	float scale{ 1 }, zoom{ 1 };
+	XY original{};												// logic center position
+	XY maxFrameSize{};											// for calculate safe area
 
 	// calc fills
-	float width_2{}, height_2{};	// window size * zoom
-	float minX{}, maxX{}, minY{}, maxY{};
-	float safeMinX{}, safeMaxX{}, safeMinY{}, safeMaxY{};
+	float width_2{}, height_2{};								// logic size: window size * zoom
+	float minX{}, maxX{}, minY{}, maxY{};						// 4 corner pos
+	float safeMinX{}, safeMaxX{}, safeMinY{}, safeMaxY{};		// corner + max tex/frame size
 
-	XX_FORCE_INLINE Camera& SetOriginal(XY const& ori) {
-		original = ori;
+	XX_FORCE_INLINE Camera& SetMaxFrameSize(XY const& maxFrameSize_) {
+		maxFrameSize = maxFrameSize_;
+		return *this;
+	}
+
+	XX_FORCE_INLINE Camera& SetOriginal(XY const& original_) {
+		original = original_;
 		return *this;
 	}
 
@@ -47,7 +53,7 @@ struct Camera {
 	}
 
 	// need set original & set scale or zoom
-	void Calc(float safeX, float safeY) {
+	void Calc() {
 		width_2 = gEngine->windowWidth_2 * zoom;
 		height_2 = gEngine->windowHeight_2 * zoom;
 
@@ -56,10 +62,10 @@ struct Camera {
 		minY = original.y - height_2;
 		maxY = original.y + height_2;
 
-		safeMinX = minX - safeX;
-		safeMaxX = maxX + safeX;
-		safeMinY = minY - safeY;
-		safeMaxY = maxY + safeY;
+		safeMinX = minX - maxFrameSize.x;
+		safeMaxX = maxX + maxFrameSize.x;
+		safeMinY = minY - maxFrameSize.y;
+		safeMaxY = maxY + maxFrameSize.y;
 	}
 
 	// need calc
