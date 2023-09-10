@@ -57,6 +57,14 @@ struct Quad : QuadInstanceData {
         scale = { s, s };
         return *this;
     }
+    XX_FORCE_INLINE Quad& AddScale(XY const& s) {
+        scale += s;
+        return *this;
+    }
+    XX_FORCE_INLINE Quad& AddScale(float const& s) {
+        scale += XY{ s, s };
+        return *this;
+    }
     XX_FORCE_INLINE Quad& SetPosition(XY const& p) {
         pos = p;
         return *this;

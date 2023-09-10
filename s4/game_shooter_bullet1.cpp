@@ -31,6 +31,16 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		pos += inc;
 		//printf("ShooterBullet1 pos %f %f\n", pos.x, pos.y);
 
+		// check hit monsters
+		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
+			// todo: - hp ?
+			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
+			r->RemoveFromOwner();	// dispose monster
+			disposing = true;
+			co_return;
+		}
+
 		// check trees
 		auto& sg = gLooper.sgabTrees;
 		auto minXY = (pos - cRadius).As<int32_t>(), maxXY = (pos + cRadius).As<int32_t>();
@@ -38,14 +48,11 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		if (minXY.y < 0) minXY.y = 0;
 		if (maxXY.x >= sg.maxX) maxXY.x = sg.maxX - 1;
 		if (maxXY.y >= sg.maxY) maxXY.y = sg.maxY - 1;
-
 		if (minXY.x < maxXY.x && minXY.y < maxXY.y) {
 			sg.ForeachAABB(minXY, maxXY);
-			//printf("sg.results.size() = %d, minXY = %d %d, maxXY = %d %d\n", (int)sg.results.size(), minXY.x, minXY.y, maxXY.x, maxXY.y);
-
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& tree : sg.results) {
-				if (CheckBoxCircleIntersects(tree->_sgabPos.x, tree->_sgabPos.y, int(gLooper.tileWidth_2), int(gLooper.tileHeight_2), (int)pos.x, (int)pos.y, (int)cRadius)) {
+				if (CheckBoxCircleIntersects<float>(tree->_sgabPos.x, tree->_sgabPos.y, gLooper.tileWidth_2, gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
 					disposing = true;
 					co_return;
 				}

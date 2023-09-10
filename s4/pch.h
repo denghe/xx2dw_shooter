@@ -17,9 +17,16 @@
 int32_t main();
 
 constexpr GDesign<1280, 800, 60> gDesign;
-constexpr float gScale = 3;	// for pixel texture
+constexpr float gScale = 4;	// for pixel texture
 constexpr float gMaxFramePixelWidth = 64;
 constexpr float gMaxFramePixelHeight = 128;
+constexpr int32_t gGridCellDiameter = 32, gGridNumCols = 256, gGridNumRows = 256;	// 32 > max radius ( grid item )
+constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
+// todo: limit shooter move area
+constexpr float gSQ = 0.7071067811865475244;
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct ObjBase : xx::Tasks {
 	XY pos{};
@@ -30,9 +37,23 @@ struct ObjBase : xx::Tasks {
 	virtual ~ObjBase() {}
 };
 
+struct MonsterBase : SpaceGridCItem<MonsterBase>, ObjBase {
+	float radius{};
+
+	xx::ListDoubleLink<xx::Shared<MonsterBase>, int32_t, uint32_t>* owner{};	// fill before init
+	xx::ListDoubleLinkIndexAndVersion<int32_t, uint32_t> ivAtOwner;				// fill before init
+	void RemoveFromOwner();		// remove from all containers ( maybe call destructor )
+
+	void GridInit();		// call it before: set pos
+	void GridUpdate();		// call it before: set pos
+	~MonsterBase();
+};
+
 struct Shooter;
 struct ShooterBullet1;
 struct Tree;
+struct Explosion;
+struct DamageText;
 
 // type same as EmscriptenKeyboardEvent.what
 using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
@@ -43,8 +64,12 @@ enum class KeyboardKeys : KeyboardKeys_t {
 	, MAX_VALUE
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
+	CharTexCache<24> ctc24;
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
@@ -74,13 +99,14 @@ struct GameLooper : Engine<GameLooper> {
 	xx::Task<> MainTask();
 	void Draw();
 
+	// flags
+	bool ready{};
 	
 	// physics containers;
 	SpaceGridAB<Tree> sgabTrees;
-	// ...
+	SpaceGridC<MonsterBase> sgcMonsters;
+	SpaceGridRingDiffuseData<gGridNumRows, gGridCellDiameter> sgrdd;
 
-	// flags
-	bool ready{};
 
 	// tiled map container
 	xx::Shared<TMX::Map> tiledMap;
@@ -89,23 +115,74 @@ struct GameLooper : Engine<GameLooper> {
 	Camera camera;
 
 	// res
-	xx::Shared<Frame> frame_shooter;
-	std::vector<xx::Shared<Frame>> frames_bullets;
-	xx::Shared<Frame> frame_tree;
+	xx::Shared<Frame> frame_shooter, frame_tree;
+	std::vector<xx::Shared<Frame>>
+		frames_monster_1, frames_monster_2, frames_monster_3
+		, frames_explosion, frames_bullets;
 	// ...
 
-	// player objs
+	// effects
+	xx::ListLink<xx::Shared<Explosion>, int32_t> effects_explosion;
+	xx::ListLink<xx::Shared<DamageText>, int32_t> effects_damageText;
+
+	// objs
 	xx::Shared<Shooter> shooter;
 	xx::ListLink<xx::Shared<ShooterBullet1>, int32_t> bullets_shooter1;
 	std::vector<xx::Shared<Tree>> trees;
+	xx::ListDoubleLink<xx::Shared<MonsterBase>, int32_t, uint32_t> monsters;
 
 	std::vector<std::pair<float, ObjBase*>> tmpsPosYObj;	// for sort by Y
+
+	template<typename MT>
+	xx::Shared<MT>& CreateMonster(XY const& bornPos) {
+		auto&& m = monsters.Emplace().Emplace<MT>();
+		m->owner = &monsters;
+		m->ivAtOwner = monsters.Tail();
+		m->Init(bornPos);
+		return m;
+	}
+	MonsterBase* FindNeighborMonster(XY const& pos, float radius);
+	MonsterBase* FindNearestMonster(XY const& pos, float maxDistance);
 };
 extern GameLooper gLooper;
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+struct DamageText : ObjBase {
+	constexpr static int32_t cLife{ 30 };
+	constexpr static float moveSpeed{ 1 };
+
+	RGBA8 color;
+	std::string txt;
+
+	void Init(XY const& bornPos, int32_t hp);
+	void Draw() override;
+	xx::Task<> MainLogic();
+};
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+struct Explosion : ObjBase {
+	constexpr static float cScale{ gScale / 2 };
+	constexpr static float cFrameMaxIndex{ 5.f };
+	constexpr static float cFrameInc{ 0.1f };
+
+	Quad body;
+
+	void Init(XY const& bornPos);
+	void Draw() override;
+	xx::Task<> MainLogic();
+};
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct Tree : ObjBase, SpaceGridABItem<Tree> {
 	constexpr static int cXOffset{ 32 }, cYOffset{ 24 };
 	constexpr static int cBoxWidth{ 36 }, cBoxHeight{ 16 };
+
 	Quad body;
 
 	void Init(float x, float y);
@@ -113,6 +190,9 @@ struct Tree : ObjBase, SpaceGridABItem<Tree> {
 	~Tree();
 	xx::Task<> MainLogic();
 };
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
 
 struct Shooter : ObjBase {
 	constexpr static float cRadius{ 8 * gScale };
@@ -130,6 +210,9 @@ struct Shooter : ObjBase {
 	std::optional<XY> GetKeyboardMoveInc();
 };
 
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
 struct ShooterBullet1 : ObjBase {
 	constexpr static int cFrameIndex{ 0 };
 	constexpr static int cLife{ 5 * gDesign.fps };
@@ -140,6 +223,26 @@ struct ShooterBullet1 : ObjBase {
 	XY inc{};
 
 	void Init(XY const& bornPos, XY const& inc_, float radians_);
+	void Draw() override;
+	xx::Task<> MainLogic();
+};
+
+/*****************************************************************************************************/
+/*****************************************************************************************************/
+
+struct Monster1 : MonsterBase {
+	constexpr static float cScale{ gScale / 2 };
+	constexpr static float cScaleStep{ 1 * cScale / gDesign.fps };
+	constexpr static float cRadius{ 32 * cScale / gScale };
+	constexpr static float cSpeed{ 20 * gScale / gDesign.fps };
+	constexpr static float cFrameMaxIndex{ 6.f };
+	constexpr static float cFrameInc{ 0.1f * 60 / gDesign.fps };
+	constexpr static float cLife{ 30 * gDesign.fps };
+
+	Quad body;
+	float frameIndex{}, life{ cLife }, scale{};
+
+	void Init(XY const& bornPos);
 	void Draw() override;
 	xx::Task<> MainLogic();
 };
