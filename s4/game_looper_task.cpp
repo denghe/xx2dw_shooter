@@ -205,7 +205,7 @@ void GameLooper::Draw() {
 		effects_damageText.Foreach([&](auto& o) { o->Draw(); });
 
 		// todo: more Draw
-		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "press Z, X zoom");
+		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }
