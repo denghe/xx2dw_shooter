@@ -304,11 +304,11 @@ int main() {
     }
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
-    xx::Task<xx::Shared<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl) {
+    xx::Task<xx::Shared<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
         auto map = xx::Make<TMX::Map>();
         // download bmx & fill
         {
-            auto sd = co_await AsyncDownloadFromUrl("res/m.bmx");
+            auto sd = co_await AsyncDownloadFromUrl(bmxUrl);
             xx_assert(sd);
 
             xx::TmxData td;
@@ -319,7 +319,7 @@ int main() {
         // download textures
         auto n = map->images.size();
         for (auto& img : map->images) {
-            tasks.Add([this, &n, img = img, url = std::string("res/") + img->source]()->xx::Task<> {
+            tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
                 img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
                 --n;
                 //printf("url loaded: %s\n", url.c_str());

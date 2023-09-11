@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 
 void GameLooper::Init() {
+	printf("asdf\n");
     windowWidth = gDesign.width;
     windowHeight = gDesign.height;
 }
@@ -11,7 +12,6 @@ xx::Task<> GameLooper::MainTask() {
 	camera.SetMaxFrameSize({ gMaxFramePixelWidth, gMaxFramePixelHeight });		// camera init
 	camera.SetScale(0.5);
 
-	sgcMonsters.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);			// init physics grid index
 
     auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");			// load texture packer data
 	xx_assert(tp);
@@ -23,7 +23,7 @@ xx::Task<> GameLooper::MainTask() {
 	frame_shooter = tp->TryGet("p");
 	xx_assert(frame_shooter);
 
-	tiledMap = co_await AsyncLoadTiledMapFromUrl("res/m.bmx");					// load tiled map data
+	tiledMap = co_await AsyncLoadTiledMapFromUrl("res/m2.bmx", "res/");			// load tiled map data
 	xx_assert(tiledMap);
 	layerBG = tiledMap->FindLayer<TMX::Layer_Tile>("bg");
 	xx_assert(layerBG);
@@ -36,6 +36,7 @@ xx::Task<> GameLooper::MainTask() {
 	tileHeight_2 = tileHeight / 2;
 
 	sgabTrees.Init(tiledMap->height, tiledMap->width, tileWidth, tileHeight);	// init physics grid index
+	sgcMonsters.Init(tiledMap->height + gGridNumRows, tiledMap->width + gGridNumCols, gGridCellDiameter);
 
 
 	for (int y = 0, ye = tiledMap->height; y < ye; ++y) {						// search & fill tree frame & trees
@@ -55,49 +56,59 @@ xx::Task<> GameLooper::MainTask() {
 
 	ready = true;
 
-	// make monsters
-	tasks.Add([&]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 1; i++) {
-				auto x = rnd.Next<float>(0, mapPixelWidth);
-				CreateMonster<Monster1>(XY{ x, 0 });
-			}
-			co_yield 0;
-			co_yield 0;
+	// make monsters ( round by shooter )
+	while (true) {
+		auto basePos = shooter->pos;
+		for (size_t i = 0; i < 5; i++) {
+			auto a = rnd.Next<float>(M_PI * 2);
+			auto r = rnd.Next<float>(1200, 12200);
+			CreateMonster<Monster1>(basePos + XY{ std::cos(a), std::sin(a) } * r);
 		}
-	});
-	tasks.Add([&]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 1; i++) {
-				auto y = rnd.Next<float>(0, mapPixelHeight);
-				CreateMonster<Monster1>(XY{ 0, y });
-			}
-			co_yield 0;
-			co_yield 0;
-			co_yield 0;
-		}
-	});
-	tasks.Add([&]()->xx::Task<> {
-		while (true) {
-			for (size_t i = 0; i < 1; i++) {
-				auto y = rnd.Next<float>(0, mapPixelHeight);
-				CreateMonster<Monster1>(XY{ mapPixelWidth, y });
-			}
-			co_yield 0;
-			co_yield 0;
-			co_yield 0;
-		}
-	});
+		co_yield 0;
+	}
+	// 
+	//tasks.Add([&]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 1; i++) {
+	//			auto x = rnd.Next<float>(0, mapPixelWidth);
+	//			CreateMonster<Monster1>(XY{ x, 0 });
+	//		}
+	//		co_yield 0;
+	//		co_yield 0;
+	//	}
+	//});
+	//tasks.Add([&]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 1; i++) {
+	//			auto y = rnd.Next<float>(0, mapPixelHeight);
+	//			CreateMonster<Monster1>(XY{ 0, y });
+	//		}
+	//		co_yield 0;
+	//		co_yield 0;
+	//		co_yield 0;
+	//	}
+	//});
+	//tasks.Add([&]()->xx::Task<> {
+	//	while (true) {
+	//		for (size_t i = 0; i < 1; i++) {
+	//			auto y = rnd.Next<float>(0, mapPixelHeight);
+	//			CreateMonster<Monster1>(XY{ mapPixelWidth, y });
+	//		}
+	//		co_yield 0;
+	//		co_yield 0;
+	//		co_yield 0;
+	//	}
+	//});
 
 	while (true) co_yield 0;	// idle for hold memory
 }
 
 void GameLooper::Update() {
 	fv.Update();
-	if (KeyDownDelay(KeyboardKeys::Z, 0.2)) {
-		camera.DecreaseScale(0.25, 0.25);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.2)) {
-		camera.IncreaseScale(0.25, 10);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
+		camera.DecreaseScale(0.02, 0.02);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
+		camera.IncreaseScale(0.02, 5);
 	}
 	if (!ready) return;
 
@@ -194,7 +205,7 @@ void GameLooper::Draw() {
 		effects_damageText.Foreach([&](auto& o) { o->Draw(); });
 
 		// todo: more Draw
-
+		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "press Z, X zoom");
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }

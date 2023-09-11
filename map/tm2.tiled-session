@@ -12,8 +12,16 @@
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 1010,
-                "y": 689
+                "x": 1608,
+                "y": 1053
+            }
+        },
+        "m2.tmx": {
+            "scale": 0.015625,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 96256,
+                "y": 16928
             }
         },
         "pics.tsx": {
@@ -33,18 +41,21 @@
         }
     },
     "last.imagePath": "C:/Users/xx/Documents/xx2d/res/tiledmap2",
+    "map.height": 2000,
     "map.lastUsedFormat": "tmx",
     "map.layerDataFormat": null,
     "map.tileHeight": 64,
     "map.tileWidth": 64,
-    "map.width": 32,
+    "map.width": 3200,
     "openFiles": [
         "m.tmx",
         "pics.tsx",
-        "tiles.tsx"
+        "tiles.tsx",
+        "m2.tmx"
     ],
     "project": "tm2.tiled-project",
     "recentFiles": [
+        "m2.tmx",
         "tiles.tsx",
         "pics.tsx",
         "m.tmx",

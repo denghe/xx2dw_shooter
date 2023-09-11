@@ -20,7 +20,7 @@ constexpr GDesign<1280, 800, 60> gDesign;
 constexpr float gScale = 4;	// for pixel texture
 constexpr float gMaxFramePixelWidth = 64;
 constexpr float gMaxFramePixelHeight = 128;
-constexpr int32_t gGridCellDiameter = 32, gGridNumCols = 256, gGridNumRows = 256;	// 32 > max radius ( grid item )
+constexpr int32_t gGridCellDiameter = 64, gGridNumCols = 10, gGridNumRows = 10;	// tiled map width height + num cols num rows
 constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 // todo: limit shooter move area
 constexpr float gSQ = 0.7071067811865475244;
