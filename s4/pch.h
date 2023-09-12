@@ -233,9 +233,9 @@ struct ShooterBullet1 : ObjBase {
 /*****************************************************************************************************/
 
 struct Monster1 : MonsterBase {
-	constexpr static float cScale{ gScale / 2 };
-	constexpr static float cScaleStep{ 1 * cScale / gDesign.fps };
-	constexpr static float cRadius{ 32 * cScale / gScale };
+	constexpr static float cScale{ gScale / 2 }, cMaxScale{ gScale * 2 };		// limit by sgc cell size
+	constexpr static float cScaleSteps{ gDesign.fps };
+	constexpr static float cRadius{ 16 };	// map to cScale
 	constexpr static float cSpeed{ 20 * gScale / gDesign.fps };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f * 60 / gDesign.fps };

@@ -39,15 +39,17 @@ void Monster1::Hit(int damage) {
 }
 
 xx::Task<> Monster1::MainLogic() {
+	float tarScale = gLooper.rnd.Next<float>(cScale, cMaxScale);
+	float scaleStep = tarScale / cScaleSteps;
 	// scale in
 	body.SetScale(0);
-	while (scale < cScale) {
-		scale += cScaleStep;
+	while (scale < tarScale) {
+		scale += scaleStep;
 		radius = scale / cScale * cRadius;
 		co_yield 0;
 	}
-	scale = cScale;
-	radius = cRadius;
+	scale = tarScale;
+	radius = scale / cScale * cRadius;
 
 	// follow shooter
 	while (--life > 0) {
@@ -128,8 +130,8 @@ xx::Task<> Monster1::MainLogic() {
 	}
 
 	// scale out
-	while (scale > cScaleStep) {
-		scale -= cScaleStep;
+	while (scale > scaleStep) {
+		scale -= scaleStep;
 		radius = scale / cScale * cRadius;
 		co_yield 0;
 	}
