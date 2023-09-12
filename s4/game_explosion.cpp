@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Explosion::Init(XY const& bornPos) {
-	Add(MainLogic());
+	mainLogic = MainLogic();
 	pos = bornPos;
 	auto& c = gLooper.camera;
 	body.SetScale(cScale * c.scale);

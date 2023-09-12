@@ -5,7 +5,7 @@ void Shooter::Draw() {
 }
 
 void Shooter::Init(XY const& bornPos) {
-	Add(MainLogic());
+	mainLogic = MainLogic();
 	pos = bornPos;
 
 	body.SetFrame(gLooper.frame_shooter);

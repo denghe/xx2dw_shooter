@@ -112,12 +112,12 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;
 
-	shooter();
-	bullets_shooter1.Foreach([&](auto& o) { return !o() || o->disposing; });
-	monsters.Foreach([&](auto& o) { return !o() || o->disposing; });
-	for (auto& tree : trees) { tree(); }
-	effects_explosion.Foreach([&](auto& o) { return !o() || o->disposing; });
-	effects_damageText.Foreach([&](auto& o) { return !o() || o->disposing; });
+	shooter->mainLogic();
+	for (auto& tree : trees) { tree->mainLogic(); }
+	bullets_shooter1.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	monsters.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	effects_explosion.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	effects_damageText.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
 
 	// todo: more Update
 }

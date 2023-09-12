@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Tree::Init(float x, float y) {
-	Add(MainLogic());
+	mainLogic = MainLogic();
 
 	pos.x = x + cXOffset;
 	pos.y = y + gLooper.tileHeight - cYOffset;

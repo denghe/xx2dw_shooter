@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void DamageText::Init(XY const& bornPos, int32_t hp) {
-	Add(MainLogic());
+	mainLogic = MainLogic();
 	color = {255,0,0,255};
 	pos = bornPos;
 	txt = std::to_string(hp);

@@ -9,7 +9,7 @@ void ShooterBullet1::Draw() {
 }
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
-	Add(MainLogic());
+	mainLogic = MainLogic();
 	radians = M_PI * 2 + M_PI / 2 - radians_;
 	inc = inc_ * cSpeed;
 	pos = bornPos;
@@ -33,11 +33,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 
 		// check hit monsters
 		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
-			// todo: - hp ?
-			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
-			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
-			r->RemoveFromOwner();	// dispose monster
-			disposing = true;
+			r->Hit(damage);		// r maybe deleted
 			co_return;
 		}
 
@@ -53,7 +49,6 @@ xx::Task<> ShooterBullet1::MainLogic() {
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& tree : sg.results) {
 				if (CheckBoxCircleIntersects<float>(tree->_sgabPos.x, tree->_sgabPos.y, gLooper.tileWidth_2, gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
-					disposing = true;
 					co_return;
 				}
 			}

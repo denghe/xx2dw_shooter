@@ -1,18 +1,40 @@
 ﻿#include "pch.h"
 
-void Monster1::Init(XY const& bornPos) {
-	radius = cRadius;
-	Add(MainLogic());
-	pos = bornPos;
-	GridInit();
-	body.SetColormulti(255);
-}
-
 void Monster1::Draw() {
 	body.TrySetFrame(gLooper.frames_monster_1[(int32_t)frameIndex])
 		.SetScale(scale * gLooper.camera.scale)
 		.SetPosition(gLooper.camera.ToGLPos(pos))
 		.Draw();
+}
+
+void Monster1::Init(XY const& bornPos) {
+	mainLogic = MainLogic();
+	radius = cRadius;
+	pos = bornPos;
+	GridInit();
+}
+
+void Monster1::Hit(int damage) {
+	assert(damage > 0);
+	if (damage >= hp) {
+		// play effects
+		gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+		gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
+		RemoveFromOwner();		// kill self
+	} else {
+		hp -= damage;
+		if (hertLife <= 0) {
+			hitLogic(gLooper.tasks, [this]()->xx::Task<> {
+				while (hertLife) {
+					--hertLife;
+					body.SetColormulti(255);
+					co_yield 0;
+				}
+				body.SetColormulti(1);
+			});
+		}
+		hertLife = cHertLife;
+	}
 }
 
 xx::Task<> Monster1::MainLogic() {
@@ -28,6 +50,7 @@ xx::Task<> Monster1::MainLogic() {
 
 	// follow shooter
 	while (--life > 0) {
+		if (hertLife > 0) co_yield 0;							// when hert, can't move
 
 		// step frame anim
 		frameIndex += cFrameInc;

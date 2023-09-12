@@ -118,7 +118,7 @@ namespace xx {
         }
         operator bool() const { return /*!coro ||*/ coro.done(); }
         void operator()() { Run<true>(); }
-        bool Resume() { Run<true>(); return *this; }
+        bool Resume() { Run<true>(); return coro.done(); }
     };
 
     template<typename R>

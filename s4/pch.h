@@ -28,11 +28,11 @@ constexpr float gSQ = 0.7071067811865475244;
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-struct ObjBase : xx::Tasks {
+struct ObjBase {
 	XY pos{};
 	float radians{};
 	float frameIndex{};
-	bool disposing{};
+	xx::Task<> mainLogic;
 	virtual void Draw() = 0;
 	virtual ~ObjBase() {}
 };
@@ -46,6 +46,7 @@ struct MonsterBase : SpaceGridCItem<MonsterBase>, ObjBase {
 
 	void GridInit();		// call it before: set pos
 	void GridUpdate();		// call it before: set pos
+	virtual void Hit(int hp) = 0;
 	~MonsterBase();
 };
 
@@ -218,9 +219,11 @@ struct ShooterBullet1 : ObjBase {
 	constexpr static int cLife{ 5 * gDesign.fps };
 	constexpr static float cRadius{ 2 * gScale };
 	constexpr static float cSpeed{ 60 * gScale / gDesign.fps };
+	constexpr static int cDamage{ 10 };
 
 	Quad body;
 	XY inc{};
+	int damage{ cDamage };
 
 	void Init(XY const& bornPos, XY const& inc_, float radians_);
 	void Draw() override;
@@ -237,14 +240,19 @@ struct Monster1 : MonsterBase {
 	constexpr static float cSpeed{ 20 * gScale / gDesign.fps };
 	constexpr static float cFrameMaxIndex{ 6.f };
 	constexpr static float cFrameInc{ 0.1f * 60 / gDesign.fps };
-	constexpr static float cLife{ 30 * gDesign.fps };
+	constexpr static int cLife{ 30 * gDesign.fps };
+	constexpr static int cHP{ 100 };
+	constexpr static int cHertLife{ 10 * gDesign.fps / 60 };
 
 	Quad body;
-	float frameIndex{}, life{ cLife }, scale{};
+	float frameIndex{}, scale{};
+	int life{ cLife }, hp{ cHP }, hertLife{};
 
 	void Init(XY const& bornPos);
+	void Hit(int damage) override;
 	void Draw() override;
 	xx::Task<> MainLogic();
+	xx::TaskDeleter hitLogic;
 };
 
 #endif
