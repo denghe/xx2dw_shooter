@@ -67,13 +67,22 @@ xx::Task<> Shooter::MainLogic() {
 			}
 		}
 
-		r = -radians;
+		r = -radians + M_PI * 4;
 		cr = std::cos(r);
 		sr = std::sin(r);
 
 		if (needFire) {
 			XY inc{ cr, -sr };
 			gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+			for (size_t i = 1; i <= 3; ++i) {
+				auto r1 = r + 0.1f * (float)i;
+				inc = { std::cos(r1), -std::sin(r1) };
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+				auto r2 = r - 0.1f * (float)i;
+				inc = { std::cos(r2), -std::sin(r2) };
+				gLooper.bullets_shooter1.Emplace().Emplace()->Init(pos + inc * cFireDistance, inc, r);
+			}
+
 		}
 
 		co_yield 0;
