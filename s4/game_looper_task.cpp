@@ -59,7 +59,7 @@ xx::Task<> GameLooper::MainTask() {
 	// make monsters ( round by shooter )
 	while (true) {
 		auto basePos = shooter->pos;
-		for (size_t i = 0; i < 5; i++) {
+		for (size_t i = 0; i < 20; i++) {
 			auto a = rnd.Next<float>(M_PI * 2);
 			auto r = rnd.Next<float>(1200, 12200);
 			CreateMonster<Monster1>(basePos + XY{ std::cos(a), std::sin(a) } * r);
@@ -203,9 +203,10 @@ void GameLooper::Draw() {
 
 
 		effects_damageText.Foreach([&](auto& o) { o->Draw(); });
-
+		
 		// todo: more Draw
 		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
+		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 - ctc72.canvasHeight }, std::string("monsters.Count() == ") + std::to_string(monsters.Count()));
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }
