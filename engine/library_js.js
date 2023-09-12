@@ -1,12 +1,12 @@
 mergeInto(LibraryManager.library, {
 
-  init_gCanvas: function(charSize, canvasWidth, canvasHeight) {
+  init_gCanvas: function(charSize, canvasWidth, canvasHeight, font) {
     if (window['gCanvas'] === undefined) {
       var canvas = document.createElement('canvas');
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
       var ctx = canvas.getContext('2d');
-      ctx.font = charSize + 'px monospace';
+        ctx.font = charSize + 'px Arial';// + font;
       ctx.textBaseline = "middle";
       ctx.globalAlpha = 1;
       ctx.fillStyle = 'white';
