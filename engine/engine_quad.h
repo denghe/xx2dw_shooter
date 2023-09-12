@@ -101,6 +101,10 @@ struct Quad : QuadInstanceData {
         color.a = 255 * a;
         return *this;
     }
+    XX_FORCE_INLINE Quad& SetColormulti(float const& v) {
+        colormulti = v;
+        return *this;
+    }
     XX_FORCE_INLINE Quad& Draw() const {
         assert(texId);
         gEngine->shader.Draw(texId, *this);

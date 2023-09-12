@@ -5,6 +5,7 @@ void Monster1::Init(XY const& bornPos) {
 	Add(MainLogic());
 	pos = bornPos;
 	GridInit();
+	body.SetColormulti(255);
 }
 
 void Monster1::Draw() {
