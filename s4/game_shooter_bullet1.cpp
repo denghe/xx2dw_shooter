@@ -13,6 +13,7 @@ void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	radians = M_PI * 2 + M_PI / 2 - radians_;
 	inc = inc_ * cSpeed;
 	pos = bornPos;
+	damage = gLooper.rnd.Next(cDamage, cMaxDamage);
 
 	body.SetFrame(gLooper.frames_bullets[cFrameIndex]);
 	auto c = gLooper.frameNumber;

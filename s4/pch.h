@@ -218,11 +218,11 @@ struct ShooterBullet1 : ObjBase {
 	constexpr static int cLife{ 5 * gDesign.fps };
 	constexpr static float cRadius{ 2 * gScale };
 	constexpr static float cSpeed{ 60 * gScale / gDesign.fps };
-	constexpr static int cDamage{ 10 };
+	constexpr static int cDamage{ 5 }, cMaxDamage{ 20 };
 
 	Quad body;
 	XY inc{};
-	int damage{ cDamage };
+	int damage{};
 
 	void Init(XY const& bornPos, XY const& inc_, float radians_);
 	void Draw() override;

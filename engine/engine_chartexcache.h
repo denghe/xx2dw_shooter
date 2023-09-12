@@ -22,9 +22,9 @@ struct CharTexCache {
     std::unordered_map<char32_t, CharInfo> extras;
 
     // need ogl frame env
-    void Init() {
+    void Init(char const* font = "Arial") {
         fb.Init();
-        init_gCanvas(charSize, canvasWidth, canvasHeight);
+        init_gCanvas(charSize, canvasWidth, canvasHeight, font);
 
         texs.emplace_back(FrameBuffer::MakeTexture(Vec2{ texWidth, texHeight }));
         auto ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");

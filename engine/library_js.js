@@ -6,7 +6,7 @@ mergeInto(LibraryManager.library, {
       canvas.width = canvasWidth;
       canvas.height = canvasHeight;
       var ctx = canvas.getContext('2d');
-        ctx.font = charSize + 'px Arial';// + font;
+        ctx.font = charSize + 'px ' + UTF8ToString(font);
       ctx.textBaseline = "middle";
       ctx.globalAlpha = 1;
       ctx.fillStyle = 'white';
