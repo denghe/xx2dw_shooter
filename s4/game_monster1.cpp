@@ -18,11 +18,12 @@ void Monster1::Hit(int damage) {
 	assert(damage > 0);
 	if (damage >= hp) {
 		// play effects
-		gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+		gLooper.effects_damageText.Emplace().Emplace()->Init(pos, hp, { 255,0,0,255 });
 		gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
 		RemoveFromOwner();		// kill self
 	} else {
 		hp -= damage;
+		gLooper.effects_damageText.Emplace().Emplace()->Init(pos, damage, { 255,255,0,255 });
 		if (hertLife <= 0) {
 			hitLogic(gLooper.tasks, [this]()->xx::Task<> {
 				while (hertLife) {

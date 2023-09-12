@@ -135,11 +135,10 @@ struct GameLooper : Engine<GameLooper> {
 	std::vector<std::pair<float, ObjBase*>> tmpsPosYObj;	// for sort by Y
 
 	template<typename MT>
-	xx::Shared<MT>& CreateMonster(XY const& bornPos) {
+	xx::Shared<MT>& CreateMonster() {
 		auto&& m = monsters.Emplace().Emplace<MT>();
 		m->owner = &monsters;
 		m->ivAtOwner = monsters.Tail();
-		m->Init(bornPos);
 		return m;
 	}
 	MonsterBase* FindNeighborMonster(XY const& pos, float radius);
@@ -154,10 +153,10 @@ struct DamageText : ObjBase {
 	constexpr static int32_t cLife{ 30 };
 	constexpr static float moveSpeed{ 1 };
 
-	RGBA8 color;
+	RGBA8 color{};
 	std::string txt;
 
-	void Init(XY const& bornPos, int32_t hp);
+	void Init(XY const& bornPos, int32_t hp, RGBA8 color_ = { 255, 255, 255, 255 });
 	void Draw() override;
 	xx::Task<> MainLogic();
 };

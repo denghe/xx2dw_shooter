@@ -62,7 +62,7 @@ xx::Task<> GameLooper::MainTask() {
 		for (size_t i = 0; i < 20; i++) {
 			auto a = rnd.Next<float>(M_PI * 2);
 			auto r = rnd.Next<float>(1200, 12200);
-			CreateMonster<Monster1>(basePos + XY{ std::cos(a), std::sin(a) } * r);
+			CreateMonster<Monster1>()->Init(basePos + XY{ std::cos(a), std::sin(a) } * r);
 		}
 		co_yield 0;
 	}
