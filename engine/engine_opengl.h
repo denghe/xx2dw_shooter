@@ -106,8 +106,14 @@ struct GLTexture : GLRes<GLResTypes::Texture, GLsizei, GLsizei, std::string> {
 
     template<GLuint filter = GL_NEAREST /* GL_LINEAR */, GLuint wraper = GL_CLAMP_TO_EDGE /* GL_REPEAT */>
     void SetGLTexParm() {
-        glBindTexture(GL_TEXTURE_2D, std::get<0>(vs));
+        glBindTexture(GL_TEXTURE_2D, GetValue());
         GLTexParameteri<filter, wraper>();
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void GenerateMipmap() {
+        glBindTexture(GL_TEXTURE_2D, GetValue());
+        glGenerateMipmap(GetValue());
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
