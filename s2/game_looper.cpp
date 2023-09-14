@@ -15,6 +15,7 @@ void GameLooper::Init() {
 
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();	// font init
+	camera.SetScale(0.25);
 
 	// load wall texs
 	{
@@ -37,7 +38,7 @@ xx::Task<> GameLooper::MainTask() {
 	ready = true;
 
 	// make random size rooms
-	for (int i = 0; i < 100; ++i) {
+	for (int i = 0; i < 1000; ++i) {
 
 		Vec2<> pos{ rnd.Next<int>(-gMaxRoomWidth_2, gMaxRoomWidth_2)
 			, rnd.Next<int>(-gMaxRoomHeight_2, gMaxRoomHeight_2) };
@@ -46,6 +47,8 @@ xx::Task<> GameLooper::MainTask() {
 
 		auto&& room = rooms.EmplaceShared();
 		room->Init(pos, size);
+
+		co_yield 0;
 	}
 
 	// todo: move?
@@ -55,6 +58,11 @@ xx::Task<> GameLooper::MainTask() {
 
 void GameLooper::Update() {
 	fv.Update();
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
+		camera.DecreaseScale(0.02, 0.02);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
+		camera.IncreaseScale(0.02, 5);
+	}
 	if (!ready) return;
 	hasCross = {};
 	for (auto& room : rooms) { room->mainLogic(); }
@@ -66,6 +74,8 @@ void GameLooper::Draw() {
 
 		if (!hasCross) {
 			ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "calculate done.");
+		} else {
+			ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "keyboard Z X zoom.");
 		}
 	}
 	fv.Draw(ctc72);       // draw fps at corner
@@ -78,7 +88,7 @@ void Room::Init(Vec2<> const& pos_, Vec2<> const& size_) {
 	pos = pos_.As<float>();
 	size = size_.As<float>();
 
-	body.SetAnchor({}).SetScale(gScale);
+	body.SetAnchor({});
 }
 
 void Room::Draw() {
@@ -108,18 +118,19 @@ void Room::Draw() {
 				else fi = 2;
 			}
 
-			body.SetPosition(p * gScale)
+			body.SetPosition(p * gLooper.camera.scale)
 				.SetFrame(gLooper.frames_walls[fi])
+				.SetScale(gLooper.camera.scale)
 				.Draw();
 		}
 	}
 }
 
 XY Room::GetMinXY() const {
-	return pos - size / 2;
+	return pos - (size + 1) / 2;
 }
 XY Room::GetMaxXY() const {
-	return pos + size / 2;
+	return pos + (size + 1) / 2;
 }
 bool Room::Intersects(Room const& o) const {
 	auto minXY = GetMinXY();
@@ -152,7 +163,7 @@ xx::Task<> Room::MainLogic() {
 
 		if (numCross) {
 			gLooper.hasCross = true;
-			pos += combineForce.MakeNormalize();// +0.5f;
+			pos += combineForce.MakeNormalize();
 		}
 
 		co_yield 0;

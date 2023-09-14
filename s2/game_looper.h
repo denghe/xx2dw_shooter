@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "game_looper_base.h"
 
-static constexpr float gScale = 0.25;
 static constexpr int gRoomCellSize = 16;
 static constexpr int gMaxRoomWidth = gDesign.width / gRoomCellSize;
 static constexpr int gMaxRoomHeight = gDesign.height / gRoomCellSize;
@@ -26,6 +25,8 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	xx::List<xx::Shared<Room>, int32_t> rooms;
 
 	bool hasCross{};
+
+	Camera camera;
 };
 extern GameLooper gLooper;
 
