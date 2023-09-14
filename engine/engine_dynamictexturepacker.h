@@ -38,23 +38,23 @@ struct DynamicTexturePacker : Frames {
             int w = xx::Round2n(bin.size.w);
             int h = xx::Round2n(bin.size.h);
             auto t = FrameBuffer::MakeTexture(Vec2{ w, h });
-            XY basePos{ -w / 2, -h / 2 };
+            XY basePos{ -w / 2, h / 2 };
             fb.DrawTo(t, {}, [&]() {
                 Quad q;
                 q.SetAnchor({ 0, 1 });
                 for (auto& r : bin.rects) {
                     auto& sf = *(xx::Shared<Frame>*)r->ud;
-                    q.SetPosition(basePos + XY{ r->x, r->y }).SetFrame(sf).Draw();
+                    q.SetPosition(basePos + XY{ r->x, -r->y }).SetFrame(sf).Draw();
                     if constexpr (newFrame) {
                         auto&& f = frames.emplace_back().Emplace();
                         *f = *sf;
                         f->textureRect.x = r->x;
-                        f->textureRect.y = h - 1 - r->y;
+                        f->textureRect.y = r->y;
                         f->tex = t;
                     } else {
                         frames.emplace_back(sf);
                         sf->textureRect.x = r->x;
-                        sf->textureRect.y = h - 1 - r->y;
+                        sf->textureRect.y = r->y;
                         sf->tex = t;
                     }
                 }

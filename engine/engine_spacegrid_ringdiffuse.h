@@ -3,13 +3,12 @@
 
 struct CountRadius { int32_t count, radius; };
 
-template<int32_t gridNumRows, int32_t gridCellDiameter>
 struct SpaceGridRingDiffuseData {
     xx::List<CountRadius, int32_t> lens;
     xx::List<Vec2<int32_t>, int32_t> idxs;
 
-    SpaceGridRingDiffuseData() {
-        constexpr float step = gridCellDiameter / 2;
+    void Init(int32_t gridNumRows, int32_t gridCellDiameter) {
+        float step = gridCellDiameter / 2;
         lens.Emplace(1, 0);
         Vec2<int32_t> lastIdx{};
         idxs.Add(lastIdx);
@@ -32,6 +31,4 @@ struct SpaceGridRingDiffuseData {
             }
         }
     }
-    SpaceGridRingDiffuseData(SpaceGridRingDiffuseData const&) = delete;
-    SpaceGridRingDiffuseData& operator=(SpaceGridRingDiffuseData const&) = delete;
 };

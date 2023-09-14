@@ -106,7 +106,7 @@ struct GameLooper : Engine<GameLooper> {
 	// physics containers;
 	SpaceGridAB<Tree> sgabTrees;
 	SpaceGridC<MonsterBase> sgcMonsters;
-	SpaceGridRingDiffuseData<gGridNumRows, gGridCellDiameter> sgrdd;
+	SpaceGridRingDiffuseData sgrdd;
 
 
 	// tiled map container

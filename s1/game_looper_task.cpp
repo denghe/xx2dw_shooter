@@ -21,6 +21,7 @@ xx::Task<> GameLooper::MainTask() {
 	frame_shooter = tp->TryGet("p");			// ready flag
 
 	sgc.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);	// init physics grid
+	sgrdd.Init(gGridNumRows, gGridCellDiameter);
 
 	shooter.Emplace()->Init();	// make player char
 

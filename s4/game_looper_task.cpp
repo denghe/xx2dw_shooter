@@ -37,7 +37,7 @@ xx::Task<> GameLooper::MainTask() {
 
 	sgabTrees.Init(tiledMap->height, tiledMap->width, tileWidth, tileHeight);	// init physics grid index
 	sgcMonsters.Init(tiledMap->height + gGridNumRows, tiledMap->width + gGridNumCols, gGridCellDiameter);
-
+	sgrdd.Init(gGridNumRows, gGridCellDiameter);
 
 	for (int y = 0, ye = tiledMap->height; y < ye; ++y) {						// search & fill tree frame & trees
 		for (int x = 0, xe = tiledMap->width; x < xe; ++x) {

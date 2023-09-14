@@ -102,7 +102,7 @@ struct GameLooper : Engine<GameLooper> {
 
 	// physics containers ( Place on top of business objects )
 	SpaceGridC<MonsterBase> sgc;
-	SpaceGridRingDiffuseData<gGridNumRows, gGridCellDiameter> sgrdd;
+	SpaceGridRingDiffuseData sgrdd;
 
 	// res
 	xx::Shared<Frame> frame_shooter;
