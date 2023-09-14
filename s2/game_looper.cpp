@@ -37,7 +37,7 @@ xx::Task<> GameLooper::MainTask() {
 	ready = true;
 
 	// make random size rooms
-	for (int i = 0; i < 20; ++i) {
+	for (int i = 0; i < 100; ++i) {
 
 		Vec2<> pos{ rnd.Next<int>(-gMaxRoomWidth_2, gMaxRoomWidth_2)
 			, rnd.Next<int>(-gMaxRoomHeight_2, gMaxRoomHeight_2) };
@@ -56,12 +56,17 @@ xx::Task<> GameLooper::MainTask() {
 void GameLooper::Update() {
 	fv.Update();
 	if (!ready) return;
+	hasCross = {};
 	for (auto& room : rooms) { room->mainLogic(); }
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		for (auto& room : rooms) { room->Draw(); }
+
+		if (!hasCross) {
+			ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "calculate done.");
+		}
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }
@@ -70,15 +75,19 @@ void GameLooper::Draw() {
 /*****************************************************************************************************/
 
 void Room::Init(Vec2<> const& pos_, Vec2<> const& size_) {
-	pos = pos_;
-	size = size_;
+	pos = pos_.As<float>();
+	size = size_.As<float>();
 
-	body.SetAnchor({});
+	body.SetAnchor({}).SetScale(gScale);
 }
 
 void Room::Draw() {
-	float basePosX = pos.x * gRoomCellSize;
-	float basePosY = -pos.y * gRoomCellSize;
+
+	auto pixelSize_2 = size * gRoomCellSize / 2;
+
+	float basePosX = (int)pos.x * gRoomCellSize - pixelSize_2.x;
+	float basePosY = (int)-pos.y * gRoomCellSize + pixelSize_2.y;
+
 	for (int y = 0, ye = size.y - 1; y <= ye; ++y) {
 		for (int x = 0, xe = size.x - 1; x <= xe; ++x) {
 
@@ -99,13 +108,53 @@ void Room::Draw() {
 				else fi = 2;
 			}
 
-			body.SetPosition(p)
+			body.SetPosition(p * gScale)
 				.SetFrame(gLooper.frames_walls[fi])
 				.Draw();
 		}
 	}
 }
 
+XY Room::GetMinXY() const {
+	return pos - size / 2;
+}
+XY Room::GetMaxXY() const {
+	return pos + size / 2;
+}
+bool Room::Intersects(Room const& o) const {
+	auto minXY = GetMinXY();
+	auto maxXY = GetMaxXY();
+	auto oMinXY = o.GetMinXY();
+	auto oMaxXY = o.GetMaxXY();
+	return !(maxXY.x < oMinXY.x || oMaxXY.x < minXY.x ||
+		maxXY.y < oMinXY.y || oMaxXY.y < minXY.y);
+}
+
 xx::Task<> Room::MainLogic() {
-	while (true) co_yield 0;
+	while (true) {
+		XY combineForce{};
+		int numCross{};
+
+		for (auto& room : gLooper.rooms) {
+			if (room.pointer == this) continue;
+			if (!Intersects(*room)) continue;
+
+			++numCross;
+			float r;
+			if (pos == room->pos) {
+				r = gLooper.rnd.Next<float>(M_PI * 2);
+			} else {
+				auto d = (pos - room->pos).As<float>();
+				r = std::atan2(d.y, d.x);
+			}
+			combineForce += XY{ std::cos(r), std::sin(r) };
+		}
+
+		if (numCross) {
+			gLooper.hasCross = true;
+			pos += combineForce.MakeNormalize();// +0.5f;
+		}
+
+		co_yield 0;
+	}
 }

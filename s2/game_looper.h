@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "game_looper_base.h"
 
+static constexpr float gScale = 0.25;
 static constexpr int gRoomCellSize = 16;
 static constexpr int gMaxRoomWidth = gDesign.width / gRoomCellSize;
 static constexpr int gMaxRoomHeight = gDesign.height / gRoomCellSize;
@@ -23,6 +24,8 @@ struct GameLooper : GameLooperBase<GameLooper> {
 
 	// objs
 	xx::List<xx::Shared<Room>, int32_t> rooms;
+
+	bool hasCross{};
 };
 extern GameLooper gLooper;
 
@@ -32,10 +35,13 @@ extern GameLooper gLooper;
 struct Room {
 
 	Quad body;
-	Vec2<> pos, size;
+	XY pos, size;
+	XY GetMinXY() const;
+	XY GetMaxXY() const;
+	bool Intersects(Room const& o) const;
 
 	void Init(Vec2<> const& pos_, Vec2<> const& size_);
 	void Draw();
-	xx::Task<> mainLogic;
+	xx::Task<> mainLogic{ MainLogic() };
 	xx::Task<> MainLogic();
 };
