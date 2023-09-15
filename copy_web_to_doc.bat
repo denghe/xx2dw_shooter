@@ -9,3 +9,6 @@ xcopy /S/Y web\s3\res docs\res
 
 xcopy /S/Y web\s4\s4.* docs
 xcopy /S/Y web\s4\res docs\res
+
+xcopy /S/Y web\s5\s5.* docs
+xcopy /S/Y web\s5\res docs\res
