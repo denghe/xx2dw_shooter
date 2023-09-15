@@ -207,7 +207,7 @@ int main() {
         } while (nowSecs < e);
     }
 
-    template<bool showLog = false, int timeoutSeconds = 10>
+    template<bool showLog = true, int timeoutSeconds = 10>
     xx::Task<xx::Shared<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
         if constexpr(showLog) {
             printf("LoadTextureFromUrl( %s ) : begin. nowSecs = %f\n", url, nowSecs);
@@ -247,7 +247,8 @@ int main() {
     }
 
     // todo: timeout support
-    xx::Task<xx::Shared<xx::Data>> AsyncDownloadFromUrl(char const* url, bool autoDecompress = true) {
+    template<bool autoDecompress = false>
+    xx::Task<xx::Shared<xx::Data>> AsyncDownloadFromUrl(char const* url) {
         emscripten_fetch_attr_t attr;
         emscripten_fetch_attr_init(&attr);
         strcpy(attr.requestMethod, "GET");
@@ -279,22 +280,23 @@ int main() {
             co_yield 0;
         }
 
-        if (autoDecompress) {
+        if constexpr (autoDecompress) {
             TryZstdDecompress(*sd);
         }
         co_return sd;
     }
 
     // blist == texture packer export cocos plist file's bin version, use xx2d's tools: plist 2 blist convert
+    template<bool autoDecompress = false>
     xx::Task<xx::Shared<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* blistUrl) {
-        auto blistData = co_await AsyncDownloadFromUrl(blistUrl);
+        auto blistData = co_await AsyncDownloadFromUrl<autoDecompress>(blistUrl);
         if (!blistData) co_return xx::Shared<TexturePacker>{};
 
         auto tp = xx::Make<TexturePacker>();
         int r = tp->Load(*blistData, blistUrl);
         xx_assert(!r);
 
-        auto tex = co_await AsyncLoadTextureFromUrl(tp->realTextureFileName.c_str());
+        auto tex = co_await AsyncLoadTextureFromUrl<autoDecompress>(tp->realTextureFileName.c_str());
         xx_assert(tex);
 
         for (auto& f : tp->frames) {
@@ -304,11 +306,12 @@ int main() {
     }
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
+    template<bool autoDecompress = false>
     xx::Task<xx::Shared<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
         auto map = xx::Make<TMX::Map>();
         // download bmx & fill
         {
-            auto sd = co_await AsyncDownloadFromUrl(bmxUrl);
+            auto sd = co_await AsyncDownloadFromUrl<autoDecompress>(bmxUrl);
             xx_assert(sd);
 
             xx::TmxData td;

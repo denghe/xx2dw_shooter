@@ -18,29 +18,12 @@ xx::Task<> GameLooper::MainTask() {
 
 	// load wall texs
 	{
-		DynamicTexturePacker<> dtp;
-		dtp.Fill(co_await AsyncLoadTexturesFromUrls({
-			"res/wall1.png",
-			"res/wall2.png",
-			"res/wall3.png",
-			"res/wall4.png",
-			"res/wall5.png",
-			"res/wall6.png",
-			"res/wall7.png",
-			"res/wall8.png",
-			"res/wall9.png",
-			"res/pumpkin0.png",
-			"res/pumpkin1.png",
-			"res/pumpkin2.png",
-			"res/pumpkin3.png",
-			"res/pumpkin4.png",
-			"res/pumpkin5.png",
-			"res/pumpkin6.png",
-			"res/pumpkin7.png"
-		}));
-		dtp.GetToByPrefix(frames_wall, "res/wall");
-		frames_floor.push_back(dtp.Get("res/wall5.png"));
-		dtp.GetToByPrefix(frames_pumpkin, "res/pumpkin");
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		xx_assert(tp);
+		tp->GetToByPrefix(frames_wall, "wall");
+		frames_floor.push_back(tp->Get("wall5"));
+		tp->GetToByPrefix(frames_pumpkin, "pumpkin");
+		printf("load tex from tp");
 	}
 
 

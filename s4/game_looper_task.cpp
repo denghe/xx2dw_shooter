@@ -23,7 +23,7 @@ xx::Task<> GameLooper::MainTask() {
 	frame_shooter = tp->TryGet("p");
 	xx_assert(frame_shooter);
 
-	tiledMap = co_await AsyncLoadTiledMapFromUrl("res/m2.bmx", "res/");			// load tiled map data
+	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/m2.bmx", "res/");			// load tiled map data
 	xx_assert(tiledMap);
 	layerBG = tiledMap->FindLayer<TMX::Layer_Tile>("bg");
 	xx_assert(layerBG);
