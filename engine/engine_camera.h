@@ -69,7 +69,8 @@ struct Camera {
 	}
 
 	// need calc
-	XX_FORCE_INLINE bool InArea(XY const& pos) const {
+	template<typename XY_t>
+	XX_FORCE_INLINE bool InArea(XY_t const& pos) const {
 		return pos.x >= safeMinX && pos.x <= safeMaxX
 			&& pos.y >= safeMinY && pos.y <= safeMaxY;
 	}
@@ -77,5 +78,8 @@ struct Camera {
 	// need calc
 	XX_FORCE_INLINE XY ToGLPos(XY const& logicPos) {
 		return (logicPos - original).MakeFlipY() * scale;
+	}
+	XX_FORCE_INLINE XY ToGLPos(Vec2<> const& logicPos) {
+		return (logicPos.As<float>() - original).MakeFlipY() * scale;
 	}
 };

@@ -46,17 +46,20 @@ xx::Task<> GameLooper::MainTask() {
 
 	ready = true;
 
-	camera.SetScale(2);
+	constexpr int numRows = 220, numCols = 350, numPumpkins = 50000;
+	camera.SetOriginal({ numCols * gCellSize.x / 2, numRows * gCellSize.y / 2 });
+	camera.SetScale(0.2);
 
-	sgabWalls.Init(11, 16, gCellSize.x, gCellSize.y);
-	sgcMonsters.Init(11, 16, gCellSize.x);
+	sgabWalls.Init(numRows + 1, numCols + 1, gCellSize.x, gCellSize.y);
+	sgcMonsters.Init(numRows + 1, numCols + 1, gCellSize.x);
 
-	rooms.EmplaceShared()->Init({}, 10, 15);
+	rooms.EmplaceShared()->Init({}, numRows, numCols);
 
-	//for (int i = 0; i < 100; ++i) {
-		pumpkins.EmplaceShared()->Init(rooms[0]->GetCenterPos());
-		pumpkins.EmplaceShared()->Init(rooms[0]->GetCenterPos());
-	//}
+	for (int i = 0; i < numPumpkins; ++i) {
+		Vec2<> p{ rnd.Next<int>(rooms[0]->floorMinXY.x, rooms[0]->floorMaxXY.x)
+		, rnd.Next<int>(rooms[0]->floorMinXY.y, rooms[0]->floorMaxXY.y) };
+		pumpkins.EmplaceShared()->Init(p);
+	}
 
 	while (true) co_yield 0;	// idle for hold memory
 }
@@ -69,22 +72,30 @@ void GameLooper::Update() {
 		camera.IncreaseScale(0.02, 5);
 	}
 	if (!ready) return;
-	for (auto& room : rooms) { room->mainLogic(); }
+	for (auto& o : rooms) { o->mainLogic(); }
+	for (auto& o : pumpkins) { o->mainLogic(); }
 }
 
 void GameLooper::Draw() {
 	if (ready) {
+		camera.Calc();
 
 		for (int i = 0, ie = rooms.len; i < ie; ++i) {
 			auto& room = rooms[i];
 			room->Draw();
 			for (int j = 0, je = room->walls.len; j < je; ++j) {
-				yos.Add(room->walls[j]);
+				auto& wall = room->walls[j];
+				if (gLooper.camera.InArea(wall._sgabPos)) {
+					yos.Add(wall);
+				}
 			}
 		}
 
 		for (int i = 0, ie = pumpkins.len; i < ie; ++i) {
-			yos.Add(*pumpkins[i]);
+			auto& pumpkin = *pumpkins[i];
+			if (gLooper.camera.InArea(pumpkin._sgcPos)) {
+				yos.Add(pumpkin);
+			}
 		}
 
 		// todo: add more to ybos ?

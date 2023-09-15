@@ -3,7 +3,7 @@
 
 struct Room : Obj {
 	int numRows{}, numCols{};
-	Vec2<> pos;								// left top
+	Vec2<> pos, floorMinXY, floorMaxXY;						// pos: left top
 
 	xx::List<int, int32_t> floors;
 	xx::List<Wall, int32_t> walls;
@@ -12,6 +12,8 @@ struct Room : Obj {
 		numRows = numRows_;
 		numCols = numCols_;
 		pos = pos_;
+		floorMinXY = { pos.x + gCellSize.x, pos.y + gCellSize.y };
+		floorMaxXY = { pos.x + (numCols-1) * gCellSize.x, pos.y + (numRows-1) * gCellSize.y };
 		InitFloors();
 		InitWalls();
 		quad.SetAnchor({0, 1}).SetFrame(gLooper.frames_floor.back());
@@ -59,19 +61,19 @@ struct Room : Obj {
 	Vec2<> GetCenterPos() {
 		return pos.MakeAdd(numCols * gCellSize.x / 2, numRows * gCellSize.y / 2);
 	}
-
+	
 	void Draw() const override {
 		// draw floor only
-		auto scale = Wall::cScale * gLooper.camera.scale;
-		XY basePos = pos.MakeFlipY().As<float>() * scale;
-		quad.SetScale(scale);
+		quad.SetScale(gLooper.camera.scale);
 		int numFloorRows = numRows - 2, numFloorCols = numCols - 2;
 		for (int y = 1; y <= numFloorRows; ++y) {
 			for (int x = 1; x <= numFloorCols; ++x) {
-				XY p{ basePos.x + x * gCellSize.x * scale, basePos.y - y * gCellSize.y * scale };
-				quad.SetPosition(p)
-					.TrySetFrame(gLooper.frames_floor[floors[(y - 1) * numFloorCols + (x - 1)]])
-					.Draw();
+				XY p{ pos.x + x * gCellSize.x, pos.y + y * gCellSize.y };
+				if (gLooper.camera.InArea(p)) {
+					quad.SetPosition(gLooper.camera.ToGLPos(p))
+						.TrySetFrame(gLooper.frames_floor[floors[(y - 1) * numFloorCols + (x - 1)]])
+						.Draw();
+				}
 			}
 		}
 	}
