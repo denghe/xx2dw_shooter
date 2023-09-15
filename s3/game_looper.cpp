@@ -49,6 +49,7 @@ xx::Task<> GameLooper::MainTask() {
 	constexpr int numRows = 220, numCols = 350, numPumpkins = 50000;
 	camera.SetOriginal({ numCols * gCellSize.x / 2, numRows * gCellSize.y / 2 });
 	camera.SetScale(0.2);
+	camera.SetMaxFrameSize(gCellSize.As<float>());
 
 	sgabWalls.Init(numRows + 1, numCols + 1, gCellSize.x, gCellSize.y);
 	sgcMonsters.Init(numRows + 1, numCols + 1, gCellSize.x);
