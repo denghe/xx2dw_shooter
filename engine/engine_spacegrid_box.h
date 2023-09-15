@@ -17,7 +17,7 @@ template<typename Derived>
 struct SpaceGridABItem {
 	using SGABCoveredCellInfo = SpaceGridABItemCellInfo<Derived>;
 	SpaceGridAB<Derived>* _sgab{};
-	Vec2<int32_t> _sgabPos, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
+	Vec2<int32_t> _sgabPos, _sgabRadius, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
 	Vec2<int32_t> _sgabCRIdxFrom, _sgabCRIdxTo;	// backup for Update speed up
 	std::vector<SGABCoveredCellInfo> _sgabCoveredCellInfos;	// todo: change to custom single buf container ?
 	size_t _sgabFlag{};	// avoid duplication when Foreach
@@ -28,35 +28,40 @@ struct SpaceGridABItem {
 		assert(_sgabCoveredCellInfos.empty());
 		_sgab = &sgab;
 	}
-
 	void SGABSetPosSiz(Vec2<int32_t> const& pos, Vec2<int32_t> const& siz) {
 		assert(_sgab);
 		_sgabPos = pos;
-		auto hs = siz / 2;
-		_sgabMin = pos - hs;
-		_sgabMax = pos + hs;
+		_sgabRadius = siz / 2;
+		_sgabMin = pos - _sgabRadius;
+		_sgabMax = pos + _sgabRadius;
 		assert(_sgabMin.x < _sgabMax.x);
 		assert(_sgabMin.y < _sgabMax.y);
 		assert(_sgabMin.x >= 0 && _sgabMin.y >= 0);
 		assert(_sgabMax.x < _sgab->maxX && _sgabMax.y < _sgab->maxY);
 	}
-
-	bool SGABCheckIntersects(Vec2<int32_t> const& minXY, Vec2<int32_t> const& maxXY) {
-		return !(maxXY.x < _sgabMin.x || _sgabMax.x < minXY.x || maxXY.y < _sgabMin.y || _sgabMax.y < minXY.y);
-	}
-
 	void SGABAdd() {
 		assert(_sgab);
 		_sgab->Add(((Derived*)(this)));
 	}
+
 	void SGABUpdate() {
 		assert(_sgab);
 		_sgab->Update(((Derived*)(this)));
 	}
+
 	void SGABRemove() {
 		assert(_sgab);
 		_sgab->Remove(((Derived*)(this)));
-		_sgab = nullptr;
+	}
+	void SGABTryRemove() {
+		if (_sgab) {
+			SGABRemove();
+			_sgab = {};
+		}
+	}
+
+	bool SGABCheckIntersects(Vec2<int32_t> const& minXY, Vec2<int32_t> const& maxXY) {
+		return !(maxXY.x < _sgabMin.x || _sgabMax.x < minXY.x || maxXY.y < _sgabMin.y || _sgabMax.y < minXY.y);
 	}
 };
 

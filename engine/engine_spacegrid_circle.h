@@ -13,40 +13,29 @@ struct SpaceGridCItem {
     int32_t _sgcIdx{ -1 };
     Vec2<int32_t> _sgcPos;
 
-    void SGCInit(SpaceGridC<Derived>* const& sgc) {
+    void SGCInit(SpaceGridC<Derived>& sgc) {
         assert(!_sgc);
-        _sgc = sgc;
+        _sgc = &sgc;
     }
-
     void SGCSetPos(Vec2<int32_t> const& pos) {
         assert(_sgc);
         assert(_sgcPos.x >= 0 && _sgcPos.x < _sgc->maxX);
         assert(_sgcPos.y >= 0 && _sgcPos.y < _sgc->maxY);
         _sgcPos = pos;
     }
-
     void SGCAdd() {
         assert(_sgc);
         _sgc->Add(((Derived*)(this)));
     }
+
     void SGCUpdate() {
         assert(_sgc);
         _sgc->Update(((Derived*)(this)));
     }
+
     void SGCRemove() {
         assert(_sgc);
         _sgc->Remove(((Derived*)(this)));
-    }
-
-    void SGCInit(SpaceGridC<Derived>* const& sgc, Vec2<int32_t> const& pos) {
-        assert(!_sgc);
-        _sgc = sgc;
-        SGCSetPos(pos);
-        SGCAdd();
-    }
-    void SGCUpdate(Vec2<int32_t> const& pos) {
-        SGCSetPos(pos);
-        SGCUpdate();
     }
     void SGCTryRemove() {
         if (_sgc) {

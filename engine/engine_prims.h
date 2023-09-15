@@ -107,7 +107,7 @@ struct Vec2 {
         return { x + v.x, y + v.y };
     }
 
-    Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) {
+    Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) const {
         return { x + vx, y + vy };
     }
 
@@ -139,7 +139,7 @@ struct Vec2 {
         return *this;
     }
     template<typename R = T, typename U = float>
-    auto MakeNormalize() -> Vec2<R> {
+    auto MakeNormalize() const -> Vec2<R> {
         auto v = std::sqrt(U(x * x + y * y));
         assert(v);
         return { R(x / v), R(y / v) };
@@ -150,7 +150,7 @@ struct Vec2 {
         return *this;
     }
     template<typename R = T>
-    auto MakeFlipY() -> Vec2<R> {
+    auto MakeFlipY() const -> Vec2<R> {
         return { R(x), R(-y) };
     }
 };

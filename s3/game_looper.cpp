@@ -24,7 +24,7 @@ xx::Task<> GameLooper::MainTask() {
 			"res/wall2.png",
 			"res/wall3.png",
 			"res/wall4.png",
-			"res/wall5.png",	// floor. todo: more
+			"res/wall5.png",
 			"res/wall6.png",
 			"res/wall7.png",
 			"res/wall8.png",
@@ -43,29 +43,20 @@ xx::Task<> GameLooper::MainTask() {
 		dtp.GetToByPrefix(frames_pumpkin, "res/pumpkin");
 	}
 
+
 	ready = true;
 
 	camera.SetScale(2);
 
-	//// make random size rooms
-	//for (int i = 0; i < 1000; ++i) {
-
-	//	Vec2<> pos{ rnd.Next<int>(-gMaxRoomWidth_2, gMaxRoomWidth_2)
-	//		, rnd.Next<int>(-gMaxRoomHeight_2, gMaxRoomHeight_2) };
-
-	//	Vec2<> size{ rnd.Next<int>(3, 20), rnd.Next<int>(3, 15) };
-
-	//	auto&& room = rooms.EmplaceShared();
-	//	room->Init(pos, size);
-
-	//	co_yield 0;
-	//}
-
+	sgabWalls.Init(11, 16, gCellSize.x, gCellSize.y);
+	sgcMonsters.Init(11, 16, gCellSize.x);
 
 	rooms.EmplaceShared()->Init({}, 10, 15);
 
-
-	// todo: move?
+	//for (int i = 0; i < 100; ++i) {
+		pumpkins.EmplaceShared()->Init(rooms[0]->GetCenterPos());
+		pumpkins.EmplaceShared()->Init(rooms[0]->GetCenterPos());
+	//}
 
 	while (true) co_yield 0;	// idle for hold memory
 }
@@ -84,67 +75,25 @@ void GameLooper::Update() {
 void GameLooper::Draw() {
 	if (ready) {
 
-		for (auto& room : rooms) {
+		for (int i = 0, ie = rooms.len; i < ie; ++i) {
+			auto& room = rooms[i];
 			room->Draw();
-			for (auto& w : room->walls) {
-				ybos.Add(YBoxObj{ w.pos.y, &w });
+			for (int j = 0, je = room->walls.len; j < je; ++j) {
+				yos.Add(room->walls[j]);
 			}
+		}
+
+		for (int i = 0, ie = pumpkins.len; i < ie; ++i) {
+			yos.Add(*pumpkins[i]);
 		}
 
 		// todo: add more to ybos ?
 
-		std::sort(ybos.buf, ybos.buf + ybos.len, YBoxObj::Comparer);
-		for (auto& o : ybos) {
-			o.bo->Draw();
+		std::sort(yos.buf, yos.buf + yos.len, YObj::Comparer);
+		for (int i = 0, ie = yos.len; i < ie; ++i) {
+			yos[i].o->Draw();
 		}
-		ybos.Clear();
+		yos.Clear();
 	}
 	fv.Draw(ctc72);       // draw fps at corner
 }
-
-///*****************************************************************************************************/
-///*****************************************************************************************************/
-//
-//void Room::Draw() {
-//
-//	// todo: think about order by Y. group by row draw bg first ? every tile is object ?? except floor ?
-//
-//	auto pixelSize_2 = size * gRoomCellSize / 2;
-//
-//	float basePosX = (int)pos.x * gRoomCellSize - pixelSize_2.x;
-//	float basePosY = (int)-pos.y * gRoomCellSize + pixelSize_2.y;
-//
-//	for (int y = 0, ye = size.y - 1; y <= ye; ++y) {
-//		for (int x = 0, xe = size.x - 1; x <= xe; ++x) {
-//
-//			XY p{ float(basePosX + x * gRoomCellSize), basePosY - y * gRoomCellSize };
-//
-//			int fi;
-//			if (y == 0) {
-//				if (x == 0) fi = 6;
-//				else if (x < xe) fi = 7;
-//				else fi = 8;
-//			} else if (y < ye) {
-//				if (x == 0) fi = 3;
-//				else if (x < xe) fi = 4;
-//				else fi = 5;
-//			} else {
-//				if (x == 0) fi = 0;
-//				else if (x < xe) fi = 1;
-//				else fi = 2;
-//			}
-//
-//			body.SetPosition(p * gLooper.camera.scale)
-//				.SetFrame(gLooper.frames_walls[fi])
-//				.SetScale(gLooper.camera.scale)
-//				.Draw();
-//		}
-//	}
-//}
-//
-//xx::Task<> Room::MainLogic() {
-//	while (true) {
-//
-//		co_yield 0;
-//	}
-//}
