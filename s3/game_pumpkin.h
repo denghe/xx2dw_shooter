@@ -6,10 +6,21 @@ struct Pumpkin : CircleObj {
 	static constexpr int cRadius{ (cSize.x + (cSize.x % 2 == 0 ? 0 : 1)) / 2 };
 	//static constexpr float cScale{ 1 };
 	static constexpr float cSpeed{ 3 };
-	constexpr static float cFrameInc{ 24 / gDesign.fps };
+	constexpr static float cFrameInc{ 8 / gDesign.fps };
 	constexpr static float cFrameMaxIndex{ 4.f };
 
 	float frameIndex{};
+
+	void Init(Vec2<> const& pos) {
+		radius = cRadius;
+		frameIndex = gLooper.rnd.Next<float>(cFrameMaxIndex - 0.1);
+		SGCInit(gLooper.sgcMonsters);
+		SGCSetPos(pos);
+		SGCAdd();
+
+		quad.SetAnchor({ 0.5, float(cSize.x) / 2 / cSize.y });
+	}
+
 	xx::Task<> mainLogic{ MainLogic() };
 	xx::Task<> MainLogic() {
 		while (true) {
@@ -97,15 +108,6 @@ struct Pumpkin : CircleObj {
 
 			co_yield 0;
 		}
-	}
-
-	void Init(Vec2<> const& pos) {
-		radius = cRadius;
-		SGCInit(gLooper.sgcMonsters);
-		SGCSetPos(pos);
-		SGCAdd();
-
-		quad.SetAnchor({0.5, float(cSize.x) / 2 / cSize.y});
 	}
 
 	operator YObj() const {
