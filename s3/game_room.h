@@ -71,7 +71,7 @@ struct Room : Obj {
 				XY p{ pos.x + x * gCellSize.x, pos.y + y * gCellSize.y };
 				if (gLooper.camera.InArea(p)) {
 					quad.SetPosition(gLooper.camera.ToGLPos(p))
-						.TrySetFrame(gLooper.frames_floor[floors[(y - 1) * numFloorCols + (x - 1)]])
+						.SetFrame(gLooper.frames_floor[floors[(y - 1) * numFloorCols + (x - 1)]])
 						.Draw();
 				}
 			}

@@ -1,13 +1,7 @@
 ﻿#pragma once
 #include "game_looper_base.h"
 
-static constexpr int gRoomCellSize = 16;
-static constexpr int gMaxRoomWidth = gDesign.width / gRoomCellSize;
-static constexpr int gMaxRoomHeight = gDesign.height / gRoomCellSize;
-static constexpr int gMaxRoomWidth_2 = gMaxRoomWidth / 2;
-static constexpr int gMaxRoomHeight_2 = gMaxRoomHeight / 2;
-
-struct Room;
+struct Hero;
 
 struct GameLooper : GameLooperBase<GameLooper> {
 	void Init();
@@ -19,12 +13,10 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	bool ready{};
 
 	// res
-	std::vector<xx::Shared<Frame>> frames_walls;
+	std::vector<std::vector<xx::Shared<Frame>>> frames_heros;
 
 	// objs
-	xx::List<xx::Shared<Room>, int32_t> rooms;
-
-	bool hasCross{};
+	xx::List<xx::Shared<Hero>, int32_t> heros;
 
 	Camera camera;
 };
@@ -33,15 +25,23 @@ extern GameLooper gLooper;
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-struct Room {
+struct Hero {
+	constexpr static XY cAnchor{ 0.5f, 0.15f };
+	constexpr static float cRadius{ 6.f };
+	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
+	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 
 	Quad body;
-	XY pos, size;
-	XY GetMinXY() const;
-	XY GetMaxXY() const;
-	bool Intersects(Room const& o) const;
 
-	void Init(Vec2<> const& pos_, Vec2<> const& size_);
+	XY pos;
+	int heroId{};
+	MoveDirections direction{};
+	float frmaeIndex{}, frmaeIndexFrom{}, frmaeIndexTo{};
+
+	void Init(int heroId_, XY bornPos);
+	void SetDirection(MoveDirections d);
+	void ForwardFrame();
+	void BackwardFrame();
 	void Draw();
 	xx::Task<> mainLogic{ MainLogic() };
 	xx::Task<> MainLogic();

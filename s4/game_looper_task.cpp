@@ -145,7 +145,7 @@ void GameLooper::Draw() {
 		for (int y = minY; y < maxY; ++y) {
 			for (int x = minX; x < maxX; ++x) {
 				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).TrySetFrame(info->GetFrame()).Draw();
+					q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
 				}
 			}
 		}
@@ -154,7 +154,7 @@ void GameLooper::Draw() {
 		//for (int y = minY; y < maxTreeY; ++y) {
 		//	for (int x = minX; x < maxX; ++x) {
 		//		if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-		//			q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).TrySetFrame(info->GetFrame()).Draw();
+		//			q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
 		//		}
 		//	}
 		//}

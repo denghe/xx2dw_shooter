@@ -115,7 +115,7 @@ struct Pumpkin : CircleObj {
 	}
 
 	void Draw() const override {
-		quad.TrySetFrame(gLooper.frames_pumpkin[(int32_t)frameIndex])
+		quad.SetFrame(gLooper.frames_pumpkin[(int32_t)frameIndex])
 			.SetScale(gLooper.camera.scale)
 			.SetPosition(gLooper.camera.ToGLPos(_sgcPos))
 			.Draw();

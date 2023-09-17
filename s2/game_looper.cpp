@@ -19,21 +19,11 @@ xx::Task<> GameLooper::MainTask() {
 
 	// load wall texs
 	{
-		auto texs = co_await AsyncLoadTexturesFromUrls({
-			"res/wall1.png",
-			"res/wall2.png",
-			"res/wall3.png",
-			"res/wall4.png",
-			"res/wall5.png",
-			"res/wall6.png",
-			"res/wall7.png",
-			"res/wall8.png",
-			"res/wall9.png"
-		});
-		DynamicTexturePacker<> dtp;
-		dtp.Fill(texs);
-		frames_walls = std::move(dtp.frames);
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		xx_assert(tp);
+		tp->GetToByPrefix(frames_walls, "wall_");
 	}
+
 
 	ready = true;
 

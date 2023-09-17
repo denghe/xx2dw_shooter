@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Monster1::Draw() {
-	body.TrySetFrame(gLooper.frames_monster_1[(int32_t)frameIndex])
+	body.SetFrame(gLooper.frames_monster_1[(int32_t)frameIndex])
 		.SetScale(scale * gLooper.camera.scale)
 		.SetPosition(gLooper.camera.ToGLPos(pos))
 		.Draw();

@@ -13,7 +13,7 @@
 
 int32_t main();
 
-constexpr GDesign<1280, 800, 240> gDesign;
+constexpr GDesign<400, 300, 60> gDesign;
 
 // type same as EmscriptenKeyboardEvent.what
 using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
@@ -22,6 +22,10 @@ enum class KeyboardKeys : KeyboardKeys_t {
 	A = 65,
 	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
 	, MAX_VALUE
+};
+
+enum class MoveDirections : int {
+	Down = 0, Left, Right, Up
 };
 
 template<typename Derived>
@@ -131,6 +135,70 @@ struct GameLooperBase : Engine<Derived> {
 
 	EM_BOOL OnTouchCancel(EmscriptenTouchEvent const& e) {
 		return OnTouchEnd(e);
+	}
+
+	std::optional<std::pair<MoveDirections, XY>> GetKeyboardMoveInc() {
+		union Dirty {
+			struct {
+				uint8_t a, s, d, w;
+			};
+			uint32_t all{};
+		} flags;
+		int32_t n = 0;
+
+		if (KeyDown(KeyboardKeys::A)) { flags.a = 1; ++n; }
+		if (KeyDown(KeyboardKeys::S)) { flags.s = 1; ++n; }
+		if (KeyDown(KeyboardKeys::D)) { flags.d = 1; ++n; }
+		if (KeyDown(KeyboardKeys::W)) { flags.w = 1; ++n; }
+
+		if (n > 2) {
+			if (flags.a && flags.d) {
+				flags.a = flags.d == 0;
+				n -= 2;
+			}
+			if (flags.s && flags.w) {
+				flags.s = flags.s == 0;
+				n -= 2;
+			}
+		}
+		if (n == 0) return {};
+
+		XY v{};
+		MoveDirections md;
+
+		if (n == 2) {
+			if (flags.w) {
+				md = MoveDirections::Up;
+				if (flags.d) {
+					v = { gDesign.sqr2, -gDesign.sqr2 };	// up right
+				} else if (flags.a) {
+					v = { -gDesign.sqr2, -gDesign.sqr2 };	// up left
+				}
+			} else if (flags.s) {
+				md = MoveDirections::Down;
+				if (flags.d) {
+					v = { gDesign.sqr2, gDesign.sqr2 };		// right down
+				} else if (flags.a) {
+					v = { -gDesign.sqr2, gDesign.sqr2 };	// left down
+				}
+			}
+		} else if (n == 1) {
+			if (flags.w) {
+				md = MoveDirections::Up;
+				v.y = -1;	// up
+			} else if (flags.s) {
+				md = MoveDirections::Down;
+				v.y = 1;	// down
+			} else if (flags.a) {
+				md = MoveDirections::Left;
+				v.x = -1;	// left
+			} else if (flags.d) {
+				md = MoveDirections::Right;
+				v.x = 1;	// right
+			}
+		}
+
+		return std::make_pair(md, v);
 	}
 
 };

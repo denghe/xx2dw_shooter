@@ -8,22 +8,19 @@ struct Quad : QuadInstanceData {
     xx::Shared<Frame> frame;
     GLuint texId{};   // cache: == *frame->tex
 
+    template<bool forceOverrideTexRectId = false>
     XX_FORCE_INLINE Quad& SetFrame(xx::Shared<Frame> f) {
         assert(f);
         assert(f->tex);
+        if constexpr (!forceOverrideTexRectId) {
+            if (frame == f) return *this;
+        }
         texRectX = f->textureRect.x;
         texRectY = f->textureRect.y;
         texRectW = (uint16_t)f->textureRect.wh.x;
         texRectH = (uint16_t)f->textureRect.wh.y;
         texId = f->tex->GetValue();
         frame = std::move(f);
-        return *this;
-    }
-
-    XX_FORCE_INLINE Quad& TrySetFrame(xx::Shared<Frame> const& f) {
-        if (frame != f) {
-            SetFrame(f);
-        }
         return *this;
     }
 

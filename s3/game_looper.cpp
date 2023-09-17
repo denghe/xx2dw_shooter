@@ -20,9 +20,9 @@ xx::Task<> GameLooper::MainTask() {
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
-		tp->GetToByPrefix(frames_wall, "wall");
-		frames_floor.push_back(tp->Get("wall5"));
-		tp->GetToByPrefix(frames_pumpkin, "pumpkin");
+		tp->GetToByPrefix(frames_wall, "wall_");
+		frames_floor.push_back(tp->Get("wall_5"));
+		tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
 		printf("load tex from tp");
 	}
 

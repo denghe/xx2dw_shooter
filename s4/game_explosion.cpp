@@ -9,7 +9,7 @@ void Explosion::Init(XY const& bornPos) {
 
 void Explosion::Draw() {
 	auto& c = gLooper.camera;
-	body.TrySetFrame(gLooper.frames_explosion[(int32_t)frameIndex]).SetPosition(c.ToGLPos(pos)).Draw();
+	body.SetFrame(gLooper.frames_explosion[(int32_t)frameIndex]).SetPosition(c.ToGLPos(pos)).Draw();
 }
 
 xx::Task<> Explosion::MainLogic() {
