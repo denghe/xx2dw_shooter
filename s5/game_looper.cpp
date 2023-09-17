@@ -26,18 +26,21 @@ xx::Task<> GameLooper::MainTask() {
 	ready = true;											// all tex ready
 
 	camera.SetMaxFrameSize({32,32});
-	camera.SetScale(4);
+	camera.SetScale(2);
 
-	heros.EmplaceShared()->Init(0, { -30, 30 });
-	heros.EmplaceShared()->Init(1, { 30, 30 });
-	heros.EmplaceShared()->Init(2, { 30, -30 });
-	heros.EmplaceShared()->Init(3, { -30, -30 });
+	heros.EmplaceShared()->Init(0, { -120, 120 });
+	heros.EmplaceShared()->Init(1, { 120, 120 });
+	heros.EmplaceShared()->Init(2, { 120, -120 });
+	heros.EmplaceShared()->Init(3, { -120, -120 });
 
-	for (int i = 0; i < 1000; ++i) {
-		heroMagicWeapons.EmplaceShared()->Init(
-			gLooper.rnd.Next<int>(gLooper.frames_magicWeapon.size() - 1),
-			heros[rnd.Next<int>(0, 3)], 
-			{});
+	for (int i = 0; i < 500; ++i) {
+		for (int j = 0; j < 100; ++j) {
+			heroMagicWeapons.EmplaceShared()->Init(
+				rnd.Next<int>(frames_magicWeapon.size() - 1),
+				heros[rnd.Next<int>(0, 3)],
+				{ rnd.Next<float>(-80, 80), rnd.Next<float>(-80, 80) }
+			);
+		}
 		co_yield 0;
 	}
 
