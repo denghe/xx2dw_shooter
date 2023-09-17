@@ -25,7 +25,31 @@ extern GameLooper gLooper;
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-struct Hero {
+struct FrameIndexBase {
+	float frameIndex{};
+
+	XX_FORCE_INLINE void ForwardFrame(float inc, float from, float to) {
+		frameIndex += inc;
+		if (frameIndex >= to) {
+			frameIndex = from + (frameIndex - to);
+		}
+	}
+	XX_FORCE_INLINE void ForwardFrame(float inc, float to) {
+		ForwardFrame(inc, 0, to);
+	}
+
+	XX_FORCE_INLINE	void BackwardFrame(float inc, float from, float to) {
+		frameIndex -= inc;
+		if (frameIndex <= from) {
+			frameIndex = to - (from - frameIndex);
+		}
+	}
+	XX_FORCE_INLINE	void BackwardFrame(float inc, float to) {
+		BackwardFrame(inc, 0, to);
+	}
+};
+
+struct Hero : FrameIndexBase {
 	constexpr static XY cAnchor{ 0.5f, 0.15f };
 	constexpr static float cRadius{ 6.f };
 	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
@@ -36,12 +60,11 @@ struct Hero {
 	XY pos;
 	int heroId{};
 	MoveDirections direction{};
-	float frmaeIndex{}, frmaeIndexFrom{}, frmaeIndexTo{};
+	float frameIndexFrom{}, frameIndexTo{};
+	float speed{1};
 
 	void Init(int heroId_, XY bornPos);
 	void SetDirection(MoveDirections d);
-	void ForwardFrame();
-	void BackwardFrame();
 	void Draw();
 	xx::Task<> mainLogic{ MainLogic() };
 	xx::Task<> MainLogic();

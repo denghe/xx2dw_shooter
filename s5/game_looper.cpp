@@ -63,40 +63,27 @@ void Hero::Init(int heroId_, XY bornPos) {
 
 void Hero::SetDirection(MoveDirections d) {
 	direction = d;
-	frmaeIndexFrom = cFrameIndexRanges[(int)d];
-	frmaeIndexTo = cFrameIndexRanges[(int)d + 1];
-	frmaeIndex = frmaeIndexFrom;
-}
-
-void Hero::ForwardFrame() {
-	frmaeIndex += cFrameInc;
-	if (frmaeIndex >= frmaeIndexTo) {
-		frmaeIndex = frmaeIndexFrom + (frmaeIndex - frmaeIndexTo);
-	}
-}
-
-void Hero::BackwardFrame() {
-	frmaeIndex -= cFrameInc;
-	if (frmaeIndex <= frmaeIndexFrom) {
-		frmaeIndex = frmaeIndexTo - (frmaeIndexFrom - frmaeIndex);
-	}
+	frameIndexFrom = cFrameIndexRanges[(int)d];
+	frameIndexTo = cFrameIndexRanges[(int)d + 1];
+	frameIndex = frameIndexFrom;
 }
 
 void Hero::Draw() {
 	body.SetScale(gLooper.camera.scale)
 		.SetPosition(gLooper.camera.ToGLPos(pos))
-		.SetFrame(gLooper.frames_heros[heroId][frmaeIndex])
+		.SetFrame(gLooper.frames_heros[heroId][frameIndex])
 		.Draw();
 }
 
 xx::Task<> Hero::MainLogic() {
 	while (true) {
 		if (auto r = gLooper.GetKeyboardMoveInc(); r.has_value()) {
+			pos += r->second * speed;
+
 			if (direction != r->first) {
 				SetDirection(r->first);
 			}
-			pos += r->second;
-			ForwardFrame();
+			ForwardFrame(cFrameInc * speed, frameIndexFrom, frameIndexTo);
 		}
 		co_yield 0;
 	}
