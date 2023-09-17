@@ -54,6 +54,8 @@ struct MagicWeapon : Sprite {
 				float rb = -std::atan2(d.y, d.x);
 				auto tarPos = owner->pos + XY{ std::cos(-rb), -std::sin(-rb) } * owner->radius;
 				while (true) {									// step by step change current pos to rb pos
+					if (target) goto LabBegin;
+					if (!owner) goto LabEnd;
 					d = tarPos - pos;
 					dd = d.x * d.x + d.y * d.y;
 					if (dd > speed * speed) {
@@ -68,6 +70,7 @@ struct MagicWeapon : Sprite {
 
 				while (!StepRadians(rb, cFlyRadianMin)) {		// step by step change current radians to rb
 					if (target) goto LabBegin;
+					if (!owner) goto LabEnd;
 					co_yield 0;
 				}
 
@@ -75,6 +78,7 @@ struct MagicWeapon : Sprite {
 				while (true) {									// begin rotate fly around the owner
 					for (float r = rb, re = rb + M_PI * 2; r < re; r += cAroundRadiansInc) {
 						if (target) goto LabBegin;
+						if (!owner) goto LabEnd;
 						radians = -r;
 						pos = owner->pos + XY{ std::cos(r), -std::sin(r) } *owner->radius;
 						co_yield 0;
@@ -88,15 +92,20 @@ struct MagicWeapon : Sprite {
 				co_yield 0;
 				goto LabRetry;
 			}
-			// fly back
-			// todo: change angle
-			// co_yield 0;
 		}
-		co_yield 0;
-		goto LabBegin;
 
-		// lost owner
-		// todo: fly to tarPos
+	LabEnd:
+		while (true) {											// lost owner: step by step change current pos to bak pos
+			auto d = tarPos - pos;
+			auto dd = d.x * d.x + d.y * d.y;
+			if (dd <= speed * speed) {							// close target pos
+				pos = tarPos;
+				co_return;
+			} else {
+				pos += d.MakeNormalize() * speed;
+			}
+			co_yield 0;
+		}
 		// todo: stay on the floor? register to item container wait hero or monster pick it up ( limit by owner's slots? )
 	}
 };
