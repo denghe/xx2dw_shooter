@@ -21,6 +21,7 @@ xx::Task<> GameLooper::MainTask() {
 		tp->GetToByPrefix(frames_heros.emplace_back(), "boy_2_");
 		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_1_");
 		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_2_");
+		tp->GetToByPrefix(frames_magicWeapon, "weapon_");
 	}
 	ready = true;											// all tex ready
 
@@ -31,6 +32,14 @@ xx::Task<> GameLooper::MainTask() {
 	heros.EmplaceShared()->Init(1, { 30, 30 });
 	heros.EmplaceShared()->Init(2, { 30, -30 });
 	heros.EmplaceShared()->Init(3, { -30, -30 });
+
+	for (int i = 0; i < 1000; ++i) {
+		heroMagicWeapons.EmplaceShared()->Init(
+			gLooper.rnd.Next<int>(gLooper.frames_magicWeapon.size() - 1),
+			heros[rnd.Next<int>(0, 3)], 
+			{});
+		co_yield 0;
+	}
 
 	while (true) co_yield 0;								// do not quit
 }
@@ -45,46 +54,14 @@ void GameLooper::Update() {
 	if (!ready) return;
 
 	for (auto& o : heros) { o->mainLogic(); }
+	for (auto& o : heroMagicWeapons) { o->mainLogic(); }
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		for (auto& o : heros) { o->Draw(); }
+		for (auto& o : heroMagicWeapons) { o->Draw(); }
+		// todo: order by Y
 	}
 	fv.Draw(ctc72);											// show fps
-}
-
-void Hero::Init(int heroId_, XY bornPos) {
-	heroId = heroId_;
-	pos = bornPos;
-	SetDirection(MoveDirections::Down);
-	body.SetAnchor(cAnchor);
-}
-
-void Hero::SetDirection(MoveDirections d) {
-	direction = d;
-	frameIndexFrom = cFrameIndexRanges[(int)d];
-	frameIndexTo = cFrameIndexRanges[(int)d + 1];
-	frameIndex = frameIndexFrom;
-}
-
-void Hero::Draw() {
-	body.SetScale(gLooper.camera.scale)
-		.SetPosition(gLooper.camera.ToGLPos(pos))
-		.SetFrame(gLooper.frames_heros[heroId][frameIndex])
-		.Draw();
-}
-
-xx::Task<> Hero::MainLogic() {
-	while (true) {
-		if (auto r = gLooper.GetKeyboardMoveInc(); r.has_value()) {
-			pos += r->second * speed;
-
-			if (direction != r->first) {
-				SetDirection(r->first);
-			}
-			ForwardFrame(cFrameInc * speed, frameIndexFrom, frameIndexTo);
-		}
-		co_yield 0;
-	}
 }

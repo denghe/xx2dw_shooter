@@ -543,89 +543,11 @@
             <key type="filename">ice_golem_2.png</key>
             <key type="filename">ice_golem_3.png</key>
             <key type="filename">ice_golem_4.png</key>
-            <key type="filename">icon_armor_1.png</key>
-            <key type="filename">icon_armor_2.png</key>
-            <key type="filename">icon_armor_3.png</key>
-            <key type="filename">icon_armor_4.png</key>
-            <key type="filename">icon_armor_5.png</key>
-            <key type="filename">icon_arrow_1.png</key>
-            <key type="filename">icon_arrow_10.png</key>
-            <key type="filename">icon_arrow_11.png</key>
-            <key type="filename">icon_arrow_12.png</key>
-            <key type="filename">icon_arrow_13.png</key>
-            <key type="filename">icon_arrow_14.png</key>
-            <key type="filename">icon_arrow_15.png</key>
-            <key type="filename">icon_arrow_2.png</key>
-            <key type="filename">icon_arrow_3.png</key>
-            <key type="filename">icon_arrow_4.png</key>
-            <key type="filename">icon_arrow_5.png</key>
-            <key type="filename">icon_arrow_6.png</key>
-            <key type="filename">icon_arrow_7.png</key>
-            <key type="filename">icon_arrow_8.png</key>
-            <key type="filename">icon_arrow_9.png</key>
-            <key type="filename">icon_bone.png</key>
-            <key type="filename">icon_book_1.png</key>
-            <key type="filename">icon_book_10.png</key>
-            <key type="filename">icon_book_11.png</key>
-            <key type="filename">icon_book_12.png</key>
-            <key type="filename">icon_book_13.png</key>
-            <key type="filename">icon_book_14.png</key>
-            <key type="filename">icon_book_15.png</key>
-            <key type="filename">icon_book_16.png</key>
-            <key type="filename">icon_book_17.png</key>
-            <key type="filename">icon_book_18.png</key>
-            <key type="filename">icon_book_19.png</key>
-            <key type="filename">icon_book_2.png</key>
-            <key type="filename">icon_book_20.png</key>
-            <key type="filename">icon_book_21.png</key>
-            <key type="filename">icon_book_22.png</key>
-            <key type="filename">icon_book_23.png</key>
-            <key type="filename">icon_book_24.png</key>
-            <key type="filename">icon_book_25.png</key>
-            <key type="filename">icon_book_26.png</key>
-            <key type="filename">icon_book_27.png</key>
-            <key type="filename">icon_book_28.png</key>
-            <key type="filename">icon_book_29.png</key>
-            <key type="filename">icon_book_3.png</key>
-            <key type="filename">icon_book_30.png</key>
-            <key type="filename">icon_book_31.png</key>
-            <key type="filename">icon_book_32.png</key>
-            <key type="filename">icon_book_33.png</key>
-            <key type="filename">icon_book_34.png</key>
-            <key type="filename">icon_book_35.png</key>
-            <key type="filename">icon_book_36.png</key>
-            <key type="filename">icon_book_37.png</key>
-            <key type="filename">icon_book_38.png</key>
-            <key type="filename">icon_book_39.png</key>
-            <key type="filename">icon_book_4.png</key>
-            <key type="filename">icon_book_40.png</key>
-            <key type="filename">icon_book_41.png</key>
-            <key type="filename">icon_book_42.png</key>
-            <key type="filename">icon_book_5.png</key>
-            <key type="filename">icon_book_6.png</key>
-            <key type="filename">icon_book_7.png</key>
-            <key type="filename">icon_book_8.png</key>
-            <key type="filename">icon_book_9.png</key>
             <key type="filename">icon_boots_1.png</key>
             <key type="filename">icon_boots_2.png</key>
             <key type="filename">icon_boots_3.png</key>
             <key type="filename">icon_boots_4.png</key>
             <key type="filename">icon_boots_5.png</key>
-            <key type="filename">icon_bow_1.png</key>
-            <key type="filename">icon_bow_10.png</key>
-            <key type="filename">icon_bow_11.png</key>
-            <key type="filename">icon_bow_12.png</key>
-            <key type="filename">icon_bow_13.png</key>
-            <key type="filename">icon_bow_14.png</key>
-            <key type="filename">icon_bow_15.png</key>
-            <key type="filename">icon_bow_2.png</key>
-            <key type="filename">icon_bow_3.png</key>
-            <key type="filename">icon_bow_4.png</key>
-            <key type="filename">icon_bow_5.png</key>
-            <key type="filename">icon_bow_6.png</key>
-            <key type="filename">icon_bow_7.png</key>
-            <key type="filename">icon_bow_8.png</key>
-            <key type="filename">icon_bow_9.png</key>
             <key type="filename">icon_candle_1.png</key>
             <key type="filename">icon_candle_2.png</key>
             <key type="filename">icon_candy_1.png</key>
@@ -667,8 +589,6 @@
             <key type="filename">icon_coin_7.png</key>
             <key type="filename">icon_coin_8.png</key>
             <key type="filename">icon_coin_9.png</key>
-            <key type="filename">icon_cookie.png</key>
-            <key type="filename">icon_cotton.png</key>
             <key type="filename">icon_crystal_1.png</key>
             <key type="filename">icon_crystal_10.png</key>
             <key type="filename">icon_crystal_2.png</key>
@@ -688,10 +608,6 @@
             <key type="filename">icon_fish_3.png</key>
             <key type="filename">icon_fish_4.png</key>
             <key type="filename">icon_fish_5.png</key>
-            <key type="filename">icon_flower_1.png</key>
-            <key type="filename">icon_flower_2.png</key>
-            <key type="filename">icon_fruit_1.png</key>
-            <key type="filename">icon_fruit_2.png</key>
             <key type="filename">icon_gem_1.png</key>
             <key type="filename">icon_gem_10.png</key>
             <key type="filename">icon_gem_2.png</key>
@@ -771,7 +687,6 @@
             <key type="filename">icon_pearl_3.png</key>
             <key type="filename">icon_pearl_4.png</key>
             <key type="filename">icon_pearl_5.png</key>
-            <key type="filename">icon_plank.png</key>
             <key type="filename">icon_potion_1.png</key>
             <key type="filename">icon_potion_10.png</key>
             <key type="filename">icon_potion_11.png</key>
@@ -811,14 +726,6 @@
             <key type="filename">icon_ring_7.png</key>
             <key type="filename">icon_ring_8.png</key>
             <key type="filename">icon_ring_9.png</key>
-            <key type="filename">icon_scroll_1.png</key>
-            <key type="filename">icon_scroll_2.png</key>
-            <key type="filename">icon_scroll_3.png</key>
-            <key type="filename">icon_scroll_4.png</key>
-            <key type="filename">icon_scroll_5.png</key>
-            <key type="filename">icon_scroll_6.png</key>
-            <key type="filename">icon_scroll_7.png</key>
-            <key type="filename">icon_scroll_8.png</key>
             <key type="filename">icon_shard_1.png</key>
             <key type="filename">icon_shard_10.png</key>
             <key type="filename">icon_shard_2.png</key>
@@ -861,58 +768,6 @@
             <key type="filename">icon_spellbook_7.png</key>
             <key type="filename">icon_spellbook_8.png</key>
             <key type="filename">icon_spellbook_9.png</key>
-            <key type="filename">icon_staff_1.png</key>
-            <key type="filename">icon_staff_10.png</key>
-            <key type="filename">icon_staff_11.png</key>
-            <key type="filename">icon_staff_12.png</key>
-            <key type="filename">icon_staff_13.png</key>
-            <key type="filename">icon_staff_14.png</key>
-            <key type="filename">icon_staff_15.png</key>
-            <key type="filename">icon_staff_2.png</key>
-            <key type="filename">icon_staff_3.png</key>
-            <key type="filename">icon_staff_4.png</key>
-            <key type="filename">icon_staff_5.png</key>
-            <key type="filename">icon_staff_6.png</key>
-            <key type="filename">icon_staff_7.png</key>
-            <key type="filename">icon_staff_8.png</key>
-            <key type="filename">icon_staff_9.png</key>
-            <key type="filename">icon_stoneblock.png</key>
-            <key type="filename">icon_sword_1.png</key>
-            <key type="filename">icon_sword_10.png</key>
-            <key type="filename">icon_sword_11.png</key>
-            <key type="filename">icon_sword_12.png</key>
-            <key type="filename">icon_sword_13.png</key>
-            <key type="filename">icon_sword_14.png</key>
-            <key type="filename">icon_sword_15.png</key>
-            <key type="filename">icon_sword_2.png</key>
-            <key type="filename">icon_sword_3.png</key>
-            <key type="filename">icon_sword_4.png</key>
-            <key type="filename">icon_sword_5.png</key>
-            <key type="filename">icon_sword_6.png</key>
-            <key type="filename">icon_sword_7.png</key>
-            <key type="filename">icon_sword_8.png</key>
-            <key type="filename">icon_sword_9.png</key>
-            <key type="filename">icon_wood.png</key>
-            <key type="filename">icons3_1.png</key>
-            <key type="filename">icons3_10.png</key>
-            <key type="filename">icons3_11.png</key>
-            <key type="filename">icons3_12.png</key>
-            <key type="filename">icons3_13.png</key>
-            <key type="filename">icons3_14.png</key>
-            <key type="filename">icons3_15.png</key>
-            <key type="filename">icons3_16.png</key>
-            <key type="filename">icons3_17.png</key>
-            <key type="filename">icons3_18.png</key>
-            <key type="filename">icons3_19.png</key>
-            <key type="filename">icons3_2.png</key>
-            <key type="filename">icons3_20.png</key>
-            <key type="filename">icons3_3.png</key>
-            <key type="filename">icons3_4.png</key>
-            <key type="filename">icons3_5.png</key>
-            <key type="filename">icons3_6.png</key>
-            <key type="filename">icons3_7.png</key>
-            <key type="filename">icons3_8.png</key>
-            <key type="filename">icons3_9.png</key>
             <key type="filename">infected_mouse_1.png</key>
             <key type="filename">infected_mouse_2.png</key>
             <key type="filename">infected_mouse_3.png</key>
@@ -1521,6 +1376,7 @@
             <key type="filename">pumpkin_2.png</key>
             <key type="filename">pumpkin_3.png</key>
             <key type="filename">pumpkin_4.png</key>
+            <key type="filename">weapon_7.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -1549,6 +1405,296 @@
                 <rect>8,4,16,8</rect>
                 <key>scale9Paddings</key>
                 <rect>8,4,16,8</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,8,6,15</rect>
+                <key>scale9Paddings</key>
+                <rect>3,8,6,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_10.png</key>
+            <key type="filename">weapon_19.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,8,4,15</rect>
+                <key>scale9Paddings</key>
+                <rect>2,8,4,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_11.png</key>
+            <key type="filename">weapon_16.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,6,5,12</rect>
+                <key>scale9Paddings</key>
+                <rect>3,6,5,12</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_12.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,7,3,15</rect>
+                <key>scale9Paddings</key>
+                <rect>2,7,3,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_13.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,3,3,7</rect>
+                <key>scale9Paddings</key>
+                <rect>2,3,3,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_14.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,7,5,15</rect>
+                <key>scale9Paddings</key>
+                <rect>3,7,5,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_15.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,8,5,15</rect>
+                <key>scale9Paddings</key>
+                <rect>3,8,5,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_17.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>1,6,3,11</rect>
+                <key>scale9Paddings</key>
+                <rect>1,6,3,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_18.png</key>
+            <key type="filename">weapon_20.png</key>
+            <key type="filename">weapon_21.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,5,5,11</rect>
+                <key>scale9Paddings</key>
+                <rect>3,5,5,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_2.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,5,3,11</rect>
+                <key>scale9Paddings</key>
+                <rect>2,5,3,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_22.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,6,5,13</rect>
+                <key>scale9Paddings</key>
+                <rect>3,6,5,13</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_23.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,8,3,15</rect>
+                <key>scale9Paddings</key>
+                <rect>2,8,3,15</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_24.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,4,5,7</rect>
+                <key>scale9Paddings</key>
+                <rect>3,4,5,7</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_25.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,6,6,11</rect>
+                <key>scale9Paddings</key>
+                <rect>3,6,6,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_3.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,5,5,11</rect>
+                <key>scale9Paddings</key>
+                <rect>2,5,5,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_4.png</key>
+            <key type="filename">weapon_9.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,6,5,11</rect>
+                <key>scale9Paddings</key>
+                <rect>3,6,5,11</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_5.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>3,9,5,19</rect>
+                <key>scale9Paddings</key>
+                <rect>3,9,5,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_6.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,5,5,9</rect>
+                <key>scale9Paddings</key>
+                <rect>2,5,5,9</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">weapon_8.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,8,5,15</rect>
+                <key>scale9Paddings</key>
+                <rect>2,8,5,15</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -2076,89 +2222,11 @@
                     <filename>ice_golem_2.png</filename>
                     <filename>ice_golem_3.png</filename>
                     <filename>ice_golem_4.png</filename>
-                    <filename>icon_armor_1.png</filename>
-                    <filename>icon_armor_2.png</filename>
-                    <filename>icon_armor_3.png</filename>
-                    <filename>icon_armor_4.png</filename>
-                    <filename>icon_armor_5.png</filename>
-                    <filename>icon_arrow_1.png</filename>
-                    <filename>icon_arrow_10.png</filename>
-                    <filename>icon_arrow_11.png</filename>
-                    <filename>icon_arrow_12.png</filename>
-                    <filename>icon_arrow_13.png</filename>
-                    <filename>icon_arrow_14.png</filename>
-                    <filename>icon_arrow_15.png</filename>
-                    <filename>icon_arrow_2.png</filename>
-                    <filename>icon_arrow_3.png</filename>
-                    <filename>icon_arrow_4.png</filename>
-                    <filename>icon_arrow_5.png</filename>
-                    <filename>icon_arrow_6.png</filename>
-                    <filename>icon_arrow_7.png</filename>
-                    <filename>icon_arrow_8.png</filename>
-                    <filename>icon_arrow_9.png</filename>
-                    <filename>icon_bone.png</filename>
-                    <filename>icon_book_1.png</filename>
-                    <filename>icon_book_10.png</filename>
-                    <filename>icon_book_11.png</filename>
-                    <filename>icon_book_12.png</filename>
-                    <filename>icon_book_13.png</filename>
-                    <filename>icon_book_14.png</filename>
-                    <filename>icon_book_15.png</filename>
-                    <filename>icon_book_16.png</filename>
-                    <filename>icon_book_17.png</filename>
-                    <filename>icon_book_18.png</filename>
-                    <filename>icon_book_19.png</filename>
-                    <filename>icon_book_2.png</filename>
-                    <filename>icon_book_20.png</filename>
-                    <filename>icon_book_21.png</filename>
-                    <filename>icon_book_22.png</filename>
-                    <filename>icon_book_23.png</filename>
-                    <filename>icon_book_24.png</filename>
-                    <filename>icon_book_25.png</filename>
-                    <filename>icon_book_26.png</filename>
-                    <filename>icon_book_27.png</filename>
-                    <filename>icon_book_28.png</filename>
-                    <filename>icon_book_29.png</filename>
-                    <filename>icon_book_3.png</filename>
-                    <filename>icon_book_30.png</filename>
-                    <filename>icon_book_31.png</filename>
-                    <filename>icon_book_32.png</filename>
-                    <filename>icon_book_33.png</filename>
-                    <filename>icon_book_34.png</filename>
-                    <filename>icon_book_35.png</filename>
-                    <filename>icon_book_36.png</filename>
-                    <filename>icon_book_37.png</filename>
-                    <filename>icon_book_38.png</filename>
-                    <filename>icon_book_39.png</filename>
-                    <filename>icon_book_4.png</filename>
-                    <filename>icon_book_40.png</filename>
-                    <filename>icon_book_41.png</filename>
-                    <filename>icon_book_42.png</filename>
-                    <filename>icon_book_5.png</filename>
-                    <filename>icon_book_6.png</filename>
-                    <filename>icon_book_7.png</filename>
-                    <filename>icon_book_8.png</filename>
-                    <filename>icon_book_9.png</filename>
                     <filename>icon_boots_1.png</filename>
                     <filename>icon_boots_2.png</filename>
                     <filename>icon_boots_3.png</filename>
                     <filename>icon_boots_4.png</filename>
                     <filename>icon_boots_5.png</filename>
-                    <filename>icon_bow_1.png</filename>
-                    <filename>icon_bow_10.png</filename>
-                    <filename>icon_bow_11.png</filename>
-                    <filename>icon_bow_12.png</filename>
-                    <filename>icon_bow_13.png</filename>
-                    <filename>icon_bow_14.png</filename>
-                    <filename>icon_bow_15.png</filename>
-                    <filename>icon_bow_2.png</filename>
-                    <filename>icon_bow_3.png</filename>
-                    <filename>icon_bow_4.png</filename>
-                    <filename>icon_bow_5.png</filename>
-                    <filename>icon_bow_6.png</filename>
-                    <filename>icon_bow_7.png</filename>
-                    <filename>icon_bow_8.png</filename>
-                    <filename>icon_bow_9.png</filename>
                     <filename>icon_candle_1.png</filename>
                     <filename>icon_candle_2.png</filename>
                     <filename>icon_candy_1.png</filename>
@@ -2200,8 +2268,6 @@
                     <filename>icon_coin_7.png</filename>
                     <filename>icon_coin_8.png</filename>
                     <filename>icon_coin_9.png</filename>
-                    <filename>icon_cookie.png</filename>
-                    <filename>icon_cotton.png</filename>
                     <filename>icon_crystal_1.png</filename>
                     <filename>icon_crystal_10.png</filename>
                     <filename>icon_crystal_2.png</filename>
@@ -2221,10 +2287,6 @@
                     <filename>icon_fish_3.png</filename>
                     <filename>icon_fish_4.png</filename>
                     <filename>icon_fish_5.png</filename>
-                    <filename>icon_flower_1.png</filename>
-                    <filename>icon_flower_2.png</filename>
-                    <filename>icon_fruit_1.png</filename>
-                    <filename>icon_fruit_2.png</filename>
                     <filename>icon_gem_1.png</filename>
                     <filename>icon_gem_10.png</filename>
                     <filename>icon_gem_2.png</filename>
@@ -2304,7 +2366,6 @@
                     <filename>icon_pearl_3.png</filename>
                     <filename>icon_pearl_4.png</filename>
                     <filename>icon_pearl_5.png</filename>
-                    <filename>icon_plank.png</filename>
                     <filename>icon_potion_1.png</filename>
                     <filename>icon_potion_10.png</filename>
                     <filename>icon_potion_11.png</filename>
@@ -2344,14 +2405,6 @@
                     <filename>icon_ring_7.png</filename>
                     <filename>icon_ring_8.png</filename>
                     <filename>icon_ring_9.png</filename>
-                    <filename>icon_scroll_1.png</filename>
-                    <filename>icon_scroll_2.png</filename>
-                    <filename>icon_scroll_3.png</filename>
-                    <filename>icon_scroll_4.png</filename>
-                    <filename>icon_scroll_5.png</filename>
-                    <filename>icon_scroll_6.png</filename>
-                    <filename>icon_scroll_7.png</filename>
-                    <filename>icon_scroll_8.png</filename>
                     <filename>icon_shard_1.png</filename>
                     <filename>icon_shard_10.png</filename>
                     <filename>icon_shard_2.png</filename>
@@ -2394,58 +2447,6 @@
                     <filename>icon_spellbook_7.png</filename>
                     <filename>icon_spellbook_8.png</filename>
                     <filename>icon_spellbook_9.png</filename>
-                    <filename>icon_staff_1.png</filename>
-                    <filename>icon_staff_10.png</filename>
-                    <filename>icon_staff_11.png</filename>
-                    <filename>icon_staff_12.png</filename>
-                    <filename>icon_staff_13.png</filename>
-                    <filename>icon_staff_14.png</filename>
-                    <filename>icon_staff_15.png</filename>
-                    <filename>icon_staff_2.png</filename>
-                    <filename>icon_staff_3.png</filename>
-                    <filename>icon_staff_4.png</filename>
-                    <filename>icon_staff_5.png</filename>
-                    <filename>icon_staff_6.png</filename>
-                    <filename>icon_staff_7.png</filename>
-                    <filename>icon_staff_8.png</filename>
-                    <filename>icon_staff_9.png</filename>
-                    <filename>icon_stoneblock.png</filename>
-                    <filename>icon_sword_1.png</filename>
-                    <filename>icon_sword_10.png</filename>
-                    <filename>icon_sword_11.png</filename>
-                    <filename>icon_sword_12.png</filename>
-                    <filename>icon_sword_13.png</filename>
-                    <filename>icon_sword_14.png</filename>
-                    <filename>icon_sword_15.png</filename>
-                    <filename>icon_sword_2.png</filename>
-                    <filename>icon_sword_3.png</filename>
-                    <filename>icon_sword_4.png</filename>
-                    <filename>icon_sword_5.png</filename>
-                    <filename>icon_sword_6.png</filename>
-                    <filename>icon_sword_7.png</filename>
-                    <filename>icon_sword_8.png</filename>
-                    <filename>icon_sword_9.png</filename>
-                    <filename>icon_wood.png</filename>
-                    <filename>icons3_1.png</filename>
-                    <filename>icons3_10.png</filename>
-                    <filename>icons3_11.png</filename>
-                    <filename>icons3_12.png</filename>
-                    <filename>icons3_13.png</filename>
-                    <filename>icons3_14.png</filename>
-                    <filename>icons3_15.png</filename>
-                    <filename>icons3_16.png</filename>
-                    <filename>icons3_17.png</filename>
-                    <filename>icons3_18.png</filename>
-                    <filename>icons3_19.png</filename>
-                    <filename>icons3_2.png</filename>
-                    <filename>icons3_20.png</filename>
-                    <filename>icons3_3.png</filename>
-                    <filename>icons3_4.png</filename>
-                    <filename>icons3_5.png</filename>
-                    <filename>icons3_6.png</filename>
-                    <filename>icons3_7.png</filename>
-                    <filename>icons3_8.png</filename>
-                    <filename>icons3_9.png</filename>
                     <filename>infected_mouse_1.png</filename>
                     <filename>infected_mouse_2.png</filename>
                     <filename>infected_mouse_3.png</filename>
@@ -2736,6 +2737,31 @@
                     <filename>wretched_fomorian_2.png</filename>
                     <filename>wretched_fomorian_3.png</filename>
                     <filename>wretched_fomorian_4.png</filename>
+                    <filename>weapon_1.png</filename>
+                    <filename>weapon_10.png</filename>
+                    <filename>weapon_11.png</filename>
+                    <filename>weapon_12.png</filename>
+                    <filename>weapon_13.png</filename>
+                    <filename>weapon_14.png</filename>
+                    <filename>weapon_15.png</filename>
+                    <filename>weapon_16.png</filename>
+                    <filename>weapon_17.png</filename>
+                    <filename>weapon_18.png</filename>
+                    <filename>weapon_19.png</filename>
+                    <filename>weapon_2.png</filename>
+                    <filename>weapon_20.png</filename>
+                    <filename>weapon_21.png</filename>
+                    <filename>weapon_22.png</filename>
+                    <filename>weapon_23.png</filename>
+                    <filename>weapon_24.png</filename>
+                    <filename>weapon_25.png</filename>
+                    <filename>weapon_3.png</filename>
+                    <filename>weapon_4.png</filename>
+                    <filename>weapon_5.png</filename>
+                    <filename>weapon_6.png</filename>
+                    <filename>weapon_7.png</filename>
+                    <filename>weapon_8.png</filename>
+                    <filename>weapon_9.png</filename>
                 </array>
             </struct>
         </map>
