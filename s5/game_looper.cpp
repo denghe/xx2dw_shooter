@@ -22,7 +22,10 @@ xx::Task<> GameLooper::MainTask() {
 		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_1_");
 		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_2_");
 	}
-	ready = true;
+	ready = true;											// all tex ready
+
+	camera.SetMaxFrameSize({32,32});
+	camera.SetScale(4);
 
 	heros.EmplaceShared()->Init(0, { -30, 30 });
 	heros.EmplaceShared()->Init(1, { 30, 30 });
@@ -80,8 +83,10 @@ void Hero::BackwardFrame() {
 }
 
 void Hero::Draw() {
-	// todo: camera
-	body.SetPosition(pos.MakeFlipY()).SetFrame(gLooper.frames_heros[heroId][frmaeIndex]).Draw();
+	body.SetScale(gLooper.camera.scale)
+		.SetPosition(gLooper.camera.ToGLPos(pos))
+		.SetFrame(gLooper.frames_heros[heroId][frmaeIndex])
+		.Draw();
 }
 
 xx::Task<> Hero::MainLogic() {

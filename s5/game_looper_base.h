@@ -13,7 +13,7 @@
 
 int32_t main();
 
-constexpr GDesign<400, 300, 60> gDesign;
+constexpr GDesign<800, 600, 60> gDesign;
 
 // type same as EmscriptenKeyboardEvent.what
 using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
