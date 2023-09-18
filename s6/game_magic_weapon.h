@@ -30,26 +30,27 @@ struct MagicWeapon : Sprite {
 		XY tarPos;
 		//float lastRadians = radians;
 	LabBegin:
-		//if (target) {											// begin attack
-		//	tarPos = pos;										// backup owner's pos
-		//	// todo: first n seconds only +speed to cSpeedMax
-		//	do {
-		//		auto d = target->pos - pos;
-		//		auto dd = d.x * d.x + d.y * d.y;
-		//		if (dd <= cRadius * cRadius) {
-		//			// todo: hit effect ? return ?
-		//			break;
-		//		}
-		//		// continue fly
-		//		float r = -std::atan2(d.y, d.x);
-		//		StepRadians(r, cFlyRadianMin);
-		//		r = -radians;
-		//		pos += XY{ std::cos(r), -std::sin(r) } * speed;
-		//		//	// todo: change speed
-		//		// todo: calc - speed when angle from less than PI/2  change to greater than
-		//		co_yield 0;
-		//	} while (target);
-		//}
+		if (target) {											// begin attack
+			tarPos = pos;										// backup owner's pos
+			
+			// todo: first n seconds only +speed to cSpeedMax
+			do {
+				auto d = target->pos - pos;
+				auto dd = d.x * d.x + d.y * d.y;
+				if (dd <= cRadius * cRadius) {
+					// todo: hit effect ? return ?
+					break;
+				}
+				// continue fly
+				float r = -std::atan2(d.y, d.x);
+				StepRadians(r, cFlyRadianMin);
+				r = -radians;
+				pos += XY{ std::cos(r), -std::sin(r) } * speed;
+				//	// todo: change speed
+				// todo: calc - speed when angle from less than PI/2  change to greater than
+				co_yield 0;
+			} while (target);
+		}
 		if (owner) {											// follow mode
 		LabRetry:
 			auto d = owner->pos - pos;
