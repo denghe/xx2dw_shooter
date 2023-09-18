@@ -6,5 +6,6 @@
 #include "game_sprite.h"
 #include "game_hero.h"
 #include "game_magic_weapon.h"
+#include "game_afterimage.h"
 
 #endif

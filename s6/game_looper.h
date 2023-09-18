@@ -5,7 +5,7 @@ struct Sprite;
 struct Hero;
 template<typename Owner>
 struct MagicWeapon;
-struct MagicWeaponShadow;
+struct Afterimage;
 
 struct YSprite {
 	float y;
@@ -28,7 +28,7 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	// sprites
 	xx::ListLink<xx::Shared<Hero>, int32_t> heros;
 	xx::ListLink<xx::Shared<MagicWeapon<Hero>>, int32_t> heroMagicWeapons;
-	xx::ListLink<xx::Shared<MagicWeaponShadow>, int32_t> heroMagicWeaponShadows;
+	xx::ListLink<xx::Shared<Afterimage>, int32_t> afterimages;
 	xx::List<YSprite, int32_t> ysprites;
 
 	Camera camera;

@@ -3,13 +3,13 @@
 
 template<typename Owner>
 struct MagicWeapon : Sprite {
-	constexpr static XY cAnchor{ 0.5f, 0.1f };
+	constexpr static XY cAnchor{ 0.5f, 0.5f };
 	constexpr static float cRadius{ 6.f };
 	constexpr static float cSpeedMin{ 50.f / gDesign.fps };
 	constexpr static float cSpeedMax{ 200.f / gDesign.fps };
 	constexpr static float cSpeedInc{ 10.f / gDesign.fps };
 	constexpr static float cFlyRadianMin{ M_PI * 1 / gDesign.fps };
-	constexpr static float cFlyRadianMax{ M_PI * 5 / gDesign.fps };
+	constexpr static float cFlyRadianMax{ M_PI * 3 / gDesign.fps };
 	constexpr static float cAroundRadiansInc{ M_PI * 2 / gDesign.fps };
 
 	float speed{ cSpeedMin }, flyRadian{};
@@ -35,9 +35,8 @@ struct MagicWeapon : Sprite {
 		if (target) {											// begin attack
 			tarPos = pos;										// backup owner's pos
 			auto d = target->pos - pos;
-			auto r = std::atan2(d.y, d.x);						// aim target
-			radians = -r;
-			co_yield 0;
+			auto r = -std::atan2(-d.y, d.x);					// aim target
+			while (!StepRadians(r, cFlyRadianMax)) co_yield 0;
 			while (target) {
 				d = target->pos - pos;
 				auto dd = d.x * d.x + d.y * d.y;
@@ -46,10 +45,10 @@ struct MagicWeapon : Sprite {
 					//break;
 				}
 				// continue fly
-				r = std::atan2(d.y, d.x);
-				StepRadians(-r, flyRadian);					// change angle
-				auto inc = XY{ std::cos(radians), -std::sin(radians) } * speed;
-				pos += inc;
+				auto r = -std::atan2(-d.y, d.x);
+				StepRadians(r, flyRadian);						// step change angle
+				r = -radians;
+				pos += XY{ std::cos(r), -std::sin(r) } * speed;
 				//printf("%f %f\n", inc.x, inc.y);
 				// todo: change speed
 				// todo: first n seconds only +speed to cSpeedMax
@@ -61,10 +60,13 @@ struct MagicWeapon : Sprite {
 		if (owner) {											// follow mode
 		LabRetry:
 			auto d = owner->pos - pos;
+			auto r = -std::atan2(-d.y, d.x);					// aim owner
+			while (!StepRadians(r, cFlyRadianMax)) co_yield 0;
 			auto dd = d.x * d.x + d.y * d.y;
-			if (dd <= owner->radius * owner->radius) {			// in catch area
+			auto n = owner->radius * 3;
+			if (dd <= n * n) {									// in catch area
 				float rb = -std::atan2(d.y, d.x);
-				tarPos = owner->pos + XY{ std::cos(-rb), -std::sin(-rb) } * owner->radius;
+				tarPos = owner->pos + XY{ std::cos(-rb), -std::sin(-rb) } * n;
 				while (true) {									// step by step change current pos to rb pos
 					if (target) goto LabBegin;
 					if (!owner) goto LabEnd;
@@ -93,7 +95,7 @@ struct MagicWeapon : Sprite {
 						if (target) goto LabBegin;
 						if (!owner) goto LabEnd;
 						radians = -r;
-						pos = owner->pos + XY{ std::cos(r), -std::sin(r) } *owner->radius;
+						pos = owner->pos + XY{ std::cos(r), -std::sin(r) } * n;
 						co_yield 0;
 					}
 				}
@@ -120,33 +122,5 @@ struct MagicWeapon : Sprite {
 			co_yield 0;
 		}
 		// todo: stay on the floor? register to item container wait hero or monster pick it up ( limit by owner's slots? )
-	}
-};
-
-
-struct MagicWeaponShadow : Sprite {
-	constexpr static float cAlpha{ 0.8f };
-	constexpr static float cAlphaDecrease{ cAlpha / 4 * 60 / gDesign.fps };
-
-	float alpha{ cAlpha };
-
-	void Init(Sprite const& tar) {
-		mainLogic = MainLogic();
-		pos = tar.pos;
-		radians = tar.radians;
-		frames = tar.frames;
-		frameIndex = tar.frameIndex;
-		body = tar.body;
-		body.SetColorAf(alpha);
-		body.SetColormulti(cAlpha);
-	}
-
-	xx::Task<> MainLogic() {
-		while (alpha > 0) {
-			alpha -= cAlphaDecrease;
-			body.SetColorAf(alpha);
-			body.SetColormulti(cAlpha);
-			co_yield 0;
-		}
 	}
 };

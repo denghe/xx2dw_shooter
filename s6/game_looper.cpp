@@ -54,6 +54,15 @@ xx::Task<> GameLooper::MainTask() {
 		}
 	});
 
+	//heroMagicWeapons.Emplace().Emplace()->Init(
+	//	rnd.Next<int>(frames_magicWeapon.size() - 1), 
+	//	heros[0], 
+	//	{ rnd.Next<float>(-80, 80), rnd.Next<float>(-80, 80)
+	//});
+	//co_await AsyncSleep(2);
+	//heroMagicWeapons[0]->target = heros[1];
+
+
 	while (true) {
 		heros[1]->body.colormulti = 255;
 		heros[2]->body.colormulti = 255;
@@ -75,21 +84,26 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;
 
-	heros.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	heros.Foreach([&](auto& o) {
+		afterimages.Emplace().Emplace()->Init(*o);
+		return o->mainLogic.Resume();
+	});
+
 	heroMagicWeapons.Foreach([&](auto& o) {
 		if (!o->following) {
-			heroMagicWeaponShadows.Emplace().Emplace()->Init(*o);
+			afterimages.Emplace().Emplace()->Init(*o);
 		}
+		return o->mainLogic.Resume();
 	});
-	heroMagicWeapons.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
-	heroMagicWeaponShadows.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+
+	afterimages.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
 
-		heroMagicWeaponShadows.Foreach([&](auto& o) {
+		afterimages.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}
