@@ -207,7 +207,7 @@ int main() {
         } while (nowSecs < e);
     }
 
-    template<bool showLog = true, int timeoutSeconds = 10>
+    template<bool showLog = true, int timeoutSeconds = 30>
     xx::Task<xx::Shared<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
         if constexpr(showLog) {
             printf("LoadTextureFromUrl( %s ) : begin. nowSecs = %f\n", url, nowSecs);
@@ -231,7 +231,7 @@ int main() {
         co_return xx::Shared<GLTexture>{};
     }
 
-    template<bool showLog = false, int timeoutSeconds = 10>
+    template<bool showLog = false, int timeoutSeconds = 30>
     xx::Task<std::vector<xx::Shared<GLTexture>>> AsyncLoadTexturesFromUrls(std::initializer_list<char const*> urls) {
         std::vector<xx::Shared<GLTexture>> rtv;
         rtv.resize(urls.size());
