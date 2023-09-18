@@ -35,16 +35,33 @@ xx::Task<> GameLooper::MainTask() {
 	heros.EmplaceShared()->Init(3, { -120, -120 });
 
 	tasks.Add([&]()->xx::Task<> {
-		auto& weapon = heroMagicWeapons.EmplaceShared();
-		weapon->Init(0, heros[0], {});
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; ++j) {
+				heroMagicWeapons.EmplaceShared()->Init(
+					rnd.Next<int>(frames_magicWeapon.size() - 1), 
+					heros[0], 
+					{ rnd.Next<float>(-80, 80), rnd.Next<float>(-80, 80)
+				});
+			}
+			co_yield 0;
+		}
+
 		co_await AsyncSleep(2);
-		weapon->target = heros[1];
+
+		for (int i = 0, ie = heroMagicWeapons.len; i < ie; i++) {
+			heroMagicWeapons[i]->target = heros[(i % 3) + 1];
+			co_yield 0;
+		}
 	});
 
 	while (true) {
 		heros[1]->body.colormulti = 255;
+		heros[2]->body.colormulti = 255;
+		heros[3]->body.colormulti = 255;
 		co_await AsyncSleep(0.05);
 		heros[1]->body.colormulti = 1;
+		heros[2]->body.colormulti = 1;
+		heros[3]->body.colormulti = 1;
 		co_await AsyncSleep(0.05);
 	}
 }

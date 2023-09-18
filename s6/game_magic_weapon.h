@@ -8,17 +8,18 @@ struct MagicWeapon : Sprite {
 	constexpr static float cSpeedMin{ 50.f / gDesign.fps };
 	constexpr static float cSpeedMax{ 200.f / gDesign.fps };
 	constexpr static float cSpeedInc{ 10.f / gDesign.fps };
-	constexpr static float cFlyRadianMin{ M_PI * 2 / gDesign.fps };
-	constexpr static float cFlyRadianMax{ M_PI * 20 / gDesign.fps };
+	constexpr static float cFlyRadianMin{ M_PI * 1 / gDesign.fps };
+	constexpr static float cFlyRadianMax{ M_PI * 5 / gDesign.fps };
 	constexpr static float cAroundRadiansInc{ M_PI * 2 / gDesign.fps };
 
-	float speed{ cSpeedMin };
+	float speed{ cSpeedMin }, flyRadian{};
 	xx::Weak<Owner> owner;
 	xx::Weak<Sprite> target;
 
 	void Init(int index, xx::Shared<Owner> const& owner_, XY const& bornPos) {
 		mainLogic = MainLogic();
 		radius = cRadius;
+		flyRadian = gLooper.rnd.Next<float>(cFlyRadianMin, cFlyRadianMax);
 		owner = owner_;
 		pos = bornPos;
 		frames = &gLooper.frames_magicWeapon;
@@ -28,28 +29,32 @@ struct MagicWeapon : Sprite {
 
 	xx::Task<> MainLogic() {
 		XY tarPos;
-		//float lastRadians = radians;
 	LabBegin:
 		if (target) {											// begin attack
 			tarPos = pos;										// backup owner's pos
-			
-			// todo: first n seconds only +speed to cSpeedMax
-			do {
-				auto d = target->pos - pos;
+			auto d = target->pos - pos;
+			auto r = std::atan2(d.y, d.x);						// aim target
+			radians = -r;
+			co_yield 0;
+			while (target) {
+				d = target->pos - pos;
 				auto dd = d.x * d.x + d.y * d.y;
 				if (dd <= cRadius * cRadius) {
 					// todo: hit effect ? return ?
-					break;
+					//break;
 				}
 				// continue fly
-				float r = -std::atan2(d.y, d.x);
-				StepRadians(r, cFlyRadianMin);
-				r = -radians;
-				pos += XY{ std::cos(r), -std::sin(r) } * speed;
-				//	// todo: change speed
+				r = std::atan2(d.y, d.x);
+				StepRadians(-r, flyRadian);					// change angle
+				auto inc = XY{ std::cos(radians), -std::sin(radians) } * speed;
+				pos += inc;
+				//printf("%f %f\n", inc.x, inc.y);
+				// todo: change speed
+				// todo: first n seconds only +speed to cSpeedMax
 				// todo: calc - speed when angle from less than PI/2  change to greater than
+				//float lastRadians = radians;
 				co_yield 0;
-			} while (target);
+			}
 		}
 		if (owner) {											// follow mode
 		LabRetry:
