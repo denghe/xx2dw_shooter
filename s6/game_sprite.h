@@ -2,7 +2,7 @@
 #include "game_looper.h"
 
 struct Sprite {
-	Quad body;
+	mutable Quad body;
 	XY pos;
 	float radius{}, radians{};
 	float frameIndex{};
@@ -29,7 +29,7 @@ struct Sprite {
 		BackwardFrame(inc, 0, to);
 	}
 
-	void Draw() {
+	void Draw() const {
 		body.SetScale(gLooper.camera.scale)
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)

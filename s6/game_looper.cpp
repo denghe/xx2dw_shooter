@@ -29,15 +29,15 @@ xx::Task<> GameLooper::MainTask() {
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
 
-	heros.EmplaceShared()->Init(0, { -120, 120 }); 
-	heros.EmplaceShared()->Init(1, { 120, 120 });
-	heros.EmplaceShared()->Init(2, { 120, -120 });
-	heros.EmplaceShared()->Init(3, { -120, -120 });
+	heros.Emplace().Emplace()->Init(0, { -120, 120 }); 
+	heros.Emplace().Emplace()->Init(1, { 120, 120 });
+	heros.Emplace().Emplace()->Init(2, { 120, -120 });
+	heros.Emplace().Emplace()->Init(3, { -120, -120 });
 
 	tasks.Add([&]()->xx::Task<> {
 		for (int i = 0; i < 100; i++) {
 			for (int j = 0; j < 100; ++j) {
-				heroMagicWeapons.EmplaceShared()->Init(
+				heroMagicWeapons.Emplace().Emplace()->Init(
 					rnd.Next<int>(frames_magicWeapon.size() - 1), 
 					heros[0], 
 					{ rnd.Next<float>(-80, 80), rnd.Next<float>(-80, 80)
@@ -75,20 +75,46 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;
 
-	for (auto& o : heros) { o->mainLogic(); }
-	for (auto& o : heroMagicWeapons) { o->mainLogic(); }
+	heros.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	heroMagicWeapons.Foreach([&](auto& o) {
+		if (!o->following) {
+			heroMagicWeaponShadows.Emplace().Emplace()->Init(*o);
+		}
+	});
+	heroMagicWeapons.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	heroMagicWeaponShadows.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
 }
 
 void GameLooper::Draw() {
 	if (ready) {
-		for (auto& o : heroMagicWeapons) {
-			if (!o->owner || o->pos.y - 3 <= o->owner->pos.y) o->Draw();
+		camera.Calc();
+
+		heroMagicWeaponShadows.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+
+		heros.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				ysprites.Add(YSprite{ o->pos.y, o.pointer });
+			}
+		});
+		heroMagicWeapons.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				ysprites.Add(YSprite{ o->pos.y - 3, o.pointer });
+			}
+		});
+
+		std::sort(ysprites.buf, ysprites.buf + ysprites.len, 
+			[](YSprite const& a, YSprite const& b) {
+				return a.y < b.y;
+			});
+		for (int i = 0, ie = ysprites.len; i < ie; ++i) {
+			ysprites[i].s->Draw();
 		}
-		for (auto& o : heros) { o->Draw(); }
-		for (auto& o : heroMagicWeapons) {
-			if (!(!o->owner || o->pos.y - 3 <= o->owner->pos.y)) o->Draw();
-		}
-		// todo: order by Y with all monsters
+		ysprites.Clear();
+
 	}
 	fv.Draw(ctc72);											// show fps
 }

@@ -1,9 +1,16 @@
 ﻿#pragma once
 #include "game_looper_base.h"
 
+struct Sprite;
 struct Hero;
 template<typename Owner>
 struct MagicWeapon;
+struct MagicWeaponShadow;
+
+struct YSprite {
+	float y;
+	Sprite const* s;
+};
 
 struct GameLooper : GameLooperBase<GameLooper> {
 	void Init();
@@ -19,8 +26,10 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	std::vector<xx::Shared<Frame>> frames_magicWeapon;
 
 	// sprites
-	xx::List<xx::Shared<Hero>, int32_t> heros;
-	xx::List<xx::Shared<MagicWeapon<Hero>>, int32_t> heroMagicWeapons;
+	xx::ListLink<xx::Shared<Hero>, int32_t> heros;
+	xx::ListLink<xx::Shared<MagicWeapon<Hero>>, int32_t> heroMagicWeapons;
+	xx::ListLink<xx::Shared<MagicWeaponShadow>, int32_t> heroMagicWeaponShadows;
+	xx::List<YSprite, int32_t> ysprites;
 
 	Camera camera;
 };

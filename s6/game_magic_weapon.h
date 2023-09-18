@@ -13,6 +13,7 @@ struct MagicWeapon : Sprite {
 	constexpr static float cAroundRadiansInc{ M_PI * 2 / gDesign.fps };
 
 	float speed{ cSpeedMin }, flyRadian{};
+	bool following{};
 	xx::Weak<Owner> owner;
 	xx::Weak<Sprite> target;
 
@@ -30,6 +31,7 @@ struct MagicWeapon : Sprite {
 	xx::Task<> MainLogic() {
 		XY tarPos;
 	LabBegin:
+		following = {};
 		if (target) {											// begin attack
 			tarPos = pos;										// backup owner's pos
 			auto d = target->pos - pos;
@@ -85,6 +87,7 @@ struct MagicWeapon : Sprite {
 				}
 
 				rb = -rb;
+				following = true;
 				while (true) {									// begin rotate fly around the owner
 					for (float r = rb, re = rb + M_PI * 2; r < re; r += cAroundRadiansInc) {
 						if (target) goto LabBegin;
@@ -117,5 +120,33 @@ struct MagicWeapon : Sprite {
 			co_yield 0;
 		}
 		// todo: stay on the floor? register to item container wait hero or monster pick it up ( limit by owner's slots? )
+	}
+};
+
+
+struct MagicWeaponShadow : Sprite {
+	constexpr static float cAlpha{ 0.8f };
+	constexpr static float cAlphaDecrease{ cAlpha / 4 * 60 / gDesign.fps };
+
+	float alpha{ cAlpha };
+
+	void Init(Sprite const& tar) {
+		mainLogic = MainLogic();
+		pos = tar.pos;
+		radians = tar.radians;
+		frames = tar.frames;
+		frameIndex = tar.frameIndex;
+		body = tar.body;
+		body.SetColorAf(alpha);
+		body.SetColormulti(cAlpha);
+	}
+
+	xx::Task<> MainLogic() {
+		while (alpha > 0) {
+			alpha -= cAlphaDecrease;
+			body.SetColorAf(alpha);
+			body.SetColormulti(cAlpha);
+			co_yield 0;
+		}
 	}
 };
