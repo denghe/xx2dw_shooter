@@ -50,7 +50,7 @@ xx::Task<> GameLooper::MainTask() {
 
 		for (int i = 0, ie = heroMagicWeapons.len; i < ie; i++) {
 			heroMagicWeapons[i]->target = heros[(i % 3) + 1];
-			co_yield 0;
+			if (i % 10 == 0) co_yield 0;
 		}
 	});
 
