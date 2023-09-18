@@ -3,6 +3,7 @@
 
 template<typename Owner>
 struct MagicWeapon : Sprite {
+	constexpr static XY cAnchor{ 0.5f, 0.1f };
 	constexpr static float cRadius{ 6.f };
 	constexpr static float cSpeedMin{ 50.f / gDesign.fps };
 	constexpr static float cSpeedMax{ 200.f / gDesign.fps };
@@ -22,7 +23,7 @@ struct MagicWeapon : Sprite {
 		pos = bornPos;
 		frames = &gLooper.frames_magicWeapon;
 		frameIndex = index;
-		body.SetRotate(radians).SetAnchor({0.5, 0});
+		body.SetRotate(radians).SetAnchor(cAnchor);
 	}
 
 	xx::Task<> MainLogic() {

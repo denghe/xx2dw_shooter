@@ -10,6 +10,7 @@ GameLooper gLooper;											// global var for easy use
 void GameLooper::Init() {
     windowWidth = gDesign.width;
     windowHeight = gDesign.height;
+	printf("2\n");
 }
 
 xx::Task<> GameLooper::MainTask() {
@@ -28,7 +29,7 @@ xx::Task<> GameLooper::MainTask() {
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
 
-	heros.EmplaceShared()->Init(0, { -120, 120 });
+	heros.EmplaceShared()->Init(0, { -120, 120 }); 
 	heros.EmplaceShared()->Init(1, { 120, 120 });
 	heros.EmplaceShared()->Init(2, { 120, -120 });
 	heros.EmplaceShared()->Init(3, { -120, -120 });
@@ -62,9 +63,14 @@ void GameLooper::Update() {
 
 void GameLooper::Draw() {
 	if (ready) {
+		for (auto& o : heroMagicWeapons) {
+			if (!o->owner || o->pos.y - 3 <= o->owner->pos.y) o->Draw();
+		}
 		for (auto& o : heros) { o->Draw(); }
-		for (auto& o : heroMagicWeapons) { o->Draw(); }
-		// todo: order by Y
+		for (auto& o : heroMagicWeapons) {
+			if (!(!o->owner || o->pos.y - 3 <= o->owner->pos.y)) o->Draw();
+		}
+		// todo: order by Y with all monsters
 	}
 	fv.Draw(ctc72);											// show fps
 }
