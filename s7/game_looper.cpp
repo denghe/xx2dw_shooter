@@ -10,7 +10,6 @@ GameLooper gLooper;											// global var for easy use
 void GameLooper::Init() {
     windowWidth = gDesign.width;
     windowHeight = gDesign.height;
-	printf("2\n");
 }
 
 xx::Task<> GameLooper::MainTask() {
@@ -26,7 +25,7 @@ xx::Task<> GameLooper::MainTask() {
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
 
-	heros.Emplace().Emplace()->Init(0, {}); 
+	heros.Emplace().Emplace()->Init({}); 
 }
 
 void GameLooper::Update() {
@@ -36,9 +35,15 @@ void GameLooper::Update() {
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
 		camera.IncreaseScale(0.02, 5);
 	}
-	if (!ready) return;
+	if (!ready) return;										// ready check
 
-	heros.Foreach([&](auto& o) { return o->MainLogic.Resume(); });
+	// update all objs
+	heros.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	heroHandWeapons.Foreach([&](auto& o) { 
+		afterimages.Emplace().Emplace()->Init(*o);
+		return o->mainLogic.Resume();
+	});
+	afterimages.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
 }
 
 void GameLooper::Draw() {
@@ -46,6 +51,16 @@ void GameLooper::Draw() {
 		camera.Calc();
 
 		heros.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+		afterimages.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+		heroHandWeapons.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

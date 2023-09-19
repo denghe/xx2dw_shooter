@@ -13,7 +13,7 @@ struct Sprite {
 	bool flipX{};
 
 	std::vector<xx::Shared<Frame>>const* frames{};
-	xx::Task<> MainLogic;
+	xx::Task<> mainLogic;
 
 	xx::Task<> Idle { Idle_() };
 	xx::Task<> Idle_() {
@@ -21,6 +21,16 @@ struct Sprite {
 			for (scale.y = cIdleScaleYTo; scale.y > cIdleScaleYFrom; scale.y -= cIdleScaleYStep) co_yield 0;
 			for (scale.y = cIdleScaleYFrom; scale.y < cIdleScaleYTo; scale.y += cIdleScaleYStep) co_yield 0;
 		}
+	}
+
+	// todo: GetYSprite
+
+	void Draw() const {
+		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
+			.SetPosition(gLooper.camera.ToGLPos(pos))
+			.SetRotate(radians)
+			.SetFrame((*frames)[frameIndex])
+			.Draw();
 	}
 
 	XX_FORCE_INLINE void ForwardFrame(float inc, float from, float to) {
@@ -41,14 +51,6 @@ struct Sprite {
 	}
 	XX_FORCE_INLINE	void BackwardFrame(float inc, float to) {
 		BackwardFrame(inc, 0, to);
-	}
-
-	void Draw() const {
-		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
-			.SetPosition(gLooper.camera.ToGLPos(pos))
-			.SetRotate(radians)
-			.SetFrame((*frames)[frameIndex])
-			.Draw();
 	}
 
 	bool StepRadians(float r, float frameMaxChangeRadian) {

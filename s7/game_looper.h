@@ -2,6 +2,9 @@
 #include "game_looper_base.h"
 
 struct Hero;
+template<typename Owner>
+struct HandWeapon;
+struct Afterimage;
 
 struct GameLooper : GameLooperBase<GameLooper> {
 	void Init();
@@ -18,6 +21,8 @@ struct GameLooper : GameLooperBase<GameLooper> {
 
 	// sprites
 	xx::ListLink<xx::Shared<Hero>, int32_t> heros;
+	xx::ListLink<xx::Shared<HandWeapon<Hero>>, int32_t> heroHandWeapons;
+	xx::ListLink<xx::Shared<Afterimage>, int32_t> afterimages;
 
 	Camera camera;
 };

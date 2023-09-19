@@ -5,5 +5,7 @@
 #include "game_looper.h"
 #include "game_sprite.h"
 #include "game_hero.h"
+#include "game_hand_weapon.h"
+#include "game_afterimage.h"
 
 #endif
