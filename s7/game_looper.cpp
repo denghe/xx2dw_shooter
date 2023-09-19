@@ -38,7 +38,7 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;
 
-	heros.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+	heros.Foreach([&](auto& o) { return o->MainLogic.Resume(); });
 }
 
 void GameLooper::Draw() {

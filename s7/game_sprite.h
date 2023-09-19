@@ -2,14 +2,26 @@
 #include "game_looper.h"
 
 struct Sprite {
+	constexpr static float cIdleScaleYFrom{ 0.9f };
+	constexpr static float cIdleScaleYTo{ 1.f };
+	constexpr static float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
+
 	mutable Quad body;
-	XY pos;
+	XY pos, scale{ 1, 1 };
 	float radius{}, radians{};
 	float frameIndex{};
 	bool flipX{};
 
 	std::vector<xx::Shared<Frame>>const* frames{};
-	xx::Task<> mainLogic;
+	xx::Task<> MainLogic;
+
+	xx::Task<> Idle { Idle_() };
+	xx::Task<> Idle_() {
+		while (true) {
+			for (scale.y = cIdleScaleYTo; scale.y > cIdleScaleYFrom; scale.y -= cIdleScaleYStep) co_yield 0;
+			for (scale.y = cIdleScaleYFrom; scale.y < cIdleScaleYTo; scale.y += cIdleScaleYStep) co_yield 0;
+		}
+	}
 
 	XX_FORCE_INLINE void ForwardFrame(float inc, float from, float to) {
 		frameIndex += inc;
@@ -32,7 +44,7 @@ struct Sprite {
 	}
 
 	void Draw() const {
-		body.SetScale({ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
+		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)
 			.SetFrame((*frames)[frameIndex])
