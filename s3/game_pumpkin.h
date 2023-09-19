@@ -11,13 +11,11 @@ struct Pumpkin : CircleObj {
 
 	float frameIndex{};
 
-	void Init(Vec2<> const& pos) {
+	void Init(Vec2<> const& pos_) {
 		radius = cRadius;
 		frameIndex = gLooper.rnd.Next<float>(cFrameMaxIndex - 0.1);
-		SGCInit(gLooper.sgcMonsters);
-		SGCSetPos(pos);
-		SGCAdd();
-
+		pos = pos_;
+		SGCAdd(gLooper.sgcMonsters, pos_);
 		quad.SetAnchor({ 0.5, float(cSize.x) / 2 / cSize.y });
 	}
 
@@ -33,10 +31,10 @@ struct Pumpkin : CircleObj {
 			// calc neighbor cross force
 			XY combineForce{};
 			int numCross{}, limit = 15;
-			auto crIdx = _sgc->PosToCrIdx(_sgcPos);
+			auto crIdx = _sgc->PosToCrIdx(pos);
 			_sgc->Foreach9(crIdx, [&](CircleObj* o) {
 				if (o == this) return false;											// skip self
-				auto d = _sgcPos - o->_sgcPos;
+				auto d = pos - o->pos;
 				auto rr = (o->radius + radius) * (o->radius + radius);
 				auto dd = d.x * d.x + d.y * d.y;
 				if (rr > dd) {															// cross?
@@ -48,7 +46,7 @@ struct Pumpkin : CircleObj {
 				return --limit < 0;														// number limit
 			});
 
-			auto newPos = _sgcPos;
+			auto newPos = pos;
 			if (numCross) {
 				//printf("numCross = %d\n", numCross);
 				if (combineForce.IsZero()) {											// move by random angle
@@ -100,9 +98,9 @@ struct Pumpkin : CircleObj {
 			}
 
 			// upgrade space grid
-			if (newPos != _sgcPos) {
-				SGCSetPos(newPos);
-				SGCUpdate();
+			if (newPos != pos) {
+				pos = newPos;
+				SGCUpdate(pos);
 			}
 			// random move ? lisinging player ?
 
@@ -111,13 +109,13 @@ struct Pumpkin : CircleObj {
 	}
 
 	operator YObj() const {
-		return { _sgcPos.y - gCellSize.y / 2, this };
+		return { pos.y - gCellSize.y / 2, this };
 	}
 
 	void Draw() const override {
 		quad.SetFrame(gLooper.frames_pumpkin[(int32_t)frameIndex])
 			.SetScale(gLooper.camera.scale)
-			.SetPosition(gLooper.camera.ToGLPos(_sgcPos))
+			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.Draw();
 	}
 };

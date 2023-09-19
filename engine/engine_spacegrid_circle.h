@@ -1,60 +1,41 @@
 ﻿#pragma once
-#include "engine_prims.h"
+#include "engine_spacegrid_ringdiffuse.h"
 
 // space grid index system for circle
-template<typename Item>
+template<typename Item, typename XY_t = Vec2<int32_t>>
 struct SpaceGridC;
 
 // for inherit
-template<typename Derived>
+template<typename Derived, typename XY_t = Vec2<int32_t>>
 struct SpaceGridCItem {
-    SpaceGridC<Derived>* _sgc{};
-    Derived* _sgcPrev{}, * _sgcNext{};
+    SpaceGridC<Derived> *_sgc{};
+    Derived *_sgcPrev{}, *_sgcNext{};
     int32_t _sgcIdx{ -1 };
-    Vec2<int32_t> _sgcPos;
 
-    void SGCInit(SpaceGridC<Derived>& sgc) {
+    XX_FORCE_INLINE void SGCAdd(SpaceGridC<Derived>& sgc, XY_t const& pos) {
         assert(!_sgc);
         _sgc = &sgc;
-    }
-    void SGCSetPos(Vec2<int32_t> const& pos) {
-        assert(_sgc);
-        assert(_sgcPos.x >= 0 && _sgcPos.x < _sgc->maxX);
-        assert(_sgcPos.y >= 0 && _sgcPos.y < _sgc->maxY);
-        _sgcPos = pos;
-    }
-    void SGCAdd() {
-        assert(_sgc);
-        _sgc->Add(((Derived*)(this)));
+        _sgc->Add((Derived*)this, pos);
     }
 
-    void SGCUpdate() {
+    XX_FORCE_INLINE void SGCUpdate(XY_t const& pos) {
         assert(_sgc);
-        _sgc->Update(((Derived*)(this)));
+        _sgc->Update((Derived*)this, pos);
     }
 
-    void SGCRemove() {
-        assert(_sgc);
-        _sgc->Remove(((Derived*)(this)));
-    }
-    void SGCTryRemove() {
+    XX_FORCE_INLINE void SGCRemove() {
         if (_sgc) {
-            SGCRemove();
+            _sgc->Remove((Derived*)this);
             _sgc = {};
         }
     }
 };
 
-template<typename Item>
+template<typename Item, typename XY_t>
 struct SpaceGridC {
     int32_t numRows{}, numCols{}, maxDiameter{};
     int32_t maxY{}, maxX{}, maxY1{}, maxX1{}, numItems{}, numActives{};	// for easy check & stat
     std::vector<Item*> cells;
-
-    int32_t PosToIndex(Vec2<int32_t> const& p) {
-        auto rcIdx = p / maxDiameter;
-        return rcIdx.y * numCols + rcIdx.x;
-    }
 
     void Init(int32_t const& numRows_, int32_t const& numCols_, int32_t const& maxDiameter_) {
         numRows = numRows_;
@@ -68,17 +49,17 @@ struct SpaceGridC {
         cells.resize(numRows * numCols);
     }
 
-    void Add(Item* const& c) {
+    void Add(Item* const& c, XY_t const& pos) {
         assert(c);
         assert(c->_sgc == this);
         assert(c->_sgcIdx == -1);
         assert(!c->_sgcPrev);
         assert(!c->_sgcNext);
-        assert(c->_sgcPos.x >= 0 && c->_sgcPos.x < maxX);
-        assert(c->_sgcPos.y >= 0 && c->_sgcPos.y < maxY);
+        assert(pos.x >= 0 && pos.x < maxX);
+        assert(pos.y >= 0 && pos.y < maxY);
 
         // calc rIdx & cIdx
-        int rIdx = c->_sgcPos.y / maxDiameter, cIdx = c->_sgcPos.x / maxDiameter;
+        int rIdx = pos.y / maxDiameter, cIdx = pos.x / maxDiameter;
         int idx = rIdx * numCols + cIdx;
         assert(idx <= cells.size());
         assert(!cells[idx] || !cells[idx]->_sgcPrev);
@@ -129,7 +110,7 @@ struct SpaceGridC {
         --numItems;
     }
 
-    void Update(Item* const& c) {
+    void Update(Item* const& c, XY_t const& pos) {
         assert(c);
         assert(c->_sgc == this);
         assert(c->_sgcIdx > -1);
@@ -137,7 +118,7 @@ struct SpaceGridC {
         assert(c->_sgcPrev != c);
         //assert(cells[c->_sgcIdx] include c);
 
-        auto idx = PosToCellIdx(c->_sgcPos);
+        auto idx = PosToCellIdx(pos);
         if (idx == c->_sgcIdx) return;	// no change
         assert(!cells[idx] || !cells[idx]->_sgcPrev);
         assert(!cells[c->_sgcIdx] || !cells[c->_sgcIdx]->_sgcPrev);
@@ -177,19 +158,19 @@ struct SpaceGridC {
     }
 
     // return x: col index   y: row index
-    XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(Vec2<int32_t> const& pos) {
+    XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY_t const& pos) {
         assert(pos.x >= 0 && pos.x < maxX);
         assert(pos.y >= 0 && pos.y < maxY);
         return pos / maxDiameter;
     }
-
+    
     // return cell's index
     XX_FORCE_INLINE int32_t CrIdxToCellIdx(Vec2<int32_t> const& crIdx) {
         return crIdx.y * numCols + crIdx.x;
     }
-
+    
     // return cell's index
-    XX_FORCE_INLINE int32_t PosToCellIdx(Vec2<int32_t> const& pos) {
+    XX_FORCE_INLINE int32_t PosToCellIdx(XY_t const& pos) {
         return CrIdxToCellIdx(PosToCrIdx(pos));
     }
 
@@ -208,7 +189,7 @@ struct SpaceGridC {
         return false;
     }
 
-    constexpr static std::array<Vec2<int32_t>, 9> offsets9 = { 
+    constexpr static std::array<Vec2<int32_t>, 9> offsets9 = {
         Vec2<int32_t>{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
     };
 

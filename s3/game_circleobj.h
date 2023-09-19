@@ -3,7 +3,8 @@
 
 struct CircleObj : Obj, SpaceGridCItem<CircleObj> {
 	int radius{};
+
 	~CircleObj() {
-		SGCTryRemove();
+		SGCRemove();
 	}
 };

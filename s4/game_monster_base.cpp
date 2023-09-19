@@ -5,16 +5,13 @@ void MonsterBase::RemoveFromOwner() {
 }
 
 void MonsterBase::GridInit() {
-	SGCInit(gLooper.sgcMonsters);
-	SGCSetPos(gGridBasePos.MakeAdd(pos));
-	SGCAdd();
+	SGCAdd(gLooper.sgcMonsters, gGridBasePos.MakeAdd(pos));
 }
 
 void MonsterBase::GridUpdate() {
-	SGCSetPos(gGridBasePos.MakeAdd(pos));
-	SGCUpdate();
+	SGCUpdate(gGridBasePos.MakeAdd(pos));
 }
 
 MonsterBase::~MonsterBase() {
-	SGCTryRemove();
+	SGCRemove();
 }

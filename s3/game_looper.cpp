@@ -77,7 +77,7 @@ void GameLooper::Draw() {
 
 		for (int i = 0, ie = pumpkins.len; i < ie; ++i) {
 			auto& pumpkin = *pumpkins[i];
-			if (gLooper.camera.InArea(pumpkin._sgcPos)) {
+			if (gLooper.camera.InArea(pumpkin.pos)) {
 				yos.Add(pumpkin);
 			}
 		}
