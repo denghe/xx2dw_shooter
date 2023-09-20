@@ -17,15 +17,21 @@ xx::Task<> GameLooper::MainTask() {
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
-		tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
-		tp->GetToByPrefix(frames_weapon, "weapon_");
+		auto n = tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_weapon, "weapon_");
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_eye_fire, "eye_fire_");
+		xx_assert(n);
 	}
 	ready = true;											// all tex ready
 
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
 
-	heros.Emplace().Emplace()->Init({}); 
+	player1.Emplace();
+
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, {});
 }
 
 void GameLooper::Update() {
@@ -35,20 +41,28 @@ void GameLooper::Update() {
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
 		camera.IncreaseScale(0.02, 5);
 	}
-	if (!ready) return;										// ready check
+	if (!ready) return;										// todo: show loading ?
 
-	// update all objs
-	heros.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
-	heroHandWeapons.Foreach([&](auto& o) { 
-		afterimages.Emplace().Emplace()->Init(*o);
+	heros.Foreach([&](xx::Shared<Hero> const& o) {
+		afterimages.Emplace().Emplace()->Init(*o->weapon);
+		if (o->mainLogic.Resume()) return true;
+		o->weapon->mainLogic.Resume();
+		return false;
+	});
+
+	bullets.Foreach([&](auto& o) {
 		return o->mainLogic.Resume();
 	});
-	afterimages.Foreach([&](auto& o) { return o->mainLogic.Resume(); });
+
+	afterimages.Foreach([&](auto& o) {
+		return o->mainLogic.Resume();
+	});
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
+
 
 		heros.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
@@ -60,7 +74,13 @@ void GameLooper::Draw() {
 				o->Draw();
 			}
 		});
-		heroHandWeapons.Foreach([&](auto& o) {
+		heros.Foreach([&](auto& h) {
+			auto& o = h->weapon;
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+		bullets.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

@@ -25,7 +25,9 @@ struct Sprite {
 
 	// todo: GetYSprite
 
-	void Draw() const {
+	//virtual ~Sprite() {}
+
+	/*virtual */void Draw() const {
 		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)

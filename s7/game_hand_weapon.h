@@ -1,34 +1,20 @@
 ﻿#pragma once
 #include "game_sprite.h"
 
-template<typename Owner>
 struct HandWeapon : Sprite {
-	constexpr static XY cAnchor{ 0.f, 0.5f };
+	xx::Weak<Player> player;
+	xx::Weak<Hero> hero;
+	XY firePos{};
+	float nextFireSecs{};
+};
+
+struct HandWeapon_Sword1 : HandWeapon {
+	constexpr static XY cAnchor{ 0.1, 0.5 };
+	constexpr static float cFrameIndex{ 0 };
 	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
+	constexpr static float cFireDelaySecs{ 0.02 };
+	constexpr static float cFireDistance{ 27 };
 
-	xx::Weak<Owner> owner;
-
-	void Init(xx::Weak<Owner> owner_) {
-		mainLogic = MainLogic();
-		//radius = cRadius;
-		pos = owner_->pos;
-		owner = std::move(owner_);
-		frames = &gLooper.frames_weapon;
-		frameIndex = 0;
-		body.SetAnchor(cAnchor);
-	}
-
-	xx::Task<> MainLogic() {
-		while (owner) {
-
-			pos = owner->pos + Owner::cHookOffset;
-			auto v = gLooper.mousePos - gLooper.camera.ToGLPos(pos);
-			auto r = -std::atan2(v.y, v.x);
-			StepRadians(r, cFrameMaxChangeRadians);
-
-			co_yield 0;
-		}
-	}
-
-	// todo: Fire
+	void Init(xx::Shared<Hero> const& hero_);
+	xx::Task<> MainLogic();
 };
