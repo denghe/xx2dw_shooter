@@ -7,7 +7,8 @@
 #include "game_afterimage.h"
 #include "game_player.h"
 #include "game_hero.h"
-#include "game_hand_weapon.h"
+#include "game_weapon.h"
 #include "game_bullet.h"
+#include "game_monster.h"
 
 #endif

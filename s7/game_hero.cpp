@@ -2,13 +2,14 @@
 
 void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 	mainLogic = MainLogic();
+	idle = Idle_ScaleY();
 	player = player_;
 	radius = cRadius;
 	pos = bornPos;
 	speed = cSpeed;
 	frames = &gLooper.frames_pumpkin;
 	body.SetAnchor(cAnchor);
-	weapon.Emplace<HandWeapon_Sword1>()->Init(xx::SharedFromThis(this));
+	weapon.Emplace<Weapon_Sword1>()->Init(xx::SharedFromThis(this));
 }
 
 void Hero_Pumpkin::Draw() const {
@@ -27,9 +28,9 @@ xx::Task<> Hero_Pumpkin::MainLogic() {
 			} else if ((int)r->first & (int)MoveDirections::Left) {
 				flipX = true;
 			}
-			ForwardFrame(cFrameInc * speed, cFrameMaxIndex);
+			ForwardFrame(cFrameInc * (speed / cSpeed), cFrameMaxIndex);
 		} else {
-			Idle();
+			idle();
 		}
 		weaponPos = pos + cHookOffset;
 

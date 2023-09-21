@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-void Bullet_EyeFire::Init(HandWeapon* hw, XY const& pos_, float r, float c, float s) {
+void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s) {
 	mainLogic = MainLogic();
 	radius = cRadius;
 	pos = pos_;
@@ -14,9 +14,17 @@ void Bullet_EyeFire::Init(HandWeapon* hw, XY const& pos_, float r, float c, floa
 
 xx::Task<> Bullet_EyeFire::MainLogic() {
 	for (float life = 1; life > 0; life -= cLifeDelta) {
-		ForwardFrame(cFrameInc * speed / cSpeed, cFrameMaxIndex);
-
 		pos += inc;
+
+		// check hit monsters
+		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
+			r->Hit(damage);		// r maybe deleted
+			co_return;
+		}
+
+		// todo: check walls
+
+		ForwardFrame(cFrameInc * speed / cSpeed, cFrameMaxIndex);
 		co_yield 0;
 	}
 }

@@ -6,6 +6,10 @@ struct Sprite {
 	constexpr static float cIdleScaleYTo{ 1.f };
 	constexpr static float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
 
+	constexpr static float cIdleRotateRadiansFrom{ -0.07f };
+	constexpr static float cIdleRotateRadiansTo{ 0.07f };
+	constexpr static float cIdleRotateRadiansStep{ 2.f / gDesign.fps };
+
 	mutable Quad body;
 	XY pos, scale{ 1, 1 };
 	float radius{}, radians{};
@@ -15,11 +19,19 @@ struct Sprite {
 	std::vector<xx::Shared<Frame>>const* frames{};
 	xx::Task<> mainLogic;
 
-	xx::Task<> Idle { Idle_() };
-	xx::Task<> Idle_() {
+	xx::Task<> idle;		// need init
+
+	xx::Task<> Idle_ScaleY() {
 		while (true) {
 			for (scale.y = cIdleScaleYTo; scale.y > cIdleScaleYFrom; scale.y -= cIdleScaleYStep) co_yield 0;
 			for (scale.y = cIdleScaleYFrom; scale.y < cIdleScaleYTo; scale.y += cIdleScaleYStep) co_yield 0;
+		}
+	}
+
+	xx::Task<> Idle_Rotate() {
+		while (true) {
+			for (radians = cIdleRotateRadiansFrom; radians < cIdleRotateRadiansTo; radians += cIdleRotateRadiansStep) co_yield 0;
+			for (radians = cIdleRotateRadiansTo; radians >= cIdleRotateRadiansFrom; radians -= cIdleRotateRadiansStep) co_yield 0;
 		}
 	}
 

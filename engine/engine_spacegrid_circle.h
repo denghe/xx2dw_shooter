@@ -8,11 +8,11 @@ struct SpaceGridC;
 // for inherit
 template<typename Derived, typename XY_t = Vec2<int32_t>>
 struct SpaceGridCItem {
-    SpaceGridC<Derived> *_sgc{};
+    SpaceGridC<Derived, XY_t> *_sgc{};
     Derived *_sgcPrev{}, *_sgcNext{};
     int32_t _sgcIdx{ -1 };
 
-    XX_FORCE_INLINE void SGCAdd(SpaceGridC<Derived>& sgc, XY_t const& pos) {
+    XX_FORCE_INLINE void SGCAdd(SpaceGridC<Derived, XY_t>& sgc, XY_t const& pos) {
         assert(!_sgc);
         _sgc = &sgc;
         _sgc->Add((Derived*)this, pos);
@@ -161,7 +161,7 @@ struct SpaceGridC {
     XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY_t const& pos) {
         assert(pos.x >= 0 && pos.x < maxX);
         assert(pos.y >= 0 && pos.y < maxY);
-        return pos / maxDiameter;
+        return { pos.x / maxDiameter, pos.y / maxDiameter };
     }
     
     // return cell's index

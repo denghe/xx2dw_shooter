@@ -17,14 +17,19 @@ xx::Task<> GameLooper::MainTask() {
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
-		auto n = tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
+		auto n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
 		xx_assert(n);
-		n = tp->GetToByPrefix(frames_weapon, "weapon_");
+		n = tp->GetToByPrefix(frames_weapon, Weapon::cResPrefix);
 		xx_assert(n);
-		n = tp->GetToByPrefix(frames_eye_fire, "eye_fire_");
+		n = tp->GetToByPrefix(frames_eye_fire, Bullet_EyeFire::cResPrefix);
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
 		xx_assert(n);
 	}
 	ready = true;											// all tex ready
+
+	monstersGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
+	sgrdd.Init(gGridNumRows, gGridCellDiameter);
 
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
@@ -32,6 +37,8 @@ xx::Task<> GameLooper::MainTask() {
 	player1.Emplace();
 
 	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, {});
+
+	Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
 }
 
 void GameLooper::Update() {
@@ -44,7 +51,7 @@ void GameLooper::Update() {
 	if (!ready) return;										// todo: show loading ?
 
 	heros.Foreach([&](xx::Shared<Hero> const& o) {
-		//afterimages.Emplace().Emplace()->Init(*o->weapon);
+		afterimages.Emplace().Emplace()->Init(*o->weapon);
 		if (o->mainLogic.Resume()) return true;
 		o->weapon->mainLogic.Resume();
 		return false;
@@ -52,6 +59,10 @@ void GameLooper::Update() {
 
 	bullets.Foreach([&](auto& o) {
 		//afterimages.Emplace().Emplace()->Init(*o);
+		return o->mainLogic.Resume();
+	});
+
+	monsters.Foreach([&](auto& o) {
 		return o->mainLogic.Resume();
 	});
 
@@ -63,7 +74,6 @@ void GameLooper::Update() {
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
-
 
 		heros.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
@@ -77,6 +87,11 @@ void GameLooper::Draw() {
 		});
 		heros.Foreach([&](auto& h) {
 			auto& o = h->weapon;
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+		monsters.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

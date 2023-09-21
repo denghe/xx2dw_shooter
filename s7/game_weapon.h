@@ -1,13 +1,14 @@
 ﻿#pragma once
 #include "game_sprite.h"
 
-struct HandWeapon : Sprite {
+struct Weapon : Sprite {
+	constexpr static char const* cResPrefix{ "weapon_" };
 	xx::Weak<Player> player;
 	xx::Weak<Hero> hero;
 	float nextFireSecs{};
 };
 
-struct HandWeapon_Sword1 : HandWeapon {
+struct Weapon_Sword1 : Weapon {
 	constexpr static XY cAnchor{ 0.1, 0.5 };
 	constexpr static float cFrameIndex{ 0 };
 	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
