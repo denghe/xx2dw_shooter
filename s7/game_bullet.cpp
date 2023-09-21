@@ -5,7 +5,7 @@ void Bullet_EyeFire::Init(HandWeapon* hw, XY const& pos_, float r, float c, floa
 	radius = cRadius;
 	pos = pos_;
 	radians = -r;
-	inc = XY{ c, -s } * cSpeed;
+	inc = XY{ c, s } * cSpeed;
 	player = hw->player;
 	frames = &gLooper.frames_eye_fire;
 	frameIndex = 0;

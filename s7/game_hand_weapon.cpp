@@ -22,9 +22,26 @@ xx::Task<> HandWeapon_Sword1::MainLogic() {
 			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
 			r = -radians;
 			auto c = std::cos(r);
-			auto s = std::sin(r);
-			auto firePos = pos + XY{ c, -s } * cFireDistance;
+			auto s = -std::sin(r);
+			auto firePos = pos + XY{ c, s } * cFireDistance;
 			gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this, firePos, r, c, s);
+
+			// simulate recoil
+			auto bak = pos;
+			auto steps_5 = std::min(cFireRecoilDelaySecs, cFireDelaySecs) / gDesign.frameDelay / 5;
+			auto inc = XY{ c, s } * cFireRecoilSpeed;
+			for (int i = 0; i < steps_5 * 2; ++i) {
+				pos -= inc;
+				co_yield 0;
+			}
+			for (int i = 0; i < steps_5; ++i) {
+				co_yield 0;
+			}
+			for (int i = 0; i < steps_5 * 2; ++i) {
+				pos += inc;
+				co_yield 0;
+			}
+			pos = bak;
 		}
 
 		co_yield 0;

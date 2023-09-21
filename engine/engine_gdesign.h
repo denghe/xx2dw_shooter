@@ -4,6 +4,7 @@
 template<int width_, int height_, int fps_ = 60>
 struct GDesign {
     static constexpr float fps = fps_;
+    static constexpr float frameDelay = 1.f / fps_;
 
     static constexpr float width = width_;
     static constexpr float height = height_;
