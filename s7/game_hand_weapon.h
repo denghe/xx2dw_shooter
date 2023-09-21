@@ -4,7 +4,6 @@
 struct HandWeapon : Sprite {
 	xx::Weak<Player> player;
 	xx::Weak<Hero> hero;
-	XY firePos{};
 	float nextFireSecs{};
 };
 

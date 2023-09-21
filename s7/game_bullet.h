@@ -14,6 +14,8 @@ struct Bullet_EyeFire : Bullet {
 	constexpr static float cLifeDelta{ 1.f / 5.f / gDesign.fps };
 	constexpr static float cSpeed{ 300.f / gDesign.fps };
 
-	void Init(HandWeapon* hw);
+	XY inc{};
+
+	void Init(HandWeapon* hw, XY const& pos_, float r, float c, float s);
 	xx::Task<> MainLogic();
 };

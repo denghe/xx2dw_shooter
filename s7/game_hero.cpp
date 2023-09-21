@@ -5,6 +5,7 @@ void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 	player = player_;
 	radius = cRadius;
 	pos = bornPos;
+	speed = cSpeed;
 	frames = &gLooper.frames_pumpkin;
 	body.SetAnchor(cAnchor);
 	weapon.Emplace<HandWeapon_Sword1>()->Init(xx::SharedFromThis(this));

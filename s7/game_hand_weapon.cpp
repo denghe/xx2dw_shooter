@@ -10,22 +10,21 @@ void HandWeapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
 	body.SetAnchor(cAnchor);
 }
 
-//void HandWeapon_Sword1::Fire() {
-//
-//}
-
 xx::Task<> HandWeapon_Sword1::MainLogic() {
 	while (hero) {
 		pos = hero->weaponPos;
 		auto v = gLooper.mousePos - gLooper.camera.ToGLPos(pos);
 		auto r = -std::atan2(v.y, v.x);
 		StepRadians(r, cFrameMaxChangeRadians);
-		firePos = pos + XY{ std::cos(r), std::sin(r) } * cFireDistance;
 
 		// mouse aim fire control
 		if (gLooper.mouseBtnStates[0] && nextFireSecs <= gLooper.nowSecs) {
 			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
-			gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this);
+			r = -radians;
+			auto c = std::cos(r);
+			auto s = std::sin(r);
+			auto firePos = pos + XY{ c, -s } * cFireDistance;
+			gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this, firePos, r, c, s);
 		}
 
 		co_yield 0;
