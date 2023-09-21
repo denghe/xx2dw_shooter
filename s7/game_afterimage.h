@@ -15,7 +15,7 @@ struct Afterimage : Sprite {
 		frames = tar.frames;
 		frameIndex = tar.frameIndex;
 		body = tar.body;
-		body.SetColor({ 255, 127, 127, 255 });
+		//body.SetColor({ 255, 127, 127, 255 });
 		body.SetColorAf(alpha);
 		body.SetColormulti(cAlpha);
 	}

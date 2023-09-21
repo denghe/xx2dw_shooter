@@ -44,13 +44,14 @@ void GameLooper::Update() {
 	if (!ready) return;										// todo: show loading ?
 
 	heros.Foreach([&](xx::Shared<Hero> const& o) {
-		afterimages.Emplace().Emplace()->Init(*o->weapon);
+		//afterimages.Emplace().Emplace()->Init(*o->weapon);
 		if (o->mainLogic.Resume()) return true;
 		o->weapon->mainLogic.Resume();
 		return false;
 	});
 
 	bullets.Foreach([&](auto& o) {
+		//afterimages.Emplace().Emplace()->Init(*o);
 		return o->mainLogic.Resume();
 	});
 
