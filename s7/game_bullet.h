@@ -54,3 +54,15 @@ struct Bullet_Fireball : Bullet {
 	void Init(Weapon* hw, XY const& pos_, float r, float c, float s);
 	xx::Task<> MainLogic_();
 };
+
+struct Bullet_Explosion : Bullet {
+	constexpr static char const* cResPrefix{ "explosion_" };
+	constexpr static XY cAnchor{ 0.5f, 0.5f };
+	constexpr static float cScale{ 6.f };
+	constexpr static float cRadius{ 16.f * cScale };
+	constexpr static float cDamageFrameIndex{ 2 };
+	constexpr static float cFrameInc{ 30.f / gDesign.fps };
+
+	void Init(Bullet* fb);
+	xx::Task<> MainLogic_();
+};

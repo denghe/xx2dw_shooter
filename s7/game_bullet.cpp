@@ -82,13 +82,39 @@ xx::Task<> Bullet_Fireball::MainLogic_() {
 
 		// check hit monsters
 		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
-			r->Hit(damage);		// r maybe deleted
+			//r->Hit(damage);		// r maybe deleted
+			gLooper.bullets.Emplace().Emplace<Bullet_Explosion>()->Init(this);
 			co_return;
 		}
 
 		// todo: check walls
 
 		ForwardFrame(cFrameInc * speed / cSpeed, frameMaxIndex);
+		co_yield 0;
+	}
+}
+
+void Bullet_Explosion::Init(Bullet* fb) {
+	mainLogic = MainLogic_();
+	pos = fb->pos;
+	scale = { cScale, cScale };
+	player = fb->player;
+	damage = fb->damage;
+	radius = cRadius;
+	radians = gLooper.rnd.Next<float>(M_PI * 2);
+	frames = &gLooper.frames_explosion;
+	frameIndex = 0;
+	body.SetAnchor(cAnchor);
+}
+
+xx::Task<> Bullet_Explosion::MainLogic_() {
+	float frameMaxIndex = frames->size();
+	assert(frameMaxIndex > cDamageFrameIndex);
+	for (; frameIndex < cDamageFrameIndex; frameIndex += cFrameInc) co_yield 0;
+	Monster::ForeachByRange(gLooper.monstersGrid, pos, radius, [&](Monster* m) {
+		m->Hit(damage);
+	});
+	for (; frameIndex < frameMaxIndex; frameIndex += cFrameInc) {
 		co_yield 0;
 	}
 }

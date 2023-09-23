@@ -2,7 +2,6 @@
 #include "game_looper_base.h"
 
 constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
-constexpr XY gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 
 struct Player;
 struct DamageNumber;
@@ -31,6 +30,7 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	std::vector<xx::Shared<Frame>> frames_eye_fire;
 	std::vector<xx::Shared<Frame>> frames_eye_fire_blue;
 	std::vector<xx::Shared<Frame>> frames_fireball_10;
+	std::vector<xx::Shared<Frame>> frames_explosion;
 	std::vector<xx::Shared<Frame>> frames_dragon_babywhite;
 
 	// players

@@ -62,8 +62,7 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	}
 
 	inline static Monster* FindNeighbor(SpaceGridC<Monster, XY>& container, XY const& pos, float radius) {
-		auto p = gGridBasePos.MakeAdd(pos);
-		auto crIdx = container.PosToCrIdx(p);
+		auto crIdx = container.PosToCrIdx(pos);
 		Monster* r{};
 		container.Foreach9(crIdx, [&](Monster* m)->bool {
 			// (r1 + r2) * (r1 + r2) > (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
@@ -75,13 +74,12 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 				return true;
 			}
 			return false;
-			});
+		});
 		return r;
 	}
 
 	inline static Monster* FindNearest(SpaceGridC<Monster, XY>& container, XY const& pos, float maxDistance) {
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
-		auto crIdx = container.PosToCrIdx(p);					// calc grid col row index
+		auto crIdx = container.PosToCrIdx(pos);					// calc grid col row index
 
 		float minVxxyy = maxDistance * maxDistance;
 		Monster* o{};
@@ -102,13 +100,35 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 					ov = v;
 				}
 				return false;
-				});
+			});
 
 			if (o) return o;									// found. stop ring diffuse step
 		}
 		return nullptr;
 	}
 
+	template<typename F>
+	inline static void ForeachByRange(SpaceGridC<Monster, XY>& container, XY const& pos, float maxDistance, F&& func) {
+		auto crIdx = container.PosToCrIdx(pos);					// calc grid col row index
+
+		float rr = maxDistance * maxDistance;
+
+		auto& lens = gLooper.sgrdd.lens;
+		auto& idxs = gLooper.sgrdd.idxs;
+		for (int i = 1; i < lens.len; i++) {
+			if (lens[i].radius > maxDistance) break;			// limit search range
+
+			auto offsets = &idxs[lens[i - 1].count];
+			auto size = lens[i].count - lens[i - 1].count;
+			container.ForeachCells(crIdx, offsets, size, [&](Monster* m)->bool {
+				auto v = m->pos - pos;
+				if (v.x * v.x + v.y * v.y < rr) {
+					func(m);
+				}
+				return false;
+			});
+		}
+	}
 };
 
 struct Monster_Dragon_BabyWhite : Monster {

@@ -1043,6 +1043,14 @@
             <key type="filename">dragon_greatred_6.png</key>
             <key type="filename">dragon_greatred_7.png</key>
             <key type="filename">dragon_greatred_8.png</key>
+            <key type="filename">explosion_1.png</key>
+            <key type="filename">explosion_2.png</key>
+            <key type="filename">explosion_3.png</key>
+            <key type="filename">explosion_4.png</key>
+            <key type="filename">explosion_5.png</key>
+            <key type="filename">explosion_6.png</key>
+            <key type="filename">explosion_7.png</key>
+            <key type="filename">explosion_8.png</key>
             <key type="filename">glaring_overlord_1.png</key>
             <key type="filename">glaring_overlord_2.png</key>
             <key type="filename">glaring_overlord_3.png</key>
@@ -1361,65 +1369,12 @@
                 <false/>
             </struct>
             <key type="filename">fireball_10_1.png</key>
-            <key type="filename">fireball_10_10.png</key>
-            <key type="filename">fireball_10_11.png</key>
-            <key type="filename">fireball_10_12.png</key>
-            <key type="filename">fireball_10_13.png</key>
-            <key type="filename">fireball_10_14.png</key>
-            <key type="filename">fireball_10_15.png</key>
-            <key type="filename">fireball_10_16.png</key>
-            <key type="filename">fireball_10_17.png</key>
-            <key type="filename">fireball_10_18.png</key>
-            <key type="filename">fireball_10_19.png</key>
             <key type="filename">fireball_10_2.png</key>
-            <key type="filename">fireball_10_20.png</key>
-            <key type="filename">fireball_10_21.png</key>
-            <key type="filename">fireball_10_22.png</key>
-            <key type="filename">fireball_10_23.png</key>
-            <key type="filename">fireball_10_24.png</key>
-            <key type="filename">fireball_10_25.png</key>
-            <key type="filename">fireball_10_26.png</key>
-            <key type="filename">fireball_10_27.png</key>
-            <key type="filename">fireball_10_28.png</key>
-            <key type="filename">fireball_10_29.png</key>
             <key type="filename">fireball_10_3.png</key>
-            <key type="filename">fireball_10_30.png</key>
-            <key type="filename">fireball_10_31.png</key>
-            <key type="filename">fireball_10_32.png</key>
-            <key type="filename">fireball_10_33.png</key>
-            <key type="filename">fireball_10_34.png</key>
-            <key type="filename">fireball_10_35.png</key>
-            <key type="filename">fireball_10_36.png</key>
-            <key type="filename">fireball_10_37.png</key>
-            <key type="filename">fireball_10_38.png</key>
-            <key type="filename">fireball_10_39.png</key>
             <key type="filename">fireball_10_4.png</key>
-            <key type="filename">fireball_10_40.png</key>
-            <key type="filename">fireball_10_41.png</key>
-            <key type="filename">fireball_10_42.png</key>
-            <key type="filename">fireball_10_43.png</key>
-            <key type="filename">fireball_10_44.png</key>
-            <key type="filename">fireball_10_45.png</key>
-            <key type="filename">fireball_10_46.png</key>
-            <key type="filename">fireball_10_47.png</key>
-            <key type="filename">fireball_10_48.png</key>
-            <key type="filename">fireball_10_49.png</key>
             <key type="filename">fireball_10_5.png</key>
-            <key type="filename">fireball_10_50.png</key>
-            <key type="filename">fireball_10_51.png</key>
-            <key type="filename">fireball_10_52.png</key>
-            <key type="filename">fireball_10_53.png</key>
-            <key type="filename">fireball_10_54.png</key>
-            <key type="filename">fireball_10_55.png</key>
-            <key type="filename">fireball_10_56.png</key>
-            <key type="filename">fireball_10_57.png</key>
-            <key type="filename">fireball_10_58.png</key>
-            <key type="filename">fireball_10_59.png</key>
             <key type="filename">fireball_10_6.png</key>
-            <key type="filename">fireball_10_60.png</key>
             <key type="filename">fireball_10_7.png</key>
-            <key type="filename">fireball_10_8.png</key>
-            <key type="filename">fireball_10_9.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
                 <point_f>0.5,0.5</point_f>
@@ -2906,65 +2861,12 @@
                     <filename>eye_fire_blue_6.png</filename>
                     <filename>eye_fire_blue_7.png</filename>
                     <filename>fireball_10_1.png</filename>
-                    <filename>fireball_10_10.png</filename>
-                    <filename>fireball_10_11.png</filename>
-                    <filename>fireball_10_12.png</filename>
-                    <filename>fireball_10_13.png</filename>
-                    <filename>fireball_10_14.png</filename>
-                    <filename>fireball_10_15.png</filename>
-                    <filename>fireball_10_16.png</filename>
-                    <filename>fireball_10_17.png</filename>
-                    <filename>fireball_10_18.png</filename>
-                    <filename>fireball_10_19.png</filename>
                     <filename>fireball_10_2.png</filename>
-                    <filename>fireball_10_20.png</filename>
-                    <filename>fireball_10_21.png</filename>
-                    <filename>fireball_10_22.png</filename>
-                    <filename>fireball_10_23.png</filename>
-                    <filename>fireball_10_24.png</filename>
-                    <filename>fireball_10_25.png</filename>
-                    <filename>fireball_10_26.png</filename>
-                    <filename>fireball_10_27.png</filename>
-                    <filename>fireball_10_28.png</filename>
-                    <filename>fireball_10_29.png</filename>
                     <filename>fireball_10_3.png</filename>
-                    <filename>fireball_10_30.png</filename>
-                    <filename>fireball_10_31.png</filename>
-                    <filename>fireball_10_32.png</filename>
-                    <filename>fireball_10_33.png</filename>
-                    <filename>fireball_10_34.png</filename>
-                    <filename>fireball_10_35.png</filename>
-                    <filename>fireball_10_36.png</filename>
-                    <filename>fireball_10_37.png</filename>
-                    <filename>fireball_10_38.png</filename>
-                    <filename>fireball_10_39.png</filename>
                     <filename>fireball_10_4.png</filename>
-                    <filename>fireball_10_40.png</filename>
-                    <filename>fireball_10_41.png</filename>
-                    <filename>fireball_10_42.png</filename>
-                    <filename>fireball_10_43.png</filename>
-                    <filename>fireball_10_44.png</filename>
-                    <filename>fireball_10_45.png</filename>
-                    <filename>fireball_10_46.png</filename>
-                    <filename>fireball_10_47.png</filename>
-                    <filename>fireball_10_48.png</filename>
-                    <filename>fireball_10_49.png</filename>
                     <filename>fireball_10_5.png</filename>
-                    <filename>fireball_10_50.png</filename>
-                    <filename>fireball_10_51.png</filename>
-                    <filename>fireball_10_52.png</filename>
-                    <filename>fireball_10_53.png</filename>
-                    <filename>fireball_10_54.png</filename>
-                    <filename>fireball_10_55.png</filename>
-                    <filename>fireball_10_56.png</filename>
-                    <filename>fireball_10_57.png</filename>
-                    <filename>fireball_10_58.png</filename>
-                    <filename>fireball_10_59.png</filename>
                     <filename>fireball_10_6.png</filename>
-                    <filename>fireball_10_60.png</filename>
                     <filename>fireball_10_7.png</filename>
-                    <filename>fireball_10_8.png</filename>
-                    <filename>fireball_10_9.png</filename>
                     <filename>blood_4_1.png</filename>
                     <filename>blood_4_10.png</filename>
                     <filename>blood_4_11.png</filename>
@@ -2978,6 +2880,14 @@
                     <filename>blood_4_7.png</filename>
                     <filename>blood_4_8.png</filename>
                     <filename>blood_4_9.png</filename>
+                    <filename>explosion_1.png</filename>
+                    <filename>explosion_2.png</filename>
+                    <filename>explosion_3.png</filename>
+                    <filename>explosion_4.png</filename>
+                    <filename>explosion_5.png</filename>
+                    <filename>explosion_6.png</filename>
+                    <filename>explosion_7.png</filename>
+                    <filename>explosion_8.png</filename>
                 </array>
             </struct>
         </map>

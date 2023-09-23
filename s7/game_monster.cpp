@@ -35,8 +35,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 		// calc neighbor cross force
 		XY combineForce{};										// for move vector
 		int numCross{}, limit = 8;
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
-		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
+		auto crIdx = _sgc->PosToCrIdx(pos);						// calc grid col row index
 		_sgc->Foreach9(crIdx, [&](Monster* m) {
 			if (m == this) return false;						// skip self
 			auto d = pos - m->pos;
@@ -94,7 +93,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 		// upgrade space grid
 		if (newPos != pos) {
 			pos = newPos;
-			SGCUpdate(gGridBasePos.MakeAdd(pos));
+			SGCUpdate(pos);
 			ForwardFrame(cFrameInc * (speed / cSpeed), frameMaxIndex);
 		} else {
 			idle();

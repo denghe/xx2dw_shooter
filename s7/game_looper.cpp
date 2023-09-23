@@ -32,6 +32,8 @@ xx::Task<> GameLooper::MainTask() {
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_fireball_10, Bullet_Fireball::cResPrefix);
 		xx_assert(n);
+		n = tp->GetToByPrefix(frames_explosion, Bullet_Explosion::cResPrefix);
+		xx_assert(n);
 		n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
 		xx_assert(n);
 	}
@@ -40,17 +42,23 @@ xx::Task<> GameLooper::MainTask() {
 	monstersGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
 	sgrdd.Init(gGridNumRows, gGridCellDiameter);
 
+	XY ori{ (float)monstersGrid.maxX / 2 , (float)monstersGrid.maxY / 2 };
+
+	camera.SetOriginal(ori);
 	camera.SetMaxFrameSize({32,32});
 	camera.SetScale(2);
 
 	player1.Emplace();
 
-	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, {});
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{-100, 0});
 
 	while(true) {
-		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
-		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
-		co_await AsyncSleep(5);
+		for (int i = 0; i < 100; ++i) {
+			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, ori + XY{
+				rnd.Next<float>(0, 100), rnd.Next<float>(-100, 100)
+			});
+		}
+		co_await AsyncSleep(1);
 	}
 }
 

@@ -24,17 +24,18 @@ xx::Task<> Weapon_Sword1::MainLogic_() {
 			auto c = std::cos(r);
 			auto s = -std::sin(r);
 			auto firePos = pos + XY{ c, s } * cFireDistance;
-			switch (gLooper.rnd.Next<int>(2)) {
-			case 0:
-				gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this, firePos, r, c, s);
-				break;
-			case 1:
-				gLooper.bullets.Emplace().Emplace<Bullet_EyeFireBlue>()->Init(this, firePos, r, c, s);
-				break;
-			case 2:
-				gLooper.bullets.Emplace().Emplace<Bullet_Fireball>()->Init(this, firePos, r, c, s);
-				break;
-			}
+			//switch (gLooper.rnd.Next<int>(2)) {
+			//case 0:
+			//	gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this, firePos, r, c, s);
+			//	break;
+			//case 1:
+			//	gLooper.bullets.Emplace().Emplace<Bullet_EyeFireBlue>()->Init(this, firePos, r, c, s);
+			//	break;
+			//case 2:
+			//	gLooper.bullets.Emplace().Emplace<Bullet_Fireball>()->Init(this, firePos, r, c, s);
+			//	break;
+			//}
+			gLooper.bullets.Emplace().Emplace<Bullet_Fireball>()->Init(this, firePos, r, c, s);
 
 			// simulate recoil
 			auto bak = pos;
