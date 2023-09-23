@@ -29,6 +29,32 @@ struct Drawable {
 };
 
 
+template<typename T>
+struct Removeable {
+	xx::ListDoubleLink<xx::Shared<T>, int32_t, uint32_t>* container{};
+	xx::ListDoubleLinkIndexAndVersion<int32_t, uint32_t> indexAndVersionByContainer;
+
+	template<typename U = T>
+	static xx::Shared<U> CreateTo(xx::ListDoubleLink<xx::Shared<T>, int32_t, uint32_t>& container) {
+		auto rtv = xx::Make<U>();
+		container.Emplace(rtv);
+		rtv->container = &container;
+		rtv->indexAndVersionByContainer = container.Tail();
+		return rtv;
+	}
+
+	void RemoveFromOwner() {
+		auto c = container;
+		xx_assert(c);
+		auto iv = indexAndVersionByContainer;
+		assert(iv.index != -1);
+		container = {};
+		indexAndVersionByContainer = { -1, 0 };
+		c->Remove(iv);
+	}
+};
+
+
 struct Sprite : Drawable {
 	constexpr static float cIdleScaleYFrom{ 0.9f };
 	constexpr static float cIdleScaleYTo{ 1.f };

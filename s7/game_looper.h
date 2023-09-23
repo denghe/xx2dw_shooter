@@ -44,10 +44,14 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	xx::ListLink<xx::Shared<Afterimage>, int32_t> afterimages;
 	xx::ListLink<xx::Shared<DamageNumber>, int32_t> damageNumbers;
 	xx::ListLink<xx::Shared<Blood>, int32_t> bloods;
-	xx::ListLink<xx::Shared<Experience>, int32_t> experiences;
+	xx::ListLink<xx::Shared<Experience>, int32_t> flyingExperiences;
+
+	xx::ListDoubleLink<xx::Shared<Experience>, int32_t, uint32_t> experiences;
+	SpaceGridC<Experience, XY> experiencesGrid;
 
 	xx::ListDoubleLink<xx::Shared<Monster>, int32_t, uint32_t> monsters;
 	SpaceGridC<Monster, XY> monstersGrid;
+
 	SpaceGridRingDiffuseData sgrdd;
 
 	Camera camera;

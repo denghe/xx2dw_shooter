@@ -65,7 +65,7 @@ xx::Task<> Weapon_Sword1::MainLogic2() {
 		co_yield 0;
 		pos = hero->weaponPos;
 	LabBegin:
-		auto m = Monster::FindNearest(gLooper.monstersGrid, pos, cSearchDistance);
+		auto m = FindNearest(gLooper.monstersGrid, gLooper.sgrdd, pos, cSearchDistance);
 		if (!m) continue;
 		auto wm = xx::WeakFromThis(m);
 		while (true) {

@@ -19,7 +19,7 @@ xx::Task<> Bullet_EyeFire::MainLogic_() {
 		pos += inc;
 
 		// check hit monsters
-		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
+		if (auto r = FindNeighbor(gLooper.monstersGrid, pos, radius)) {
 			r->Hit(damage);		// r maybe deleted
 			co_return;
 		}
@@ -50,7 +50,7 @@ xx::Task<> Bullet_EyeFireBlue::MainLogic_() {
 		pos += inc;
 
 		// check hit monsters
-		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
+		if (auto r = FindNeighbor(gLooper.monstersGrid, pos, radius)) {
 			r->Hit(damage);		// r maybe deleted
 			co_return;
 		}
@@ -81,7 +81,7 @@ xx::Task<> Bullet_Fireball::MainLogic_() {
 		pos += inc;
 
 		// check hit monsters
-		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
+		if (auto r = FindNeighbor(gLooper.monstersGrid, pos, radius)) {
 			gLooper.bullets.Emplace().Emplace<Bullet_Explosion>()->Init(this);
 			co_return;
 		}
@@ -110,7 +110,7 @@ xx::Task<> Bullet_Explosion::MainLogic_() {
 	float frameMaxIndex = frames->size();
 	assert(frameMaxIndex > cDamageFrameIndex);
 	for (; frameIndex < cDamageFrameIndex; frameIndex += cFrameInc) co_yield 0;
-	Monster::ForeachByRange(gLooper.monstersGrid, pos, radius, [&](Monster* m) {
+	ForeachByRange(gLooper.monstersGrid, gLooper.sgrdd, pos, radius, [&](Monster* m) {
 		m->Hit(damage);
 	});
 	for (; frameIndex < frameMaxIndex; frameIndex += cFrameInc) {

@@ -2,7 +2,7 @@
 #include "game_drawable_sprite.h"
 #include "game_hero.h"
 
-struct Experience : Sprite {
+struct Experience : Sprite, Removeable<Experience>, SpaceGridCItem<Experience, XY> {
 	constexpr static char const* cResPrefix{ "icon_gem_" };
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cScale{ 0.5f };
@@ -10,42 +10,45 @@ struct Experience : Sprite {
 	constexpr static float cSpeed{ 100.f / gDesign.fps };
 
 	float speed{ cSpeed };
+	int point{};
+	xx::Weak<Hero> hero;
 
-	void Init(XY const& pos_, int iconIndex, int point) {
-		mainLogic = MainLogic_();
+	void Init(XY const& pos_, int iconIndex, int point_) {
 		pos = pos_;
+		point = point_;
 		scale = { cScale,cScale };
 		radius = cRadius;
 		frames = &gLooper.frames_icon_gem;
 		frameIndex = iconIndex;
+		SGCAdd(gLooper.experiencesGrid, pos);
 	}
 
-	// todo: wait for hero find & eat. grid index
+	void FlyTo(Hero* hero_) {
+		mainLogic = MainLogic_();
+		hero = xx::WeakFromThis(hero_);
+		SGCRemove();
+		gLooper.flyingExperiences.Emplace(xx::SharedFromThis(this));
+		RemoveFromOwner();
+	}
 
 	xx::Task<> MainLogic_() {
-		auto& heros = gLooper.heros;
-		do {
-			co_yield 0;
-			if (heros.Empty()) continue;
-
-			auto hero = heros[heros.head].ToWeak();			// todo: find nearest hero?
-			auto rr = (hero->eatExperienceDistance + radius) * (hero->eatExperienceDistance + radius);
+		while (hero) {
 			auto d = hero->pos - pos;
 			auto dd = d.x * d.x + d.y * d.y;
-			if (dd < rr) {
-				while(true) {								// fly to hero
-					if (dd > speed * speed) {
-						pos += d / std::sqrt(dd) * speed;
-					} else {
-						co_return;	// todo: eat
-					}
-					co_yield 0;
-					if (!hero) break;
-					d = hero->pos - pos;
-					dd = d.x * d.x + d.y + d.y;
-				}
+			if (dd > speed * speed) {
+				pos += d / std::sqrt(dd) * speed;
+			} else {
+				// todo: hero.eat ( this )
+				co_return;
 			}
-		} while (true);
+			co_yield 0;
+		}
+
+		auto p = xx::SharedFromThis(this);
+		SGCAdd(gLooper.experiencesGrid, pos);
+		container = &gLooper.experiences;
+		container->Emplace(p);
+		indexAndVersionByContainer = container->Tail();
 	}
 
 };

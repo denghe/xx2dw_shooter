@@ -17,7 +17,7 @@ struct Hero_Pumpkin : Hero {
 	constexpr static float cFrameMaxIndex{ 4.f };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 60.f / gDesign.fps };
-	constexpr static float cEatExperienceDistance{ 60 };
+	constexpr static float cEatExperienceDistance{ 90 };
 	constexpr static XY cHookOffset{ 0, -5.f };
 
 	void Init(xx::Shared<Player> const& player_, XY const& bornPos);

@@ -228,4 +228,79 @@ struct SpaceGridC {
             }
         }
     }
+
 };
+
+
+
+template<typename T>
+T* FindNeighbor(SpaceGridC<T, XY>& container, XY const& pos, float radius) {
+    assert(radius * 2 <= container.maxDiameter);
+    auto crIdx = container.PosToCrIdx(pos);
+    T* r{};
+    container.Foreach9(crIdx, [&](T* m)->bool {
+        // (r1 + r2) * (r1 + r2) > (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y)
+        auto d = m->pos - pos;
+        auto rr = (m->radius + radius) * (m->radius + radius);
+        auto dd = d.x * d.x + d.y * d.y;
+        if (rr > dd) {
+            r = m;
+            return true;
+        }
+        return false;
+    });
+    return r;
+}
+
+template<typename T>
+T* FindNearest(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance) {
+    auto crIdx = container.PosToCrIdx(pos);					// calc grid col row index
+
+    float minVxxyy = maxDistance * maxDistance;
+    T* o{};
+    XY ov;
+
+    auto& lens = sgrdd.lens;
+    auto& idxs = sgrdd.idxs;
+    for (int i = 1; i < lens.len; i++) {
+        if (lens[i].radius > maxDistance) break;			// limit search range
+
+        auto offsets = &idxs[lens[i - 1].count];
+        auto size = lens[i].count - lens[i - 1].count;
+        container.ForeachCells(crIdx, offsets, size, [&](T* m)->bool {
+            auto v = m->pos - pos;
+            if (auto xxyy = v.x * v.x + v.y * v.y; xxyy < minVxxyy) {
+                minVxxyy = xxyy;
+                o = m;
+                ov = v;
+            }
+            return false;
+        });
+
+        if (o) return o;									// found. stop ring diffuse step
+    }
+    return nullptr;
+}
+
+template<typename T, typename F>
+void ForeachByRange(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance, F&& func) {
+    auto crIdx = container.PosToCrIdx(pos);					// calc grid col row index
+
+    float rr = maxDistance * maxDistance;
+
+    auto& lens = sgrdd.lens;
+    auto& idxs = sgrdd.idxs;
+    for (int i = 1; i < lens.len; i++) {
+        if (lens[i].radius > maxDistance) break;			// limit search range
+
+        auto offsets = &idxs[lens[i - 1].count];
+        auto size = lens[i].count - lens[i - 1].count;
+        container.ForeachCells(crIdx, offsets, size, [&](T* m)->bool {
+            auto v = m->pos - pos;
+            if (v.x * v.x + v.y * v.y < rr) {
+                func(m);
+            }
+            return false;
+        });
+    }
+}

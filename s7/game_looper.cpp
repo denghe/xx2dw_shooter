@@ -41,8 +41,9 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;											// all tex ready
 
-	monstersGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
 	sgrdd.Init(gGridNumRows, gGridCellDiameter);
+	monstersGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
+	experiencesGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
 
 	XY ori{ (float)monstersGrid.maxX / 2 , (float)monstersGrid.maxY / 2 };
 
@@ -110,7 +111,7 @@ void GameLooper::Update() {
 		return o->mainLogic.Resume();
 	});
 
-	experiences.Foreach([&](auto& o) {
+	flyingExperiences.Foreach([&](auto& o) {
 		return o->mainLogic.Resume();
 	});
 }
@@ -120,6 +121,12 @@ void GameLooper::Draw() {
 		camera.Calc();
 
 		experiences.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+
+		flyingExperiences.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

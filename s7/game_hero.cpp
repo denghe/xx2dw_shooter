@@ -43,6 +43,11 @@ xx::Task<> Hero_Pumpkin::MainLogic_() {
 		}
 		weaponPos = pos + cHookOffset;
 
+		// eat experiences
+		ForeachByRange<Experience>(gLooper.experiencesGrid, gLooper.sgrdd, pos, eatExperienceDistance, [&](Experience* m) {
+			m->FlyTo(this);
+		});
+
 		co_yield 0;
 	}
 }
