@@ -61,10 +61,10 @@ xx::Task<> Weapon_Sword1::MainLogic_() {
 
 // search nearest enemy & auto fire
 xx::Task<> Weapon_Sword1::MainLogic2() {
-	LabBegin:
 	while (hero) {
 		co_yield 0;
 		pos = hero->weaponPos;
+	LabBegin:
 		auto m = Monster::FindNearest(gLooper.monstersGrid, pos, cSearchDistance);
 		if (!m) continue;
 		auto wm = xx::WeakFromThis(m);
@@ -74,8 +74,8 @@ xx::Task<> Weapon_Sword1::MainLogic2() {
 			if (StepRadians(r, cFrameMaxChangeRadians)) break;
 			co_yield 0;
 			if (!hero) co_return;
-			if (!wm) goto LabBegin;
 			pos = hero->weaponPos;
+			if (!wm) goto LabBegin;
 		}
 
 		// fire
