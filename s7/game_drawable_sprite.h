@@ -4,38 +4,27 @@
 template<typename T> concept Has_Drawable_Update = requires(T t) { { t.Update() } -> std::same_as<bool>; };
 
 struct Drawable {
+	virtual ~Drawable() {}
+
 	XY pos{};
 
-	// for hardware draw
-	// get pos.y for order by Y
-	// return std::numeric_limits<float>::quiet_NaN(): do not need draw
-	float (*getY)(void* derived, Camera const& camera) = {};
+	xx::Task<> mainLogic;
 
-	// for hardware draw
-	void (*draw)(void* derived) = {};
-
-	// for logic update
-	bool (*update)(void* derived) = {};
-
-	// classic init for example
-
-	template<typename Derived>
-	void InitGetYDrawUpate() {
-		getY = [](void* self, Camera const& camera) { return ((Derived*)self)->GetY(camera);  };
-		draw = [](void* self) { ((Derived*)self)->Draw(); };
-		if constexpr (Has_Drawable_Update<Derived>) {
-			update = [](void* self)->bool { return ((Derived*)self)->Update(); };
-		} else {
-			update = [](void* self)->bool { return ((Derived*)self)->MainLogic.Resume(); };
-		}
+	virtual bool Update() {
+		xx_assert(false);
+		return false;
 	}
 
 	// default impl
-	float GetY(Camera const& camera) {
+	virtual float GetY(Camera const& camera) {
 		if (camera.InArea(pos)) {
 			return pos.y;
 		}
 		return std::numeric_limits<float>::quiet_NaN();
+	}
+
+	virtual void Draw() {
+		xx_assert(false);
 	}
 };
 
@@ -50,7 +39,7 @@ struct Sprite : Drawable {
 	constexpr static float cIdleRotateRadiansStep{ 2.f / gDesign.fps };
 
 	mutable Quad body;
-	XY pos, scale{ 1, 1 };
+	XY scale{ 1, 1 };
 	float radius{}, radians{};
 	float frameIndex{};
 	bool flipX{};
@@ -73,7 +62,7 @@ struct Sprite : Drawable {
 		}
 	}
 
-	void Draw() const {
+	virtual void Draw() override {
 		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)
@@ -135,6 +124,4 @@ struct Sprite : Drawable {
 		}
 		return done;
 	}
-
-	// todo: HitCheck
 };

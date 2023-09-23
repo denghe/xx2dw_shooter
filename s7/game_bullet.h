@@ -7,7 +7,6 @@ struct Bullet : Sprite {
 };
 
 struct Bullet_EyeFire : Bullet {
-	using ThisType = Bullet_EyeFire;
 	constexpr static char const* cResPrefix{ "eye_fire_" };
 	constexpr static XY cAnchor{ 0.85f, 0.5f };
 	constexpr static float cRadius{ 5.f };
@@ -22,6 +21,5 @@ struct Bullet_EyeFire : Bullet {
 	float damage{ cDamage };
 
 	void Init(Weapon* hw, XY const& pos_, float r, float c, float s);
-	xx::Task<> MainLogic{ MainLogic_() };
 	xx::Task<> MainLogic_();
 };

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s) {
-	InitGetYDrawUpate<ThisType>();
+	mainLogic = MainLogic_();
 	radius = cRadius;
 	pos = pos_;
 	radians = -r;

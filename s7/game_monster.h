@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "game_drawable_sprite.h"
+#include "game_damage_number.h"
 
 struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	constexpr static float cDamageEffectDurationSecs{ 0.2 };
@@ -40,12 +41,12 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 		if (damage >= hp) {
 			printf("damage %d >= hp %d\n", damage, hp);
 			// make effects
-			//gLooper.effects_damageText.Emplace().Emplace()->Init(pos, hp, { 255,0,0,255 });
+			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,0,0,255 }, hp);
 			//gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
 			RemoveFromOwner();
 		} else {
 			hp -= damage;
-			//gLooper.effects_damageText.Emplace().Emplace()->Init(pos, damage, { 255,255,255,255 });
+			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,255,255,255 }, damage);	// todo: calc pos ??
 			if (damageEffectLeftDuration <= 0) {
 				damageEffect(gLooper.tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {
@@ -111,16 +112,13 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 };
 
 struct Monster_Dragon_BabyWhite : Monster {
-	using ThisType = Monster_Dragon_BabyWhite;
 	constexpr static char const* cResPrefix{ "dragon_babywhite_" };
-	constexpr static XY cAnchor{ 0.5, 0 };
-	constexpr static XY cHitCenterOffset{ 0, 6 };
-	constexpr static float cRadius{ 6 };
+	constexpr static XY cAnchor{ 0.5, 0.3 };
+	constexpr static float cRadius{ 5 };
 	constexpr static float cFrameMaxIndex{ 4.f };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 30.f / gDesign.fps };
 
 	void Init(int hp_, XY const& pos_);
-	xx::Task<> MainLogic{ MainLogic_() };
 	xx::Task<> MainLogic_();
 };

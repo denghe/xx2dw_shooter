@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
-	InitGetYDrawUpate<ThisType>();
+	mainLogic = MainLogic_();
 	idle = Idle_ScaleY();
 	player = player_;
 	radius = cRadius;
@@ -12,15 +12,15 @@ void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 	weapon.Emplace<Weapon_Sword1>()->Init(xx::SharedFromThis(this));
 }
 
-void Hero_Pumpkin::Draw() const {
+void Hero_Pumpkin::Draw() {
 	Hero::Draw();
-	weapon->draw(weapon);
+	weapon->Draw();
 }
 
 bool Hero_Pumpkin::Update() {
-	if (MainLogic.Resume()) return true;
+	if (mainLogic.Resume()) return true;
 	if (weapon) {
-		(void)weapon->update(weapon);
+		weapon->mainLogic();
 	}
 	return false;
 }

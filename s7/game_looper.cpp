@@ -43,7 +43,8 @@ xx::Task<> GameLooper::MainTask() {
 
 	while(true) {
 		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
-		co_await AsyncSleep(10);
+		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
+		co_await AsyncSleep(5);
 	}
 }
 
@@ -58,20 +59,24 @@ void GameLooper::Update() {
 
 	heros.Foreach([&](xx::Shared<Hero> const& o) {
 		//afterimages.Emplace().Emplace()->Init(*o->weapon);
-		return o->update(o);
+		return o->Update();
 	});
 
 	bullets.Foreach([&](auto& o) {
 		//afterimages.Emplace().Emplace()->Init(*o);
-		return o->update(o);
+		return o->mainLogic.Resume();
 	});
 
 	monsters.Foreach([&](auto& o) {
-		return o->update(o);
+		return o->mainLogic.Resume();
 	});
 
 	afterimages.Foreach([&](auto& o) {
-		return o->update(o);
+		return o->mainLogic.Resume();
+	});
+
+	damageNumbers.Foreach([&](auto& o) {
+		return o->mainLogic.Resume();
 	});
 }
 
@@ -84,23 +89,33 @@ void GameLooper::Draw() {
 				o->Draw();
 			}
 		});
+
 		afterimages.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}
 		});
+
 		heros.Foreach([&](auto& h) {
 			auto& o = h->weapon;
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}
 		});
+
 		monsters.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}
 		});
+
 		bullets.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+
+		damageNumbers.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

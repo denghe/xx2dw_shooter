@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
-	InitGetYDrawUpate<ThisType>();
+	mainLogic = MainLogic_();
 	idle = Idle_Rotate();
 	hp = hp_;
 	pos = pos_;

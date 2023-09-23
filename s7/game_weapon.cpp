@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
-	InitGetYDrawUpate<ThisType>();
+	mainLogic = MainLogic_();
 	pos = hero_->pos;
 	player = hero_->player;
 	hero = hero_;

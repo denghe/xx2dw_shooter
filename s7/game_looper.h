@@ -5,6 +5,7 @@ constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256
 constexpr XY gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 
 struct Player;
+struct DamageNumber;
 struct Sprite;
 struct Afterimage;
 struct Hero;
@@ -31,10 +32,11 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	// players
 	xx::Shared<Player> player1;
 
-	// sprites
+	// objs
 	xx::ListLink<xx::Shared<Hero>, int32_t> heros;
 	xx::ListLink<xx::Shared<Bullet>, int32_t> bullets;
 	xx::ListLink<xx::Shared<Afterimage>, int32_t> afterimages;
+	xx::ListLink<xx::Shared<DamageNumber>, int32_t> damageNumbers;
 
 	xx::ListDoubleLink<xx::Shared<Monster>, int32_t, uint32_t> monsters;
 	SpaceGridC<Monster, XY> monstersGrid;

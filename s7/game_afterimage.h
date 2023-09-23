@@ -2,14 +2,13 @@
 #include "game_drawable_sprite.h"
 
 struct Afterimage : Sprite {
-	using ThisType = Afterimage;
 	constexpr static float cAlpha{ 0.8f };
 	constexpr static float cAlphaDecrease{ cAlpha / 4 * 60 / gDesign.fps };
 
 	float alpha{ cAlpha };
 
 	void Init(Sprite const& tar) {
-		InitGetYDrawUpate<ThisType>();
+		mainLogic = MainLogic_();
 		// copy propertiles
 		pos = tar.pos;
 		radians = tar.radians;
@@ -21,7 +20,6 @@ struct Afterimage : Sprite {
 		body.SetColormulti(cAlpha);
 	}
 
-	xx::Task<> MainLogic{ MainLogic_() };
 	xx::Task<> MainLogic_() {
 		while (alpha > 0) {
 			alpha -= cAlphaDecrease;
