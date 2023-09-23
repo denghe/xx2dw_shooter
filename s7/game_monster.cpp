@@ -7,6 +7,7 @@ void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
 	pos = pos_;
 	speed = cSpeed;
 	radius = cRadius;
+	scale = { 1, 0 };
 	SGCAdd(gLooper.monstersGrid, pos);
 	frames = &gLooper.frames_dragon_babywhite;
 	body.SetAnchor(cAnchor);
@@ -16,8 +17,6 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 	float frameMaxIndex = frames->size();
 
 	// scale in
-	scale.y = 0;
-	co_yield 0;
 	auto scaleStep = 1.f / gDesign.fps;
 	while (scale.y < 1.f) {
 		scale.y += scaleStep;
