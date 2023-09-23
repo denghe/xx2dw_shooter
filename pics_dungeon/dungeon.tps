@@ -1114,6 +1114,33 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">blood_4_1.png</key>
+            <key type="filename">blood_4_10.png</key>
+            <key type="filename">blood_4_11.png</key>
+            <key type="filename">blood_4_12.png</key>
+            <key type="filename">blood_4_13.png</key>
+            <key type="filename">blood_4_2.png</key>
+            <key type="filename">blood_4_3.png</key>
+            <key type="filename">blood_4_4.png</key>
+            <key type="filename">blood_4_5.png</key>
+            <key type="filename">blood_4_6.png</key>
+            <key type="filename">blood_4_7.png</key>
+            <key type="filename">blood_4_8.png</key>
+            <key type="filename">blood_4_9.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,25,50,50</rect>
+                <key>scale9Paddings</key>
+                <rect>25,25,50,50</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">boy_1_1.png</key>
             <key type="filename">boy_1_10.png</key>
             <key type="filename">boy_1_11.png</key>
@@ -2938,6 +2965,19 @@
                     <filename>fireball_10_7.png</filename>
                     <filename>fireball_10_8.png</filename>
                     <filename>fireball_10_9.png</filename>
+                    <filename>blood_4_1.png</filename>
+                    <filename>blood_4_10.png</filename>
+                    <filename>blood_4_11.png</filename>
+                    <filename>blood_4_12.png</filename>
+                    <filename>blood_4_13.png</filename>
+                    <filename>blood_4_2.png</filename>
+                    <filename>blood_4_3.png</filename>
+                    <filename>blood_4_4.png</filename>
+                    <filename>blood_4_5.png</filename>
+                    <filename>blood_4_6.png</filename>
+                    <filename>blood_4_7.png</filename>
+                    <filename>blood_4_8.png</filename>
+                    <filename>blood_4_9.png</filename>
                 </array>
             </struct>
         </map>

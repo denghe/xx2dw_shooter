@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "game_drawable_sprite.h"
 #include "game_damage_number.h"
+#include "game_blood.h"
 
 struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	constexpr static float cDamageEffectDurationSecs{ 0.2 };
@@ -38,11 +39,10 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 
 	void Hit(int damage) {
 		assert(damage > 0);
+		gLooper.bloods.Emplace().Emplace()->Init(pos);
 		if (damage >= hp) {
-			printf("damage %d >= hp %d\n", damage, hp);
 			// make effects
 			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,0,0,255 }, hp);
-			//gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
 			RemoveFromOwner();
 		} else {
 			hp -= damage;
@@ -115,7 +115,6 @@ struct Monster_Dragon_BabyWhite : Monster {
 	constexpr static char const* cResPrefix{ "dragon_babywhite_" };
 	constexpr static XY cAnchor{ 0.5, 0.3 };
 	constexpr static float cRadius{ 5 };
-	constexpr static float cFrameMaxIndex{ 4.f };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 30.f / gDesign.fps };
 

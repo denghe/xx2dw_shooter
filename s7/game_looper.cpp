@@ -20,11 +20,17 @@ xx::Task<> GameLooper::MainTask() {
 		size_t n{};
 		n = tp->GetToByPrefix(frames_number_outlined, DamageNumber::cResPrefix);
 		xx_assert(n);
+		n = tp->GetToByPrefix(frames_blood_4, Blood::cResPrefix);
+		xx_assert(n);
 		n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_weapon, Weapon::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_eye_fire, Bullet_EyeFire::cResPrefix);
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_eye_fire_blue, Bullet_EyeFireBlue::cResPrefix);
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_fireball_10, Bullet_Fireball::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
 		xx_assert(n);
@@ -78,6 +84,10 @@ void GameLooper::Update() {
 	damageNumbers.Foreach([&](auto& o) {
 		return o->mainLogic.Resume();
 	});
+
+	bloods.Foreach([&](auto& o) {
+		return o->mainLogic.Resume();
+	});
 }
 
 void GameLooper::Draw() {
@@ -104,6 +114,12 @@ void GameLooper::Draw() {
 		});
 
 		monsters.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
+
+		bloods.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {
 				o->Draw();
 			}

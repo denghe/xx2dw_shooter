@@ -13,6 +13,8 @@ void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
 }
 
 xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
+	float frameMaxIndex = frames->size();
+
 	// scale in
 	scale.y = 0;
 	co_yield 0;
@@ -93,7 +95,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 		if (newPos != pos) {
 			pos = newPos;
 			SGCUpdate(gGridBasePos.MakeAdd(pos));
-			ForwardFrame(cFrameInc * (speed / cSpeed), cFrameMaxIndex);
+			ForwardFrame(cFrameInc * (speed / cSpeed), frameMaxIndex);
 		} else {
 			idle();
 		}

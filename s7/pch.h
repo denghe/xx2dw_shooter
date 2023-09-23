@@ -11,5 +11,6 @@
 #include "game_bullet.h"
 #include "game_monster.h"
 #include "game_damage_number.h"
+#include "game_blood.h"
 
 #endif

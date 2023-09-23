@@ -25,7 +25,6 @@ struct DamageNumber : Drawable {
 	}
 
 	void Init(XY const& pos_, RGBA8 color_, int damage) {
-		printf("%d\n", damage);
 		mainLogic = MainLogic_();
 		color = color_;
 		texId = gLooper.frames_number_outlined[0]->tex->GetValue();
