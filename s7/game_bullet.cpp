@@ -69,7 +69,7 @@ void Bullet_Fireball::Init(Weapon* hw, XY const& pos_, float r, float c, float s
 	radians = -r;
 	inc = XY{ c, s } * cSpeed;
 	player = hw->player;
-	damage = cDamage;
+	damage = gLooper.rnd.Next<float>(cDamageMin, cDamageMax);
 	frames = &gLooper.frames_fireball_10;
 	frameIndex = 0;
 	body.SetAnchor(cAnchor);

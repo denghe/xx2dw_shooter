@@ -50,16 +50,27 @@ xx::Task<> GameLooper::MainTask() {
 
 	player1.Emplace();
 
-	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{-100, 0});
+	//heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{-100, 0});
+	//while(true) {
+	//	for (int i = 0; i < 100; ++i) {
+	//		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, ori + XY{
+	//			rnd.Next<float>(0, 100), rnd.Next<float>(-100, 100)
+	//		});
+	//	}
+	//	co_await AsyncSleep(1);
+	//}
 
-	while(true) {
-		for (int i = 0; i < 100; ++i) {
-			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, ori + XY{
-				rnd.Next<float>(0, 100), rnd.Next<float>(-100, 100)
-			});
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 0, 0 });
+	while (true) {
+		for (size_t i = 0; i < 1; i++) {
+			auto a = rnd.Next<float>(M_PI * 2);
+			auto r = rnd.Next<float>(280, 330);
+			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{std::cos(a), std::sin(a)} *r);
 		}
-		co_await AsyncSleep(1);
+		co_yield 0;
+		co_yield 0;
 	}
+
 }
 
 void GameLooper::Update() {
@@ -72,7 +83,7 @@ void GameLooper::Update() {
 	if (!ready) return;										// todo: show loading ?
 
 	heros.Foreach([&](xx::Shared<Hero> const& o) {
-		//afterimages.Emplace().Emplace()->Init(*o->weapon);
+		afterimages.Emplace().Emplace()->Init(*o->weapon);
 		return o->Update();
 	});
 

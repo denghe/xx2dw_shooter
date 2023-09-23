@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
-	mainLogic = MainLogic_();
+	mainLogic = MainLogic2(); // MainLogic_();
 	pos = hero_->pos;
 	player = hero_->player;
 	hero = hero_;
@@ -10,6 +10,7 @@ void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
 	body.SetAnchor(cAnchor);
 }
 
+// mouse aim fire control
 xx::Task<> Weapon_Sword1::MainLogic_() {
 	while (hero) {
 		pos = hero->weaponPos;
@@ -17,7 +18,6 @@ xx::Task<> Weapon_Sword1::MainLogic_() {
 		auto r = -std::atan2(v.y, v.x);
 		StepRadians(r, cFrameMaxChangeRadians);
 
-		// mouse aim fire control
 		if (gLooper.mouseBtnStates[0] && nextFireSecs <= gLooper.nowSecs) {
 			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
 			r = -radians;
@@ -56,5 +56,51 @@ xx::Task<> Weapon_Sword1::MainLogic_() {
 		}
 
 		co_yield 0;
+	}
+}
+
+// search nearest enemy & auto fire
+xx::Task<> Weapon_Sword1::MainLogic2() {
+	while (hero) {
+		co_yield 0;
+		pos = hero->weaponPos;
+		auto m = Monster::FindNearest(gLooper.monstersGrid, pos, cSearchDistance);
+		if (!m) continue;
+		auto wm = xx::WeakFromThis(m);
+		while (hero && wm) {
+			auto v = wm->pos - pos;
+			auto r = -std::atan2(-v.y, v.x);
+			if (StepRadians(r, cFrameMaxChangeRadians)) break;
+			co_yield 0;
+		}
+		if (!hero) co_return;
+		if (!wm) continue;
+
+		// mouse aim fire control
+		if (nextFireSecs <= gLooper.nowSecs) {
+			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
+			auto r = -radians;
+			auto c = std::cos(r);
+			auto s = -std::sin(r);
+			auto firePos = pos + XY{ c, s } *cFireDistance;
+			gLooper.bullets.Emplace().Emplace<Bullet_Fireball>()->Init(this, firePos, r, c, s);
+
+			// simulate recoil
+			auto bak = pos;
+			auto steps_5 = std::min(cFireRecoilDelaySecs, cFireDelaySecs) / gDesign.frameDelay / 5;
+			auto inc = XY{ c, s } *cFireRecoilSpeed;
+			for (int i = 0; i < steps_5 * 2; ++i) {
+				pos -= inc;
+				co_yield 0;
+			}
+			for (int i = 0; i < steps_5; ++i) {
+				co_yield 0;
+			}
+			for (int i = 0; i < steps_5 * 2; ++i) {
+				pos += inc;
+				co_yield 0;
+			}
+			pos = bak;
+		}
 	}
 }

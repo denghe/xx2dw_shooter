@@ -46,7 +46,7 @@ struct Bullet_Fireball : Bullet {
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cLifeDelta{ 1.f / 5.f / gDesign.fps };
 	constexpr static float cSpeed{ 300.f / gDesign.fps };
-	constexpr static float cDamage{ 12 };
+	constexpr static float cDamageMin{ 15 }, cDamageMax{ 30 };
 
 	XY inc{};
 	float speed{ cSpeed };
@@ -58,7 +58,7 @@ struct Bullet_Fireball : Bullet {
 struct Bullet_Explosion : Bullet {
 	constexpr static char const* cResPrefix{ "explosion_" };
 	constexpr static XY cAnchor{ 0.5f, 0.5f };
-	constexpr static float cScale{ 6.f };
+	constexpr static float cScale{ 5.f };
 	constexpr static float cRadius{ 16.f * cScale };
 	constexpr static float cDamageFrameIndex{ 2 };
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
