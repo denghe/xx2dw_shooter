@@ -34,6 +34,8 @@ xx::Task<> GameLooper::MainTask() {
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_explosion, Bullet_Explosion::cResPrefix);
 		xx_assert(n);
+		n = tp->GetToByPrefix(frames_icon_gem, Experience::cResPrefix);
+		xx_assert(n);
 		n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
 		xx_assert(n);
 	}
@@ -107,11 +109,21 @@ void GameLooper::Update() {
 	bloods.Foreach([&](auto& o) {
 		return o->mainLogic.Resume();
 	});
+
+	experiences.Foreach([&](auto& o) {
+		return o->mainLogic.Resume();
+	});
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
+
+		experiences.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
 
 		heros.Foreach([&](auto& o) {
 			if (gLooper.camera.InArea(o->pos)) {

@@ -12,5 +12,6 @@
 #include "game_monster.h"
 #include "game_damage_number.h"
 #include "game_blood.h"
+#include "game_experience.h"
 
 #endif

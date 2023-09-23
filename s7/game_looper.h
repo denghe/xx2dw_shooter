@@ -12,6 +12,7 @@ struct Hero;
 struct Weapon;
 struct Bullet;
 struct Monster;
+struct Experience;
 
 struct GameLooper : GameLooperBase<GameLooper> {
 	void Init();
@@ -27,6 +28,7 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	std::vector<xx::Shared<Frame>> frames_weapon;
 	std::vector<xx::Shared<Frame>> frames_number_outlined;
 	std::vector<xx::Shared<Frame>> frames_blood_4;
+	std::vector<xx::Shared<Frame>> frames_icon_gem;
 	std::vector<xx::Shared<Frame>> frames_eye_fire;
 	std::vector<xx::Shared<Frame>> frames_eye_fire_blue;
 	std::vector<xx::Shared<Frame>> frames_fireball_10;
@@ -42,6 +44,7 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	xx::ListLink<xx::Shared<Afterimage>, int32_t> afterimages;
 	xx::ListLink<xx::Shared<DamageNumber>, int32_t> damageNumbers;
 	xx::ListLink<xx::Shared<Blood>, int32_t> bloods;
+	xx::ListLink<xx::Shared<Experience>, int32_t> experiences;
 
 	xx::ListDoubleLink<xx::Shared<Monster>, int32_t, uint32_t> monsters;
 	SpaceGridC<Monster, XY> monstersGrid;

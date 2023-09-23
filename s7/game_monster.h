@@ -2,6 +2,7 @@
 #include "game_drawable_sprite.h"
 #include "game_damage_number.h"
 #include "game_blood.h"
+#include "game_experience.h"
 
 struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	constexpr static float cDamageEffectDurationSecs{ 0.2 };
@@ -41,8 +42,8 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 		assert(damage > 0);
 		gLooper.bloods.Emplace().Emplace()->Init(pos);
 		if (damage >= hp) {
-			// make effects
 			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,0,0,255 }, hp);
+			gLooper.experiences.Emplace().Emplace()->Init(pos, 0, 10);
 			RemoveFromOwner();
 		} else {
 			hp -= damage;
