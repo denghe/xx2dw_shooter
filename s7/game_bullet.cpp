@@ -82,7 +82,6 @@ xx::Task<> Bullet_Fireball::MainLogic_() {
 
 		// check hit monsters
 		if (auto r = Monster::FindNeighbor(gLooper.monstersGrid, pos, radius)) {
-			//r->Hit(damage);		// r maybe deleted
 			gLooper.bullets.Emplace().Emplace<Bullet_Explosion>()->Init(this);
 			co_return;
 		}

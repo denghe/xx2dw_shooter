@@ -62,6 +62,7 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	}
 
 	inline static Monster* FindNeighbor(SpaceGridC<Monster, XY>& container, XY const& pos, float radius) {
+		assert(radius < gGridCellDiameter);
 		auto crIdx = container.PosToCrIdx(pos);
 		Monster* r{};
 		container.Foreach9(crIdx, [&](Monster* m)->bool {
