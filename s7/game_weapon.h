@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "game_sprite.h"
+#include "game_drawable_sprite.h"
 
 struct Weapon : Sprite {
 	constexpr static char const* cResPrefix{ "weapon_" };
@@ -9,6 +9,7 @@ struct Weapon : Sprite {
 };
 
 struct Weapon_Sword1 : Weapon {
+	using ThisType = Weapon_Sword1;
 	constexpr static XY cAnchor{ 0.1, 0.5 };
 	constexpr static float cFrameIndex{ 0 };
 	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
@@ -18,5 +19,6 @@ struct Weapon_Sword1 : Weapon {
 	constexpr static float cFireRecoilSpeed{ 400.f / gDesign.fps };
 
 	void Init(xx::Shared<Hero> const& hero_);
-	xx::Task<> MainLogic();
+	xx::Task<> MainLogic{ MainLogic_() };
+	xx::Task<> MainLogic_();
 };

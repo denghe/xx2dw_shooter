@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s) {
-	mainLogic = MainLogic();
+	InitGetYDrawUpate<ThisType>();
 	radius = cRadius;
 	pos = pos_;
 	radians = -r;
@@ -12,7 +12,7 @@ void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s)
 	body.SetAnchor(cAnchor);
 }
 
-xx::Task<> Bullet_EyeFire::MainLogic() {
+xx::Task<> Bullet_EyeFire::MainLogic_() {
 	for (float life = 1; life > 0; life -= cLifeDelta) {
 		pos += inc;
 

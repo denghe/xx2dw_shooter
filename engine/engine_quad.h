@@ -15,10 +15,7 @@ struct Quad : QuadInstanceData {
         if constexpr (!forceOverrideTexRectId) {
             if (frame == f) return *this;
         }
-        texRectX = f->textureRect.x;
-        texRectY = f->textureRect.y;
-        texRectW = (uint16_t)f->textureRect.wh.x;
-        texRectH = (uint16_t)f->textureRect.wh.y;
+        texRect.data = f->textureRect.data;
         texId = f->tex->GetValue();
         frame = std::move(f);
         return *this;
@@ -32,7 +29,7 @@ struct Quad : QuadInstanceData {
     template<typename T = float>
     XX_FORCE_INLINE XY Size() const {
         assert(frame);
-        return { (T)texRectW, (T)texRectH };
+        return { (T)texRect.w, (T)texRect.h };
     }
     XX_FORCE_INLINE Quad& SetAnchor(XY const& a) {
         anchor = a;

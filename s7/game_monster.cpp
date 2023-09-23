@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
-	mainLogic = MainLogic();
+	InitGetYDrawUpate<ThisType>();
 	idle = Idle_Rotate();
 	hp = hp_;
 	pos = pos_;
@@ -12,7 +12,7 @@ void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
 	body.SetAnchor(cAnchor);
 }
 
-xx::Task<> Monster_Dragon_BabyWhite::MainLogic() {
+xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 	// scale in
 	scale.y = 0;
 	co_yield 0;

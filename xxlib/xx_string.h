@@ -546,6 +546,7 @@ namespace xx {
 
     constexpr std::string_view intToStringChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"sv;
 
+    // can't support negative interger now
     template<typename N = int, N toBase = 10, size_t fixedSize = 0, bool sClear = true, typename T>
     size_t IntToStringTo(T& s, N i) {
         if constexpr (sClear) {
@@ -559,8 +560,9 @@ namespace xx {
         }
         s += intToStringChars[i];
         std::reverse(s.begin(), s.end());
-        if (auto siz = s.size() >= fixedSize) return siz;
-        s = std::string(fixedSize - s.size(), '0') + s;
+        auto siz = s.size();
+        if (siz >= fixedSize) return siz;
+        s = std::string(fixedSize - siz, '0') + s;
         return fixedSize;
     }
 

@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "game_sprite.h"
+#include "game_drawable_sprite.h"
 
 struct Hero;
 struct Player {

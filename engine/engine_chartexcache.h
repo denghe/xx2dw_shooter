@@ -1,12 +1,8 @@
 ﻿#pragma once
 #include "engine_base.h"
 #include "engine_framebuffer.h"
+#include "engine_frame.h"
 #include "engine_quad.h"
-
-struct CharInfo {
-    xx::Shared<GLTexture> tex;
-    uint16_t texRectX{}, texRectY{}, texRectW{}, texRectH{};
-};
 
 template<int charSize_ = 24, int canvasWidth_ = int(charSize_ / 0.75), int canvasHeight_ = int(charSize_ / 0.75), int texWidth_ = 2048, int texHeight_ = 2048>
 struct CharTexCache {
@@ -18,8 +14,8 @@ struct CharTexCache {
     float cw{};
     XY p{ 0, texHeight - 1 };
 
-    std::array<CharInfo, 256> bases;
-    std::unordered_map<char32_t, CharInfo> extras;
+    std::array<TinyFrame, 256> bases;
+    std::unordered_map<char32_t, TinyFrame> extras;
 
     // need ogl frame env
     void Init(char const* font = "Arial") {
@@ -44,13 +40,13 @@ struct CharTexCache {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    CharInfo& MakeCharInfo(char32_t c) {
+    TinyFrame& MakeCharInfo(char32_t c) {
         FillCharTex(c);
-        CharInfo* ci{};
+        TinyFrame* ci{};
         if (c < 256) {
             ci = &bases[c];
         } else {
-            auto rtv = extras.insert(std::make_pair(c, CharInfo{}));
+            auto rtv = extras.insert(std::make_pair(c, TinyFrame{}));
             ci = &rtv.first->second;
         }
 
@@ -75,14 +71,14 @@ struct CharTexCache {
         });
 
         ci->tex = t;
-        ci->texRectX = cp.x;
-        ci->texRectY = texHeight - 1 - cp.y;        // flip y for uv
-        ci->texRectW = cw;
-        ci->texRectH = canvasHeight;
+        ci->texRect.x = cp.x;
+        ci->texRect.y = texHeight - 1 - cp.y;        // flip y for uv
+        ci->texRect.w = cw;
+        ci->texRect.h = canvasHeight;
         return *ci;
     }
 
-    CharInfo& Find(char32_t c) {
+    TinyFrame& Find(char32_t c) {
         if (c < 256) {
             return bases[c];
         } else {
@@ -96,26 +92,27 @@ struct CharTexCache {
 
     // anchor: {0, 0.5}   todo: anchor, max width limit ?
     void Draw(XY pos, std::u32string_view const& s, RGBA8 color = { 255,255,255,255 }) {
-        Quad q;
-        q.SetAnchor({ 0.f, 0.5f });
 
         // make sure all char texture exists ( avoid framebuffer incomplete issue )
-        auto cis = (CharInfo**)alloca(s.size() * sizeof(void*));
+        auto cis = (TinyFrame**)alloca(s.size() * sizeof(void*));
         auto e = s.size();
         for (size_t i = 0; i < e; ++i) {
             cis[i] = &Find(s[i]);
         }
 
+        auto& shader = gEngine->shader;
         for (size_t i = 0; i < e; ++i) {
             auto&& ci = *cis[i];
-            q.texId = ci.tex->GetValue();
+            auto& q = *shader.Draw(ci.tex->GetValue(), 1);
+            q.anchor = { 0.f, 0.5f };
             q.color = color;
-            q.texRectX = ci.texRectX;
-            q.texRectY = ci.texRectY;
-            q.texRectW = ci.texRectW;
-            q.texRectH = ci.texRectH;
-            q.SetPosition(pos).Draw();
-            pos.x += ci.texRectW;
+            q.colormulti = 1;
+            q.pos = pos;
+            q.radians = {};
+            q.scale = { 1, 1 };
+            q.texRect.data = ci.texRect.data;
+
+            pos.x += ci.texRect.w;
         }
     }
 

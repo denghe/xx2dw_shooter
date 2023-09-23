@@ -26,7 +26,7 @@ struct DynamicTexturePacker : Frames {
         rects.reserve(subFrames.size());
         rectptrs.reserve(subFrames.size());
         for (auto& sf : subFrames) {
-            auto& r = rects.emplace_back(0, 0, sf->textureRect.wh.x, sf->textureRect.wh.y);
+            auto& r = rects.emplace_back(0, 0, sf->textureRect.w, sf->textureRect.h);
             r.ud = &sf;
             rectptrs.push_back(&r);
         }

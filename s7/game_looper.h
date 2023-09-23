@@ -24,6 +24,7 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	// res
 	std::vector<xx::Shared<Frame>> frames_pumpkin;
 	std::vector<xx::Shared<Frame>> frames_weapon;
+	std::vector<xx::Shared<Frame>> frames_number_outlined;
 	std::vector<xx::Shared<Frame>> frames_eye_fire;
 	std::vector<xx::Shared<Frame>> frames_dragon_babywhite;
 

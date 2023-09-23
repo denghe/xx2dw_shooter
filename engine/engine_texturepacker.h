@@ -27,8 +27,10 @@ struct TexturePacker : Frames {
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteOffset.x, (xx::RWFloatUInt16&)f->spriteOffset.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSize.x, (xx::RWFloatUInt16&)f->spriteSize.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSourceSize.x, (xx::RWFloatUInt16&)f->spriteSourceSize.y)) return r;
-            if (int r = dr.Read((xx::RWFloatUInt16&)f->textureRect.x, (xx::RWFloatUInt16&)f->textureRect.y)) return r;
-            if (int r = dr.Read((xx::RWFloatUInt16&)f->textureRect.wh.x, (xx::RWFloatUInt16&)f->textureRect.wh.y)) return r;
+            if (int r = dr.ReadFixed(f->textureRect.x)) return r;
+            if (int r = dr.ReadFixed(f->textureRect.y)) return r;
+            if (int r = dr.ReadFixed(f->textureRect.w)) return r;
+            if (int r = dr.ReadFixed(f->textureRect.h)) return r;
             //printf("load frame key = %s\n", f->key.c_str());
             frames.emplace_back(std::move(f));
         }

@@ -17,7 +17,10 @@ xx::Task<> GameLooper::MainTask() {
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
-		auto n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
+		size_t n{};
+		n = tp->GetToByPrefix(frames_number_outlined, DamageNumber::cResPrefix);
+		xx_assert(n);
+		n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_weapon, Weapon::cResPrefix);
 		xx_assert(n);
@@ -38,7 +41,10 @@ xx::Task<> GameLooper::MainTask() {
 
 	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, {});
 
-	Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
+	while(true) {
+		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, {100, 100});
+		co_await AsyncSleep(10);
+	}
 }
 
 void GameLooper::Update() {
@@ -51,23 +57,21 @@ void GameLooper::Update() {
 	if (!ready) return;										// todo: show loading ?
 
 	heros.Foreach([&](xx::Shared<Hero> const& o) {
-		afterimages.Emplace().Emplace()->Init(*o->weapon);
-		if (o->mainLogic.Resume()) return true;
-		o->weapon->mainLogic.Resume();
-		return false;
+		//afterimages.Emplace().Emplace()->Init(*o->weapon);
+		return o->update(o);
 	});
 
 	bullets.Foreach([&](auto& o) {
 		//afterimages.Emplace().Emplace()->Init(*o);
-		return o->mainLogic.Resume();
+		return o->update(o);
 	});
 
 	monsters.Foreach([&](auto& o) {
-		return o->mainLogic.Resume();
+		return o->update(o);
 	});
 
 	afterimages.Foreach([&](auto& o) {
-		return o->mainLogic.Resume();
+		return o->update(o);
 	});
 }
 

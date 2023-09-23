@@ -10,6 +10,7 @@ struct Hero : Sprite {
 };
 
 struct Hero_Pumpkin : Hero {
+	using ThisType = Hero_Pumpkin;
 	constexpr static char const* cResPrefix{ "pumpkin_" };
 	constexpr static XY cAnchor{ 0.5f, 0.f };
 	constexpr static float cRadius{ 6.f };
@@ -19,6 +20,8 @@ struct Hero_Pumpkin : Hero {
 	constexpr static XY cHookOffset{ 0, -5.f };
 
 	void Init(xx::Shared<Player> const& player_, XY const& bornPos);
+	bool Update();
 	void Draw() const;
-	xx::Task<> MainLogic();
+	xx::Task<> MainLogic{ MainLogic_() };
+	xx::Task<> MainLogic_();
 };

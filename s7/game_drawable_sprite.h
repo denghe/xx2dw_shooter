@@ -1,7 +1,46 @@
 ﻿#pragma once
 #include "game_looper.h"
 
-struct Sprite {
+template<typename T> concept Has_Drawable_Update = requires(T t) { { t.Update() } -> std::same_as<bool>; };
+
+struct Drawable {
+	XY pos{};
+
+	// for hardware draw
+	// get pos.y for order by Y
+	// return std::numeric_limits<float>::quiet_NaN(): do not need draw
+	float (*getY)(void* derived, Camera const& camera) = {};
+
+	// for hardware draw
+	void (*draw)(void* derived) = {};
+
+	// for logic update
+	bool (*update)(void* derived) = {};
+
+	// classic init for example
+
+	template<typename Derived>
+	void InitGetYDrawUpate() {
+		getY = [](void* self, Camera const& camera) { return ((Derived*)self)->GetY(camera);  };
+		draw = [](void* self) { ((Derived*)self)->Draw(); };
+		if constexpr (Has_Drawable_Update<Derived>) {
+			update = [](void* self)->bool { return ((Derived*)self)->Update(); };
+		} else {
+			update = [](void* self)->bool { return ((Derived*)self)->MainLogic.Resume(); };
+		}
+	}
+
+	// default impl
+	float GetY(Camera const& camera) {
+		if (camera.InArea(pos)) {
+			return pos.y;
+		}
+		return std::numeric_limits<float>::quiet_NaN();
+	}
+};
+
+
+struct Sprite : Drawable {
 	constexpr static float cIdleScaleYFrom{ 0.9f };
 	constexpr static float cIdleScaleYTo{ 1.f };
 	constexpr static float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
@@ -17,7 +56,6 @@ struct Sprite {
 	bool flipX{};
 
 	std::vector<xx::Shared<Frame>>const* frames{};
-	xx::Task<> mainLogic;
 
 	xx::Task<> idle;		// need init
 
@@ -35,11 +73,7 @@ struct Sprite {
 		}
 	}
 
-	// todo: GetYSprite
-
-	//virtual ~Sprite() {}
-
-	/*virtual */void Draw() const {
+	void Draw() const {
 		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)

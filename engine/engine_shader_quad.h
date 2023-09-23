@@ -9,7 +9,7 @@ struct QuadInstanceData {
 
     RGBA8 color{ 255, 255, 255, 255 };  // u8n * 4
 
-    uint16_t texRectX{}, texRectY{}, texRectW{}, texRectH{};    // u16 * 4
+    UVRect texRect{};    // u16 * 4
 };
 
 struct Shader_QuadInstance : Shader {
@@ -107,7 +107,7 @@ void main() {
         glVertexAttribDivisor(aColor, 1);
         glEnableVertexAttribArray(aColor);
 
-        glVertexAttribPointer(aTexRect, 4, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(QuadInstanceData), (GLvoid*)offsetof(QuadInstanceData, texRectX));
+        glVertexAttribPointer(aTexRect, 4, GL_UNSIGNED_SHORT, GL_FALSE, sizeof(QuadInstanceData), (GLvoid*)offsetof(QuadInstanceData, texRect));
         glVertexAttribDivisor(aTexRect, 1);
         glEnableVertexAttribArray(aTexRect);
 

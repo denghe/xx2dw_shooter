@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
-	mainLogic = MainLogic();
+	InitGetYDrawUpate<ThisType>();
 	pos = hero_->pos;
 	player = hero_->player;
 	hero = hero_;
@@ -10,7 +10,7 @@ void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
 	body.SetAnchor(cAnchor);
 }
 
-xx::Task<> Weapon_Sword1::MainLogic() {
+xx::Task<> Weapon_Sword1::MainLogic_() {
 	while (hero) {
 		pos = hero->weaponPos;
 		auto v = gLooper.mousePos - gLooper.camera.ToGLPos(pos);

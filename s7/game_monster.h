@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "game_sprite.h"
+#include "game_drawable_sprite.h"
 
 struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 	constexpr static float cDamageEffectDurationSecs{ 0.2 };
@@ -111,6 +111,7 @@ struct Monster : Sprite, SpaceGridCItem<Monster, XY> {
 };
 
 struct Monster_Dragon_BabyWhite : Monster {
+	using ThisType = Monster_Dragon_BabyWhite;
 	constexpr static char const* cResPrefix{ "dragon_babywhite_" };
 	constexpr static XY cAnchor{ 0.5, 0 };
 	constexpr static XY cHitCenterOffset{ 0, 6 };
@@ -120,5 +121,6 @@ struct Monster_Dragon_BabyWhite : Monster {
 	constexpr static float cSpeed{ 30.f / gDesign.fps };
 
 	void Init(int hp_, XY const& pos_);
-	xx::Task<> MainLogic();
+	xx::Task<> MainLogic{ MainLogic_() };
+	xx::Task<> MainLogic_();
 };

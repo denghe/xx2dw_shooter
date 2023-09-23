@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 
 void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
-	mainLogic = MainLogic();
+	InitGetYDrawUpate<ThisType>();
 	idle = Idle_ScaleY();
 	player = player_;
 	radius = cRadius;
@@ -14,10 +14,18 @@ void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 
 void Hero_Pumpkin::Draw() const {
 	Hero::Draw();
-	weapon->Draw();
+	weapon->draw(weapon);
 }
 
-xx::Task<> Hero_Pumpkin::MainLogic() {
+bool Hero_Pumpkin::Update() {
+	if (MainLogic.Resume()) return true;
+	if (weapon) {
+		(void)weapon->update(weapon);
+	}
+	return false;
+}
+
+xx::Task<> Hero_Pumpkin::MainLogic_() {
 	while (true) {
 
 		// keyboard move control

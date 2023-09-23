@@ -217,6 +217,15 @@ struct Rect : XY {
     XY wh;
 };
 
+
+union UVRect {
+    struct {
+        uint16_t x, y, w, h;
+    };
+    uint64_t data;
+};
+
+
 namespace xx {
     template<typename T>
     struct DataFuncs<T, std::enable_if_t<IsVec2_v<T>>> {
