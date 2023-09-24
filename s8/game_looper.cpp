@@ -15,11 +15,9 @@ void GameLooper::Init() {
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();											// font init
 	{
-		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
-		xx_assert(tp);
-		size_t n{};
-		n = tp->GetToByPrefix(frames_button, "");
-		xx_assert(n);
+		auto tex = co_await AsyncLoadTextureFromUrl("res/button.png");
+		xx_assert(tex);
+		frame_button = Frame::Create(tex);
 	}
 	ready = true;											// all tex ready
 
@@ -34,20 +32,40 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;										// todo: show loading ?
 
-	//buttons.Foreach([&](auto& o) {
-	//	return o->mainLogic.Resume();
-	//});
+	buttons.Foreach([&](auto& o) {
+		return o->mainLogic.Resume();
+	});
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
 
-		//buttons.Foreach([&](auto& o) {
-		//	if (gLooper.camera.InArea(o->pos)) {
-		//		o->Draw();
-		//	}
-		//});
+		buttons.Foreach([&](auto& o) {
+			if (gLooper.camera.InArea(o->pos)) {
+				o->Draw();
+			}
+		});
 	}
 	fv.Draw(ctc72);											// show fps
+}
+
+
+void Button::Init(XY const& pos_, XY const& size_, std::string_view const& txt_) {
+	assert(size.x > 6 && size.y > 8);
+	pos = pos_;
+	size = size_;
+	txt = txt_;
+}
+
+xx::Task<> Button::MainLogic() {
+	while (true) {
+		// todo: scan mouse state & calc area ?
+
+		co_yield 0;
+	}
+}
+
+void Button::Draw() {
+
 }

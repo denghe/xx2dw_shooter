@@ -13,11 +13,22 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	bool ready{};
 
 	// res
-	std::vector<xx::Shared<Frame>> frames_button;
+	xx::Shared<Frame> frame_button;
 
 	// objs
-	xx::ListLink<xx::Shared<Button>, int32_t> buttons;
+	xx::ListLink<xx::Shared<Button>, int32_t> buttons;	// todo: special container for ui ?
 
 	Camera camera;
 };
 extern GameLooper gLooper;
+
+
+struct Button {
+	XY pos{}, size{};
+	std::string txt;	// todo: change to TinyFrame array?
+	std::function<void()> onClicked;
+	void Init(XY const& pos_, XY const& size_, std::string_view const& txt_);
+	xx::Task<> mainLogic{ MainLogic() };
+	xx::Task<> MainLogic();
+	void Draw();
+};
