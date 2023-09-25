@@ -16,19 +16,8 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	xx::Shared<Frame> frame_button;
 
 	// objs
-	xx::ListLink<xx::Shared<Button>, int32_t> buttons;	// todo: special container for ui ?
+	LineStrip ls;
 
 	Camera camera;
 };
 extern GameLooper gLooper;
-
-
-struct Button {
-	XY pos{}, size{};
-	std::string txt;	// todo: change to TinyFrame array?
-	std::function<void()> onClicked;
-	void Init(XY const& pos_, XY const& size_, std::string_view const& txt_);
-	xx::Task<> mainLogic{ MainLogic() };
-	xx::Task<> MainLogic();
-	void Draw();
-};

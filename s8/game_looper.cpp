@@ -12,6 +12,21 @@ void GameLooper::Init() {
     windowHeight = gDesign.height;
 }
 
+/*
+todo: polygon circle
+docs here:
+
+https://www.sevenson.com.au/programming/sat/
+https://github.com/sevdanski/SAT_JS/blob/main/src/js/sat.js
+https://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection
+http://www.jeffreythompson.org/collision-detection/table_of_contents.php
+
+http://www.jeffreythompson.org/collision-detection/line-circle.php
+https://github.com/williamfiset/Algorithms/blob/master/src/main/java/com/williamfiset/algorithms/geometry/LineSegmentCircleIntersection.js
+https://stackoverflow.com/questions/4226356/circle-to-circle-segment-collision
+
+*/
+
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();											// font init
 	{
@@ -21,6 +36,7 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;											// all tex ready
 
+	ls.FillCirclePoints({}, 100);
 }
 
 void GameLooper::Update() {
@@ -32,50 +48,13 @@ void GameLooper::Update() {
 	}
 	if (!ready) return;										// todo: show loading ?
 
-	buttons.Foreach([&](auto& o) {
-		return o->mainLogic.Resume();
-	});
 }
 
 void GameLooper::Draw() {
 	if (ready) {
 		camera.Calc();
 
-		buttons.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+		ls.Draw();
 	}
 	fv.Draw(ctc72);											// show fps
-}
-
-/*
-todo: polygon circle 
-docs here:
-
-https://www.sevenson.com.au/programming/sat/
-https://github.com/sevdanski/SAT_JS/blob/main/src/js/sat.js
-https://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection
-http://www.jeffreythompson.org/collision-detection/table_of_contents.php
-
-*/
-
-void Button::Init(XY const& pos_, XY const& size_, std::string_view const& txt_) {
-	assert(size.x > 6 && size.y > 8);
-	pos = pos_;
-	size = size_;
-	txt = txt_;
-}
-
-xx::Task<> Button::MainLogic() {
-	while (true) {
-		// todo: scan mouse state & calc area ?
-
-		co_yield 0;
-	}
-}
-
-void Button::Draw() {
-
 }

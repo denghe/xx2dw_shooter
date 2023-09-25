@@ -226,6 +226,15 @@ union UVRect {
 };
 
 
+struct Shader;
+struct EngineBase__ {
+    float windowWidth = 800, windowHeight = 600;          // can change at Init()
+    float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
+    float flipY{ 1 };   // -1: flip  for ogl frame buffer
+    Shader* shader{};
+};
+
+
 namespace xx {
     template<typename T>
     struct DataFuncs<T, std::enable_if_t<IsVec2_v<T>>> {

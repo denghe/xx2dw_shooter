@@ -24,12 +24,11 @@ struct FpsViewer {
             updateCounter = 0;
         }
 
-        gEngine->GLShaderEnd();
+        gEngine->ShaderEnd();
         auto s = std::string("FPS:") + std::to_string((uint32_t)fps)
                  + " UPS:" + std::to_string((uint32_t)ups)
                  + " DC:" + std::to_string(Shader::drawCall)
                  + " VC:" + std::to_string(Shader::drawVerts);
-        gEngine->GLShaderBegin();
 
         ctc.Draw({ -gEngine->windowWidth_2, -gEngine->windowHeight_2 + ctc.canvasHeight_2 }, s);
     }

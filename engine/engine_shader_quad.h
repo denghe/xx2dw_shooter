@@ -14,16 +14,19 @@ struct QuadInstanceData {
 
 struct Shader_QuadInstance : Shader {
     using Shader::Shader;
-    GLint uCxy = -1, uTex0 = -1, aVert = -1, aPosAnchor = -1, aScaleRadiansColormulti = -1, aColor = -1, aTexRect = -1;
+    GLint uCxy{ -1 }, uTex0{ -1 }, aVert{ -1 }, aPosAnchor{ -1 }, aScaleRadiansColormulti{ -1 }, aColor{ -1 }, aTexRect{ -1 };
     GLVertexArrays va;
     GLBuffer vb, ib;
 
-    static const size_t maxQuadNums = 200000;
-    GLuint lastTextureId = 0;
+    static const size_t maxQuadNums{ 200000 };
+    GLuint lastTextureId{};
     std::unique_ptr<QuadInstanceData[]> quadInstanceDatas = std::make_unique<QuadInstanceData[]>(maxQuadNums);
-    size_t quadCount = 0;
+    size_t quadCount{};
+    EngineBase__* eb{};
 
-    void Init() {
+    void Init(EngineBase__* eb_) {
+        eb = eb_;
+
         v = LoadGLVertexShader({ R"(#version 300 es
 uniform vec2 uCxy;	// screen center coordinate
 
@@ -117,18 +120,26 @@ void main() {
         CheckGLError();
     }
 
-    void Begin(float w, float h) {
+    virtual void Begin() override {
+        if (auto& s = eb->shader; s != this) {
+            if (s) {
+                s->End();
+            }
+            s = this;
+        }
         glUseProgram(p);
         glActiveTexture(GL_TEXTURE0/* + textureUnit*/);
         glUniform1i(uTex0, 0);
-        glUniform2f(uCxy, 2 / w, 2 / h);
+        glUniform2f(uCxy, 2 / eb->windowWidth, 2 / eb->windowHeight * eb->flipY);
         glBindVertexArray(va);
     }
 
-    void End() {
+    virtual void End() override {
         if (quadCount) {
             Commit();
         }
+        assert(eb->shader == this);
+        eb->shader = {};
     }
 
     void Commit() {

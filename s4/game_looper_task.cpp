@@ -123,7 +123,6 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-
 	if (ready) {
 		camera.SetOriginal(shooter->pos);
 		camera.Calc();

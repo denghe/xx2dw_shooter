@@ -4,16 +4,19 @@
 #include "engine_prims.h"
 #include "engine_shader.h"
 #include "engine_shader_quad.h"
+#include "engine_shader_linestrip.h"
 
 #include "engine_rnd.h"
 #include "engine_js_funcs.h"
 
-struct EngineBase {
-    inline static float windowWidth = 800, windowHeight = 600;          // can change at Init()
-    inline static float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
+struct EngineBase : EngineBase__ {
+
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
-    float flipY{ 1 };   // -1: flip  for ogl frame buffer
-    Shader_QuadInstance shader;
+
+    Shader_QuadInstance shaderQuadInstance;
+    Shader_LineStrip shaderLineStrip;
+    // ... more
+
     Rnd rnd;
 
     double nowSecs{}, delta{};
@@ -34,14 +37,16 @@ struct EngineBase {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        shader.Init();
+        shaderQuadInstance.Init(this);
+        shaderLineStrip.Init(this);
+        // ... more
     }
 
-    void GLViewport() {
+    XX_FORCE_INLINE void GLViewport() {
         glViewport(0, 0, (int)windowWidth, (int)windowHeight);
     }
 
-    void GLClear(RGBA8 c) {
+    XX_FORCE_INLINE void GLClear(RGBA8 c) {
         glClearColor(c.r / 255.f, c.g / 255.f, c.b / 255.f, c.a / 255.f);
         //glClear(GL_COLOR_BUFFER_BIT);
         glDepthMask(true);
@@ -49,25 +54,25 @@ struct EngineBase {
         glDepthMask(false);
     }
 
-    void GLUpdate() {
+    XX_FORCE_INLINE void GLUpdateBegin() {
         GLViewport();
         GLClear({});
 
         Shader::ClearCounter();
-        GLShaderBegin();
     }
 
-    void GLShaderBegin() {
-        shader.Begin(windowWidth, windowHeight * flipY);
+    XX_FORCE_INLINE void GLUpdateEnd() {
+        ShaderEnd();
     }
 
-    void GLShaderEnd() {
-        shader.End();
+    XX_FORCE_INLINE void ShaderEnd() {
+        if (shader) {
+            shader->End();
+        }
     }
 
-    void GLUpdateEnd() {
-        shader.End();
-    }
+
+    // todo: GLSetBlend == if diff GLShaderEnd + set blend + GLShaderBegin
 
 
     EngineBase();

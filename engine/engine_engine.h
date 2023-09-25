@@ -177,7 +177,7 @@ int main() {
         delta = s - nowSecs;
         nowSecs = s;
 
-        GLUpdate();
+        GLUpdateBegin();
 
         if (delta > ((Derived*)this)->maxFrameDelay) {
             delta = ((Derived*)this)->maxFrameDelay;
@@ -207,7 +207,7 @@ int main() {
         } while (nowSecs < e);
     }
 
-    template<bool showLog = true, int timeoutSeconds = 30>
+    template<bool showLog = false, int timeoutSeconds = 30>
     xx::Task<xx::Shared<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
         if constexpr(showLog) {
             printf("LoadTextureFromUrl( %s ) : begin. nowSecs = %f\n", url, nowSecs);
