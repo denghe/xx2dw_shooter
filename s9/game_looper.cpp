@@ -50,16 +50,6 @@ void GameLooper::Draw() {
 	fv.Draw(ctc72);											// show fps
 }
 
-/*
-todo: polygon circle 
-docs here:
-
-https://www.sevenson.com.au/programming/sat/
-https://github.com/sevdanski/SAT_JS/blob/main/src/js/sat.js
-https://www.codeproject.com/Articles/15573/2D-Polygon-Collision-Detection
-http://www.jeffreythompson.org/collision-detection/table_of_contents.php
-
-*/
 
 void Button::Init(XY const& pos_, XY const& size_, std::string_view const& txt_) {
 	assert(size.x > 6 && size.y > 8);
