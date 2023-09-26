@@ -9,6 +9,15 @@
 #include "engine_rnd.h"
 #include "engine_js_funcs.h"
 
+// type same as EmscriptenKeyboardEvent.what
+using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
+enum class KeyboardKeys : KeyboardKeys_t {
+    Unknown = 0,
+    A = 65,
+    B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
+    , MAX_VALUE
+};
+
 struct EngineBase : EngineBase__ {
 
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
@@ -18,6 +27,11 @@ struct EngineBase : EngineBase__ {
     // ... more
 
     Rnd rnd;
+
+    std::array<bool, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysStates{};
+    std::array<double, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysDelays{};
+    XY mousePos;
+    std::array<bool, 16> mouseBtnStates{};
 
     double nowSecs{}, delta{};
     double timePool{};

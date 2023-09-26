@@ -16,15 +16,6 @@ int32_t main();
 
 constexpr GDesign<1280, 720, 60> gDesign;
 
-// type same as EmscriptenKeyboardEvent.what
-using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
-enum class KeyboardKeys : KeyboardKeys_t {
-	Unknown = 0,
-	A = 65,
-	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-	, MAX_VALUE
-};
-
 enum class MoveDirections : int {
 	Down = 1, Left = 2, Right = 4, Up = 8
 };
@@ -35,12 +26,10 @@ struct GameLooperBase : Engine<Derived> {
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
-	std::array<bool, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysStates{};
-	std::array<double, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysDelays{};
 
 	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e) {
 		if (e.which >= (KeyboardKeys_t)KeyboardKeys::A && e.which <= (KeyboardKeys_t)KeyboardKeys::Z) {
-			keyboardKeysStates[e.which] = true;
+			this->keyboardKeysStates[e.which] = true;
 			return EM_TRUE;
 		}
 		return EM_FALSE;
@@ -48,40 +37,38 @@ struct GameLooperBase : Engine<Derived> {
 
 	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e) {
 		if (e.which >= (KeyboardKeys_t)KeyboardKeys::A && e.which <= (KeyboardKeys_t)KeyboardKeys::Z) {
-			keyboardKeysStates[e.which] = false;
+			this->keyboardKeysStates[e.which] = false;
 			return EM_TRUE;
 		}
 		return EM_FALSE;
 	}
 
 	bool KeyDown(KeyboardKeys k) const {
-		return keyboardKeysStates[(KeyboardKeys_t)k];
+		return this->keyboardKeysStates[(KeyboardKeys_t)k];
 	}
 
 	bool KeyDownDelay(KeyboardKeys k, double delaySecs) {
 		if (!KeyDown(k)) return false;
-		if (keyboardKeysDelays[(KeyboardKeys_t)k] > this->nowSecs) return false;
-		keyboardKeysDelays[(KeyboardKeys_t)k] = this->nowSecs + delaySecs;
+		if (this->keyboardKeysDelays[(KeyboardKeys_t)k] > this->nowSecs) return false;
+		this->keyboardKeysDelays[(KeyboardKeys_t)k] = this->nowSecs + delaySecs;
 		return true;
 	}
 
-	XY mousePos;
-	std::array<bool, 16> mouseBtnStates{};
 
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e) {
 		touchMode = {};
-		mousePos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
+		this->mousePos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
 		return EM_TRUE;
 	}
 
 	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
 		touchMode = {};
-		mouseBtnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
+		this->mouseBtnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
 		return EM_TRUE;
 	}
 
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e) {
-		mouseBtnStates[e.button] = false;
+		this->mouseBtnStates[e.button] = false;
 		return EM_TRUE;
 	}
 
@@ -100,7 +87,7 @@ struct GameLooperBase : Engine<Derived> {
 				auto&& t = e.touches[i];
 				if (!t.isChanged) continue;
 				fireTouchId = t.identifier;
-				mouseBtnStates[0] = true;
+				this->mouseBtnStates[0] = true;
 				break;
 			}
 		}
@@ -128,7 +115,7 @@ struct GameLooperBase : Engine<Derived> {
 				aimTouchStartPos = aimTouchMovePos = {};
 			} else if (fireTouchId == t.identifier) {
 				fireTouchId = -1;
-				mouseBtnStates[0] = false;
+				this->mouseBtnStates[0] = false;
 			}
 		}
 		return EM_TRUE;

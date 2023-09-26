@@ -60,12 +60,6 @@ struct ShooterBullet2;
 struct Explosion;
 struct DamageText;
 
-enum class KeyboardKeys {
-	A = 65,
-	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-	, MAX_VALUE
-};
-
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 
@@ -73,9 +67,6 @@ struct GameLooper : Engine<GameLooper> {
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
-	XY mousePos;
-	std::array<bool, 16> mouseBtnStates{};
-	std::array<bool, (int32_t)KeyboardKeys::MAX_VALUE> keyboardKeysStates{};
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
 	bool touchMode{};

@@ -56,15 +56,6 @@ struct Tree;
 struct Explosion;
 struct DamageText;
 
-// type same as EmscriptenKeyboardEvent.what
-using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
-enum class KeyboardKeys : KeyboardKeys_t {
-	Unknown = 0,
-	A = 65,
-	B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-	, MAX_VALUE
-};
-
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
@@ -74,15 +65,11 @@ struct GameLooper : Engine<GameLooper> {
 	CharTexCache<72> ctc72;
 	FpsViewer fv;
 
-	std::array<bool, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysStates{};
-	std::array<double, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysDelays{};
 	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
 	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
 	bool KeyDown(KeyboardKeys k) const;
 	bool KeyDownDelay(KeyboardKeys k, double delaySecs);
 
-	XY mousePos;
-	std::array<bool, 16> mouseBtnStates{};
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
