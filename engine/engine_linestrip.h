@@ -100,6 +100,16 @@ struct LineStrip {
 		color = c;
 		return *this;
 	}
+	LineStrip& SetColorAf(float const& a) {
+		dirty = true;
+		color.a = 255 * a;
+		return *this;
+	}
+	LineStrip& SetColorA(uint8_t const& a) {
+		dirty = true;
+		color.a = a;
+		return *this;
+	}
 
 	void Commit() {
 		if (dirty) {

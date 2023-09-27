@@ -7,10 +7,7 @@ int32_t main() {
 }
 GameLooper gLooper;											// global var for easy use
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
-}
+
 
 /*
 todo: polygon circle
@@ -26,10 +23,6 @@ https://github.com/williamfiset/Algorithms/blob/master/src/main/java/com/william
 https://stackoverflow.com/questions/4226356/circle-to-circle-segment-collision
 
 */
-
-
-
-
 
 
 float Dist(float x1, float y1, float x2, float y2) {
@@ -189,6 +182,133 @@ bool PolyCircle(Vecs const& vertices, float cx, float cy, float r) {
 
 
 
+
+void DragCircle::Init(XY const& pos_, float radius_, int32_t segments) {
+    pos = pos_;
+    radius = radius_;
+
+    border.FillCirclePoints({ 0,0 }, radius, {}, segments)
+        .SetColor({ 255, 255, 0, 255 })
+        .SetPosition(pos);
+}
+
+bool DragCircle::OnMouseDown() {
+    offset = gLooper.mouse.pos - pos;
+    return offset.x * offset.x + offset.y * offset.y <= radius * radius;
+}
+
+void DragCircle::OnMouseMove() {
+    auto mp = gLooper.mouse.pos - offset;
+    auto d = mp - pos;
+    auto dd = d.x * d.x + d.y * d.y;
+    if (dd < std::numeric_limits<float>::epsilon()) return;
+    gLooper.shadows.Emplace().Init();
+    if (dd < speed * speed) {
+        pos = mp;
+    } else {
+        pos += d / std::sqrt(dd) * speed;
+    }
+}
+
+void DragCircle::Draw() {
+    border.SetPosition(pos).Draw();
+}
+
+
+
+
+void DragCircleShadow::Init() {
+    border = gLooper.dc.border;
+    border.SetPosition(gLooper.dc.pos);
+}
+
+xx::Task<> DragCircleShadow::MainTask() {
+    while (alpha > 0) {
+        alpha -= cAlphaDecrease;
+        co_yield 0;
+    }
+}
+
+void DragCircleShadow::Draw() {
+    border.SetColorAf(alpha).Draw();
+}
+
+
+
+
+void Poly::Init() {
+    vertices[0] = { 200, 100 };
+    vertices[1] = { 400, 100 };
+    vertices[2] = { 350, 300 };
+    vertices[3] = { 250, 300 };
+    border.SetPoints( { vertices[0],vertices[1],vertices[2],vertices[3],vertices[0] });
+}
+
+void Poly::Draw() {
+    border.Draw();
+}
+
+
+
+
+
+EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
+    mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
+    if (dc.OnMouseDown()) {
+        mouseFocus = &dc;
+    }
+    return EM_TRUE;
+}
+
+EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
+    mouse.pos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
+    if (mouseFocus) {
+        mouseFocus->OnMouseMove();
+    }
+    return EM_TRUE;
+}
+
+EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
+    mouse.btnStates[e.button] = false;
+    mouseFocus = {};
+    return EM_TRUE;
+}
+
+
+
+void GameLooper::Init() {
+    windowWidth = gDesign.width;
+    windowHeight = gDesign.height;
+}
+
+void GameLooper::Update() {
+    if (mouseFocus) {
+        mouseFocus->OnMouseMove();
+    }
+    shadows.Foreach([](DragCircleShadow& o)->bool {
+        return o.mainTask.Resume();
+    });
+}
+
+xx::Task<> GameLooper::MainTask() {
+    shadows.Reserve(gDesign.fps * 2);                // for task pin memory
+    dc.Init({}, 30, 20);
+    poly.Init();
+	co_return;
+}
+
+void GameLooper::Draw() {
+    poly.Draw();
+    shadows.Foreach([](DragCircleShadow& o)->void {
+        o.Draw();
+    });
+    dc.Draw();
+    printf("%d\n", shadows.Count());
+}
+
+
+
+
 //float cx = 0;    // position of the circle
 //float cy = 0;
 //float r = 30;   // circle's radius
@@ -237,79 +357,3 @@ bool PolyCircle(Vecs const& vertices, float cx, float cy, float r) {
 //
 
 
-
-
-
-
-
-void DragCircle::Init(XY const& pos_, float radius_, int32_t segments) {
-    pos = pos_;
-    radius = radius_;
-    speed = radius / 2;
-
-    border.FillCirclePoints({ 0,0 }, radius, {}, segments)
-        .SetColor({ 255, 255, 0, 255 })
-        .SetPosition(pos);
-}
-
-xx::Task<> DragCircle::MainTask() {
-    XY offset{};
-    auto& m = gLooper.mouse;
-    while (true) {
-        if (m.event != MouseEvents::Down) goto LabEnd;
-
-        offset = m.pos - pos;
-        if (offset.x * offset.x + offset.y * offset.y > radius * radius) goto LabEnd;
-
-        m.event = MouseEvents::Unknown;
-        m.eventHandler = this;
-
-        while (true) {
-            co_yield 0;
-            if (m.event == MouseEvents::Up) break;
-            auto mp = m.pos - offset;
-            auto d = mp - pos;
-            auto dd = d.x * d.x + d.y * d.y;
-            if (dd < speed * speed) {
-                pos = mp;
-            } else {
-                pos += d / std::sqrt(dd) * speed;
-            }
-        }
-
-    LabEnd:
-        co_yield 0;
-    }
-}
-
-void DragCircle::Draw() {
-    border.SetPosition(pos).Draw();
-}
-
-void Poly::Init() {
-    vertices[0] = { 200, 100 };
-    vertices[1] = { 400, 100 };
-    vertices[2] = { 350, 300 };
-    vertices[3] = { 250, 300 };
-    border.SetPoints({ vertices[0],vertices[1],vertices[2],vertices[3] });
-}
-
-void Poly::Draw() {
-    border.Draw();
-}
-
-
-
-
-xx::Task<> GameLooper::MainTask() {
-    DragCircle dc;
-    dc.Init({}, 100, 100);
-
-    while (true) {
-        dc.mainTask();
-        dc.Draw();
-
-        co_yield 0;
-    }
-	co_return;
-}

@@ -25,8 +25,10 @@ enum class MouseEvents : int {
 struct Mouse {
     XY pos{};
     std::array<bool, 16> btnStates{};
-    MouseEvents event{};
-    void* eventHandler{};
+    //MouseEvents event{};
+    //void* eventHandler{};
+    //void ClearEvent() { event = MouseEvents::Unknown; }
+    //void ClearEventAndSetHandler(void* h) { event = MouseEvents::Unknown; eventHandler = h; }
 };
 
 struct EngineBase : EngineBase__ {
