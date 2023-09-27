@@ -18,6 +18,17 @@ enum class KeyboardKeys : KeyboardKeys_t {
     , MAX_VALUE
 };
 
+enum class MouseEvents : int {
+    Unknown = 0, Down, Move, Up, Cancel
+};
+
+struct Mouse {
+    XY pos{};
+    std::array<bool, 16> btnStates{};
+    MouseEvents event{};
+    void* eventHandler{};
+};
+
 struct EngineBase : EngineBase__ {
 
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
@@ -30,8 +41,9 @@ struct EngineBase : EngineBase__ {
 
     std::array<bool, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysStates{};
     std::array<double, KeyboardKeys_t(KeyboardKeys::MAX_VALUE)> keyboardKeysDelays{};
-    XY mousePos;
-    std::array<bool, 16> mouseBtnStates{};
+
+    Mouse mouse;
+    bool touchMode{};
 
     double nowSecs{}, delta{};
     double timePool{};

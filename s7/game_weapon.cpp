@@ -14,11 +14,11 @@ void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
 xx::Task<> Weapon_Sword1::MainLogic_() {
 	while (hero) {
 		pos = hero->weaponPos;
-		auto v = gLooper.mousePos - gLooper.camera.ToGLPos(pos);
+		auto v = gLooper.mouse.pos - gLooper.camera.ToGLPos(pos);
 		auto r = -std::atan2(v.y, v.x);
 		StepRadians(r, cFrameMaxChangeRadians);
 
-		if (gLooper.mouseBtnStates[0] && nextFireSecs <= gLooper.nowSecs) {
+		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
 			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
 			r = -radians;
 			auto c = std::cos(r);

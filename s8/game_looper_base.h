@@ -56,28 +56,30 @@ struct GameLooperBase : Engine<Derived> {
 
 
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e) {
-		touchMode = {};
-		this->mousePos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
+		this->touchMode = {};
+		this->mouse.event = MouseEvents::Move;
+		this->mouse.pos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
 		return EM_TRUE;
 	}
 
 	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
-		touchMode = {};
-		this->mouseBtnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
+		this->touchMode = {};
+		this->mouse.event = MouseEvents::Down;
+		this->mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
 		return EM_TRUE;
 	}
 
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e) {
-		this->mouseBtnStates[e.button] = false;
+		this->mouse.event = MouseEvents::Up;
+		this->mouse.btnStates[e.button] = false;
 		return EM_TRUE;
 	}
 
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
-	bool touchMode{};
 
 	EM_BOOL OnTouchStart(EmscriptenTouchEvent const& e) {
-		touchMode = true;
+		this->touchMode = true;
 		if (e.numTouches == 1) {
 			auto&& t = e.touches[0];
 			aimTouchId = t.identifier;
@@ -87,7 +89,7 @@ struct GameLooperBase : Engine<Derived> {
 				auto&& t = e.touches[i];
 				if (!t.isChanged) continue;
 				fireTouchId = t.identifier;
-				this->mouseBtnStates[0] = true;
+				this->mouse.btnStates[0] = true;
 				break;
 			}
 		}
@@ -95,7 +97,7 @@ struct GameLooperBase : Engine<Derived> {
 	}
 
 	EM_BOOL OnTouchMove(EmscriptenTouchEvent const& e) {
-		touchMode = true;
+		this->touchMode = true;
 		for (int32_t i = 0; i < e.numTouches; ++i) {
 			auto&& t = e.touches[i];
 			if (!t.isChanged) continue;
@@ -115,7 +117,7 @@ struct GameLooperBase : Engine<Derived> {
 				aimTouchStartPos = aimTouchMovePos = {};
 			} else if (fireTouchId == t.identifier) {
 				fireTouchId = -1;
-				this->mouseBtnStates[0] = false;
+				this->mouse.btnStates[0] = false;
 			}
 		}
 		return EM_TRUE;

@@ -242,39 +242,48 @@ bool PolyCircle(Vecs const& vertices, float cx, float cy, float r) {
 
 
 
-
-
-
-
-
-bool DragCircle::HandleMouseDown(LT& L) {
-    auto d = pos - L.downPos;
-    if (d.x * d.x + d.y * d.y < radiusPow2) {
-        dxy = d;
-        gLooper.draggingC = this;
-        return true;
-    }
-    return false;
-}
-int DragCircle::HandleMouseMove(LT& L) {
-    return 0;
-}
-void DragCircle::HandleMouseUp(LT& L) {
-    gLooper.draggingC = {};
-}
-
-void DragCircle::Init(XY const& pos, float radius, int32_t segments) {
-    this->pos = pos;
-    this->radius = radius;
-    this->radiusPow2 = radius * radius;
+void DragCircle::Init(XY const& pos_, float radius_, int32_t segments) {
+    pos = pos_;
+    radius = radius_;
+    speed = radius / 2;
 
     border.FillCirclePoints({ 0,0 }, radius, {}, segments)
         .SetColor({ 255, 255, 0, 255 })
         .SetPosition(pos);
 }
 
+xx::Task<> DragCircle::MainTask() {
+    XY offset{};
+    auto& m = gLooper.mouse;
+    while (true) {
+        if (m.event != MouseEvents::Down) goto LabEnd;
+
+        offset = m.pos - pos;
+        if (offset.x * offset.x + offset.y * offset.y > radius * radius) goto LabEnd;
+
+        m.event = MouseEvents::Unknown;
+        m.eventHandler = this;
+
+        while (true) {
+            co_yield 0;
+            if (m.event == MouseEvents::Up) break;
+            auto mp = m.pos - offset;
+            auto d = mp - pos;
+            auto dd = d.x * d.x + d.y * d.y;
+            if (dd < speed * speed) {
+                pos = mp;
+            } else {
+                pos += d / std::sqrt(dd) * speed;
+            }
+        }
+
+    LabEnd:
+        co_yield 0;
+    }
+}
+
 void DragCircle::Draw() {
-    border.Draw();
+    border.SetPosition(pos).Draw();
 }
 
 void Poly::Init() {
@@ -289,7 +298,18 @@ void Poly::Draw() {
     border.Draw();
 }
 
-xx::Task<> GameLooper::MainTask() {
 
+
+
+xx::Task<> GameLooper::MainTask() {
+    DragCircle dc;
+    dc.Init({}, 100, 100);
+
+    while (true) {
+        dc.mainTask();
+        dc.Draw();
+
+        co_yield 0;
+    }
 	co_return;
 }

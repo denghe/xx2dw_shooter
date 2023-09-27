@@ -27,12 +27,12 @@ xx::Task<> Shooter::MainLogic() {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
 				AddPosition(*inc);
 			}
-			auto v = gLooper.mousePos - pos;
+			auto v = gLooper.mouse.pos - pos;
 			r = std::atan2(v.y, v.x);
 			sr = std::sin(r);
 			cr = std::cos(r);
-			needFire = gLooper.mouseBtnStates[0];
-			needFire2 = gLooper.mouseBtnStates[2];
+			needFire = gLooper.mouse.btnStates[0];
+			needFire2 = gLooper.mouse.btnStates[2];
 		}
 		SetRotate(M_PI * 2 - r);
 

@@ -33,9 +33,9 @@ xx::Task<> Shooter::MainLogic() {
 			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
 				pos += *inc;
 			}
-			auto v = gLooper.mousePos/* - pos*/;
+			auto v = gLooper.mouse.pos/* - pos*/;
 			r = std::atan2(v.y, v.x);
-			needFire = gLooper.mouseBtnStates[0];
+			needFire = gLooper.mouse.btnStates[0];
 		}
 
 		r = -r;

@@ -43,16 +43,16 @@ bool GameLooper::KeyDownDelay(KeyboardKeys k, double delaySecs) {
 
 EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
 	touchMode = {};
-    mousePos = { (float)e.targetX - windowWidth_2, windowHeight - (float)e.targetY - windowHeight_2 };
+    mouse.pos = { (float)e.targetX - windowWidth_2, windowHeight - (float)e.targetY - windowHeight_2 };
     return EM_TRUE;
 }
 EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
 	touchMode = {};
-	mouseBtnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
+	mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
     return EM_TRUE;
 }
 EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
-	mouseBtnStates[e.button] = false;
+	mouse.btnStates[e.button] = false;
     return EM_TRUE;
 }
 
@@ -70,7 +70,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 			auto&& t = e.touches[i];
 			if (!t.isChanged) continue;
 			fireTouchId = t.identifier;
-			mouseBtnStates[0] = true;
+			mouse.btnStates[0] = true;
 			break;
 		}
 	}
@@ -98,7 +98,7 @@ EM_BOOL GameLooper::OnTouchEnd(EmscriptenTouchEvent const& e) {
 			aimTouchStartPos = aimTouchMovePos = {};
 		} else if (fireTouchId == t.identifier) {
 			fireTouchId = -1;
-			mouseBtnStates[0] = false;
+			mouse.btnStates[0] = false;
 		}
 	}
 	return EM_TRUE;
