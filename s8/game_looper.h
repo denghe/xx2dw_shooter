@@ -14,7 +14,7 @@
 
 int32_t main();
 
-constexpr GDesign<1280, 720, 1000> gDesign;
+constexpr GDesign<1280, 720, 120> gDesign;
 
 struct DragCircle {
 	constexpr static float cSpeed{ 1000.f / gDesign.fps };
@@ -31,20 +31,8 @@ struct DragCircle {
 	LineStrip border;
 };
 
-struct DragCircleShadow {
-	constexpr static float cAlphaDecrease{ 1.f / 0.1 / gDesign.fps };
-
-	void Init();
-	void Draw();
-	xx::Task<> mainTask{ MainTask() };
-	xx::Task<> MainTask();
-
-	float alpha{1};
-	LineStrip border;
-};
-
 struct Poly {
-	constexpr static float cRadiansIncrease{ M_PI * 2 / gDesign.fps };
+	constexpr static float cRadiansIncrease{ M_PI * 2 * 2 / gDesign.fps };
 
 	void Init();
 	void Draw();
@@ -56,6 +44,20 @@ struct Poly {
 	XY pos{}, scale{1,1};
 	float radians{};
 };
+
+struct Shadow {
+	constexpr static float cAlphaDecrease{ 1.f / 0.1 / gDesign.fps };
+
+	void Init(LineStrip const& border_);
+	void Draw();
+	xx::Task<> mainTask{ MainTask() };
+	xx::Task<> MainTask();
+
+	float alpha{ 1 };
+	LineStrip border;
+};
+
+
 
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
@@ -69,7 +71,7 @@ struct GameLooper : Engine<GameLooper> {
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
 
 	DragCircle dc;
-	xx::ListLink<DragCircleShadow, int32_t, shadowsCap> shadows;
+	xx::ListLink<Shadow, int32_t, shadowsCap> shadows;
 	Poly poly;
 
 	DragCircle* mouseFocus{};

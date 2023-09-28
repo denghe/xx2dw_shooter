@@ -26,7 +26,10 @@ void DragCircle::OnMouseMove() {
     auto d = mp - pos;
     auto dd = d.x * d.x + d.y * d.y;
     if (dd < std::numeric_limits<float>::epsilon()) return;
-    gLooper.shadows.Emplace().Init();
+
+    border.SetPosition(pos);
+    gLooper.shadows.Emplace().Init(border);
+
     if (dd < speed * speed) {
         pos = mp;
     } else {
@@ -36,24 +39,6 @@ void DragCircle::OnMouseMove() {
 
 void DragCircle::Draw() {
     border.SetPosition(pos).SetColor(color).Draw();
-}
-
-
-
-void DragCircleShadow::Init() {
-    border = gLooper.dc.border;
-    border.SetPosition(gLooper.dc.pos);
-}
-
-xx::Task<> DragCircleShadow::MainTask() {
-    while (alpha > 0) {
-        alpha -= cAlphaDecrease;
-        co_yield 0;
-    }
-}
-
-void DragCircleShadow::Draw() {
-    border.SetColorAf(alpha).Draw();
 }
 
 
@@ -72,19 +57,50 @@ void Poly::Init() {
 }
 
 void Poly::Draw() {
-    border.SetPointsArray(vertsForDraw).SetRotate(radians).Draw();
-    //border.SetPointsArray(vertsForCalc).Draw();
+    border.SetPointsArray(vertsForDraw).SetRotate(radians).SetScale(scale).Draw();
+    //border.SetPointsArray(vertsForCalc).SetScale(scale).Draw();
 }
 
 xx::Task<> Poly::MainTask() {
+    constexpr float r1 = -M_PI / 2, r2 = M_PI / 2;
     while (true) {
-        radians += cRadiansIncrease;
-        auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
-        for (int i = 0; i < std::size(vertsForCalc); ++i) {
-            vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
+        for (radians = r1; radians < r2; radians += cRadiansIncrease) {
+            auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
+            for (int i = 0; i < std::size(vertsForCalc); ++i) {
+                vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
+            }
+            border.SetPosition(pos).SetRotate(radians);
+            gLooper.shadows.Emplace().Init(border);
+            co_yield 0;
         }
+        scale.y = -scale.y;
+        for (radians = r2; radians > r1; radians -= cRadiansIncrease) {
+            auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
+            for (int i = 0; i < std::size(vertsForCalc); ++i) {
+                vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
+            }
+            border.SetPosition(pos).SetRotate(radians);
+            gLooper.shadows.Emplace().Init(border);
+            co_yield 0;
+        }
+        scale.y = -scale.y;
+    }
+}
+
+
+void Shadow::Init(LineStrip const& border_) {
+    border = border_;
+}
+
+xx::Task<> Shadow::MainTask() {
+    while (alpha > 0) {
+        alpha -= cAlphaDecrease;
         co_yield 0;
     }
+}
+
+void Shadow::Draw() {
+    border.SetColorAf(alpha).Draw();
 }
 
 
@@ -127,16 +143,14 @@ void GameLooper::Update() {
         mouseFocus->OnMouseMove();
     }
 
-    shadows.Foreach([](DragCircleShadow& o)->bool {
+    shadows.Foreach([](Shadow& o)->bool {
         return o.mainTask.Resume();
     });
 
     if (CheckIntersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) {
         dc.color = { 255, 0, 0, 255 };
-        log = "intersects";
     } else {
         dc.color = { 255, 255, 0, 255 };
-        log = "";
     }
 }
 
@@ -152,7 +166,7 @@ void GameLooper::Draw() {
 
     poly.Draw();
 
-    shadows.Foreach([](DragCircleShadow& o)->void {
+    shadows.Foreach([](Shadow& o)->void {
         o.Draw();
     });
 
