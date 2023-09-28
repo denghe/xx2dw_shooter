@@ -63,6 +63,7 @@ struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
 	constexpr static int shadowsCap = fps * 2;
 	CharTexCache<72> ctc72;
+	CharTexCache<24> ctc24;
 	FpsViewer fv;
 	std::string log;
 

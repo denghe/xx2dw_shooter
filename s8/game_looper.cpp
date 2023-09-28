@@ -156,8 +156,36 @@ void GameLooper::Update() {
 
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();
+    ctc24.Init();
     dc.Init({ 40, 0 }, 10, 16);
     poly.Init();
+
+    // algorithm compare: 1 circle faster than 4 poly 500 times
+    {
+        int counter = 0;
+        auto secs = xx::NowSteadyEpochSeconds();
+        for (int i = 0; i < 10000000; ++i) {
+            if (CheckIntersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) counter++;
+        }
+        log = "PolyCircle secs = "s + std::to_string(xx::NowSteadyEpochSeconds(secs))
+            + " counter = " + std::to_string(counter);
+
+        counter = 0;
+        for (int i = 0; i < 10000000; ++i) {
+            bool cross{};
+            for (auto& pos : poly.vertsForCalc) {
+                auto d = dc.pos - pos;
+                if (d.x * d.x + d.y * d.y < (dc.radius + dc.radius) * (dc.radius + dc.radius)) {
+                    cross = true;
+                    break;
+                }
+            }
+            if (cross) counter++;
+        }
+        log += " 5 circle secs = "s + std::to_string(xx::NowSteadyEpochSeconds(secs))
+            + " counter = " + std::to_string(counter);
+    }
+
 	co_return;
 }
 
@@ -173,7 +201,7 @@ void GameLooper::Draw() {
     dc.Draw();
 
     if (!log.empty()) {
-        ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, log);
+        ctc24.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc24.canvasHeight_2 }, log);
     }
 
     fv.Draw(ctc72);
