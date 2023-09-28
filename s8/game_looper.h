@@ -43,7 +43,7 @@ struct DragCircleShadow {
 
 struct Poly {
 	//std::array<XY, 4> vertices;
-	std::array<XY, 8> vertices;
+	std::array<XY, 9> vertices;
 	LineStrip border;
 	void Init();
 	void Draw();

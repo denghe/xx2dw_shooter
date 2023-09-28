@@ -23,7 +23,7 @@ struct LineStrip {
 		points = ps;
 		return *this;
 	}
-	template<typename A, bool loop = true>
+	template<bool loop = true, typename A>
 	LineStrip& SetPointsArray(A const& a) {
 		dirty = true;
 		points.clear();
