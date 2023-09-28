@@ -38,9 +38,9 @@ void DragCircle::OnMouseMove() {
 
 void DragCircle::Draw() {
     int hit{};
-    for (int i = 0; i < 1000000; ++i) {
-        hit += Mathf::PolyCircle<true, true>(gLooper.poly.vertices, pos.x, pos.y, radius) ? 1 : 0;
-    }
+    //for (int i = 0; i < 1000000; ++i) {
+        hit += Mathf::PolyCircle(gLooper.poly.verts, pos.x, pos.y, radius) ? 1 : 0;
+    //}
     gLooper.log = std::to_string(hit);
     border.SetPosition(pos).Draw();
 }
@@ -66,27 +66,32 @@ void DragCircleShadow::Draw() {
 
 
 void Poly::Init() {
-    //vertices[0] = { 200, 100 };
-    //vertices[1] = { 400, 100 };
-    //vertices[2] = { 350, 300 };
-    ////vertices[3] = { 250, 300 };
-    vertices[0] = { -100, 0 };
-    vertices[1] = { -75, 75 };
-    vertices[2] = { 0, 100 };
-    vertices[3] = { 75, 75 };
-    vertices[4] = { 100, 0 };
-    vertices[5] = { 75, -75 };
-    vertices[6] = { 0, -100 };
-    vertices[7] = { -75, -75 };
-    vertices[8] = { -100, 0 };
-    border.SetPointsArray<false>(vertices);
+    bak[0] = { -100, 0 };
+    bak[1] = { -75, 75 };
+    bak[2] = { 0, 100 };
+    bak[3] = { 75, 75 };
+    bak[4] = { 100, 0 };
+    bak[5] = { 75, -75 };
+    bak[6] = { 0, -100 };
+    bak[7] = { -75, -75 };
+    bak[8] = { -100, 0 };  // loop point
+    verts = bak;
 }
 
 void Poly::Draw() {
-    border.Draw();
+    border.SetPointsArray(verts).Draw();
 }
 
-
+xx::Task<> Poly::MainTask() {
+    while (true) {
+        radians += 0.001;
+        auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
+        for (int i = 0; i < std::size(verts); ++i) {
+            verts[i] = at.Apply(bak[i]);
+        }
+        co_yield 0;
+    }
+}
 
 
 
@@ -121,9 +126,13 @@ void GameLooper::Init() {
 
 void GameLooper::Update() {
     fv.Update();
+
+    poly.mainTask();
+
     if (mouseFocus) {
         mouseFocus->OnMouseMove();
     }
+
     shadows.Foreach([](DragCircleShadow& o)->bool {
         return o.mainTask.Resume();
     });
@@ -138,14 +147,18 @@ xx::Task<> GameLooper::MainTask() {
 
 void GameLooper::Draw() {
     xx_assert(shadows.cap <= shadowsCap);   // avoid reserve
+
     poly.Draw();
+
     shadows.Foreach([](DragCircleShadow& o)->void {
         o.Draw();
     });
+
     dc.Draw();
 
     if (!log.empty()) {
         ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, log);
     }
+
     fv.Draw(ctc72);
 }

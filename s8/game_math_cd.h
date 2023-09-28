@@ -68,7 +68,7 @@ namespace Mathf {
         return collision;
     }
 
-    template<bool checkInside = true, bool vsEndIsFirst = false, typename Vecs>
+    template<bool checkInside = true, bool vsEndIsFirst = true, typename Vecs>
     bool PolyCircle(Vecs const& vs, float cx, float cy, float r) {
         for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
             if constexpr (!vsEndIsFirst) {

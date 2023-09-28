@@ -42,11 +42,15 @@ struct DragCircleShadow {
 };
 
 struct Poly {
-	//std::array<XY, 4> vertices;
-	std::array<XY, 9> vertices;
-	LineStrip border;
 	void Init();
 	void Draw();
+	xx::Task<> mainTask{ MainTask() };
+	xx::Task<> MainTask();
+
+	std::array<XY, 9> verts, bak;
+	LineStrip border;
+	XY pos{}, scale{1,1};
+	float radians{};
 };
 
 struct GameLooper : Engine<GameLooper> {
