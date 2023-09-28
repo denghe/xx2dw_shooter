@@ -248,24 +248,53 @@ namespace xx {
     };
 }
 
-// todo: more check funcs
+struct AffineTransform {
+    float a, b, c, d;
+    float tx, ty;
 
-// b: box    c: circle    w: width    h: height    r: radius
-// if intersect return true
-template<typename T = int32_t>
-bool CheckBoxCircleIntersects(T const& bx, T const& by, T const& brw, T const& brh, T const& cx, T const& cy, T const& cr) {
-    auto dx = std::abs(cx - bx);
-    if (dx > brw + cr) return false;
+    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        if (!anchorSize.IsZero()) {
+            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
+            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
+        }
+        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+    }
 
-    auto dy = std::abs(cy - by);
-    if (dy > brh + cr) return false;
+    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+    }
 
-    if (dx <= brw || dy <= brh) return true;
+    inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
+        return { scale.x, 0, 0, scale.y, pos.x, pos.y };
+    }
 
-    auto dx2 = dx - brw;
-    auto dy2 = dy - brh;
-    return dx2 * dx2 + dy2 * dy2 <= cr * cr;
-}
+    inline static AffineTransform MakePos(XY const& pos) {
+        return { 1.0, 0.0, 0.0, 1.0, pos.x, pos.y };
+    }
+
+    inline static AffineTransform MakeIdentity() {
+        return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    }
+
+    XY Apply(XY const& point) const {
+        return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
+    }
+};
+
 
 
 // b: box    c: circle    w: width    h: height    r: radius
@@ -324,50 +353,90 @@ bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& brw, T const& 
     return false;
 }
 
+inline XX_FORCE_INLINE float CalcDistance(float x1, float y1, float x2, float y2) {
+    return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
 
-struct AffineTransform {
-    float a, b, c, d;
-    float tx, ty;
+namespace CheckIntersects {
 
-    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
-        auto x = pos.x;
-        auto y = pos.y;
-        float c = 1, s = 0;
-        if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
+    // b: box    c: circle    w: width    h: height    r: radius
+    // if intersect return true
+    template<typename T = int32_t>
+    bool BoxCircle(T const& bx, T const& by, T const& brw, T const& brh, T const& cx, T const& cy, T const& cr) {
+        auto dx = std::abs(cx - bx);
+        if (dx > brw + cr) return false;
+
+        auto dy = std::abs(cy - by);
+        if (dy > brh + cr) return false;
+
+        if (dx <= brw || dy <= brh) return true;
+
+        auto dx2 = dx - brw;
+        auto dy2 = dy - brh;
+        return dx2 * dx2 + dy2 * dy2 <= cr * cr;
+    }
+
+    // reference here:
+    // http://www.jeffreythompson.org/collision-detection/poly-circle.php
+
+    inline XX_FORCE_INLINE bool LinePoint(float x1, float y1, float x2, float y2, float px, float py) {
+        float d1 = CalcDistance(px, py, x1, y1);
+        float d2 = CalcDistance(px, py, x2, y2);
+        float lineLen = CalcDistance(x1, y1, x2, y2);
+        return d1 + d2 >= lineLen - 0.1 && d1 + d2 <= lineLen + 0.1;
+    }
+
+    inline XX_FORCE_INLINE bool PointCircle(float px, float py, float cx, float cy, float r) {
+        float distX = px - cx;
+        float distY = py - cy;
+        return (distX * distX) + (distY * distY) <= r * r;
+    }
+
+    inline bool LineCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r) {
+        if (PointCircle(x1, y1, cx, cy, r) || PointCircle(x2, y2, cx, cy, r)) return true;
+        float distX = x1 - x2;
+        float distY = y1 - y2;
+        float dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / ((distX * distX) + (distY * distY));
+        float closestX = x1 + (dot * (x2 - x1));
+        float closestY = y1 + (dot * (y2 - y1));
+        if (!LinePoint(x1, y1, x2, y2, closestX, closestY)) return false;
+        distX = closestX - cx;
+        distY = closestY - cy;
+        return (distX * distX) + (distY * distY) <= r * r;
+    }
+
+    template<bool vsEndIsFirst = false, typename Vecs>
+    bool PolygonPoint(Vecs const& vs, float px, float py) {
+        bool collision = false;
+        for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+            if constexpr (!vsEndIsFirst) {
+                if (next == e) next = 0;
+            }
+            auto& vc = vs[curr];
+            auto& vn = vs[next];
+            if (((vc.y > py && vn.y < py) || (vc.y < py && vn.y > py)) &&
+                (px < (vn.x - vc.x) * (py - vc.y) / (vn.y - vc.y) + vc.x)) {
+                collision = !collision;
+            }
         }
-        if (!anchorSize.IsZero()) {
-            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
-            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
+        return collision;
+    }
+
+    template<bool checkInside = true, bool vsEndIsFirst = true, typename Vecs>
+    bool PolyCircle(Vecs const& vs, float cx, float cy, float r) {
+        for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+            if constexpr (!vsEndIsFirst) {
+                if (next == e) next = 0;
+            }
+            if (LineCircle(vs[curr].x, vs[curr].y, vs[next].x, vs[next].y, cx, cy, r)) return true;
         }
-        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
-    }
-
-    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
-        auto x = pos.x;
-        auto y = pos.y;
-        float c = 1, s = 0;
-        if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
+        if constexpr (checkInside) {
+            if (PolygonPoint<vsEndIsFirst>(vs, cx, cy)) return true;
         }
-        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+        return false;
     }
 
-    inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
-        return { scale.x, 0, 0, scale.y, pos.x, pos.y };
-    }
+}
 
-    inline static AffineTransform MakePos(XY const& pos) {
-        return { 1.0, 0.0, 0.0, 1.0, pos.x, pos.y };
-    }
 
-    inline static AffineTransform MakeIdentity() {
-        return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
-    }
-
-    XY Apply(XY const& point) const {
-        return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
-    }
-};
+// todo: more check funcs

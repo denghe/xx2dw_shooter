@@ -18,6 +18,7 @@ constexpr GDesign<1280, 720, 1000> gDesign;
 
 struct DragCircle {
 	constexpr static float cSpeed{ 1000.f / gDesign.fps };
+	constexpr static RGBA8 cColor{ 255, 255, 0, 255 };
 
 	void Init(XY const& pos, float radius, int32_t segments);
 	bool OnMouseDown();
@@ -26,6 +27,7 @@ struct DragCircle {
 
 	XY pos{}, offset{};
 	float radius{}, speed{ cSpeed };
+	RGBA8 color{ cColor };
 	LineStrip border;
 };
 
@@ -42,12 +44,14 @@ struct DragCircleShadow {
 };
 
 struct Poly {
+	constexpr static float cRadiansIncrease{ M_PI * 2 / gDesign.fps };
+
 	void Init();
 	void Draw();
 	xx::Task<> mainTask{ MainTask() };
 	xx::Task<> MainTask();
 
-	std::array<XY, 9> verts, bak;
+	std::array<XY, 5> vertsForDraw, vertsForCalc, vertsForCalcBak;
 	LineStrip border;
 	XY pos{}, scale{1,1};
 	float radians{};

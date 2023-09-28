@@ -49,7 +49,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 			sg.ForeachAABB(minXY, maxXY);
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& tree : sg.results) {
-				if (CheckBoxCircleIntersects<float>(tree->_sgabPos.x, tree->_sgabPos.y, gLooper.tileWidth_2, gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
+				if (CheckIntersects::BoxCircle<float>(tree->_sgabPos.x, tree->_sgabPos.y, gLooper.tileWidth_2, gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
 					co_return;
 				}
 			}

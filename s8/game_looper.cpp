@@ -1,5 +1,4 @@
 ﻿#include "pch.h"
-#include "game_math_cd.h"
 
 int32_t main() {
 	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
@@ -14,7 +13,6 @@ void DragCircle::Init(XY const& pos_, float radius_, int32_t segments) {
     radius = radius_;
 
     border.FillCirclePoints({ 0,0 }, radius, {}, segments)
-        .SetColor({ 255, 255, 0, 255 })
         .SetPosition(pos);
 }
 
@@ -37,12 +35,7 @@ void DragCircle::OnMouseMove() {
 }
 
 void DragCircle::Draw() {
-    int hit{};
-    //for (int i = 0; i < 1000000; ++i) {
-        hit += Mathf::PolyCircle(gLooper.poly.verts, pos.x, pos.y, radius) ? 1 : 0;
-    //}
-    gLooper.log = std::to_string(hit);
-    border.SetPosition(pos).Draw();
+    border.SetPosition(pos).SetColor(color).Draw();
 }
 
 
@@ -66,28 +59,29 @@ void DragCircleShadow::Draw() {
 
 
 void Poly::Init() {
-    bak[0] = { -100, 0 };
-    bak[1] = { -75, 75 };
-    bak[2] = { 0, 100 };
-    bak[3] = { 75, 75 };
-    bak[4] = { 100, 0 };
-    bak[5] = { 75, -75 };
-    bak[6] = { 0, -100 };
-    bak[7] = { -75, -75 };
-    bak[8] = { -100, 0 };  // loop point
-    verts = bak;
+    vertsForDraw[0] = { 0, 0 };
+    vertsForDraw[1] = { 60, 0 };
+    vertsForDraw[2] = { 60, -10 };
+    vertsForDraw[3] = { 30, -10 };
+    vertsForDraw[4] = { 20, 0 };
+
+    vertsForCalc = vertsForDraw;
+    vertsForCalc[0] = { 20, 0 };
+
+    vertsForCalcBak = vertsForCalc;
 }
 
 void Poly::Draw() {
-    border.SetPointsArray(verts).Draw();
+    border.SetPointsArray(vertsForDraw).SetRotate(radians).Draw();
+    //border.SetPointsArray(vertsForCalc).Draw();
 }
 
 xx::Task<> Poly::MainTask() {
     while (true) {
-        radians += 0.001;
+        radians += cRadiansIncrease;
         auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
-        for (int i = 0; i < std::size(verts); ++i) {
-            verts[i] = at.Apply(bak[i]);
+        for (int i = 0; i < std::size(vertsForCalc); ++i) {
+            vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
         }
         co_yield 0;
     }
@@ -136,11 +130,19 @@ void GameLooper::Update() {
     shadows.Foreach([](DragCircleShadow& o)->bool {
         return o.mainTask.Resume();
     });
+
+    if (CheckIntersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) {
+        dc.color = { 255, 0, 0, 255 };
+        log = "intersects";
+    } else {
+        dc.color = { 255, 255, 0, 255 };
+        log = "";
+    }
 }
 
 xx::Task<> GameLooper::MainTask() {
     ctc72.Init();
-    dc.Init({}, 30, 20);
+    dc.Init({ 40, 0 }, 10, 16);
     poly.Init();
 	co_return;
 }
