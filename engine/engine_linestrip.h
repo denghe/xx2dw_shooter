@@ -23,6 +23,16 @@ struct LineStrip {
 		points = ps;
 		return *this;
 	}
+	template<typename A, bool loop = true>
+	LineStrip& SetPointsArray(A const& a) {
+		dirty = true;
+		points.clear();
+		points.insert(points.begin(), a.begin(), a.end());
+		if constexpr (loop) {
+			points.push_back(*a.begin());
+		}
+		return *this;
+	}
 
 	LineStrip& FillCirclePoints(XY const& center, float const& radius, std::optional<float> const& angle = {}, int const& segments = 100, XY const& scale = { 1,1 }) {
 		dirty = true;

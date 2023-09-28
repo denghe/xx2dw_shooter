@@ -42,7 +42,8 @@ struct DragCircleShadow {
 };
 
 struct Poly {
-	std::array<XY, 4> vertices;
+	//std::array<XY, 4> vertices;
+	std::array<XY, 8> vertices;
 	LineStrip border;
 	void Init();
 	void Draw();
@@ -50,13 +51,17 @@ struct Poly {
 
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
+	constexpr static int shadowsCap = fps * 2;
+	CharTexCache<72> ctc72;
+	FpsViewer fv;
+	std::string log;
 
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
 	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
 
 	DragCircle dc;
-	xx::ListLink<DragCircleShadow, int32_t> shadows;
+	xx::ListLink<DragCircleShadow, int32_t, shadowsCap> shadows;
 	Poly poly;
 
 	DragCircle* mouseFocus{};

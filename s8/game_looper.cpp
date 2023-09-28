@@ -153,7 +153,7 @@ bool PolyCircle(Vecs const& vertices, float cx, float cy, float r) {
         // get next vertex in list
         // if we've hit the end, wrap around to 0
         next = current + 1;
-        if (next == vertices.length) next = 0;
+        if (next == vertices.size()) next = 0;
 
         // get the PVectors at our current position
         // this makes our if statement a little cleaner
@@ -211,6 +211,11 @@ void DragCircle::OnMouseMove() {
 }
 
 void DragCircle::Draw() {
+    int hit{};
+    for (int i = 0; i < 1000000; ++i) {
+        hit += PolyCircle(gLooper.poly.vertices, pos.x, pos.y, radius) ? 1 : 0;
+    }
+    gLooper.log = std::to_string(hit);
     border.SetPosition(pos).Draw();
 }
 
@@ -237,11 +242,19 @@ void DragCircleShadow::Draw() {
 
 
 void Poly::Init() {
-    vertices[0] = { 200, 100 };
-    vertices[1] = { 400, 100 };
-    vertices[2] = { 350, 300 };
-    vertices[3] = { 250, 300 };
-    border.SetPoints( { vertices[0],vertices[1],vertices[2],vertices[3],vertices[0] });
+    //vertices[0] = { 200, 100 };
+    //vertices[1] = { 400, 100 };
+    //vertices[2] = { 350, 300 };
+    ////vertices[3] = { 250, 300 };
+    vertices[0] = { -100, 0 };
+    vertices[1] = { -75, 75 };
+    vertices[2] = { 0, 100 };
+    vertices[3] = { 75, 75 };
+    vertices[4] = { 100, 0 };
+    vertices[5] = { 75, -75 };
+    vertices[6] = { 0, -100 };
+    vertices[7] = { -75, -75 };
+    border.SetPointsArray(vertices);
 }
 
 void Poly::Draw() {
@@ -282,6 +295,7 @@ void GameLooper::Init() {
 }
 
 void GameLooper::Update() {
+    fv.Update();
     if (mouseFocus) {
         mouseFocus->OnMouseMove();
     }
@@ -291,69 +305,22 @@ void GameLooper::Update() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    shadows.Reserve(gDesign.fps * 2);                // for task pin memory
+    ctc72.Init();
     dc.Init({}, 30, 20);
     poly.Init();
 	co_return;
 }
 
 void GameLooper::Draw() {
+    xx_assert(shadows.cap <= shadowsCap);   // avoid reserve
     poly.Draw();
     shadows.Foreach([](DragCircleShadow& o)->void {
         o.Draw();
     });
     dc.Draw();
-    printf("%d\n", shadows.Count());
+
+    if (!log.empty()) {
+        ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, log);
+    }
+    fv.Draw(ctc72);
 }
-
-
-
-
-//float cx = 0;    // position of the circle
-//float cy = 0;
-//float r = 30;   // circle's radius
-//
-//// array of PVectors, one for each vertex in the polygon
-//PVector[] vertices = new PVector[4];
-//
-//
-//void setup() {
-//    size(600, 400);
-//    noStroke();
-//
-//    // set position of the vertices (here a trapezoid)
-//    vertices[0] = new PVector(200, 100);
-//    vertices[1] = new PVector(400, 100);
-//    vertices[2] = new PVector(350, 300);
-//    vertices[3] = new PVector(250, 300);
-//}
-//
-//
-//void draw() {
-//    background(255);
-//
-//    // update circle to mouse coordinates
-//    cx = mouseX;
-//    cy = mouseY;
-//
-//    // check for collision
-//    // if hit, change fill color
-//    bool hit = PolyCircle(vertices, cx, cy, r);
-//    if (hit) fill(255, 150, 0);
-//    else fill(0, 150, 255);
-//
-//    // draw the polygon using beginShape()
-//    noStroke();
-//    beginShape();
-//    for (PVector v : vertices) {
-//        vertex(v.x, v.y);
-//    }
-//    endShape();
-//
-//    // draw the circle
-//    fill(0, 150);
-//    ellipse(cx, cy, r * 2, r * 2);
-//}
-//
-
-
