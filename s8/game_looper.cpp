@@ -147,7 +147,7 @@ void GameLooper::Update() {
         return o.mainTask.Resume();
     });
 
-    if (CheckIntersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) {
+    if (Calc::Intersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) {
         dc.color = { 255, 0, 0, 255 };
     } else {
         dc.color = { 255, 255, 0, 255 };
@@ -165,7 +165,7 @@ xx::Task<> GameLooper::MainTask() {
         int counter = 0;
         auto secs = xx::NowSteadyEpochSeconds();
         for (int i = 0; i < 10000000; ++i) {
-            if (CheckIntersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) counter++;
+            if (Calc::Intersects::PolyCircle(poly.vertsForCalc, dc.pos.x, dc.pos.y, dc.radius)) counter++;
         }
         log = "PolyCircle secs = "s + std::to_string(xx::NowSteadyEpochSeconds(secs))
             + " counter = " + std::to_string(counter);

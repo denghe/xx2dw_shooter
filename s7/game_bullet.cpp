@@ -26,7 +26,7 @@ xx::Task<> Bullet_EyeFire::MainLogic_() {
 
 		// todo: check walls
 
-		ForwardFrame(cFrameInc * speed / cSpeed, frameMaxIndex);
+		FrameControl::Forward(frameIndex, cFrameInc * speed / cSpeed, frameMaxIndex);
 		co_yield 0;
 	}
 }
@@ -57,7 +57,7 @@ xx::Task<> Bullet_EyeFireBlue::MainLogic_() {
 
 		// todo: check walls
 
-		ForwardFrame(cFrameInc * speed / cSpeed, frameMaxIndex);
+		FrameControl::Forward(frameIndex, cFrameInc * speed / cSpeed, frameMaxIndex);
 		co_yield 0;
 	}
 }
@@ -88,7 +88,7 @@ xx::Task<> Bullet_Fireball::MainLogic_() {
 
 		// todo: check walls
 
-		ForwardFrame(cFrameInc * speed / cSpeed, frameMaxIndex);
+		FrameControl::Forward(frameIndex, cFrameInc * speed / cSpeed, frameMaxIndex);
 		co_yield 0;
 	}
 }

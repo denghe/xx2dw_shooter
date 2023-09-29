@@ -64,3 +64,16 @@ emrun gemini.html
 
 # online view:
 https://denghe.github.io/xx2dw_shooter/
+
+
+# others
+aseprite build:
+download aseprite source code from https://github.com/aseprite/aseprite/releases
+download skia from https://github.com/aseprite/skia/releases
+extract zips
+run "x64 Native Tools Command Prompt for VS 2022"
+cd C:/Codes/Aseprite
+mkdir build
+cd build
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DLAF_BACKEND=skia -DSKIA_DIR=C:/Codes/Skia-Windows-Release-x64 -DSKIA_LIBRARY_DIR=C:/Codes/Skia-Windows-Release-x64/out/Release-x64 ..
+ninja aseprite

@@ -38,7 +38,7 @@ struct Hero : Sprite {
 				if (direction != r->first) {
 					SetDirection(r->first);
 				}
-				ForwardFrame(cFrameInc * speed, frameIndexFrom, frameIndexTo);
+				FrameControl::Forward(frameIndex, cFrameInc * speed, frameIndexFrom, frameIndexTo);
 			}
 			co_yield 0;
 		}

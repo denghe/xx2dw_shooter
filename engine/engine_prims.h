@@ -248,6 +248,11 @@ namespace xx {
     };
 }
 
+
+/*******************************************************************************************************************************************/
+/*******************************************************************************************************************************************/
+
+
 struct AffineTransform {
     float a, b, c, d;
     float tx, ty;
@@ -296,142 +301,134 @@ struct AffineTransform {
 };
 
 
+/*******************************************************************************************************************************************/
+/*******************************************************************************************************************************************/
 
-// b: box    c: circle    w: width    h: height    r: radius
-// if intersect, cx & cy will be changed & return true
-template<typename T = int32_t>
-bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& brw, T const& brh, T& cx, T& cy, T const& cr) {
-    auto dx = std::abs(cx - bx);
-    if (dx > brw + cr) return false;
+// todo: more util funcs here
 
-    auto dy = std::abs(cy - by);
-    if (dy > brh + cr) return false;
 
-    if (dx <= brw || dy <= brh) {
-        if (brw - dx > brh - dy) {
-            if (by > cy) {
-                cy = by - brh - cr - 1;	// top
-            } else {
-                cy = by + brh + cr + 1;	// bottom
-            }
-        } else {
-            if (bx > cx) {
-                cx = bx - brw - cr - 1;	// left
-            } else {
-                cx = bx + brw + cr + 1;	// right
-            }
+namespace FrameControl {
+
+    inline XX_FORCE_INLINE void Forward(float& frameIndex, float inc, float from, float to) {
+        frameIndex += inc;
+        if (frameIndex >= to) {
+            frameIndex = from + (frameIndex - to);
         }
-        return true;
     }
 
-    auto dx2 = dx - brw;
-    auto dy2 = dy - brh;
-    if (dx2 * dx2 + dy2 * dy2 <= cr * cr) {
-        // change cx & cy
-        auto incX = dx2, incY = dy2;
-        float dSeq = dx2 * dx2 + dy2 * dy2;
-        if (dSeq == 0.0f) {
-            incX = brw + cr * (1.f / 1.414213562373095f) + 1;
-            incY = brh + cr * (1.f / 1.414213562373095f) + 1;
-        } else {
-            auto d = std::sqrt(dSeq);
-            incX = brw + cr * dx2 / d + 1;
-            incY = brh + cr * dy2 / d + 1;
-        }
-
-        if (cx < bx) {
-            incX = -incX;
-        }
-        if (cy < by) {
-            incY = -incY;
-        }
-        cx = bx + incX;
-        cy = by + incY;
-
-        return true;
+    inline XX_FORCE_INLINE void Forward(float& frameIndex, float inc, float to) {
+        Forward(frameIndex, inc, 0, to);
     }
-    return false;
+
+    inline XX_FORCE_INLINE	void Backward(float& frameIndex, float inc, float from, float to) {
+        frameIndex -= inc;
+        if (frameIndex <= from) {
+            frameIndex = to - (from - frameIndex);
+        }
+    }
+
+    inline XX_FORCE_INLINE	void Backward(float& frameIndex, float inc, float to) {
+        Backward(frameIndex, inc, 0, to);
+    }
+
 }
 
-inline XX_FORCE_INLINE float CalcDistance(float x1, float y1, float x2, float y2) {
-    return std::sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+
+namespace RadiansControl {
+
+    // step change a to b by step. when a == b mean done
+    inline void Step(float& a, float b, float step) {
+        assert(a >= -M_PI && a <= M_PI);
+        assert(b >= -M_PI && b <= M_PI);
+        assert(step <= M_PI);
+        if ((b - a) * (b - a) > M_PI * M_PI) {
+            if (b < a) {
+                b += M_PI * 2;
+            } else {
+                b -= M_PI * 2;
+            }
+        }
+        if (b > a) {
+            if (b - a <= step) {
+                a = b;
+            } else {
+                a += step;
+                if (a > M_PI) {
+                    a -= M_PI * 2;
+                }
+            }
+        } else {
+            if (a - b <= step) {
+                a = b;
+            } else {
+                a -= step;
+                if (a < -M_PI) {
+                    a += M_PI * 2;
+                }
+            }
+        }
+    }
+
 }
 
-namespace CheckIntersects {
+
+/*******************************************************************************************************************************************/
+/*******************************************************************************************************************************************/
+
+namespace MoveControl {
 
     // b: box    c: circle    w: width    h: height    r: radius
-    // if intersect return true
+    // if intersect, cx & cy will be changed & return true
     template<typename T = int32_t>
-    bool BoxCircle(T const& bx, T const& by, T const& brw, T const& brh, T const& cx, T const& cy, T const& cr) {
+    bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& brw, T const& brh, T& cx, T& cy, T const& cr) {
         auto dx = std::abs(cx - bx);
         if (dx > brw + cr) return false;
 
         auto dy = std::abs(cy - by);
         if (dy > brh + cr) return false;
 
-        if (dx <= brw || dy <= brh) return true;
+        if (dx <= brw || dy <= brh) {
+            if (brw - dx > brh - dy) {
+                if (by > cy) {
+                    cy = by - brh - cr - 1;	// top
+                } else {
+                    cy = by + brh + cr + 1;	// bottom
+                }
+            } else {
+                if (bx > cx) {
+                    cx = bx - brw - cr - 1;	// left
+                } else {
+                    cx = bx + brw + cr + 1;	// right
+                }
+            }
+            return true;
+        }
 
         auto dx2 = dx - brw;
         auto dy2 = dy - brh;
-        return dx2 * dx2 + dy2 * dy2 <= cr * cr;
-    }
-
-    // reference here:
-    // http://www.jeffreythompson.org/collision-detection/poly-circle.php
-
-    inline XX_FORCE_INLINE bool LinePoint(float x1, float y1, float x2, float y2, float px, float py) {
-        float d1 = CalcDistance(px, py, x1, y1);
-        float d2 = CalcDistance(px, py, x2, y2);
-        float lineLen = CalcDistance(x1, y1, x2, y2);
-        return d1 + d2 >= lineLen - 0.1 && d1 + d2 <= lineLen + 0.1;
-    }
-
-    inline XX_FORCE_INLINE bool PointCircle(float px, float py, float cx, float cy, float r) {
-        float distX = px - cx;
-        float distY = py - cy;
-        return (distX * distX) + (distY * distY) <= r * r;
-    }
-
-    inline bool LineCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r) {
-        if (PointCircle(x1, y1, cx, cy, r) || PointCircle(x2, y2, cx, cy, r)) return true;
-        float distX = x1 - x2;
-        float distY = y1 - y2;
-        float dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / ((distX * distX) + (distY * distY));
-        float closestX = x1 + (dot * (x2 - x1));
-        float closestY = y1 + (dot * (y2 - y1));
-        if (!LinePoint(x1, y1, x2, y2, closestX, closestY)) return false;
-        distX = closestX - cx;
-        distY = closestY - cy;
-        return (distX * distX) + (distY * distY) <= r * r;
-    }
-
-    template<bool vsEndIsFirst = false, typename Vecs>
-    bool PolygonPoint(Vecs const& vs, float px, float py) {
-        bool collision = false;
-        for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
-            if constexpr (!vsEndIsFirst) {
-                if (next == e) next = 0;
+        if (dx2 * dx2 + dy2 * dy2 <= cr * cr) {
+            // change cx & cy
+            auto incX = dx2, incY = dy2;
+            float dSeq = dx2 * dx2 + dy2 * dy2;
+            if (dSeq == 0.0f) {
+                incX = brw + cr * (1.f / 1.414213562373095f) + 1;
+                incY = brh + cr * (1.f / 1.414213562373095f) + 1;
+            } else {
+                auto d = std::sqrt(dSeq);
+                incX = brw + cr * dx2 / d + 1;
+                incY = brh + cr * dy2 / d + 1;
             }
-            auto& vc = vs[curr];
-            auto& vn = vs[next];
-            if (((vc.y > py && vn.y < py) || (vc.y < py && vn.y > py)) &&
-                (px < (vn.x - vc.x) * (py - vc.y) / (vn.y - vc.y) + vc.x)) {
-                collision = !collision;
-            }
-        }
-        return collision;
-    }
 
-    template<bool checkInside = true, bool vsEndIsFirst = true, typename Vecs>
-    bool PolyCircle(Vecs const& vs, float cx, float cy, float r) {
-        for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
-            if constexpr (!vsEndIsFirst) {
-                if (next == e) next = 0;
+            if (cx < bx) {
+                incX = -incX;
             }
-            if (LineCircle(vs[curr].x, vs[curr].y, vs[next].x, vs[next].y, cx, cy, r)) return true;
-        }
-        if constexpr (checkInside) {
-            if (PolygonPoint<vsEndIsFirst>(vs, cx, cy)) return true;
+            if (cy < by) {
+                incY = -incY;
+            }
+            cx = bx + incX;
+            cy = by + incY;
+
+            return true;
         }
         return false;
     }
@@ -439,4 +436,98 @@ namespace CheckIntersects {
 }
 
 
-// todo: more check funcs
+/*******************************************************************************************************************************************/
+/*******************************************************************************************************************************************/
+
+namespace Calc {
+
+    inline XX_FORCE_INLINE float DistancePow2(float x1, float y1, float x2, float y2) {
+        return (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+    }
+
+    inline XX_FORCE_INLINE float Distance(float x1, float y1, float x2, float y2) {
+        return std::sqrt(DistancePow2(x1, y1, x2, y2));
+    }
+
+    namespace Intersects {
+
+        // b: box    c: circle    w: width    h: height    r: radius
+        // if intersect return true
+        template<typename T = int32_t>
+        bool BoxCircle(T const& bx, T const& by, T const& brw, T const& brh, T const& cx, T const& cy, T const& cr) {
+            auto dx = std::abs(cx - bx);
+            if (dx > brw + cr) return false;
+
+            auto dy = std::abs(cy - by);
+            if (dy > brh + cr) return false;
+
+            if (dx <= brw || dy <= brh) return true;
+
+            auto dx2 = dx - brw;
+            auto dy2 = dy - brh;
+            return dx2 * dx2 + dy2 * dy2 <= cr * cr;
+        }
+
+        // reference here:
+        // http://www.jeffreythompson.org/collision-detection/poly-circle.php
+
+        inline XX_FORCE_INLINE bool LinePoint(float x1, float y1, float x2, float y2, float px, float py) {
+            float d1 = Calc::Distance(px, py, x1, y1);
+            float d2 = Calc::Distance(px, py, x2, y2);
+            float lineLen = Calc::Distance(x1, y1, x2, y2);
+            return d1 + d2 >= lineLen - 0.1 && d1 + d2 <= lineLen + 0.1;
+        }
+
+        inline XX_FORCE_INLINE bool PointCircle(float px, float py, float cx, float cy, float r) {
+            float distX = px - cx;
+            float distY = py - cy;
+            return (distX * distX) + (distY * distY) <= r * r;
+        }
+
+        inline bool LineCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r) {
+            if (PointCircle(x1, y1, cx, cy, r) || PointCircle(x2, y2, cx, cy, r)) return true;
+            float distX = x1 - x2;
+            float distY = y1 - y2;
+            float dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / ((distX * distX) + (distY * distY));
+            float closestX = x1 + (dot * (x2 - x1));
+            float closestY = y1 + (dot * (y2 - y1));
+            if (!LinePoint(x1, y1, x2, y2, closestX, closestY)) return false;
+            distX = closestX - cx;
+            distY = closestY - cy;
+            return (distX * distX) + (distY * distY) <= r * r;
+        }
+
+        template<bool vsEndIsFirst = false, typename Vecs>
+        bool PolygonPoint(Vecs const& vs, float px, float py) {
+            bool collision = false;
+            for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+                if constexpr (!vsEndIsFirst) {
+                    if (next == e) next = 0;
+                }
+                auto& vc = vs[curr];
+                auto& vn = vs[next];
+                if (((vc.y > py && vn.y < py) || (vc.y < py && vn.y > py)) &&
+                    (px < (vn.x - vc.x) * (py - vc.y) / (vn.y - vc.y) + vc.x)) {
+                    collision = !collision;
+                }
+            }
+            return collision;
+        }
+
+        template<bool checkInside = true, bool vsEndIsFirst = true, typename Vecs>
+        bool PolyCircle(Vecs const& vs, float cx, float cy, float r) {
+            for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+                if constexpr (!vsEndIsFirst) {
+                    if (next == e) next = 0;
+                }
+                if (LineCircle(vs[curr].x, vs[curr].y, vs[next].x, vs[next].y, cx, cy, r)) return true;
+            }
+            if constexpr (checkInside) {
+                if (PolygonPoint<vsEndIsFirst>(vs, cx, cy)) return true;
+            }
+            return false;
+        }
+
+    }
+}
+

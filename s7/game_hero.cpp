@@ -37,7 +37,7 @@ xx::Task<> Hero_Pumpkin::MainLogic_() {
 			} else if ((int)r->first & (int)MoveDirections::Left) {
 				flipX = true;
 			}
-			ForwardFrame(cFrameInc * (speed / cSpeed), cFrameMaxIndex);
+			FrameControl::Forward(frameIndex, cFrameInc * (speed / cSpeed), cFrameMaxIndex);
 		} else {
 			idle();
 		}
