@@ -279,7 +279,6 @@ T* FindNearest(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgr
     auto& lens = sgrdd.lens;
     auto& idxs = sgrdd.idxs;
     for (int i = 1; i < lens.len; i++) {
-        if (lens[i].radius > maxDistance) break;			// limit search range
 
         auto offsets = &idxs[lens[i - 1].count];
         auto size = lens[i].count - lens[i - 1].count;
@@ -294,6 +293,7 @@ T* FindNearest(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgr
         });
 
         if (o) return o;									// found. stop ring diffuse step
+        if (lens[i].radius > maxDistance) break;			// limit search range
     }
     return nullptr;
 }
@@ -301,13 +301,10 @@ T* FindNearest(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgr
 template<typename T, typename F>
 void ForeachByRange(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance, F&& func) {
     auto crIdx = container.PosToCrIdx(pos);					// calc grid col row index
-
     float rr = maxDistance * maxDistance;
-
     auto& lens = sgrdd.lens;
     auto& idxs = sgrdd.idxs;
     for (int i = 1; i < lens.len; i++) {
-        if (lens[i].radius > maxDistance) break;			// limit search range
 
         auto offsets = &idxs[lens[i - 1].count];
         auto size = lens[i].count - lens[i - 1].count;
@@ -318,5 +315,7 @@ void ForeachByRange(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const
             }
             return false;
         });
+
+        if (lens[i].radius > maxDistance) break;			// limit search range
     }
 }

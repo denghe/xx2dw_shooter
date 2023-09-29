@@ -3,8 +3,9 @@
 
 struct DamageNumber : Drawable {
 	constexpr static char const* cResPrefix{ "number_outlined_" };
-	constexpr static float cMoveUpSpeed{ 10 / gDesign.fps };
-	constexpr static float cMoveUpDurationSeconds{ 0.5 };
+	constexpr static float cMoveSpeedMin { 20 / gDesign.fps };
+	constexpr static float cMoveSpeedMax { 50 / gDesign.fps };
+	constexpr static float cMoveDurationSeconds{ 0.5 };
 	constexpr static float cFadeOutDurationSeconds{ 0.2 };
 	constexpr static float cCharPixelWidth{ 8 };
 
@@ -54,16 +55,17 @@ struct DamageNumber : Drawable {
 	}
 
 	xx::Task<> MainLogic_() {
-		constexpr int lifeCycle_move{ cMoveUpDurationSeconds / gDesign.frameDelay };
-		constexpr int lifeCycle_fadeout{ cFadeOutDurationSeconds / gDesign.frameDelay };
-		// move up
-		float ds{ cMoveUpDurationSeconds };
-		for (int i = 0; i < lifeCycle_move; ++i) {
-			pos.y -= cMoveUpSpeed;
+		// move away
+		float ds{ cMoveDurationSeconds };
+		auto d = pos - gLooper.heros[0]->pos;
+		auto inc = d.MakeNormalize() * gLooper.rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
+		for (int i = 0; i < cMoveDurationSeconds / gDesign.frameDelay; ++i) {
+			pos += inc;
 			co_yield 0;
 		}
 
 		// fade out
+		constexpr int lifeCycle_fadeout{ cFadeOutDurationSeconds / gDesign.frameDelay };
 		constexpr float step = 255.f / lifeCycle_fadeout;
 		for (float a = 255.f; a >= 0; a -= step) {
 			color.a = a;

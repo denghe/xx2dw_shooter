@@ -17,7 +17,7 @@ struct Weapon_Sword1 : Weapon {
 	constexpr static float cFireRecoilDelaySecs{ 0.02 };
 	constexpr static float cFireRecoilSpeed{ 400.f / gDesign.fps };
 	constexpr static float cSearchDistance{ 50.f };
-	constexpr static float cDamage{ 100.f };
+	constexpr static float cDamage{ 30.f };
 
 	constexpr static std::array<PosRadius, 5> cCircles{ PosRadius{{26,0},4}, {{22,0},4}, {{18,0},4}, {{14,0},4}, {{10,0},4} };
 

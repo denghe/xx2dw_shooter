@@ -9,7 +9,7 @@ struct SpaceGridRingDiffuseData {
 
     void Init(int32_t gridNumRows, int32_t gridCellDiameter) {
         float step = gridCellDiameter / 2;
-        lens.Emplace(1, 0);
+        lens.Emplace(0, 0);
         Vec2<int32_t> lastIdx{};
         idxs.Add(lastIdx);
         std::unordered_set<uint64_t> idxset;    // avoid duplicate

@@ -42,6 +42,12 @@ xx::Task<> GameLooper::MainTask() {
 	ready = true;											// all tex ready
 
 	sgrdd.Init(gGridNumRows, gGridCellDiameter);
+	//for (int i = 0; i < sgrdd.lens.len; ++i) {
+	//	printf("%d %d\n", sgrdd.lens[i].radius, sgrdd.lens[i].count);
+	//}
+	//for (int i = 0; i < sgrdd.lens[2].count; ++i) {
+	//	printf("%d %d\n", sgrdd.idxs[i].x, sgrdd.idxs[i].y);
+	//}
 	monstersGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
 	experiencesGrid.Init(gGridNumRows, gGridNumCols, gGridCellDiameter);
 
@@ -55,11 +61,11 @@ xx::Task<> GameLooper::MainTask() {
 
 	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 0, 0 });
 	while (true) {
-		auto a = rnd.Next<float>(M_PI * 2);
-		auto r = rnd.Next<float>(120, 220);
-		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{std::cos(a), std::sin(a)} *r);
-		co_yield 0;
-		co_yield 0;
+		for (int i = 0; i < 2; ++i) {
+			auto a = rnd.Next<float>(M_PI * 2);
+			auto r = rnd.Next<float>(70, 220);
+			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{ std::cos(a), std::sin(a) } *r);
+		}
 		co_yield 0;
 	}
 
@@ -163,6 +169,7 @@ void GameLooper::Draw() {
 				o->Draw();
 			}
 		});
+
 	}
 	fv.Draw(ctc72);											// show fps
 }

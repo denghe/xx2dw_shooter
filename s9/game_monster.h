@@ -18,14 +18,14 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 
 	void Hit(int damage) {
 		assert(damage > 0);
-		gLooper.bloods.Emplace().Emplace()->Init(pos);
 		if (damage >= hp) {
 			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,0,0,255 }, hp);
+			gLooper.bloods.Emplace().Emplace()->Init(pos);
 			Experience::CreateTo(gLooper.experiences)->Init(pos, 0, 10);
 			RemoveFromOwner();
 		} else {
 			hp -= damage;
-			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,255,255,255 }, damage);	// todo: calc pos ??
+			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,255,255,255 }, damage);
 			if (damageEffectLeftDuration <= 0) {
 				damageEffect(gLooper.tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {
@@ -45,7 +45,8 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 struct Monster_Dragon_BabyWhite : Monster {
 	constexpr static char const* cResPrefix{ "dragon_babywhite_" };
 	constexpr static XY cAnchor{ 0.5, 0.3 };
-	constexpr static float cRadius{ 5 };
+	constexpr static float cScale{ 0.2 };
+	constexpr static float cRadius{ 5 * cScale };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 30.f / gDesign.fps };
 
