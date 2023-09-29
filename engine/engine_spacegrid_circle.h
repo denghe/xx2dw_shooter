@@ -234,7 +234,7 @@ struct SpaceGridC {
 
 
 template<typename T>
-T* FindNeighbor(SpaceGridC<T, XY>& container, XY const& pos, float radius) {
+T* FindNeighborCross(SpaceGridC<T, XY>& container, XY const& pos, float radius) {
     assert(radius * 2 <= container.maxDiameter);
     auto crIdx = container.PosToCrIdx(pos);
     T* r{};
@@ -251,6 +251,22 @@ T* FindNeighbor(SpaceGridC<T, XY>& container, XY const& pos, float radius) {
     });
     return r;
 }
+
+template<typename T, typename F>
+void FindNeighborsCross(SpaceGridC<T, XY>& container, XY const& pos, float radius, F&& func) {
+    assert(radius * 2 <= container.maxDiameter);
+    auto crIdx = container.PosToCrIdx(pos);
+    container.Foreach9(crIdx, [&](T* m)->bool {
+        auto d = m->pos - pos;
+        auto rr = (m->radius + radius) * (m->radius + radius);
+        auto dd = d.x * d.x + d.y * d.y;
+        if (rr > dd) {
+            func(m);
+        }
+        return false;
+    });
+}
+
 
 template<typename T>
 T* FindNearest(SpaceGridC<T, XY>& container, SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance) {

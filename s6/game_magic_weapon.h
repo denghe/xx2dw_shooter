@@ -36,7 +36,7 @@ struct MagicWeapon : Sprite {
 			tarPos = pos;										// backup owner's pos
 			auto d = target->pos - pos;
 			auto r = -std::atan2(-d.y, d.x);					// aim target
-			while (RadiansControl::Step(radians, r, cFlyRadianMax), radians != r) co_yield 0;
+			while (!RadiansControl::Step(radians, r, cFlyRadianMax)) co_yield 0;
 			while (target) {
 				d = target->pos - pos;
 				auto dd = d.x * d.x + d.y * d.y;
@@ -61,7 +61,7 @@ struct MagicWeapon : Sprite {
 		LabRetry:
 			auto d = owner->pos - pos;
 			auto r = -std::atan2(-d.y, d.x);					// aim owner
-			while (RadiansControl::Step(radians, r, cFlyRadianMax), radians != r) co_yield 0;
+			while (!RadiansControl::Step(radians, r, cFlyRadianMax)) co_yield 0;
 			auto dd = d.x * d.x + d.y * d.y;
 			auto n = owner->radius * 3;
 			if (dd <= n * n) {									// in catch area
@@ -82,7 +82,7 @@ struct MagicWeapon : Sprite {
 					co_yield 0;
 				};
 
-				while (RadiansControl::Step(radians, rb, cFlyRadianMin), radians != rb) {		// step by step change current radians to rb
+				while (!RadiansControl::Step(radians, rb, cFlyRadianMin)) {		// step by step change current radians to rb
 					if (target) goto LabBegin;
 					if (!owner) goto LabEnd;
 					co_yield 0;

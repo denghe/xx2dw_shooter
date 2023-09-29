@@ -218,6 +218,12 @@ struct Rect : XY {
 };
 
 
+struct PosRadius {
+    XY pos;
+    float radius;
+};
+
+
 union UVRect {
     struct {
         uint16_t x, y, w, h;
@@ -337,7 +343,7 @@ namespace FrameControl {
 namespace RadiansControl {
 
     // step change a to b by step. when a == b mean done
-    inline void Step(float& a, float b, float step) {
+    inline XX_FORCE_INLINE bool Step(float& a, float b, float step) {
         assert(a >= -M_PI && a <= M_PI);
         assert(b >= -M_PI && b <= M_PI);
         assert(step <= M_PI);
@@ -351,22 +357,25 @@ namespace RadiansControl {
         if (b > a) {
             if (b - a <= step) {
                 a = b;
+                return true;
             } else {
                 a += step;
-                if (a > M_PI) {
+                if (a >= M_PI) {
                     a -= M_PI * 2;
                 }
             }
         } else {
             if (a - b <= step) {
                 a = b;
+                return true;
             } else {
                 a -= step;
-                if (a < -M_PI) {
+                if (a <= -M_PI) {
                     a += M_PI * 2;
                 }
             }
         }
+        return false;
     }
 
 }

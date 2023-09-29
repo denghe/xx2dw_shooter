@@ -71,8 +71,7 @@ xx::Task<> Weapon_Sword1::MainLogic2() {
 		while (true) {
 			auto v = wm->pos - pos;
 			auto r = -std::atan2(-v.y, v.x);
-			RadiansControl::Step(radians, r, cFrameMaxChangeRadians);
-			if (radians == r) break;
+			if (RadiansControl::Step(radians, r, cFrameMaxChangeRadians)) break;
 			co_yield 0;
 			if (!hero) co_return;
 			pos = hero->weaponPos;

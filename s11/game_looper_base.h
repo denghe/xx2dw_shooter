@@ -10,11 +10,10 @@
 #include "engine_spacegrid_ringdiffuse.h"
 #include "engine_tiledmap_sede.h"
 #include "engine_camera.h"
-#include "engine_linestrip.h"
 
 int32_t main();
 
-constexpr GDesign<1280, 720, 240> gDesign;
+constexpr GDesign<1280, 720, 60> gDesign;
 
 enum class MoveDirections : int {
 	Down = 1, Left = 2, Right = 4, Up = 8

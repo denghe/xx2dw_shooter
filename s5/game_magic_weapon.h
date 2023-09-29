@@ -72,7 +72,7 @@ struct MagicWeapon : Sprite {
 					co_yield 0;
 				};
 
-				while (RadiansControl::Step(radians, rb, cFlyRadianMin), radians != rb) {		// step by step change current radians to rb
+				while (!RadiansControl::Step(radians, rb, cFlyRadianMin)) {		// step by step change current radians to rb
 					if (target) goto LabBegin;
 					if (!owner) goto LabEnd;
 					co_yield 0;
