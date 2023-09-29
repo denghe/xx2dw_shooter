@@ -18,10 +18,9 @@ struct Weapon_Sword1 : Weapon {
 	constexpr static float cFireRecoilSpeed{ 400.f / gDesign.fps };
 	constexpr static float cSearchDistance{ 50.f };
 	constexpr static float cDamage{ 30.f };
+	constexpr static std::array<PosRadius, 6> cCircles{ PosRadius{{26,0},4}, {{22,0},4}, {{18,0},4}, {{14,0},4}, {{10,0},4}, {{6,0},4} };
 
-	constexpr static std::array<PosRadius, 5> cCircles{ PosRadius{{26,0},4}, {{22,0},4}, {{18,0},4}, {{14,0},4}, {{10,0},4} };
-
-	std::array<PosRadius, 5> circles{ cCircles };
+	std::array<PosRadius, 6> circles{ cCircles };
 	void RotateCirclesAndHitCheck();
 
 	virtual void Draw() override;
