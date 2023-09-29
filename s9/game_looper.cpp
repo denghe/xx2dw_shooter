@@ -24,6 +24,8 @@ xx::Task<> GameLooper::MainTask() {
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
 		xx_assert(n);
+		n = tp->GetToByPrefix(frames_floating_eye, Hero_FloatingEye::cResPrefix);
+		xx_assert(n);
 		n = tp->GetToByPrefix(frames_weapon, Weapon::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_eye_fire, Bullet_EyeFire::cResPrefix);
@@ -55,13 +57,17 @@ xx::Task<> GameLooper::MainTask() {
 
 	camera.SetOriginal(ori);
 	camera.SetMaxFrameSize({32,32});
-	camera.SetScale(5);
+	camera.SetScale(4);
 
 	player1.Emplace();
 
-	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 0, 0 });
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ -20, -20 });
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 20, -20 });
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ -20, 20 });
+	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 20, 20 });
+	heros.Emplace().Emplace<Hero_FloatingEye>()->Init(player1, ori + XY{ 0, 8 });
 	while (true) {
-		for (int i = 0; i < 2; ++i) {
+		for (int i = 0; i < 15; ++i) {
 			auto a = rnd.Next<float>(M_PI * 2);
 			auto r = rnd.Next<float>(70, 220);
 			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{ std::cos(a), std::sin(a) } *r);
@@ -172,4 +178,20 @@ void GameLooper::Draw() {
 
 	}
 	fv.Draw(ctc72);											// show fps
+}
+
+Hero* GameLooper::GetNearestHero(XY const& pos) {
+	Hero* r{};
+	if (!heros.Empty()) {
+		float mindd = std::numeric_limits<float>::max();
+		heros.Foreach([&](xx::Shared<Hero>& h) {
+			auto d = pos - h->pos;
+			auto dd = d.x * d.x + d.y * d.y;
+			if (dd < mindd) {
+				mindd = dd;
+				r = h;
+			}
+		});
+	}
+	return r;
 }

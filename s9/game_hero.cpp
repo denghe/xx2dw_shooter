@@ -11,7 +11,7 @@ void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 	eatExperienceDistance = cEatExperienceDistance;
 	frames = &gLooper.frames_pumpkin;
 	body.SetAnchor(cAnchor);
-	weapon.Emplace<Weapon_Sword1>()->Init(xx::SharedFromThis(this));
+	weapon.Emplace<Weapon_1_Sword>()->Init(xx::SharedFromThis(this));
 }
 
 void Hero_Pumpkin::Draw() {
@@ -28,6 +28,64 @@ bool Hero_Pumpkin::Update() {
 }
 
 xx::Task<> Hero_Pumpkin::MainLogic_() {
+	while (true) {
+
+		// keyboard move control
+		if (auto r = gLooper.GetKeyboardMoveInc(); r.has_value()) {
+			pos += r->second * speed;
+			if (flipX && ((int)r->first & (int)MoveDirections::Right)) {
+				flipX = false;
+			} else if ((int)r->first & (int)MoveDirections::Left) {
+				flipX = true;
+			}
+			FrameControl::Forward(frameIndex, cFrameInc * (speed / cSpeed), cFrameMaxIndex);
+		} else {
+			idle();
+		}
+		weaponPos = pos + cHookOffset;
+
+		// eat experiences
+		ForeachByRange<Experience>(gLooper.experiencesGrid, gLooper.sgrdd, pos, eatExperienceDistance, [&](Experience* m) {
+			m->FlyTo(this);
+		});
+
+		co_yield 0;
+	}
+}
+
+
+
+
+
+
+void Hero_FloatingEye::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
+	mainLogic = MainLogic_();
+	idle = Idle_ScaleY();
+	player = player_;
+	radius = cRadius;
+	pos = bornPos;
+	weaponPos = pos + cHookOffset;
+	speed = cSpeed;
+	eatExperienceDistance = cEatExperienceDistance;
+	frames = &gLooper.frames_floating_eye;
+	body.SetAnchor(cAnchor);
+	weapon.Emplace<Weapon_19_Stuff>()->Init(xx::SharedFromThis(this));
+}
+
+void Hero_FloatingEye::Draw() {
+	Hero::Draw();
+	weapon->Draw();
+}
+
+bool Hero_FloatingEye::Update() {
+	if (mainLogic.Resume()) return true;
+	if (weapon) {
+		weapon->mainLogic();
+	}
+	return false;
+}
+
+xx::Task<> Hero_FloatingEye::MainLogic_() {
 	while (true) {
 
 		// keyboard move control

@@ -10,7 +10,7 @@ void Hero_Pumpkin::Init(xx::Shared<Player> const& player_, XY const& bornPos) {
 	eatExperienceDistance = cEatExperienceDistance;
 	frames = &gLooper.frames_pumpkin;
 	body.SetAnchor(cAnchor);
-	weapon.Emplace<Weapon_Sword1>()->Init(xx::SharedFromThis(this));
+	weapon.Emplace<Weapon_1_Sword>()->Init(xx::SharedFromThis(this));
 }
 
 void Hero_Pumpkin::Draw() {

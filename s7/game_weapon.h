@@ -8,7 +8,7 @@ struct Weapon : Sprite {
 	float nextFireSecs{};
 };
 
-struct Weapon_Sword1 : Weapon {
+struct Weapon_1_Sword : Weapon {
 	constexpr static XY cAnchor{ 0.1, 0.5 };
 	constexpr static float cFrameIndex{ 0 };
 	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };

@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 
-void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
+void Weapon_1_Sword::Init(xx::Shared<Hero> const& hero_) {
 	mainLogic = MainLogic2(); // MainLogic_();
 	pos = hero_->pos;
 	player = hero_->player;
@@ -11,7 +11,7 @@ void Weapon_Sword1::Init(xx::Shared<Hero> const& hero_) {
 }
 
 // mouse aim fire control
-xx::Task<> Weapon_Sword1::MainLogic_() {
+xx::Task<> Weapon_1_Sword::MainLogic_() {
 	while (hero) {
 		pos = hero->weaponPos;
 		auto v = gLooper.mouse.pos - gLooper.camera.ToGLPos(pos);
@@ -60,7 +60,7 @@ xx::Task<> Weapon_Sword1::MainLogic_() {
 }
 
 // search nearest enemy & auto fire
-xx::Task<> Weapon_Sword1::MainLogic2() {
+xx::Task<> Weapon_1_Sword::MainLogic2() {
 	while (hero) {
 		co_yield 0;
 		pos = hero->weaponPos;

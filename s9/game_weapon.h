@@ -8,7 +8,7 @@ struct Weapon : Sprite {
 	float nextFireSecs{};
 };
 
-struct Weapon_Sword1 : Weapon {
+struct Weapon_1_Sword : Weapon {
 	constexpr static XY cAnchor{ 0, 0.5 };
 	constexpr static float cFrameIndex{ 0 };
 	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
@@ -25,6 +25,20 @@ struct Weapon_Sword1 : Weapon {
 
 	virtual void Draw() override;
 	void Init(xx::Shared<Hero> const& hero_);
-	xx::Task<> MainLogic_();
-	xx::Task<> MainLogic2();
+	xx::Task<> MainLogic();
+};
+
+struct Weapon_19_Stuff : Weapon {
+	constexpr static XY cAnchor{ 0.5, 0.5 };
+	constexpr static float cFrameIndex{ 18 };
+	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
+	constexpr static float cFireDelaySecs{ 0.1 };
+	constexpr static float cFireDistance{ 25 };
+	constexpr static float cFireRecoilDelaySecs{ 0.02 };
+	constexpr static float cFireRecoilSpeed{ 400.f / gDesign.fps };
+	constexpr static float cSearchDistance{ 200.f };
+	constexpr static float cDamage{ 30.f };
+
+	void Init(xx::Shared<Hero> const& hero_);
+	xx::Task<> MainLogic();
 };

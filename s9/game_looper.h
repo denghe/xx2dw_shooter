@@ -19,12 +19,14 @@ struct GameLooper : GameLooperBase<GameLooper> {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();
+	Hero* GetNearestHero(XY const& pos);
 
 	// flags
 	bool ready{};
 
 	// res
 	std::vector<xx::Shared<Frame>> frames_pumpkin;
+	std::vector<xx::Shared<Frame>> frames_floating_eye;
 	std::vector<xx::Shared<Frame>> frames_weapon;
 	std::vector<xx::Shared<Frame>> frames_number_outlined;
 	std::vector<xx::Shared<Frame>> frames_blood_4;

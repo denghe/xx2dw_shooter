@@ -25,10 +25,18 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 	}
 	scale.y = cScale;
 
-	auto&& tarHero = gLooper.heros[0];
-
+	xx::Weak<Hero> tarHero;
 	while (true) {
-		if (damageEffectLeftDuration > 0) co_yield 0;					// when hert, can't move
+		if (auto h = gLooper.GetNearestHero(pos)) {
+			tarHero = xx::WeakFromThis(h);
+			break;
+		}
+		idle();
+		co_yield 0;
+	}
+
+	while (tarHero) {
+		if (damageEffectLeftDuration > 0) co_yield 0;			// when hert, can't move
 
 		// physics simulate
 		// calc neighbor cross force
