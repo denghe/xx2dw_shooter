@@ -64,7 +64,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 				auto r = gLooper.rnd.Next<float>(M_PI * 2);
 				newPos += XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 			} else {
-				newPos += combineForce.MakeNormalize() * cSpeed;
+				newPos += (combineForce.MakeNormalize() - XY{0.32, 0})* cSpeed;	// 0.32 for fix inhomogeneous
 			}
 		} else {
 			if (dd > cSpeed * cSpeed) {							// follow shooter directly

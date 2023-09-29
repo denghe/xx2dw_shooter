@@ -49,27 +49,16 @@ xx::Task<> GameLooper::MainTask() {
 
 	camera.SetOriginal(ori);
 	camera.SetMaxFrameSize({32,32});
-	camera.SetScale(2);
+	camera.SetScale(5);
 
 	player1.Emplace();
 
-	//heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{-100, 0});
-	//while(true) {
-	//	for (int i = 0; i < 100; ++i) {
-	//		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(100, ori + XY{
-	//			rnd.Next<float>(0, 100), rnd.Next<float>(-100, 100)
-	//		});
-	//	}
-	//	co_await AsyncSleep(1);
-	//}
-
 	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 0, 0 });
 	while (true) {
-		for (size_t i = 0; i < 1; i++) {
-			auto a = rnd.Next<float>(M_PI * 2);
-			auto r = rnd.Next<float>(280, 330);
-			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{std::cos(a), std::sin(a)} *r);
-		}
+		auto a = rnd.Next<float>(M_PI * 2);
+		auto r = rnd.Next<float>(120, 220);
+		Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{std::cos(a), std::sin(a)} *r);
+		co_yield 0;
 		co_yield 0;
 		co_yield 0;
 	}
