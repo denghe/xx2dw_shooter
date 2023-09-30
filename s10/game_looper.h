@@ -37,8 +37,8 @@ struct Node {
 	virtual void Draw() {};							// draw current node only ( do not contain children )
 	virtual ~Node() {};
 
-	// todo: AABB for cut? dirty?
-	bool visible{ true };
+	// todo: AABB for cut?
+	bool visible{ true }, dirty{ true };
 	float a{ 1 };
 	int z{};
 	AffineTransform at{ AffineTransform::MakeIdentity() };
@@ -58,23 +58,23 @@ struct ZNode {
 
 inline void VisitAndFillTo(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
-	int i = zns.len;
-	printf("i = %d\n", i);
-	if (!n->visible) return;
-	// todo: cut by AABB with camera? dirty?
-	n->Visit({});
+	if (!n->visible) return;	// todo: cut by AABB with camera?
+	if (n->dirty) {
+		n->Visit({});
+	}
 	zns.Emplace(n->z, n);
-	while (i < zns.len) {
-		printf("i = %d\n", i);
+	for (int i = zns.len - 1; i < zns.len; ++i) {
 		n = zns[i].n;
 		for (auto& c : n->children) {
 			assert(c);
-			if (!c->visible) continue;
-			// todo: cut by AABB with camera?
-			c->Visit(n);
+			if (!c->visible) continue;	// todo: cut by AABB with camera?
+			if (n->dirty) {
+				c->dirty = true;
+				c->Visit(n);
+			}
 			zns.Emplace(c->z, c.pointer);
 		}
-		++i;
+		n->dirty = false;
 	}
 }
 
