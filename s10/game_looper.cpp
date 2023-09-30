@@ -21,8 +21,23 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;											// all tex ready
 
-	root.Emplace();
-	root->children.Emplace().Emplace<Button>()->Init(0, {}, { 50, 15 }, "asdfqwer");
+	root.Emplace()->children.Emplace().Emplace<Button>()->Init(1, {}, { 50, 15 }, "asdfqwer");
+	//root.Emplace()->children.Emplace().Emplace<Label>()->Init({}, {}, "asdf");
+
+	while (true) {
+		for (float x = -100; x < 100; ++x) {
+			//printf("x = %f\n", x);
+			root->offset.x = x;
+			root->dirty = true;
+			co_yield 0;
+		}
+		for (float x = 100; x > -100; --x) {
+			//printf("x = %f\n", x); 
+			root->offset.x = x;
+			root->dirty = true;
+			co_yield 0;
+		}
+	}
 }
 
 void GameLooper::Update() {

@@ -29,16 +29,18 @@ struct Node {
 	//xx::Weak<Node> parent;
 	xx::List<xx::Shared<Node>, int32_t> children;
 
-	virtual void Visit(Node* parent) {
-		if (!parent) return;
-		at = parent->at.MakeConcat(at);
+	virtual void Predraw(Node* parent) {
+		at.Pos(offset);
+		if (parent) {
+			at = parent->at.MakeConcat(at);
+		}
 	};
 
 	virtual void Draw() {};							// draw current node only ( do not contain children )
 	virtual ~Node() {};
 
-	// todo: AABB for cut?
-	bool visible{ true }, dirty{ true };
+	XY offset{}, size{};							// todo: calc AABB for cut?
+	bool visible{ true }, dirty{ true };			// change offset args need set dirty
 	float a{ 1 };
 	int z{};
 	AffineTransform at{ AffineTransform::MakeIdentity() };
@@ -60,7 +62,7 @@ inline void VisitAndFillTo(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
 	if (!n->visible) return;	// todo: cut by AABB with camera?
 	if (n->dirty) {
-		n->Visit({});
+		n->Predraw({});
 	}
 	zns.Emplace(n->z, n);
 	for (int i = zns.len - 1; i < zns.len; ++i) {
@@ -70,7 +72,7 @@ inline void VisitAndFillTo(xx::List<ZNode>& zns, Node* n) {
 			if (!c->visible) continue;	// todo: cut by AABB with camera?
 			if (n->dirty) {
 				c->dirty = true;
-				c->Visit(n);
+				c->Predraw(n);
 			}
 			zns.Emplace(c->z, c.pointer);
 		}
@@ -90,27 +92,22 @@ inline void OrderByZDrawAndClear(xx::List<ZNode>& zns) {
 /**********************************************************************************************/
 
 struct Label : Node {
-	XY offset{};			// offset by parent
-	std::string txt;	// todo: change to TinyFrame array?
+	std::u32string txt;
 
 	void Init(int z_, XY const& offset_, std::string_view const& txt_) {
 		z = z_;
 		offset = offset_;
-		txt = txt_;
-	}
-
-	virtual void Visit(Node* parent) override {
-		printf("Label Visit()\n");
-		Node::Visit(parent);
+		txt = xx::StringU8ToU32(txt_);
 	}
 
 	virtual void Draw() override {
-		printf("Label Draw()\n");
+		auto pos = at.Apply(offset);
+		auto width = gLooper.ctc72.Measure(txt);
+		gLooper.ctc72.Draw(pos - XY{width/2,0}, txt);
 	}
 };
 
 struct Button : Node {
-	XY offset{}, size{};
 	std::function<void()> onClicked;
 
 	void Init(int z_, XY const& offset_, XY const& size_, std::string_view const& txt_) {
@@ -121,12 +118,7 @@ struct Button : Node {
 		children.Emplace().Emplace<Label>()->Init(z + 1, offset + XY{3, 3}, txt_);
 	}
 
-	virtual void Visit(Node* parent) override {
-		printf("Button Visit()\n");
-		Node::Visit(parent);
-	}
-
 	virtual void Draw() override {
-		printf("Button Draw()\n");
+		// todo: Draw pic bg
 	}
 };

@@ -301,6 +301,40 @@ struct AffineTransform {
         return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     }
 
+    void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        a = c * scale.x;
+        b = s * scale.x;
+        c = -s * scale.y;
+        d = c * scale.y;
+        tx = x;
+        ty = y;
+    }
+
+    void PosScale(XY const& pos, XY const& scale) {
+        a = scale.x;
+        b = 0;
+        c = 0;
+        d = scale.y;
+        tx = pos.x;
+        ty = pos.y;
+    }
+
+    void Pos(XY const& pos) {
+        a = 1;
+        b = 0;
+        c = 0;
+        d = 1;
+        tx = pos.x;
+        ty = pos.y;
+    }
+
     void Identity() {
         a = 1;
         b = 0;

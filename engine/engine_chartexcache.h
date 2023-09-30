@@ -126,7 +126,7 @@ struct CharTexCache {
     float Measure(std::u32string_view const& s) {
         float w{};
         for (size_t i = 0; i < s.size(); ++i) {
-            w += Find(s[i]).texRectW;
+            w += Find(s[i]).texRect.w;
         }
         return w;
     }
