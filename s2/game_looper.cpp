@@ -35,7 +35,7 @@ xx::Task<> GameLooper::MainTask() {
 
 		Vec2<> size{ rnd.Next<int>(3, 20), rnd.Next<int>(3, 15) };
 
-		auto&& room = rooms.EmplaceShared();
+		auto&& room = rooms.Emplace().Emplace();
 		room->Init(pos, size);
 
 		co_yield 0;

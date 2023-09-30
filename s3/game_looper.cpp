@@ -37,12 +37,12 @@ xx::Task<> GameLooper::MainTask() {
 	sgabWalls.Init(numRows + 1, numCols + 1, gCellSize.x, gCellSize.y);
 	sgcMonsters.Init(numRows + 1, numCols + 1, gCellSize.x);
 
-	rooms.EmplaceShared()->Init({}, numRows, numCols);
+	rooms.Emplace().Emplace()->Init({}, numRows, numCols);
 
 	for (int i = 0; i < numPumpkins; ++i) {
 		Vec2<> p{ rnd.Next<int>(rooms[0]->floorMinXY.x, rooms[0]->floorMaxXY.x)
 		, rnd.Next<int>(rooms[0]->floorMinXY.y, rooms[0]->floorMaxXY.y) };
-		pumpkins.EmplaceShared()->Init(p);
+		pumpkins.Emplace().Emplace()->Init(p);
 	}
 
 	while (true) co_yield 0;	// idle for hold memory

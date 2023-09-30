@@ -301,8 +301,25 @@ struct AffineTransform {
         return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     }
 
+    void Identity() {
+        a = 1;
+        b = 0;
+        c = 0;
+        d = 1;
+        tx = 0;
+        ty = 0;
+    }
+
     XY Apply(XY const& point) const {
         return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
+    }
+
+    AffineTransform MakeConcat(AffineTransform const& t2) {
+        auto& t1 = *this;
+        return { t1.a * t2.a + t1.b * t2.c, t1.a * t2.b + t1.b * t2.d,
+            t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d,
+            t1.tx * t2.a + t1.ty * t2.c + t2.tx,
+            t1.tx * t2.b + t1.ty * t2.d + t2.ty };
     }
 };
 
