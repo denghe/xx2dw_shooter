@@ -93,7 +93,7 @@ struct Pumpkin : CircleObj {
 				sg.ForeachAABB(minXY, maxXY);
 				auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 				for (auto& b : sg.results) {
-					MoveControl::MoveCircleIfIntersectsBox<int>(b->_sgabPos.x, b->_sgabPos.y, b->_sgabRadius.x, b->_sgabRadius.y , newPos.x, newPos.y, radius);
+					TranslateControl::MoveCircleIfIntersectsBox<int>(b->_sgabPos.x, b->_sgabPos.y, b->_sgabRadius.x, b->_sgabRadius.y , newPos.x, newPos.y, radius);
 				}
 			}
 

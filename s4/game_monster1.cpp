@@ -117,7 +117,7 @@ xx::Task<> Monster1::MainLogic() {
 			sg.ForeachAABB(minXY, maxXY);
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& b : sg.results) {
-				MoveControl::MoveCircleIfIntersectsBox<float>(b->_sgabPos.x, b->_sgabPos.y, Tree::cBoxWidth / 2, Tree::cBoxHeight / 2, newPos.x, newPos.y, radius);
+				TranslateControl::MoveCircleIfIntersectsBox<float>(b->_sgabPos.x, b->_sgabPos.y, Tree::cBoxWidth / 2, Tree::cBoxHeight / 2, newPos.x, newPos.y, radius);
 			}
 		}
 

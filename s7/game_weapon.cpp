@@ -16,7 +16,7 @@ xx::Task<> Weapon_1_Sword::MainLogic_() {
 		pos = hero->weaponPos;
 		auto v = gLooper.mouse.pos - gLooper.camera.ToGLPos(pos);
 		auto r = -std::atan2(v.y, v.x);
-		RadiansControl::Step(radians, r, cFrameMaxChangeRadians);
+		RotateControl::Step(radians, r, cFrameMaxChangeRadians);
 
 		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
 			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
@@ -71,7 +71,7 @@ xx::Task<> Weapon_1_Sword::MainLogic2() {
 		while (true) {
 			auto v = wm->pos - pos;
 			auto r = -std::atan2(-v.y, v.x);
-			if (RadiansControl::Step(radians, r, cFrameMaxChangeRadians)) break;
+			if (RotateControl::Step(radians, r, cFrameMaxChangeRadians)) break;
 			co_yield 0;
 			if (!hero) co_return;
 			pos = hero->weaponPos;

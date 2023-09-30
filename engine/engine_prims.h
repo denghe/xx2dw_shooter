@@ -310,8 +310,6 @@ struct AffineTransform {
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
 
-// todo: more util funcs here
-
 
 namespace FrameControl {
 
@@ -340,7 +338,11 @@ namespace FrameControl {
 }
 
 
-namespace RadiansControl {
+/*******************************************************************************************************************************************/
+/*******************************************************************************************************************************************/
+
+
+namespace RotateControl {
 
     // step change a to b by step. when a == b mean done
     inline XX_FORCE_INLINE bool Step(float& a, float b, float step) {
@@ -380,52 +382,51 @@ namespace RadiansControl {
 
 }
 
-
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
 
-namespace MoveControl {
+namespace TranslateControl {
 
     // b: box    c: circle    w: width    h: height    r: radius
     // if intersect, cx & cy will be changed & return true
     template<typename T = int32_t>
-    bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& brw, T const& brh, T& cx, T& cy, T const& cr) {
+    bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& bHalfWidth, T const& bHalfHeight, T& cx, T& cy, T const& cr) {
         auto dx = std::abs(cx - bx);
-        if (dx > brw + cr) return false;
+        if (dx > bHalfWidth + cr) return false;
 
         auto dy = std::abs(cy - by);
-        if (dy > brh + cr) return false;
+        if (dy > bHalfHeight + cr) return false;
 
-        if (dx <= brw || dy <= brh) {
-            if (brw - dx > brh - dy) {
+        if (dx <= bHalfWidth || dy <= bHalfHeight) {
+            if (bHalfWidth - dx > bHalfHeight - dy) {
                 if (by > cy) {
-                    cy = by - brh - cr - 1;	// top
+                    cy = by - bHalfHeight - cr - 1;	// top
                 } else {
-                    cy = by + brh + cr + 1;	// bottom
+                    cy = by + bHalfHeight + cr + 1;	// bottom
                 }
             } else {
                 if (bx > cx) {
-                    cx = bx - brw - cr - 1;	// left
+                    cx = bx - bHalfWidth - cr - 1;	// left
                 } else {
-                    cx = bx + brw + cr + 1;	// right
+                    cx = bx + bHalfWidth + cr + 1;	// right
                 }
             }
             return true;
         }
 
-        auto dx2 = dx - brw;
-        auto dy2 = dy - brh;
+        auto dx2 = dx - bHalfWidth;
+        auto dy2 = dy - bHalfHeight;
         if (dx2 * dx2 + dy2 * dy2 <= cr * cr) {
             // change cx & cy
             auto incX = dx2, incY = dy2;
             float dSeq = dx2 * dx2 + dy2 * dy2;
             if (dSeq == 0.0f) {
-                incX = brw + cr * (1.f / 1.414213562373095f) + 1;
-                incY = brh + cr * (1.f / 1.414213562373095f) + 1;
+                incX = bHalfWidth + cr * (1.f / 1.414213562373095f) + 1;
+                incY = bHalfHeight + cr * (1.f / 1.414213562373095f) + 1;
             } else {
                 auto d = std::sqrt(dSeq);
-                incX = brw + cr * dx2 / d + 1;
-                incY = brh + cr * dy2 / d + 1;
+                incX = bHalfWidth + cr * dx2 / d + 1;
+                incY = bHalfHeight + cr * dy2 / d + 1;
             }
 
             if (cx < bx) {
@@ -444,7 +445,6 @@ namespace MoveControl {
 
 }
 
-
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
 
@@ -458,27 +458,54 @@ namespace Calc {
         return std::sqrt(DistancePow2(x1, y1, x2, y2));
     }
 
+    /*
+        XY p, c;
+        ...
+        p2 = RotatePoint(c - p, 1.23) + c;
+    */
+    inline XX_FORCE_INLINE XY RotatePoint(XY const& d, float radians) {
+        auto c = std::cos(radians);
+        auto s = std::sin(radians);
+        return { d.x * c - d.y * s, d.x * s + d.y * c };
+    }
+
+
     namespace Intersects {
 
-        // b: box    c: circle    w: width    h: height    r: radius
+        // b: box    c: circle    r: radius
         // if intersect return true
         template<typename T = int32_t>
-        bool BoxCircle(T const& bx, T const& by, T const& brw, T const& brh, T const& cx, T const& cy, T const& cr) {
+        bool BoxCircle(T const& bx, T const& by, T const& bHalfWidth, T const& bHalfHeight, T const& cx, T const& cy, T const& cr) {
             auto dx = std::abs(cx - bx);
-            if (dx > brw + cr) return false;
+            if (dx > bHalfWidth + cr) return false;
 
             auto dy = std::abs(cy - by);
-            if (dy > brh + cr) return false;
+            if (dy > bHalfHeight + cr) return false;
 
-            if (dx <= brw || dy <= brh) return true;
+            if (dx <= bHalfWidth || dy <= bHalfHeight) return true;
 
-            auto dx2 = dx - brw;
-            auto dy2 = dy - brh;
+            auto dx2 = dx - bHalfWidth;
+            auto dy2 = dy - bHalfHeight;
             return dx2 * dx2 + dy2 * dy2 <= cr * cr;
         }
 
         // reference here:
         // http://www.jeffreythompson.org/collision-detection/poly-circle.php
+
+        template<typename T = float>
+        XX_FORCE_INLINE bool CircleCircle(T c1x, T c1y, T c1r, T c2x, T c2y, T c2r) {
+            auto dx = c1x - c2x;
+            auto dy = c1y - c2y;
+            auto rr = c1r + c2r;
+            return (dx * dx) + (dy * dy) <= rr * rr;
+        }
+
+        template<typename T = float>
+        XX_FORCE_INLINE bool PointCircle(T px, T py, T cx, T cy, T r) {
+            auto dx = px - cx;
+            auto dy = py - cy;
+            return (dx * dx) + (dy * dy) <= r * r;
+        }
 
         inline XX_FORCE_INLINE bool LinePoint(float x1, float y1, float x2, float y2, float px, float py) {
             float d1 = Calc::Distance(px, py, x1, y1);
@@ -487,28 +514,22 @@ namespace Calc {
             return d1 + d2 >= lineLen - 0.1 && d1 + d2 <= lineLen + 0.1;
         }
 
-        inline XX_FORCE_INLINE bool PointCircle(float px, float py, float cx, float cy, float r) {
-            float distX = px - cx;
-            float distY = py - cy;
-            return (distX * distX) + (distY * distY) <= r * r;
-        }
-
         inline bool LineCircle(float x1, float y1, float x2, float y2, float cx, float cy, float r) {
             if (PointCircle(x1, y1, cx, cy, r) || PointCircle(x2, y2, cx, cy, r)) return true;
-            float distX = x1 - x2;
-            float distY = y1 - y2;
-            float dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / ((distX * distX) + (distY * distY));
+            float dx = x1 - x2;
+            float dy = y1 - y2;
+            float dot = (((cx - x1) * (x2 - x1)) + ((cy - y1) * (y2 - y1))) / ((dx * dx) + (dy * dy));
             float closestX = x1 + (dot * (x2 - x1));
             float closestY = y1 + (dot * (y2 - y1));
             if (!LinePoint(x1, y1, x2, y2, closestX, closestY)) return false;
-            distX = closestX - cx;
-            distY = closestY - cy;
-            return (distX * distX) + (distY * distY) <= r * r;
+            dx = closestX - cx;
+            dy = closestY - cy;
+            return (dx * dx) + (dy * dy) <= r * r;
         }
 
         template<bool vsEndIsFirst = false, typename Vecs>
         bool PolygonPoint(Vecs const& vs, float px, float py) {
-            bool collision = false;
+            bool collision{};
             for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
                 if constexpr (!vsEndIsFirst) {
                     if (next == e) next = 0;

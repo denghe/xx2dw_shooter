@@ -42,7 +42,7 @@ struct MagicWeapon : Sprite {
 		//		}
 		//		// continue fly
 		//		float r = -std::atan2(d.y, d.x);
-		//		RadiansControl::Step(radians, r, cFlyRadianMin);
+		//		RotateControl::Step(radians, r, cFlyRadianMin);
 		//		r = -radians;
 		//		pos += XY{ std::cos(r), -std::sin(r) } * speed;
 		//		//	// todo: change speed
@@ -68,11 +68,11 @@ struct MagicWeapon : Sprite {
 						pos = tarPos;
 						break;
 					}
-					RadiansControl::Step(radians, rb, cFlyRadianMin);
+					RotateControl::Step(radians, rb, cFlyRadianMin);
 					co_yield 0;
 				};
 
-				while (!RadiansControl::Step(radians, rb, cFlyRadianMin)) {		// step by step change current radians to rb
+				while (!RotateControl::Step(radians, rb, cFlyRadianMin)) {		// step by step change current radians to rb
 					if (target) goto LabBegin;
 					if (!owner) goto LabEnd;
 					co_yield 0;

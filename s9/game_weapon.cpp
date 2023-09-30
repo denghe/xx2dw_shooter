@@ -46,7 +46,7 @@ xx::Task<> Weapon_1_Sword::MainLogic() {
 			while (wm) {
 				auto v = wm->pos - pos;
 				auto r = -std::atan2(-v.y, v.x);
-				if (RadiansControl::Step(radians, r, cFrameMaxChangeRadians)) break;
+				if (RotateControl::Step(radians, r, cFrameMaxChangeRadians)) break;
 				pos = hero->weaponPos;
 				RotateCirclesAndHitCheck();
 				co_yield 0;
@@ -88,7 +88,7 @@ xx::Task<> Weapon_19_Stuff::MainLogic() {
 		while (true) {
 			auto v = wm->pos - pos;
 			auto r = -std::atan2(-v.y, v.x);
-			if (RadiansControl::Step(radians, r, cFrameMaxChangeRadians)) break;
+			if (RotateControl::Step(radians, r, cFrameMaxChangeRadians)) break;
 			co_yield 0;
 			if (!hero) co_return;
 			pos = hero->weaponPos;
