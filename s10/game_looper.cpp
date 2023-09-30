@@ -21,19 +21,19 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;											// all tex ready
 
-	root.Emplace()->children.Emplace().Emplace<Button>()->Init(1, {}, { 50, 15 }, "asdfqwer");
-	//root.Emplace()->children.Emplace().Emplace<Label>()->Init({}, {}, "asdf");
+	root.Emplace()->children.Emplace().Emplace<Button>()->Init(
+		1, {}, { 50, 15 }, gLooper.frame_button, { 2,3,2,2 }, "asdfqwer");
 
 	while (true) {
 		for (float x = -100; x < 100; ++x) {
 			//printf("x = %f\n", x);
-			root->offset.x = x;
+			root->position.x = x;
 			root->dirty = true;
 			co_yield 0;
 		}
 		for (float x = 100; x > -100; --x) {
 			//printf("x = %f\n", x); 
-			root->offset.x = x;
+			root->position.x = x;
 			root->dirty = true;
 			co_yield 0;
 		}
@@ -48,7 +48,7 @@ void GameLooper::Update() {
 void GameLooper::Draw() {
 	if (ready) {
 
-		VisitAndFillTo(tmpZNodes, root);
+		PredrawAndFillTo(tmpZNodes, root);
 		OrderByZDrawAndClear(tmpZNodes);
 	}
 	fv.Draw(ctc72);											// show fps

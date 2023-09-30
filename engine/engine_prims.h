@@ -264,29 +264,15 @@ struct AffineTransform {
     float tx, ty;
 
     inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
-        auto x = pos.x;
-        auto y = pos.y;
-        float c = 1, s = 0;
-        if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
-        }
-        if (!anchorSize.IsZero()) {
-            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
-            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
-        }
-        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+        AffineTransform at;
+        at.PosScaleRadiansAnchorSize(pos, scale, radians, anchorSize);
+        return at;
     }
 
     inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
-        auto x = pos.x;
-        auto y = pos.y;
-        float c = 1, s = 0;
-        if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
-        }
-        return { c * scale.x, s * scale.x, -s * scale.y, c * scale.y, x, y };
+        AffineTransform at;
+        at.PosScaleRadians(pos, scale, radians);
+        return at;
     }
 
     inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
@@ -299,6 +285,27 @@ struct AffineTransform {
 
     inline static AffineTransform MakeIdentity() {
         return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    }
+
+    // anchorSize = anchor * size
+    void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+        auto x = pos.x;
+        auto y = pos.y;
+        float c = 1, s = 0;
+        if (radians) {
+            c = std::cos(-radians);
+            s = std::sin(-radians);
+        }
+        if (!anchorSize.IsZero()) {
+            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
+            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
+        }
+        a = c * scale.x;
+        b = s * scale.x;
+        c = -s * scale.y;
+        d = c * scale.y;
+        tx = x;
+        ty = y;
     }
 
     void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
