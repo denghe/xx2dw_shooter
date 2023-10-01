@@ -71,28 +71,39 @@ xx::Task<> Shooter::MainLogic() {
 std::optional<XY> Shooter::GetKeyboardMoveInc() {
 	union Dirty {
 		struct {
-			uint8_t a, s, d, w;
+			union {
+				struct {
+					uint8_t a, d;
+				};
+				uint16_t ad;
+			};
+			union {
+				struct {
+					uint8_t s, w;
+				};
+				uint16_t sw;
+			};
 		};
 		uint32_t all{};
 	} flags;
 	int32_t n = 0;
 
-	if (gLooper.Pressed(KeyboardKeys::A)) { flags.a = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::S)) { flags.s = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::D)) { flags.d = 1; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::W)) { flags.w = 1; ++n; }
+	if (gLooper.Pressed(KeyboardKeys::A)) { flags.a = 255; ++n; }
+	if (gLooper.Pressed(KeyboardKeys::S)) { flags.s = 255; ++n; }
+	if (gLooper.Pressed(KeyboardKeys::D)) { flags.d = 255; ++n; }
+	if (gLooper.Pressed(KeyboardKeys::W)) { flags.w = 255; ++n; }
 
 	if (n > 2) {
-		if (flags.a && flags.d) {
-			flags.a = flags.d == 0;
+		if (flags.ad > 255 << 8) {
+			flags.ad = 0;
 			n -= 2;
 		}
-		if (flags.s && flags.w) {
-			flags.s = flags.s == 0;
+		if (flags.sw > 255 << 8) {
+			flags.sw = 0;
 			n -= 2;
 		}
 	}
-	if (n == 0) return {};
+	if (!n) return {};
 
 	XY v{};
 

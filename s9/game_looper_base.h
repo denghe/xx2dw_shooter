@@ -128,28 +128,39 @@ struct GameLooperBase : Engine<Derived> {
 	std::optional<std::pair<MoveDirections, XY>> GetKeyboardMoveInc() {
 		union Dirty {
 			struct {
-				uint8_t a, s, d, w;
+				union {
+					struct {
+						uint8_t a, d;
+					};
+					uint16_t ad;
+				};
+				union {
+					struct {
+						uint8_t s, w;
+					};
+					uint16_t sw;
+				};
 			};
 			uint32_t all{};
 		} flags;
 		int32_t n = 0;
 
-		if (KeyDown(KeyboardKeys::A)) { flags.a = 1; ++n; }
-		if (KeyDown(KeyboardKeys::S)) { flags.s = 1; ++n; }
-		if (KeyDown(KeyboardKeys::D)) { flags.d = 1; ++n; }
-		if (KeyDown(KeyboardKeys::W)) { flags.w = 1; ++n; }
+		if (KeyDown(KeyboardKeys::A)) { flags.a = 255; ++n; }
+		if (KeyDown(KeyboardKeys::S)) { flags.s = 255; ++n; }
+		if (KeyDown(KeyboardKeys::D)) { flags.d = 255; ++n; }
+		if (KeyDown(KeyboardKeys::W)) { flags.w = 255; ++n; }
 
 		if (n > 2) {
-			if (flags.a && flags.d) {
-				flags.a = flags.d == 0;
+			if (flags.ad > 255 << 8) {
+				flags.ad = 0;
 				n -= 2;
 			}
-			if (flags.s && flags.w) {
-				flags.s = flags.s == 0;
+			if (flags.sw > 255 << 8) {
+				flags.sw = 0;
 				n -= 2;
 			}
 		}
-		if (n == 0) return {};
+		if (!n) return {};
 
 		XY v{};
 		MoveDirections md;
