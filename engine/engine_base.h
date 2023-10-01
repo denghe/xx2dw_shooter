@@ -31,7 +31,7 @@ struct Mouse {
     //void ClearEventAndSetHandler(void* h) { event = MouseEvents::Unknown; eventHandler = h; }
 };
 
-struct EngineBase : EngineBase__ {
+struct EngineBase : EngineBaseBase {
 
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE glContext;
 
@@ -106,8 +106,8 @@ struct EngineBase : EngineBase__ {
     EngineBase();
 };
 
-inline EngineBase* gEngine{};
+inline EngineBase* gEngineBase{};
 
 inline EngineBase::EngineBase() {
-    gEngine = this;
+    gEngineBase = this;
 }

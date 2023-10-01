@@ -22,9 +22,9 @@ struct Shader_QuadInstance : Shader {
     GLuint lastTextureId{};
     std::unique_ptr<QuadInstanceData[]> quadInstanceDatas = std::make_unique<QuadInstanceData[]>(maxQuadNums);
     size_t quadCount{};
-    EngineBase__* eb{};
+    EngineBaseBase* eb{};
 
-    void Init(EngineBase__* eb_) {
+    void Init(EngineBaseBase* eb_) {
         eb = eb_;
 
         v = LoadGLVertexShader({ R"(#version 300 es

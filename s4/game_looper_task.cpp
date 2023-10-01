@@ -1,14 +1,11 @@
 ﻿#include "pch.h"
 
 void GameLooper::Init() {
-	printf("asdf\n");
     windowWidth = gDesign.width;
     windowHeight = gDesign.height;
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc24.Init();	// font init
-    ctc72.Init();	//
 	camera.SetMaxFrameSize({ gMaxFramePixelWidth, gMaxFramePixelHeight });		// camera init
 	camera.SetScale(0.5);
 
@@ -104,7 +101,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -123,91 +119,89 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	if (ready) {
-		camera.SetOriginal(shooter->pos);
-		camera.Calc();
+	if (!ready) return;
+	camera.SetOriginal(shooter->pos);
+	camera.Calc();
 
-		auto& tm = *tiledMap;
-		for (auto& a : tm.anims) {
-			a->Update(delta);
-		}
-
-		auto scaledTileSize = tm.GetScaledTileSize(camera);
-		auto basePos = tm.GetBasePos(camera);
-		Quad q;
-		q.SetScale(camera.scale).SetAnchor({ 0, 0 });
-		
-		int minX = tm.GetMinColumnIndex(camera);
-		int maxX = tm.GetMaxColumnIndex(camera, 1);
-		int minY = tm.GetMinRowIndex(camera);
-		int maxY = tm.GetMaxRowIndex(camera, 1);
-		for (int y = minY; y < maxY; ++y) {
-			for (int x = minX; x < maxX; ++x) {
-				if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-					q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
-				}
-			}
-		}
-		
-		//int maxTreeY = tm.GetMaxRowIndex(camera, 2);
-		//for (int y = minY; y < maxTreeY; ++y) {
-		//	for (int x = minX; x < maxX; ++x) {
-		//		if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-		//			q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
-		//		}
-		//	}
-		//}
-		//for (auto& tree : trees) {
-		//	tree->Draw();
-		//}
-		//shooter->Draw();
-		//bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
-
-		// order by Y
-
-		tmpsPosYObj.emplace_back(shooter->pos.y, shooter.pointer);
-
-		for (auto& tree : trees) {
-			if (camera.InArea(tree->pos)) {
-				tmpsPosYObj.emplace_back(tree->pos.y, tree.pointer);
-			}
-		}
-
-		bullets_shooter1.Foreach([&](auto& o) {
-			if (camera.InArea(o->pos)) {
-				tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
-			}
-		});
-
-		monsters.Foreach([&](auto& o) {
-			if (camera.InArea(o->pos)) {
-				tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
-			}
-		});
-
-		effects_explosion.Foreach([&](auto& o) {
-			if (camera.InArea(o->pos)) {
-				tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
-			}
-		});
-
-		std::sort(tmpsPosYObj.begin(), tmpsPosYObj.end(), [](auto const& a, auto const& b) {
-			return a.first < b.first;
-		});
-
-		for (auto& [_, obj] : tmpsPosYObj) {
-			obj->Draw();
-		}
-		tmpsPosYObj.clear();
-
-
-		effects_damageText.Foreach([&](auto& o) { o->Draw(); });
-		
-		// todo: more Draw
-		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
-		ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 - ctc72.canvasHeight }, std::string("monsters.Count() == ") + std::to_string(monsters.Count()));
+	auto& tm = *tiledMap;
+	for (auto& a : tm.anims) {
+		a->Update(delta);
 	}
-	fv.Draw(ctc72);       // draw fps at corner
+
+	auto scaledTileSize = tm.GetScaledTileSize(camera);
+	auto basePos = tm.GetBasePos(camera);
+	Quad q;
+	q.SetScale(camera.scale).SetAnchor({ 0, 0 });
+		
+	int minX = tm.GetMinColumnIndex(camera);
+	int maxX = tm.GetMaxColumnIndex(camera, 1);
+	int minY = tm.GetMinRowIndex(camera);
+	int maxY = tm.GetMaxRowIndex(camera, 1);
+	for (int y = minY; y < maxY; ++y) {
+		for (int x = minX; x < maxX; ++x) {
+			if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
+				q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
+			}
+		}
+	}
+		
+	//int maxTreeY = tm.GetMaxRowIndex(camera, 2);
+	//for (int y = minY; y < maxTreeY; ++y) {
+	//	for (int x = minX; x < maxX; ++x) {
+	//		if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
+	//			q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
+	//		}
+	//	}
+	//}
+	//for (auto& tree : trees) {
+	//	tree->Draw();
+	//}
+	//shooter->Draw();
+	//bullets_shooter1.Foreach([&](auto& o) { o->Draw(); });
+
+	// order by Y
+
+	tmpsPosYObj.emplace_back(shooter->pos.y, shooter.pointer);
+
+	for (auto& tree : trees) {
+		if (camera.InArea(tree->pos)) {
+			tmpsPosYObj.emplace_back(tree->pos.y, tree.pointer);
+		}
+	}
+
+	bullets_shooter1.Foreach([&](auto& o) {
+		if (camera.InArea(o->pos)) {
+			tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
+		}
+	});
+
+	monsters.Foreach([&](auto& o) {
+		if (camera.InArea(o->pos)) {
+			tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
+		}
+	});
+
+	effects_explosion.Foreach([&](auto& o) {
+		if (camera.InArea(o->pos)) {
+			tmpsPosYObj.emplace_back(o->pos.y, o.pointer);
+		}
+	});
+
+	std::sort(tmpsPosYObj.begin(), tmpsPosYObj.end(), [](auto const& a, auto const& b) {
+		return a.first < b.first;
+	});
+
+	for (auto& [_, obj] : tmpsPosYObj) {
+		obj->Draw();
+	}
+	tmpsPosYObj.clear();
+
+
+	effects_damageText.Foreach([&](auto& o) { o->Draw(); });
+		
+	// todo: more Draw
+	ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
+	ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 - ctcDefault.canvasHeight }, std::string("monsters.Count() == ") + std::to_string(monsters.Count()));
 }
 
 

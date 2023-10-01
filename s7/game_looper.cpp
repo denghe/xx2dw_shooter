@@ -13,7 +13,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();											// font init
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
@@ -77,7 +76,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -117,63 +115,61 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	if (ready) {
-		camera.Calc();
+	if (!ready) return;
+	camera.Calc();
 
-		experiences.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	experiences.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		flyingExperiences.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	flyingExperiences.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		heros.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	heros.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		afterimages.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	afterimages.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		heros.Foreach([&](auto& h) {
-			auto& o = h->weapon;
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	heros.Foreach([&](auto& h) {
+		auto& o = h->weapon;
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		monsters.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	monsters.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		bloods.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	bloods.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		bullets.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
+	bullets.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 
-		damageNumbers.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
-	}
-	fv.Draw(ctc72);											// show fps
+	damageNumbers.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
+		}
+	});
 }

@@ -63,10 +63,6 @@ struct DamageText;
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 
-	CharTexCache<24> ctc24;
-	CharTexCache<72> ctc72;
-	FpsViewer fv;
-
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
 	bool touchMode{};

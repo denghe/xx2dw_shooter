@@ -135,22 +135,22 @@ struct LineStrip {
 	}
 
 	void Draw() {
-		if (gEngine->shader != &gEngine->shaderLineStrip) {
-			gEngine->shaderLineStrip.Begin();
+		if (gEngineBase->shader != &gEngineBase->shaderLineStrip) {
+			gEngineBase->shaderLineStrip.Begin();
 		}
 		Commit();
 		if (auto&& ps = pointsBuf.size()) {
-			memcpy(gEngine->shaderLineStrip.Draw(ps), pointsBuf.data(), ps * sizeof(XYRGBA8));
+			memcpy(gEngineBase->shaderLineStrip.Draw(ps), pointsBuf.data(), ps * sizeof(XYRGBA8));
 		}
 	}
 
 	void Draw(AffineTransform const& t) {
-		if (gEngine->shader != &gEngine->shaderLineStrip) {
-			gEngine->shaderLineStrip.Begin();
+		if (gEngineBase->shader != &gEngineBase->shaderLineStrip) {
+			gEngineBase->shaderLineStrip.Begin();
 		}
 		Commit();
 		if (auto&& ps = pointsBuf.size()) {
-			auto&& buf = gEngine->shaderLineStrip.Draw(ps);
+			auto&& buf = gEngineBase->shaderLineStrip.Draw(ps);
 			for (size_t i = 0; i < ps; ++i) {
 				(XY&)buf[i].x = t.Apply(pointsBuf[i]);
 				memcpy(&buf[i].r, &color.r, sizeof(color));

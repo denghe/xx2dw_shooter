@@ -14,7 +14,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();											// font init
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
@@ -76,7 +75,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -100,35 +98,32 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	if (ready) {
-		camera.Calc();
+	if (!ready) return;
+	camera.Calc();
 
-		afterimages.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				o->Draw();
-			}
-		});
-
-		heros.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				ysprites.Add(YSprite{ o->pos.y, o.pointer });
-			}
-		});
-		heroMagicWeapons.Foreach([&](auto& o) {
-			if (gLooper.camera.InArea(o->pos)) {
-				ysprites.Add(YSprite{ o->pos.y - 3, o.pointer });
-			}
-		});
-
-		std::sort(ysprites.buf, ysprites.buf + ysprites.len, 
-			[](YSprite const& a, YSprite const& b) {
-				return a.y < b.y;
-			});
-		for (int i = 0, ie = ysprites.len; i < ie; ++i) {
-			ysprites[i].s->Draw();
+	afterimages.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			o->Draw();
 		}
-		ysprites.Clear();
+	});
 
+	heros.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			ysprites.Add(YSprite{ o->pos.y, o.pointer });
+		}
+	});
+	heroMagicWeapons.Foreach([&](auto& o) {
+		if (gLooper.camera.InArea(o->pos)) {
+			ysprites.Add(YSprite{ o->pos.y - 3, o.pointer });
+		}
+	});
+
+	std::sort(ysprites.buf, ysprites.buf + ysprites.len, 
+		[](YSprite const& a, YSprite const& b) {
+			return a.y < b.y;
+		});
+	for (int i = 0, ie = ysprites.len; i < ie; ++i) {
+		ysprites[i].s->Draw();
 	}
-	fv.Draw(ctc72);											// show fps
+	ysprites.Clear();
 }

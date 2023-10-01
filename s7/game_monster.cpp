@@ -2,7 +2,7 @@
 
 void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
 	mainLogic = MainLogic_();
-	idle = Idle_Rotate();
+	idle = Idle_ScaleY();//Idle_Rotate();
 	hp = hp_;
 	pos = pos_;
 	speed = cSpeed;

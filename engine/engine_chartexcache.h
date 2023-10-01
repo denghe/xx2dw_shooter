@@ -100,8 +100,8 @@ struct CharTexCache {
             cis[i] = &Find(s[i]);
         }
 
-        auto& shader = gEngine->shaderQuadInstance;
-        if (gEngine->shader != &shader) {
+        auto& shader = gEngineBase->shaderQuadInstance;
+        if (gEngineBase->shader != &shader) {
             shader.Begin();
         }
         for (size_t i = 0; i < e; ++i) {

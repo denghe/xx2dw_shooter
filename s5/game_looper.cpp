@@ -10,11 +10,9 @@ GameLooper gLooper;											// global var for easy use
 void GameLooper::Init() {
     windowWidth = gDesign.width;
     windowHeight = gDesign.height;
-	printf("2\n");
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();											// font init
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
 		xx_assert(tp);
@@ -48,7 +46,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -61,15 +58,13 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	if (ready) {
-		for (auto& o : heroMagicWeapons) {
-			if (!o->owner || o->pos.y - 3 <= o->owner->pos.y) o->Draw();
-		}
-		for (auto& o : heros) { o->Draw(); }
-		for (auto& o : heroMagicWeapons) {
-			if (!(!o->owner || o->pos.y - 3 <= o->owner->pos.y)) o->Draw();
-		}
-		// todo: order by Y with all monsters
+	if (!ready) return;
+	for (auto& o : heroMagicWeapons) {
+		if (!o->owner || o->pos.y - 3 <= o->owner->pos.y) o->Draw();
 	}
-	fv.Draw(ctc72);											// show fps
+	for (auto& o : heros) { o->Draw(); }
+	for (auto& o : heroMagicWeapons) {
+		if (!(!o->owner || o->pos.y - 3 <= o->owner->pos.y)) o->Draw();
+	}
+	// todo: order by Y with all monsters
 }

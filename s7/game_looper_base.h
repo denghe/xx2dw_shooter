@@ -22,9 +22,6 @@ enum class MoveDirections : int {
 template<typename Derived>
 struct GameLooperBase : Engine<Derived> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
-	CharTexCache<72> ctc72;
-	FpsViewer fv;
-
 
 	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e) {
 		if (e.which >= (KeyboardKeys_t)KeyboardKeys::A && e.which <= (KeyboardKeys_t)KeyboardKeys::Z) {

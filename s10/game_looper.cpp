@@ -13,7 +13,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();											// font init
 	{
 		auto tex = co_await AsyncLoadTextureFromUrl("res/button.png");
 		xx_assert(tex);
@@ -41,15 +40,12 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (!ready) return;										// todo: show loading ?
 }
 
 void GameLooper::Draw() {
 	if (ready) {
-
 		PredrawAndFillTo(tmpZNodes, root);
 		OrderByZDrawAndClear(tmpZNodes);
 	}
-	fv.Draw(ctc72);											// show fps
 }

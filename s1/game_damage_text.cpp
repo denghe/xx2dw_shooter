@@ -7,7 +7,7 @@ void DamageText::Init(XY const& bornPos, int32_t hp) {
 	txt = std::to_string(hp);
 }
 void DamageText::Draw() {
-	gLooper.ctc24.Draw(pos, txt, color);
+	gLooper.ctcDefault.Draw(pos, txt, color);
 }
 xx::Task<> DamageText::MainLogic() {
 	XY inc{ 0, 1 };

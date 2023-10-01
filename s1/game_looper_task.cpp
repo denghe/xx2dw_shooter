@@ -6,9 +6,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc24.Init();
-    ctc72.Init();
-
 	// preload texs
     auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
 	xx_assert(tp);
@@ -82,7 +79,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (!frame_shooter) return;
 
 	if (shooter) {
@@ -117,7 +113,5 @@ void GameLooper::Draw() {
 	effects_damageText.Foreach([&](auto& o) { o->Draw(); });
 
 	// todo: more Draw
-
-	fv.Draw(ctc72);       // draw fps at corner
 }
 

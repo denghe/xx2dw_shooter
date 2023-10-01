@@ -61,9 +61,6 @@ struct DamageText;
 
 struct GameLooper : Engine<GameLooper> {
 	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
-	CharTexCache<24> ctc24;
-	CharTexCache<72> ctc72;
-	FpsViewer fv;
 
 	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
 	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);

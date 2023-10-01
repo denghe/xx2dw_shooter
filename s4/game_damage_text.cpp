@@ -8,7 +8,7 @@ void DamageText::Init(XY const& bornPos, int32_t hp, RGBA8 color_) {
 }
 
 void DamageText::Draw() {
-	gLooper.ctc24.Draw(gLooper.camera.ToGLPos(pos), txt, color);		// todo: align center?
+	gLooper.ctcDefault.Draw(gLooper.camera.ToGLPos(pos), txt, color);		// todo: align center?
 }
 
 xx::Task<> DamageText::MainLogic() {

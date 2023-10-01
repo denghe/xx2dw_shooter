@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "engine_base.h"
-#include "engine_zstd.h"
-#include "engine_texturepacker.h"
-#include "engine_tiledmap_sede.h"
+#include "engine_baseex.h"
+#include "engine_node.h"
+#include "engine_label.h"
+#include "engine_scale9sprite.h"
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -32,7 +32,7 @@ template <typename T> concept Has_OnTouchCancel = requires(T t) { { t.OnTouchCan
 // Derived content requires:
 // constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 template<typename Derived>
-struct Engine : EngineBase {
+struct Engine : EngineBaseEx {
     xx::Tasks tasks;
 
     Engine() {
@@ -159,6 +159,11 @@ struct Engine : EngineBase {
             ((Derived*)this)->AfterInit();
         }
 
+        tasks.Add([this]()->xx::Task<> {
+            ctcDefault.Init();
+            co_return;
+        });
+
         if constexpr (Has_MainTask<Derived>) {
             tasks.Add(((Derived*)this)->MainTask());
         }
@@ -186,6 +191,7 @@ int main() {
         while (timePool >= ((Derived*)this)->frameDelay) {
             timePool -= ((Derived*)this)->frameDelay;
             ++frameNumber;
+            fpsViewer.Update();
             if constexpr(Has_Update<Derived>) {
                 ((Derived*)this)->Update();
             }
@@ -193,6 +199,9 @@ int main() {
         }
         if constexpr(Has_Draw<Derived>) {
             ((Derived*)this)->Draw();
+        }
+        if (showFps) {
+            fpsViewer.Draw(ctcDefault);
         }
 
         GLUpdateEnd();

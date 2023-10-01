@@ -81,12 +81,12 @@ struct Sprite : Drawable {
 		}
 	}
 
-	xx::Task<> Idle_Rotate() {
-		while (true) {
-			for (radians = cIdleRotateRadiansFrom; radians < cIdleRotateRadiansTo; radians += cIdleRotateRadiansStep) co_yield 0;
-			for (radians = cIdleRotateRadiansTo; radians >= cIdleRotateRadiansFrom; radians -= cIdleRotateRadiansStep) co_yield 0;
-		}
-	}
+	//xx::Task<> Idle_Rotate() {
+	//	while (true) {
+	//		for (radians = cIdleRotateRadiansFrom; radians < cIdleRotateRadiansTo; radians += cIdleRotateRadiansStep) co_yield 0;
+	//		for (radians = cIdleRotateRadiansTo; radians >= cIdleRotateRadiansFrom; radians -= cIdleRotateRadiansStep) co_yield 0;
+	//	}
+	//}
 
 	virtual void Draw() override {
 		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })

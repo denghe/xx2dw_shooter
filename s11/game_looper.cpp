@@ -13,18 +13,15 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();											// font init
 	{
 		auto tex = co_await AsyncLoadTextureFromUrl("res/button.png");
 		xx_assert(tex);
 		frame_button = Frame::Create(tex);
 	}
 	ready = true;											// all tex ready
-
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -47,7 +44,6 @@ void GameLooper::Draw() {
 			}
 		});
 	}
-	fv.Draw(ctc72);											// show fps
 }
 
 

@@ -13,7 +13,7 @@ struct FpsViewer {
     void Draw(CTC& ctc) {
         ++drawCounter;
 
-        auto nowSecs = gEngine->nowSecs;
+        auto nowSecs = gEngineBase->nowSecs;
         if (auto elapsedSecs = nowSecs - lastSecs; elapsedSecs >= 1) {
             lastSecs = nowSecs;
 
@@ -24,12 +24,12 @@ struct FpsViewer {
             updateCounter = 0;
         }
 
-        gEngine->ShaderEnd();
+        gEngineBase->ShaderEnd();
         auto s = std::string("FPS:") + std::to_string((uint32_t)fps)
                  + " UPS:" + std::to_string((uint32_t)ups)
                  + " DC:" + std::to_string(Shader::drawCall)
                  + " VC:" + std::to_string(Shader::drawVerts);
 
-        ctc.Draw({ -gEngine->windowWidth_2, -gEngine->windowHeight_2 + ctc.canvasHeight_2 }, s);
+        ctc.Draw({ -gEngineBase->windowWidth_2, -gEngineBase->windowHeight_2 + ctc.canvasHeight_2 }, s);
     }
 };

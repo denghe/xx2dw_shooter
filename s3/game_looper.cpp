@@ -14,8 +14,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();	// font init
-
 	// load wall texs
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
@@ -25,8 +23,6 @@ xx::Task<> GameLooper::MainTask() {
 		tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
 		printf("load tex from tp");
 	}
-
-
 	ready = true;
 
 	constexpr int numRows = 220, numCols = 350, numPumpkins = 50000;
@@ -49,7 +45,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -61,34 +56,32 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	if (ready) {
-		camera.Calc();
+	if (!ready) return;
+	camera.Calc();
 
-		for (int i = 0, ie = rooms.len; i < ie; ++i) {
-			auto& room = rooms[i];
-			room->Draw();
-			for (int j = 0, je = room->walls.len; j < je; ++j) {
-				auto& wall = room->walls[j];
-				if (gLooper.camera.InArea(wall._sgabPos)) {
-					yos.Add(wall);
-				}
+	for (int i = 0, ie = rooms.len; i < ie; ++i) {
+		auto& room = rooms[i];
+		room->Draw();
+		for (int j = 0, je = room->walls.len; j < je; ++j) {
+			auto& wall = room->walls[j];
+			if (gLooper.camera.InArea(wall._sgabPos)) {
+				yos.Add(wall);
 			}
 		}
-
-		for (int i = 0, ie = pumpkins.len; i < ie; ++i) {
-			auto& pumpkin = *pumpkins[i];
-			if (gLooper.camera.InArea(pumpkin.pos)) {
-				yos.Add(pumpkin);
-			}
-		}
-
-		// todo: add more to ybos ?
-
-		std::sort(yos.buf, yos.buf + yos.len, YObj::Comparer);
-		for (int i = 0, ie = yos.len; i < ie; ++i) {
-			yos[i].o->Draw();
-		}
-		yos.Clear();
 	}
-	fv.Draw(ctc72);       // draw fps at corner
+
+	for (int i = 0, ie = pumpkins.len; i < ie; ++i) {
+		auto& pumpkin = *pumpkins[i];
+		if (gLooper.camera.InArea(pumpkin.pos)) {
+			yos.Add(pumpkin);
+		}
+	}
+
+	// todo: add more to ybos ?
+
+	std::sort(yos.buf, yos.buf + yos.len, YObj::Comparer);
+	for (int i = 0, ie = yos.len; i < ie; ++i) {
+		yos[i].o->Draw();
+	}
+	yos.Clear();
 }

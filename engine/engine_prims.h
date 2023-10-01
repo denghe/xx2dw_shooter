@@ -233,7 +233,7 @@ union UVRect {
 
 
 struct Shader;
-struct EngineBase__ {
+struct EngineBaseBase {
     float windowWidth = 800, windowHeight = 600;          // can change at Init()
     float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
     float flipY{ 1 };   // -1: flip  for ogl frame buffer
@@ -406,7 +406,7 @@ namespace RotateControl {
     inline XX_FORCE_INLINE bool Step(float& a, float b, float step) {
         assert(a >= -M_PI && a <= M_PI);
         assert(b >= -M_PI && b <= M_PI);
-        assert(step <= M_PI);
+        assert(step >= 0 && step <= M_PI);
         if ((b - a) * (b - a) > M_PI * M_PI) {
             if (b < a) {
                 b += M_PI * 2;
@@ -435,6 +435,7 @@ namespace RotateControl {
                 }
             }
         }
+        assert(a >= -M_PI && a <= M_PI);
         return false;
     }
 

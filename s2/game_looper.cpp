@@ -14,7 +14,6 @@ void GameLooper::Init() {
 }
 
 xx::Task<> GameLooper::MainTask() {
-    ctc72.Init();	// font init
 	camera.SetScale(0.25);
 
 	// load wall texs
@@ -47,7 +46,6 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	fv.Update();
 	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
 		camera.DecreaseScale(0.02, 0.02);
 	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
@@ -63,12 +61,11 @@ void GameLooper::Draw() {
 		for (auto& room : rooms) { room->Draw(); }
 
 		if (!hasCross) {
-			ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "calculate done.");
+			ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, "calculate done.");
 		} else {
-			ctc72.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctc72.canvasHeight_2 }, "keyboard Z X zoom.");
+			ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, "keyboard Z X zoom.");
 		}
 	}
-	fv.Draw(ctc72);       // draw fps at corner
 }
 
 /*****************************************************************************************************/
