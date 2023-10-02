@@ -75,23 +75,17 @@ void main() {
     }
 
     virtual void Begin() override {
-        if (auto& s = eb->shader; s != this) {
-            if (s) {
-                s->End();
-            }
-            s = this;
-        }
+        assert(!eb->shader);
         glUseProgram(p);
         glUniform2f(uCxy, 2 / eb->windowWidth, 2 / eb->windowHeight * eb->flipY);
         glBindVertexArray(va);
     }
 
     virtual void End() override {
+        assert(eb->shader == this);
         if (indexsCount) {
             Commit();
         }
-        assert(eb->shader == this);
-        eb->shader = {};
     }
 
     void Commit() {
@@ -110,6 +104,7 @@ void main() {
     }
 
     XYRGBA8* Draw(size_t const& pc) {
+        assert(eb->shader == this);
         assert(pc <= maxVertNums);
         auto&& c = pointsCount + pc;
         if (c > maxVertNums) {

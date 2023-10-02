@@ -93,9 +93,23 @@ struct EngineBase : EngineBaseBase {
         ShaderEnd();
     }
 
+    // example: gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance);
+    template<typename ST>
+    XX_FORCE_INLINE ST& ShaderBegin(ST& s) {
+        if (shader != &s) {
+            if (shader) {
+                shader->End();
+            }
+            s.Begin();
+            shader = &s;
+        }
+        return s;
+    }
+
     XX_FORCE_INLINE void ShaderEnd() {
         if (shader) {
             shader->End();
+            shader = {};
         }
     }
 

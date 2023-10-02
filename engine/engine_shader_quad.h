@@ -121,12 +121,7 @@ void main() {
     }
 
     virtual void Begin() override {
-        if (auto& s = eb->shader; s != this) {
-            if (s) {
-                s->End();
-            }
-            s = this;
-        }
+        assert(!eb->shader);
         glUseProgram(p);
         glActiveTexture(GL_TEXTURE0/* + textureUnit*/);
         glUniform1i(uTex0, 0);
@@ -135,11 +130,10 @@ void main() {
     }
 
     virtual void End() override {
+        assert(eb->shader == this);
         if (quadCount) {
             Commit();
         }
-        assert(eb->shader == this);
-        eb->shader = {};
     }
 
     void Commit() {
@@ -161,6 +155,7 @@ void main() {
     }
 
     QuadInstanceData* Draw(GLuint texId, int numQuads) {
+        assert(eb->shader == this);
         assert(numQuads <= maxQuadNums);
         if (quadCount + numQuads > maxQuadNums || (lastTextureId && lastTextureId != texId)) {
             Commit();

@@ -101,10 +101,7 @@ struct Quad : QuadInstanceData {
     }
     XX_FORCE_INLINE Quad& Draw() const {
         assert(texId);
-        if (gEngineBase->shader != &gEngineBase->shaderQuadInstance) {
-            gEngineBase->shaderQuadInstance.Begin();
-        }
-        gEngineBase->shaderQuadInstance.Draw(texId, *this);
+        gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance).Draw(texId, *this);
         return (Quad&)*this;
     }
 };

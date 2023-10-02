@@ -121,7 +121,7 @@ struct LineStrip {
 		return *this;
 	}
 
-	void Commit() {
+	void Update() {
 		if (dirty) {
 			auto&& ps = points.size();
 			pointsBuf.resize(ps);
@@ -135,26 +135,9 @@ struct LineStrip {
 	}
 
 	void Draw() {
-		if (gEngineBase->shader != &gEngineBase->shaderLineStrip) {
-			gEngineBase->shaderLineStrip.Begin();
-		}
-		Commit();
+		Update();
 		if (auto&& ps = pointsBuf.size()) {
-			memcpy(gEngineBase->shaderLineStrip.Draw(ps), pointsBuf.data(), ps * sizeof(XYRGBA8));
-		}
-	}
-
-	void Draw(AffineTransform const& t) {
-		if (gEngineBase->shader != &gEngineBase->shaderLineStrip) {
-			gEngineBase->shaderLineStrip.Begin();
-		}
-		Commit();
-		if (auto&& ps = pointsBuf.size()) {
-			auto&& buf = gEngineBase->shaderLineStrip.Draw(ps);
-			for (size_t i = 0; i < ps; ++i) {
-				(XY&)buf[i].x = t.Apply(pointsBuf[i]);
-				memcpy(&buf[i].r, &color.r, sizeof(color));
-			}
+			gEngineBase->ShaderBegin(gEngineBase->shaderLineStrip).Draw(pointsBuf.data(), ps);
 		}
 	}
 };

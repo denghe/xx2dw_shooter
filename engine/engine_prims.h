@@ -166,6 +166,19 @@ struct IsVec2<Vec2<T> const&> : std::true_type {};
 template<typename T>
 constexpr bool IsVec2_v = IsVec2<T>::value;
 
+namespace xx {
+    template<typename T>
+    struct DataFuncs<T, std::enable_if_t<IsVec2_v<T>>> {
+        template<bool needReserve = true>
+        static inline void Write(Data& d, T const& in) {
+            d.Write<needReserve>(in.x, in.y);
+        }
+        static inline int Read(Data_r& d, T& out) {
+            return d.Read(out.x, out.y);
+        }
+    };
+}
+
 // pos
 using XY = Vec2<float>;
 
@@ -241,20 +254,6 @@ struct EngineBaseBase {
 };
 
 
-namespace xx {
-    template<typename T>
-    struct DataFuncs<T, std::enable_if_t<IsVec2_v<T>>> {
-        template<bool needReserve = true>
-        static inline void Write(Data& d, T const& in) {
-            d.Write<needReserve>(in.x, in.y);
-        }
-        static inline int Read(Data_r& d, T& out) {
-            return d.Read(out.x, out.y);
-        }
-    };
-}
-
-
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
 
@@ -291,19 +290,20 @@ struct AffineTransform {
     void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
         auto x = pos.x;
         auto y = pos.y;
-        float c = 1, s = 0;
+        float c_ = 1, s_ = 0;
         if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
+            c_ = std::cos(-radians);
+            s_ = std::sin(-radians);
         }
         if (!anchorSize.IsZero()) {
-            x += c * scale.x * -anchorSize.x - s * scale.y * -anchorSize.y;
-            y += s * scale.x * -anchorSize.x + c * scale.y * -anchorSize.y;
+            x += c_ * scale.x * -anchorSize.x - s_ * scale.y * -anchorSize.y;
+            y += s_ * scale.x * -anchorSize.x + c_ * scale.y * -anchorSize.y;
         }
-        a = c * scale.x;
-        b = s * scale.x;
-        c = -s * scale.y;
-        d = c * scale.y;
+
+        a = c_ * scale.x;
+        b = s_ * scale.x;
+        c = -s_ * scale.y;
+        d = c_ * scale.y;
         tx = x;
         ty = y;
     }
@@ -311,15 +311,16 @@ struct AffineTransform {
     void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
         auto x = pos.x;
         auto y = pos.y;
-        float c = 1, s = 0;
+        float c_ = 1, s_ = 0;
         if (radians) {
-            c = std::cos(-radians);
-            s = std::sin(-radians);
+            c_ = std::cos(-radians);
+            s_ = std::sin(-radians);
         }
-        a = c * scale.x;
-        b = s * scale.x;
-        c = -s * scale.y;
-        d = c * scale.y;
+
+        a = c_ * scale.x;
+        b = s_ * scale.x;
+        c = -s_ * scale.y;
+        d = c_ * scale.y;
         tx = x;
         ty = y;
     }

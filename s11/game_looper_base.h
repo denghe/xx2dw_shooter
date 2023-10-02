@@ -10,6 +10,7 @@
 #include "engine_spacegrid_ringdiffuse.h"
 #include "engine_tiledmap_sede.h"
 #include "engine_camera.h"
+#include "engine_linestrip.h"
 
 int32_t main();
 

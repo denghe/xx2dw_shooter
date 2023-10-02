@@ -17,12 +17,9 @@ struct Scale9Sprite : Node {
 	}
 
 	virtual void Draw() override {
-		auto& s = gEngineBaseEx->shaderQuadInstance;
-		if (gEngineBaseEx->shader != &s) {
-			s.Begin();
-		}
+		auto qs = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance).Draw(frame->tex->GetValue(), 9);
+
 		auto& r = frame->textureRect;
-		auto qs = s.Draw(frame->tex->GetValue(), 9);
 
 		uint16_t tx1 = 0;
 		uint16_t tx2 = center.x;
