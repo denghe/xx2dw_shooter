@@ -408,6 +408,7 @@ namespace RotateControl {
         assert(a >= -M_PI && a <= M_PI);
         assert(b >= -M_PI && b <= M_PI);
         assert(step >= 0 && step <= M_PI);
+        auto bak = b;
         if ((b - a) * (b - a) > M_PI * M_PI) {
             if (b < a) {
                 b += M_PI * 2;
@@ -417,7 +418,7 @@ namespace RotateControl {
         }
         if (b > a) {
             if (b - a <= step) {
-                a = b;
+                a = bak;
                 return true;
             } else {
                 a += step;
@@ -427,7 +428,7 @@ namespace RotateControl {
             }
         } else {
             if (a - b <= step) {
-                a = b;
+                a = bak;
                 return true;
             } else {
                 a -= step;
@@ -436,7 +437,6 @@ namespace RotateControl {
                 }
             }
         }
-        assert(a >= -M_PI && a <= M_PI);
         return false;
     }
 
