@@ -193,6 +193,12 @@ struct RGBA8 {
     bool operator==(RGBA8 const&) const = default;
     bool operator!=(RGBA8 const&) const = default;
 };
+constexpr static RGBA8 RGBA8_Zero{0,0,0,0};
+constexpr static RGBA8 RGBA8_Red{255,0,0,255};
+constexpr static RGBA8 RGBA8_Green{0,255,0,255};
+constexpr static RGBA8 RGBA8_Blue{0,0,255,255};
+constexpr static RGBA8 RGBA8_White{255,255,255,255};
+constexpr static RGBA8 RGBA8_Black{0,0,0,255};
 
 // 4 floats color
 struct RGBA {

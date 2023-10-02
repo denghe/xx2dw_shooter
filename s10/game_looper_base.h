@@ -1,19 +1,9 @@
 ﻿#pragma once
 #include "engine_engine.h"
-#include "engine_gdesign.h"
-#include "engine_chartexcache.h"
-#include "engine_fpsviewer.h"
-#include "engine_dynamictexturepacker.h"
-#include "engine_curvemovepath.h"
-#include "engine_spacegrid_box.h"
-#include "engine_spacegrid_circle.h"
-#include "engine_spacegrid_ringdiffuse.h"
-#include "engine_tiledmap_sede.h"
-#include "engine_camera.h"
 
 int32_t main();
 
-constexpr GDesign<1280, 720, 60> gDesign;
+constexpr GDesign<640, 480, 60> gDesign;
 
 enum class MoveDirections : int {
 	Down = 1, Left = 2, Right = 4, Up = 8

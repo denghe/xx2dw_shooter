@@ -4,9 +4,11 @@
 struct Scale9Sprite : Node {
 	xx::Shared<Frame> frame;
 	UVRect center;
-	float texScale{ 1 };
+	RGBA8 color;
+	float texScale;
+	float colormulti;
 
-	void Init(int z_, XY const& position_, float texScale_, XY const& size_, xx::Shared<Frame> frame_, UVRect const& center_) {
+	void Init(int z_, XY const& position_, float texScale_, XY const& size_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colormulti_ = 1) {
 		assert(size_.x > 6 && size_.y > 8);
 		z = z_;
 		position = position_;
@@ -14,6 +16,8 @@ struct Scale9Sprite : Node {
 		texScale = texScale_;
 		frame = std::move(frame_);
 		center = center_;
+		color = color_;
+		colormulti = colormulti_;
 	}
 
 	virtual void Draw() override {
@@ -52,9 +56,8 @@ struct Scale9Sprite : Node {
 
 		auto halfSize = size * texScale / 2;
 		XY basePos{ -halfSize.x, halfSize.y };
-		printf("%f %f \n", basePos.x, basePos.y);
 
-		RGBA8 c = { 255, 255, 255, (uint8_t)(255 * alpha) };
+		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 
 		QuadInstanceData* q;
 		q = &qs[0];
@@ -62,7 +65,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx1, ty1, tw1, th1 };
 
@@ -71,7 +74,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx2, ty1, tw2, th1 };
 
@@ -80,7 +83,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx3, ty1, tw3, th1 };
 
@@ -89,7 +92,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx1, ty2, tw1, th2 };
 
@@ -98,7 +101,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, sy };
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx2, ty2, tw2, th2 };
 
@@ -107,7 +110,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx3, ty2, tw3, th2 };
 
@@ -116,7 +119,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx1, ty3, tw1, th3 };
 
@@ -125,7 +128,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx2, ty3, tw2, th3 };
 
@@ -134,7 +137,7 @@ struct Scale9Sprite : Node {
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
-		q->colormulti = { 1 };
+		q->colormulti = colormulti;
 		q->color = c;
 		q->texRect = { tx3, ty3, tw3, th3 };
 	}

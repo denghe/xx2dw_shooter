@@ -30,6 +30,6 @@ struct FpsViewer {
                  + " DC:" + std::to_string(Shader::drawCall)
                  + " VC:" + std::to_string(Shader::drawVerts);
 
-        ctc.Draw({ -gEngineBase->windowWidth_2, -gEngineBase->windowHeight_2 + ctc.canvasHeight_2 }, s);
+        ctc.Draw({ -gEngineBase->windowWidth_2, -gEngineBase->windowHeight_2 }, s, RGBA8_Green, { 0, 0 });
     }
 };
