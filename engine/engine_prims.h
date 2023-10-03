@@ -485,10 +485,10 @@ namespace TranslateControl {
         if (dx2 * dx2 + dy2 * dy2 <= cr * cr) {
             // change cx & cy
             auto incX = dx2, incY = dy2;
-            float dSeq = dx2 * dx2 + dy2 * dy2;
-            if (dSeq == 0.0f) {
-                incX = bHalfWidth + cr * (1.f / 1.414213562373095f) + 1;
-                incY = bHalfHeight + cr * (1.f / 1.414213562373095f) + 1;
+            auto dSeq = dx2 * dx2 + dy2 * dy2;
+            if (dSeq == {}) {
+                incX = bHalfWidth + cr * 0.7071067811865475 + 1;
+                incY = bHalfHeight + cr * 0.7071067811865475 + 1;
             } else {
                 auto d = std::sqrt(dSeq);
                 incX = bHalfWidth + cr * dx2 / d + 1;
