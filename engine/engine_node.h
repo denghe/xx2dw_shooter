@@ -5,7 +5,14 @@ struct Node {
 	//xx::Weak<Node> parent;
 	xx::List<xx::Shared<Node>, int32_t> children;
 
-	virtual void Predraw(Node* parent) {
+	XY position{}, scale{ 1,1 }, anchor{ 0.5, 0.5 }, size{};	// todo: AABB?
+	float radians{}, alpha{ 1 };
+	int z{};													// global z for event priority or batch combine
+	bool visible{ true };
+	bool dirty{ true };											// for changed position, scale, anchor, size, radians
+	AffineTransform at{ AffineTransform::MakeIdentity() };
+
+	virtual void Update(Node* parent) {
 		//at.PosScaleRadiansAnchorSize(position, scale, radians, anchor * size);
 		at.PosScale(position, scale);
 		if (parent) {
@@ -29,13 +36,6 @@ struct Node {
 
 	virtual void Draw() {};									// draw current node only ( do not contain children )
 	virtual ~Node() {};
-
-	XY position{}, scale{ 1,1 }, anchor{ 0.5, 0.5 }, size{};	// todo: calc AABB for cut?
-	float radians{}, alpha{ 1 };
-	int z{};												// global z for sort
-	bool visible{ true };
-	bool dirty{ true };										// for changed position, scale, anchor, size, radians
-	AffineTransform at{ AffineTransform::MakeIdentity() };
 };
 
 /**********************************************************************************************/
@@ -50,11 +50,11 @@ struct ZNode {
 	}
 };
 
-inline void PredrawAndFillTo(xx::List<ZNode>& zns, Node* n) {
+inline void UpdateAndFillTo(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
 	if (!n->visible) return;	// todo: cut by AABB with camera?
 	if (n->dirty) {
-		n->Predraw({});
+		n->Update({});
 	}
 	zns.Emplace(n->z, n);
 	for (int i = zns.len - 1; i < zns.len; ++i) {
@@ -64,7 +64,7 @@ inline void PredrawAndFillTo(xx::List<ZNode>& zns, Node* n) {
 			if (!c->visible) continue;	// todo: cut by AABB with camera?
 			if (n->dirty) {
 				c->dirty = true;
-				c->Predraw(n);
+				c->Update(n);
 			}
 			zns.Emplace(c->z, c.pointer);
 		}

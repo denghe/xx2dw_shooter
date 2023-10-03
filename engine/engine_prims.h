@@ -486,7 +486,7 @@ namespace TranslateControl {
             // change cx & cy
             auto incX = dx2, incY = dy2;
             auto dSeq = dx2 * dx2 + dy2 * dy2;
-            if (dSeq == {}) {
+            if (dSeq == T{}) {
                 incX = bHalfWidth + cr * 0.7071067811865475 + 1;
                 incY = bHalfHeight + cr * 0.7071067811865475 + 1;
             } else {

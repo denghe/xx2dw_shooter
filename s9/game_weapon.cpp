@@ -40,8 +40,7 @@ void Weapon_1_Sword::RotateCirclesAndHitCheck() {
 xx::Task<> Weapon_1_Sword::MainLogic() {
 	while (hero) {
 		auto m = FindNearest(gLooper.monstersGrid, gLooper.sgrdd, pos, cSearchDistance);
-		if (!m) goto LabEnd;
-		{
+		if (m) {
 			auto wm = xx::WeakFromThis(m);
 			while (wm) {
 				auto v = wm->pos - pos;
@@ -53,7 +52,6 @@ xx::Task<> Weapon_1_Sword::MainLogic() {
 				if (!hero) co_return;
 			}
 		}
-	LabEnd:
 		pos = hero->weaponPos;
 		RotateCirclesAndHitCheck();
 		co_yield 0;
