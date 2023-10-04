@@ -236,7 +236,7 @@ struct SpaceGridAB {
 					auto c = cells[rIdx * numCols + cIdx];
 					while (c) {
 						auto&& s = c->self;
-						if (s->SGABCheckIntersects(minXY, maxXY)) {
+						if (Calc::Intersects::BoxBox(s->_sgabMin, s->_sgabMax, minXY, maxXY))
 							if (!s->_sgabFlag) {
 								s->_sgabFlag = 1;
 								results.push_back(s);
