@@ -177,6 +177,13 @@ namespace xx {
             return d.Read(out.x, out.y);
         }
     };
+
+    template<typename T>
+    struct StringFuncs<Vec2<T>, void> {
+        static inline void Append(std::string& s, Vec2<T> const& in) {
+            ::xx::Append(s, in.x, ", ", in.y);
+        }
+    };
 }
 
 // pos
@@ -371,6 +378,15 @@ struct AffineTransform {
     }
 };
 
+namespace xx {
+    template<typename T>
+    struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<AffineTransform, T>>> {
+        static inline void Append(std::string& s, AffineTransform const& in) {
+            ::xx::Append(s, in.a, ", ", in.b, ", ", in.c, ", ", in.d, ", ", in.tx, ", ", in.ty);
+        }
+    };
+}
+
 
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
@@ -537,6 +553,18 @@ namespace Calc {
 
 
     namespace Intersects {
+
+        // b: box
+        template<typename XY1, typename XY2>
+        XX_FORCE_INLINE bool BoxPoint(XY1 const& b1minXY, XY1 const& b1maxXY, XY2 const& p) {
+            return !(b1maxXY.x < p.x || p.x < b1minXY.x || b1maxXY.y < p.y || p.y < b1minXY.y);
+        }
+
+        // b: box
+        template<typename XY1, typename XY2>
+        XX_FORCE_INLINE bool BoxBox(XY1 const& b1minXY, XY1 const& b1maxXY, XY2 const& b2minXY, XY2 const& b2maxXY) {
+            return !(b1maxXY.x < b2minXY.x || b2maxXY.x < b1minXY.x || b1maxXY.y < b2minXY.y || b2maxXY.y < b1minXY.y);
+        }
 
         // b: box    c: circle    r: radius
         // if intersect return true

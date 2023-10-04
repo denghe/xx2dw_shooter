@@ -3,6 +3,6 @@
 
 struct BoxObj : Obj, SpaceGridABItem<BoxObj> {
 	~BoxObj() {
-		SGABTryRemove();
+		SGABRemove();
 	}
 };

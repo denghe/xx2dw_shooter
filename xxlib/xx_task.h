@@ -167,19 +167,19 @@ namespace xx {
         }
     };
 
-    struct TaskDeleter {
+    struct TaskGuard {
         Tasks* ptr;
         Tasks::IndexAndVersion iv;
-        TaskDeleter() : ptr(nullptr) {};
-        TaskDeleter(TaskDeleter const&) = delete;
-        TaskDeleter& operator=(TaskDeleter const&) = delete;
-        TaskDeleter(TaskDeleter && o) noexcept {
+        TaskGuard() : ptr(nullptr) {};
+        TaskGuard(TaskGuard const&) = delete;
+        TaskGuard& operator=(TaskGuard const&) = delete;
+        TaskGuard(TaskGuard && o) noexcept {
             ptr = o.ptr;
             iv = o.iv;
             o.ptr = nullptr;
             o.iv = {};
         }
-        TaskDeleter& operator=(TaskDeleter &&o) noexcept {
+        TaskGuard& operator=(TaskGuard &&o) noexcept {
             std::swap(ptr, o.ptr);
             std::swap(iv, o.iv);
             return *this;
@@ -190,7 +190,7 @@ namespace xx {
                 ptr = {};
             }
         }
-        ~TaskDeleter() {
+        ~TaskGuard() {
             Clear();
         }
 

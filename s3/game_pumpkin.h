@@ -86,8 +86,8 @@ struct Pumpkin : CircleObj {
 			auto minXY = newPos - radius, maxXY = newPos + radius;
 			if (minXY.x < 0) minXY.x = 0;
 			if (minXY.y < 0) minXY.y = 0;
-			if (maxXY.x >= sg.maxX) maxXY.x = sg.maxX - 1;
-			if (maxXY.y >= sg.maxY) maxXY.y = sg.maxY - 1;
+			if (maxXY.x >= sg.max.x) maxXY.x = sg.max.x - 1;
+			if (maxXY.y >= sg.max.y) maxXY.y = sg.max.y - 1;
 			if (minXY.x < maxXY.x && minXY.y < maxXY.y) {
 				//printf("ForeachAABB\n");
 				sg.ForeachAABB(minXY, maxXY);

@@ -43,8 +43,8 @@ xx::Task<> ShooterBullet1::MainLogic() {
 		auto minXY = (pos - cRadius).As<int32_t>(), maxXY = (pos + cRadius).As<int32_t>();
 		if (minXY.x < 0) minXY.x = 0;
 		if (minXY.y < 0) minXY.y = 0;
-		if (maxXY.x >= sg.maxX) maxXY.x = sg.maxX - 1;
-		if (maxXY.y >= sg.maxY) maxXY.y = sg.maxY - 1;
+		if (maxXY.x >= sg.max.x) maxXY.x = sg.max.x - 1;
+		if (maxXY.y >= sg.max.y) maxXY.y = sg.max.y - 1;
 		if (minXY.x < maxXY.x && minXY.y < maxXY.y) {
 			sg.ForeachAABB(minXY, maxXY);
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });

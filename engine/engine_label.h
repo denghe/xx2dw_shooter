@@ -23,7 +23,7 @@ struct Label : Node {
 
 	virtual void Draw() override {
 		auto& shader = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance);
-		auto pos = position - size * anchor;
+		auto pos = at.Apply(position - size * anchor);
 		for (auto& f : fs) {
 			auto& q = *shader.Draw(f->tex->GetValue(), 1);
 			q.anchor = { 0.f, 0.f };

@@ -235,7 +235,7 @@ struct Monster1 : MonsterBase {
 	void Hit(int damage) override;
 	void Draw() override;
 	xx::Task<> MainLogic();
-	xx::TaskDeleter hitLogic;
+	xx::TaskGuard hitLogic;
 };
 
 #endif

@@ -2,7 +2,7 @@
 #include "engine_prims.h"
 
 // space grid index system for AABB bounding box. coordinate (0, 0) at left-top, +x = right, +y = buttom
-template<typename Item>
+template<typename Item, typename XY_t = Vec2<int32_t>>
 struct SpaceGridAB;
 
 template<typename T>
@@ -13,64 +13,52 @@ struct SpaceGridABItemCellInfo {
 };
 
 // for inherit
-template<typename Derived>
+template<typename Derived, typename XY_t = Vec2<int32_t>>
 struct SpaceGridABItem {
 	using SGABCoveredCellInfo = SpaceGridABItemCellInfo<Derived>;
-	SpaceGridAB<Derived>* _sgab{};
-	Vec2<int32_t> _sgabPos, _sgabRadius, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
+	SpaceGridAB<Derived, XY_t>* _sgab{};
+	XY_t _sgabPos, _sgabRadius, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
 	Vec2<int32_t> _sgabCRIdxFrom, _sgabCRIdxTo;	// backup for Update speed up
 	std::vector<SGABCoveredCellInfo> _sgabCoveredCellInfos;	// todo: change to custom single buf container ?
 	size_t _sgabFlag{};	// avoid duplication when Foreach
 
-	void SGABInit(SpaceGridAB<Derived>& sgab) {
-		assert(!_sgab);
-		assert(!_sgabFlag);
-		assert(_sgabCoveredCellInfos.empty());
-		_sgab = &sgab;
-	}
-	void SGABSetPosSiz(Vec2<int32_t> const& pos, Vec2<int32_t> const& siz) {
-		assert(_sgab);
+	XX_FORCE_INLINE void SGABSetPosSiz(XY_t const& pos, XY_t const& siz) {
 		_sgabPos = pos;
 		_sgabRadius = siz / 2;
 		_sgabMin = pos - _sgabRadius;
 		_sgabMax = pos + _sgabRadius;
-		assert(_sgabMin.x < _sgabMax.x);
-		assert(_sgabMin.y < _sgabMax.y);
-		assert(_sgabMin.x >= 0 && _sgabMin.y >= 0);
-		assert(_sgabMax.x < _sgab->maxX && _sgabMax.y < _sgab->maxY);
 	}
-	void SGABAdd() {
-		assert(_sgab);
+
+	XX_FORCE_INLINE void SGABAdd(SpaceGridAB<Derived, XY_t>& sgab, XY_t const& pos, XY_t const& siz) {
+		assert(!_sgab);
+		assert(!_sgabFlag);
+		assert(_sgabCoveredCellInfos.empty());
+		_sgab = &sgab;
+		SGABSetPosSiz(pos, siz);
 		_sgab->Add(((Derived*)(this)));
 	}
 
-	void SGABUpdate() {
+	XX_FORCE_INLINE void SGABUpdate(XY_t const& pos, XY_t const& siz) {
 		assert(_sgab);
+		SGABSetPosSiz(pos, siz);
 		_sgab->Update(((Derived*)(this)));
 	}
 
-	void SGABRemove() {
-		assert(_sgab);
-		_sgab->Remove(((Derived*)(this)));
-	}
-	void SGABTryRemove() {
+	XX_FORCE_INLINE void SGABRemove() {
 		if (_sgab) {
-			SGABRemove();
+			_sgab->Remove(((Derived*)(this)));
 			_sgab = {};
 		}
 	}
-
-	bool SGABCheckIntersects(Vec2<int32_t> const& minXY, Vec2<int32_t> const& maxXY) {
-		return !(maxXY.x < _sgabMin.x || _sgabMax.x < minXY.x || maxXY.y < _sgabMin.y || _sgabMax.y < minXY.y);
-	}
 };
 
-template<typename Item>
+template<typename Item, typename XY_t>
 struct SpaceGridAB {
 	using ItemCellInfo = SpaceGridABItemCellInfo<Item>;
 	Vec2<int32_t> cellSize;
+	XY_t max, max_2;
 	int32_t numRows{}, numCols{};
-	int32_t maxY{}, maxX{}, numItems{}, numActives{};	// for easy check & stat
+	int32_t numItems{}, numActives{};	// for easy check & stat
 	std::vector<ItemCellInfo*> cells;
 	std::vector<Item*> results;	// tmp store Foreach items
 
@@ -84,8 +72,9 @@ struct SpaceGridAB {
 		cellSize.x = cellWidth_;
 		cellSize.y = cellHeight_;
 
-		maxY = cellHeight_ * numRows;
-		maxX = cellWidth_ * numCols;
+		max.y = cellHeight_ * numRows;
+		max.x = cellWidth_ * numCols;
+		max_2 = max / 2;
 
 		cells.resize(numRows * numCols);
 	}
@@ -94,10 +83,14 @@ struct SpaceGridAB {
 		assert(c);
 		assert(c->_sgab == this);
 		assert(c->_sgabCoveredCellInfos.empty());
+		assert(c->_sgabMin.x < c->_sgabMax.x);
+		assert(c->_sgabMin.y < c->_sgabMax.y);
+		assert(c->_sgabMin.x >= 0 && c->_sgabMin.y >= 0);
+		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->maxY);
 
 		// calc covered cells
-		auto crIdxFrom = c->_sgabMin / cellSize;
-		auto crIdxTo = c->_sgabMax / cellSize;
+		auto crIdxFrom = c->_sgabMin.template As<int32_t>() / cellSize;
+		auto crIdxTo = c->_sgabMax.template As<int32_t>() / cellSize;
 		auto numCoveredCells = (crIdxTo.x - crIdxFrom.x + 1) * (crIdxTo.y - crIdxFrom.y + 1);
 
 		// link
@@ -154,10 +147,14 @@ struct SpaceGridAB {
 		assert(c);
 		assert(c->_sgab == this);
 		assert(c->_sgabCoveredCellInfos.size());
+		assert(c->_sgabMin.x < c->_sgabMax.x);
+		assert(c->_sgabMin.y < c->_sgabMax.y);
+		assert(c->_sgabMin.x >= 0 && c->_sgabMin.y >= 0);
+		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->maxY);
 
 		// calc covered cells
-		auto crIdxFrom = c->_sgabMin / cellSize;
-		auto crIdxTo = c->_sgabMax / cellSize;
+		auto crIdxFrom = c->_sgabMin.template As<int32_t>() / cellSize;
+		auto crIdxTo = c->_sgabMax.template As<int32_t>() / cellSize;
 		auto numCoveredCells = (crIdxTo.x - crIdxFrom.x + 1) * (crIdxTo.y - crIdxFrom.y + 1);
 
 		auto& ccis = c->_sgabCoveredCellInfos;
@@ -210,14 +207,30 @@ struct SpaceGridAB {
 		results.clear();
 	}
 
+	template<typename F>
+	void ForeachPoint(XY_t const& p, F&& func) {
+		auto crIdx = p / cellSize;
+		if (crIdx.x < 0 || crIdx.x >= max.x
+		 || crIdx.y < 0 || crIdx.y >= max.y) return;
+		auto c = cells[crIdx.y * numCols + crIdx.x];
+		while (c) {
+			auto&& s = c->self;
+			auto next = c->next;
+			if (Calc::Intersects::BoxPoint(s->_sgabMin, s->_sgabMax, p)) {
+				func(s);
+			}
+			c = next;
+		}
+	}
+
 	// fill items to results. need ClearResults()
 	// auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 	template<bool enableLimit = false, bool enableExcept = false>
-	void ForeachAABB(Vec2<int32_t> const& minXY, Vec2<int32_t> const& maxXY, int32_t* limit = nullptr, Item* const& except = nullptr) {
+	void ForeachAABB(XY_t const& minXY, XY_t const& maxXY, int32_t* limit = nullptr, Item* const& except = nullptr) {
 		assert(minXY.x < maxXY.x);
 		assert(minXY.y < maxXY.y);
 		assert(minXY.x >= 0 && minXY.y >= 0);
-		assert(maxXY.x < maxX && maxXY.y < maxY);
+		assert(maxXY.x < max.x && maxXY.y < max.y);
 
 		// calc covered cells
 		auto crIdxFrom = minXY / cellSize;
@@ -236,7 +249,7 @@ struct SpaceGridAB {
 					auto c = cells[rIdx * numCols + cIdx];
 					while (c) {
 						auto&& s = c->self;
-						if (Calc::Intersects::BoxBox(s->_sgabMin, s->_sgabMax, minXY, maxXY))
+						if (Calc::Intersects::BoxBox(s->_sgabMin, s->_sgabMax, minXY, maxXY)) {
 							if (!s->_sgabFlag) {
 								s->_sgabFlag = 1;
 								results.push_back(s);

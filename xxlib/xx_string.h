@@ -319,13 +319,21 @@ namespace xx {
             }
             else if constexpr (std::is_floating_point_v<T>) {
                 std::array<char, 40> buf;
+                std::string_view sv;
 #ifndef _MSC_VER
-                snprintf(buf.data(), buf.size(), "%.16lf", (double) in);
-                s.append(buf.data());
+                snprintf(buf.data(), buf.size(), "%.16lf", (double)in);
+                sv = buf.data();
 #else
                 auto [ptr, _] = std::to_chars(buf.data(), buf.data() + buf.size(), in, std::chars_format::general, 16);
-                s.append(std::string_view(buf.data(), ptr - buf.data()));
+                sv = std::string_view(buf.data(), ptr - buf.data());
 #endif
+                if (sv.find('.') != sv.npos) {
+                    if (auto siz = sv.find_last_not_of('0'); siz != sv.npos) {
+                        if (sv[siz] == '.') --siz;
+                        sv = std::string_view(sv.data(), siz + 1);
+                    }
+                }
+                s.append(sv);
             }
             else {
                 if constexpr (std::is_same_v<char32_t, std::decay_t<T>>) {
@@ -873,14 +881,16 @@ namespace xx {
         for (auto&& c : s) {
             if (!c) c = '^';
         }
-        std::cout << s;
+        // std::cout << s;
+        printf("%s", s.c_str());
     }
 
     // 在 Cout 基础上添加了换行
     template<typename...Args>
     inline void CoutN(Args const& ...args) {
         Cout(args...);
-        std::cout << std::endl;
+        //std::cout << std::endl;
+        puts("");
     }
 
     // 在 CoutN 基础上于头部添加了时间
@@ -891,7 +901,8 @@ namespace xx {
 
     // 立刻输出
     inline void CoutFlush() {
-        std::cout.flush();
+        //std::cout.flush();
+        fflush(stdout);
     }
 
     // 带 format 格式化的 Cout
@@ -902,14 +913,16 @@ namespace xx {
         for (auto&& c : s) {
             if (!c) c = '^';
         }
-        std::cout << s;
+        //std::cout << s;
+        printf("%s", s.c_str());
     }
 
     // 在 CoutFormat 基础上添加了换行
     template<typename...Args>
     inline void CoutNFormat(char const* const& format, Args const& ...args) {
         CoutFormat(format, args...);
-        std::cout << std::endl;
+        //std::cout << std::endl;
+        puts("");
     }
 
     // 在 CoutNFormat 基础上于头部添加了时间

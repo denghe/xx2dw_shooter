@@ -10,7 +10,7 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 	int32_t hp{};
 	float speed{};
 	float damageEffectLeftDuration{};
-	xx::TaskDeleter damageEffect;
+	xx::TaskGuard damageEffect;
 
 	~Monster() {
 		SGCRemove();

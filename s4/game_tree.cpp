@@ -6,9 +6,7 @@ void Tree::Init(float x, float y) {
 	pos.x = x + cXOffset;
 	pos.y = y + gLooper.tileHeight - cYOffset;
 
-	SGABInit(gLooper.sgabTrees);
-	SGABSetPosSiz(pos.As<int32_t>(), Vec2<>(cBoxWidth, cBoxHeight));
-	SGABAdd();
+	SGABAdd(gLooper.sgabTrees, pos.As<int32_t>(), Vec2<>(cBoxWidth, cBoxHeight));
 
 	auto ay = cYOffset / gLooper.frame_tree->spriteSize.y;
 	body.SetFrame(gLooper.frame_tree).SetAnchor({ 0.5, ay });

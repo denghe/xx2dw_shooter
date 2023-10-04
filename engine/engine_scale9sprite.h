@@ -13,6 +13,7 @@ struct Scale9Sprite : Node {
 		z = z_;
 		position = position_;
 		size = size_;
+		anchor = {};
 		texScale = texScale_;
 		frame = std::move(frame_);
 		center = center_;
@@ -53,9 +54,8 @@ struct Scale9Sprite : Node {
 		float py3 = -float(center.y + center.h * sy) * texScale;
 
 		XY sc = scale * texScale;
+		auto basePos = position + XY{ 0, size.y * texScale };
 
-		auto halfSize = size * texScale / 2;
-		XY basePos{ -halfSize.x, halfSize.y };
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 

@@ -12,13 +12,24 @@ struct Node {
 	bool dirty{ true };											// for changed position, scale, anchor, size, radians
 	AffineTransform at{ AffineTransform::MakeIdentity() };
 
-	virtual void Update(Node* parent) {
-		//at.PosScaleRadiansAnchorSize(position, scale, radians, anchor * size);
-		at.PosScale(position, scale);
-		if (parent) {
-			at = parent->at.MakeConcat(at);
+	template<bool hasParent = true>
+	void Update(Node* parent) {
+		if (!visible || !dirty) return;
+		if constexpr (hasParent) {
+			at = parent->at.MakeConcat(at.MakePosScaleRadiansAnchorSize(position, scale, radians, anchor * size));
+		} else {
+			at.PosScaleRadiansAnchorSize(position, scale, radians, anchor * size);
 		}
+		for (auto& c : children) {
+			if (!c->visible) continue;
+			c->dirty = true;
+			c->Update(this);
+		}
+		dirty = false;
 	};
+	XX_FORCE_INLINE void Update() {
+		Update<false>({});
+	}
 
 	void SetAlphaRecursive(float alpha_) {
 		alpha = alpha_;
@@ -45,36 +56,32 @@ struct ZNode {
 	decltype(Node::z) z;
 	Node* n;
 	XX_FORCE_INLINE Node* operator->() { return n; }
-	inline XX_FORCE_INLINE static bool Comparer(ZNode const& a, ZNode const& b) {
+	inline XX_FORCE_INLINE static bool LessThanComparer(ZNode const& a, ZNode const& b) {
 		return a.z < b.z;
+	}
+	inline XX_FORCE_INLINE static bool GreaterThanComparer(ZNode const& a, ZNode const& b) {
+		return a.z > b.z;
 	}
 };
 
-inline void UpdateAndFillTo(xx::List<ZNode>& zns, Node* n) {
+inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
-	if (!n->visible) return;	// todo: cut by AABB with camera?
-	if (n->dirty) {
-		n->Update({});
-	}
+	if (!n->visible) return;
 	zns.Emplace(n->z, n);
 	for (int i = zns.len - 1; i < zns.len; ++i) {
 		n = zns[i].n;
 		for (auto& c : n->children) {
 			assert(c);
-			if (!c->visible) continue;	// todo: cut by AABB with camera?
-			if (n->dirty) {
-				c->dirty = true;
-				c->Update(n);
-			}
+			if (!c->visible) continue;
 			zns.Emplace(c->z, c.pointer);
 		}
-		n->dirty = false;
 	}
 }
 
 inline void OrderByZDrawAndClear(xx::List<ZNode>& zns) {
-	std::sort(zns.buf, zns.buf + zns.len, ZNode::Comparer);
+	std::sort(zns.buf, zns.buf + zns.len, ZNode::LessThanComparer);	// draw small z first
 	for (auto& zn : zns) {
+		// todo: cut by AABB with camera?
 		zn->Draw();
 	}
 	zns.Clear();

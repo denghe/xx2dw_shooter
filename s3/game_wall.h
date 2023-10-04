@@ -4,9 +4,7 @@
 struct Wall : BoxObj {
 	void Init(Vec2<> const& pos, Vec2<> const& size, int frameIndex) {
 		
-		SGABInit(gLooper.sgabWalls);
-		SGABSetPosSiz(pos, size);
-		SGABAdd();
+		SGABAdd(gLooper.sgabWalls, pos, size);
 
 		quad.SetFrame(gLooper.frames_wall[frameIndex]);
 	}
