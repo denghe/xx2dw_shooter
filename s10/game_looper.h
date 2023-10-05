@@ -45,10 +45,15 @@ struct MouseEventHandlerNode : Node, SpaceGridABItem<MouseEventHandlerNode, XY> 
 	virtual void OnMouseMove() = 0;
 	virtual void OnMouseUp() = 0;
 
+	virtual void DerivedUpdate() override {
+		UpdateMouseEventHandler();
+	}
+
 	bool MousePosInArea() {
-		auto mp = gLooper.mouseEventHandlers.max_2 + gLooper.mouse.pos;
-		//XY basePos{ -size.x * anchor.x, size.y * (anchor.y + 0.5) };
-		return Calc::Intersects::BoxPoint(_sgabMin, _sgabMax, mp);	// todo: calc at ?
+		//auto mp = AffineTransform::MakeInvert(trans)(gLooper.mouse.pos);
+		//xx::CoutN("mouse.pos = ", gLooper.mouse.pos, "  mp = ", mp);
+		auto mp = gLooper.mouse.pos;
+		return Calc::Intersects::BoxPoint(_sgabMin, _sgabMax, gLooper.mouseEventHandlers.max_2 + mp);
 	}
 
 	XX_FORCE_INLINE void RegisterMouseEventHandler() {
@@ -117,25 +122,22 @@ struct Button : MouseEventHandlerNode {
 	}
 
 	virtual void OnMouseDown() override {
-		xx::CoutN("mouse down");
 		gLooper.mouseEventHandler = xx::WeakFromThis(this);
 		bgChangeColormulti.Clear();
 		bg->colormulti = cBgColormultiDark;
 	}
 
 	virtual void OnMouseMove() override {
-		//xx::CoutN("mouse move");
-		if (gLooper.mouseEventHandler.pointer() == this) {
-			// todo: high light?
-			// todo: inside outside check
-		} else {
+		if (gLooper.mouseEventHandler.pointer() != this) {
 			bgChangeColormulti(gLooper.tasks, BgHighlight());
 		}
 	}
 
 	virtual void OnMouseUp() override {
-		xx::CoutN("mouse up");
 		bg->colormulti = cBgColormultiNormal;
-		// todo
+		gLooper.mouseEventHandler.Reset();
+		if (MousePosInArea()) {
+			xx::CoutN("button clicked.");
+		}
 	}
 };

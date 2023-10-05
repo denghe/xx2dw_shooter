@@ -5,21 +5,22 @@ struct Node {
 	//xx::Weak<Node> parent;
 	xx::List<xx::Shared<Node>, int32_t> children;
 
-	XY position{}, scale{ 1,1 }, anchor{ 0.5, 0.5 }, size{};	// todo: AABB?
-	float radians{}, alpha{ 1 };
+	XY position{}, scale{ 1,1 }, anchor{ 0.5, 0.5 }, size{};
+	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
 	bool visible{ true };
-	bool dirty{ true };											// for changed position, scale, anchor, size, radians
-	AffineTransform at{ AffineTransform::MakeIdentity() };
+	bool dirty{ true };											// for changed position, scale, anchor, size
+	AffineTransform trans{ AffineTransform::MakeIdentity() };
 
 	template<bool hasParent = true>
 	void Update(Node* parent) {
 		if (!visible || !dirty) return;
 		if constexpr (hasParent) {
-			at = parent->at.MakeConcat(at.MakePosScaleRadiansAnchorSize(position, scale, radians, anchor * size));
+			trans = parent->trans.MakeConcat(trans.MakePosScaleAnchorSize(position, scale, anchor * size));
 		} else {
-			at.PosScaleRadiansAnchorSize(position, scale, radians, anchor * size);
+			trans.PosScaleAnchorSize(position, scale, anchor * size);
 		}
+		DerivedUpdate();
 		for (auto& c : children) {
 			if (!c->visible) continue;
 			c->dirty = true;
@@ -27,6 +28,7 @@ struct Node {
 		}
 		dirty = false;
 	};
+
 	XX_FORCE_INLINE void Update() {
 		Update<false>({});
 	}
@@ -44,7 +46,14 @@ struct Node {
 	void SetScale(XY const& xy) { if (scale != xy) { scale = xy; dirty = true; } }
 	void SetScaleX(float x) { if (scale.x != x) { scale.x = x; dirty = true; } }
 	void SetScaleY(float y) { if (scale.y != y) { scale.y = y; dirty = true; } }
+	void SetAnchor(XY const& xy) { if (anchor != xy) { anchor = xy; dirty = true; } }
+	void SetAnchoreX(float x) { if (anchor.x != x) { anchor.x = x; dirty = true; } }
+	void SetAnchoreY(float y) { if (anchor.y != y) { anchor.y = y; dirty = true; } }
+	void SetSize(XY const& xy) { if (size != xy) { size = xy; dirty = true; } }
+	void SetSizeX(float x) { if (size.x != x) { size.x = x; dirty = true; } }
+	void SetSizeY(float y) { if (size.y != y) { size.y = y; dirty = true; } }
 
+	virtual void DerivedUpdate() {};
 	virtual void Draw() {};									// draw current node only ( do not contain children )
 	virtual ~Node() {};
 };

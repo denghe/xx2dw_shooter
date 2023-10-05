@@ -122,7 +122,8 @@ struct Vec2 {
     }
 
     bool IsZero() const {
-        return x == T{} && y == T{};
+        if constexpr (std::is_floating_point_v<T>) return (std::abs(x) < std::numeric_limits<T>::epsilon()) && (std::abs(y) < std::numeric_limits<T>::epsilon());
+        else return x == T{} && y == T{};
     }
 
     void Clear() {
@@ -275,67 +276,43 @@ struct AffineTransform {
     float a, b, c, d;
     float tx, ty;
 
-    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
-        AffineTransform at;
-        at.PosScaleRadiansAnchorSize(pos, scale, radians, anchorSize);
-        return at;
-    }
-
-    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
-        AffineTransform at;
-        at.PosScaleRadians(pos, scale, radians);
-        return at;
-    }
-
-    inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
-        return { scale.x, 0, 0, scale.y, pos.x, pos.y };
-    }
-
-    inline static AffineTransform MakePos(XY const& pos) {
-        return { 1.0, 0.0, 0.0, 1.0, pos.x, pos.y };
-    }
-
-    inline static AffineTransform MakeIdentity() {
-        return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    // anchorSize = anchor * size
+    void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+        float c_ = 1, s_ = 0;
+        if (radians) {
+            c_ = std::cos(-radians);
+            s_ = std::sin(-radians);
+        }
+        a = c_ * scale.x;
+        b = s_ * scale.x;
+        c = -s_ * scale.y;
+        d = c_ * scale.y;
+        tx = pos.x + c_ * scale.x * -anchorSize.x - s_ * scale.y * -anchorSize.y;
+        ty = pos.y + s_ * scale.x * -anchorSize.x + c_ * scale.y * -anchorSize.y;
     }
 
     // anchorSize = anchor * size
-    void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
-        auto x = pos.x;
-        auto y = pos.y;
-        float c_ = 1, s_ = 0;
-        if (radians) {
-            c_ = std::cos(-radians);
-            s_ = std::sin(-radians);
-        }
-        if (!anchorSize.IsZero()) {
-            x += c_ * scale.x * -anchorSize.x - s_ * scale.y * -anchorSize.y;
-            y += s_ * scale.x * -anchorSize.x + c_ * scale.y * -anchorSize.y;
-        }
-
-        a = c_ * scale.x;
-        b = s_ * scale.x;
-        c = -s_ * scale.y;
-        d = c_ * scale.y;
-        tx = x;
-        ty = y;
+    void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+        a = scale.x;
+        b = 0;
+        c = 0;
+        d = scale.y;
+        tx = pos.x + scale.x * -anchorSize.x;
+        ty = pos.y + scale.y * -anchorSize.y;
     }
 
     void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
-        auto x = pos.x;
-        auto y = pos.y;
         float c_ = 1, s_ = 0;
         if (radians) {
             c_ = std::cos(-radians);
             s_ = std::sin(-radians);
         }
-
         a = c_ * scale.x;
         b = s_ * scale.x;
         c = -s_ * scale.y;
         d = c_ * scale.y;
-        tx = x;
-        ty = y;
+        tx = pos.x;
+        ty = pos.y;
     }
 
     void PosScale(XY const& pos, XY const& scale) {
@@ -365,17 +342,53 @@ struct AffineTransform {
         ty = 0;
     }
 
-    XY Apply(XY const& point) const {
+    // convert to node space
+    XY operator()(XY const& point) const {
         return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
     }
 
     AffineTransform MakeConcat(AffineTransform const& t2) {
         auto& t1 = *this;
-        return { t1.a * t2.a + t1.b * t2.c, t1.a * t2.b + t1.b * t2.d,
-            t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d,
-            t1.tx * t2.a + t1.ty * t2.c + t2.tx,
-            t1.tx * t2.b + t1.ty * t2.d + t2.ty };
+        return { t1.a * t2.a + t1.b * t2.c, t1.a * t2.b + t1.b * t2.d, t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d,
+            t1.tx * t2.a + t1.ty * t2.c + t2.tx, t1.tx * t2.b + t1.ty * t2.d + t2.ty };
     }
+
+    inline static AffineTransform MakeInvert(AffineTransform const& t) {
+        auto determinant = 1 / (t.a * t.d - t.b * t.c);
+        return { determinant * t.d, -determinant * t.b, -determinant * t.c, determinant * t.a,
+            determinant * (t.c * t.ty - t.d * t.tx), determinant * (t.b * t.tx - t.a * t.ty) };
+    }
+
+    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+        AffineTransform at;
+        at.PosScaleRadiansAnchorSize(pos, scale, radians, anchorSize);
+        return at;
+    }
+
+    inline static AffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+        AffineTransform at;
+        at.PosScaleAnchorSize(pos, scale, anchorSize);
+        return at;
+    }
+
+    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+        AffineTransform at;
+        at.PosScaleRadians(pos, scale, radians);
+        return at;
+    }
+
+    inline static AffineTransform MakePosScale(XY const& pos, XY const& scale) {
+        return { scale.x, 0, 0, scale.y, pos.x, pos.y };
+    }
+
+    inline static AffineTransform MakePos(XY const& pos) {
+        return { 1.0, 0.0, 0.0, 1.0, pos.x, pos.y };
+    }
+
+    inline static AffineTransform MakeIdentity() {
+        return { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+    }
+
 };
 
 namespace xx {

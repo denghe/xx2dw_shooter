@@ -26,10 +26,9 @@ void Weapon_1_Sword::Draw() {
 }
 
 void Weapon_1_Sword::RotateCirclesAndHitCheck() {
-	auto at = AffineTransform::MakePosScaleRadians(pos, { 1,1 }, -radians);
-	//printf("%f %f %f\n", pos.x, pos.y, radians);
+	auto trans = AffineTransform::MakePosScaleRadians(pos, { 1,1 }, -radians);
 	for (size_t i = 0; i < std::size(cCircles); i++) {
-		circles[i].pos = at.Apply(cCircles[i].pos);
+		circles[i].pos = trans(cCircles[i].pos);
 		FindNeighborsCross(gLooper.monstersGrid, circles[i].pos, circles[i].radius, [](auto m) {
 			m->Hit(cDamage);
 		});

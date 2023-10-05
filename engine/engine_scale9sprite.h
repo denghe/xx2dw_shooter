@@ -61,7 +61,7 @@ struct Scale9Sprite : Node {
 
 		QuadInstanceData* q;
 		q = &qs[0];
-		q->pos = at.Apply(basePos + XY{ px1, py1 });
+		q->pos = trans(basePos + XY{ px1, py1 });
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -70,7 +70,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty1, tw1, th1 };
 
 		q = &qs[1];
-		q->pos = at.Apply(basePos + XY{ px2, py1 });
+		q->pos = trans(basePos + XY{ px2, py1 });
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
@@ -79,7 +79,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty1, tw2, th1 };
 
 		q = &qs[2];
-		q->pos = at.Apply(basePos + XY{ px3, py1 });
+		q->pos = trans(basePos + XY{ px3, py1 });
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -88,7 +88,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx3, ty1, tw3, th1 };
 
 		q = &qs[3];
-		q->pos = at.Apply(basePos + XY{ px1, py2 });
+		q->pos = trans(basePos + XY{ px1, py2 });
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
@@ -97,7 +97,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty2, tw1, th2 };
 
 		q = &qs[4];
-		q->pos = at.Apply(basePos + XY{ px2, py2 });
+		q->pos = trans(basePos + XY{ px2, py2 });
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, sy };
 		q->radians = {};
@@ -106,7 +106,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty2, tw2, th2 };
 
 		q = &qs[5];
-		q->pos = at.Apply(basePos + XY{ px3, py2 });
+		q->pos = trans(basePos + XY{ px3, py2 });
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
@@ -115,7 +115,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx3, ty2, tw3, th2 };
 
 		q = &qs[6];
-		q->pos = at.Apply(basePos + XY{ px1, py3 });
+		q->pos = trans(basePos + XY{ px1, py3 });
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -124,7 +124,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty3, tw1, th3 };
 
 		q = &qs[7];
-		q->pos = at.Apply(basePos + XY{ px2, py3 });
+		q->pos = trans(basePos + XY{ px2, py3 });
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
@@ -133,7 +133,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty3, tw2, th3 };
 
 		q = &qs[8];
-		q->pos = at.Apply(basePos + XY{ px3, py3 });
+		q->pos = trans(basePos + XY{ px3, py3 });
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};

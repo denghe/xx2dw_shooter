@@ -68,7 +68,7 @@ xx::Task<> Poly::MainTask() {
         for (radians = r1; radians < r2; radians += cRadiansIncrease) {
             auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
             for (int i = 0; i < std::size(vertsForCalc); ++i) {
-                vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
+                vertsForCalc[i] = at(vertsForCalcBak[i]);
             }
             border.SetPosition(pos).SetRotate(radians);
             gLooper.shadows.Emplace().Init(border);
@@ -76,9 +76,9 @@ xx::Task<> Poly::MainTask() {
         }
         scale.y = -scale.y;
         for (radians = r2; radians > r1; radians -= cRadiansIncrease) {
-            auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
+            auto trans = AffineTransform::MakePosScaleRadians(pos, scale, radians);
             for (int i = 0; i < std::size(vertsForCalc); ++i) {
-                vertsForCalc[i] = at.Apply(vertsForCalcBak[i]);
+                vertsForCalc[i] = trans(vertsForCalcBak[i]);
             }
             border.SetPosition(pos).SetRotate(radians);
             gLooper.shadows.Emplace().Init(border);

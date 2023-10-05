@@ -3,7 +3,6 @@
 
 struct LineStrip {
 	std::vector<XYRGBA8> pointsBuf;
-	AffineTransform at;
 	bool dirty = true;
 
 	std::vector<XY> points;
@@ -125,9 +124,9 @@ struct LineStrip {
 		if (dirty) {
 			auto&& ps = points.size();
 			pointsBuf.resize(ps);
-			at.PosScaleRadiansAnchorSize(pos, scale, radians, size * anchor);
+			auto trans = AffineTransform::MakePosScaleRadiansAnchorSize(pos, scale, radians, size * anchor);
 			for (size_t i = 0; i < ps; ++i) {
-				(XY&)pointsBuf[i].x = at.Apply(points[i]);
+				(XY&)pointsBuf[i].x = trans(points[i]);
 				memcpy(&pointsBuf[i].r, &color, sizeof(color));
 			}
 			dirty = false;

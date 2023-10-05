@@ -73,14 +73,12 @@ xx::Task<> GameLooper::MainTask() {
 	//while (true) {
 	//	for (float x = -100; x < 100; ++x) {
 	//		//printf("x = %f\n", x);
-	//		root->position.x = x;
-	//		root->dirty = true;
+	//		root->SetPositionX(x);
 	//		co_yield 0;
 	//	}
 	//	for (float x = 100; x > -100; --x) {
 	//		//printf("x = %f\n", x); 
-	//		root->position.x = x;
-	//		root->dirty = true;
+	//		root->SetPositionX(x);
 	//		co_yield 0;
 	//	}
 	//}
@@ -88,17 +86,11 @@ xx::Task<> GameLooper::MainTask() {
 
 void GameLooper::Update() {
 	if (!ready) return;
-	if (root) {
-		root->Update();
-		//xx::CoutN("root->at = ", root->at);
-		//xx::CoutN("root->children[0]->at = ", root->children[0]->at);
-		//xx::CoutN("root->children[0]->children[0]->at = ", root->children[0]->children[0]->at);
-		//xx::CoutN("root->children[0]->children[1]->at = ", root->children[0]->children[1]->at);
-	}
 }
 
 void GameLooper::Draw() {
 	if (!ready) return;
+	root->Update();
 	FillZNodes(tmpZNodes, root);
 	OrderByZDrawAndClear(tmpZNodes);
 	LineStrip().FillCirclePoints({}, 2, {}, 8).Draw();
