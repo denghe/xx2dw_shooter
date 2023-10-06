@@ -1,7 +1,5 @@
 ﻿#pragma once
-#include "engine_base.h"
 #include "engine_framebuffer.h"
-#include "engine_frame.h"
 
 // sprite
 struct Quad : QuadInstanceData {
@@ -101,7 +99,7 @@ struct Quad : QuadInstanceData {
     }
     XX_FORCE_INLINE Quad& Draw() const {
         assert(texId);
-        gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance).Draw(texId, *this);
+        EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(texId, *this);
         return (Quad&)*this;
     }
 };

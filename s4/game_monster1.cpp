@@ -24,9 +24,9 @@ void Monster1::Hit(int damage) {
 	} else {
 		hp -= damage;
 		float dispersedVal = 20 / gScale * scale;
-		gLooper.effects_damageText.Emplace().Emplace()->Init({ gLooper.rnd.Next(pos.x - dispersedVal, pos.x + dispersedVal), gLooper.rnd.Next(pos.y - dispersedVal, pos.y + dispersedVal) }, damage, {255,255,0,255});
+		gLooper.effects_damageText.Emplace().Emplace()->Init({ gEngine->rnd.Next(pos.x - dispersedVal, pos.x + dispersedVal), gEngine->rnd.Next(pos.y - dispersedVal, pos.y + dispersedVal) }, damage, {255,255,0,255});
 		if (hertLife <= 0) {
-			hitLogic(gLooper.tasks, [this]()->xx::Task<> {
+			hitLogic(gEngine->tasks, [this]()->xx::Task<> {
 				while (hertLife) {
 					--hertLife;
 					body.SetColormulti(255);
@@ -40,7 +40,7 @@ void Monster1::Hit(int damage) {
 }
 
 xx::Task<> Monster1::MainLogic() {
-	float tarScale = gLooper.rnd.Next<float>(cScale, cMaxScale);
+	float tarScale = gEngine->rnd.Next<float>(cScale, cMaxScale);
 	float scaleStep = tarScale / cScaleSteps;
 	// scale in
 	body.SetScale(0);
@@ -93,7 +93,7 @@ xx::Task<> Monster1::MainLogic() {
 				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
 			}
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-				auto r = gLooper.rnd.Next<float>(M_PI * 2);
+				auto r = gEngine->rnd.Next<float>(M_PI * 2);
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 			} else {
 				newPos += combineForce.MakeNormalize() * cSpeed;

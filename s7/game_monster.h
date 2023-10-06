@@ -27,7 +27,7 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 			hp -= damage;
 			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,255,255,255 }, damage);	// todo: calc pos ??
 			if (damageEffectLeftDuration <= 0) {
-				damageEffect(gLooper.tasks, [this]()->xx::Task<> {
+				damageEffect(gEngine->tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {
 						damageEffectLeftDuration -= gDesign.frameDelay;
 						body.SetColormulti(255);

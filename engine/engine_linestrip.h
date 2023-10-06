@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base.h"
+#include "engine_base1.h"
 
 struct LineStrip {
 	std::vector<XYRGBA8> pointsBuf;
@@ -136,7 +136,7 @@ struct LineStrip {
 	void Draw() {
 		Update();
 		if (auto&& ps = pointsBuf.size()) {
-			gEngineBase->ShaderBegin(gEngineBase->shaderLineStrip).Draw(pointsBuf.data(), ps);
+			EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderLineStrip).Draw(pointsBuf.data(), ps);
 		}
 	}
 };

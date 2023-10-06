@@ -8,7 +8,7 @@ struct Blood : Sprite {
 	void Init(XY const& pos_) {
 		mainLogic = MainLogic_();
 		pos = pos_;
-		radians = gLooper.rnd.Next<float>(M_PI * 2);
+		radians = gEngine->rnd.Next<float>(M_PI * 2);
 		frames = &gLooper.frames_blood_4;
 		frameIndex = {};
 	}

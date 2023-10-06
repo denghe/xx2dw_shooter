@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base.h"
+#include "engine_base1.h"
 #include "engine_framebuffer.h"
 #include "engine_frame.h"
 #include "engine_quad.h"
@@ -97,7 +97,7 @@ struct CharTexCache {
             fs[i] = &Find(txt[i]);
         }
         auto pos = position - size * anchor;
-        auto& shader = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance);
+        auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
         for (size_t i = 0; i < e; ++i) {
             auto f = fs[i];
             auto& q = *shader.Draw(f->tex->GetValue(), 1);

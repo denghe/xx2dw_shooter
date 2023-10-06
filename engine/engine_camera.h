@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base.h"
+#include "engine_base0.h"
 
 struct Camera {
 	// need set
@@ -54,8 +54,8 @@ struct Camera {
 
 	// need set original & set scale or zoom
 	void Calc() {
-		width_2 = gEngineBase->windowWidth_2 * zoom;
-		height_2 = gEngineBase->windowHeight_2 * zoom;
+		width_2 = gEngine->windowWidth_2 * zoom;
+		height_2 = gEngine->windowHeight_2 * zoom;
 
 		minX = original.x - width_2;
 		maxX = original.x + width_2;

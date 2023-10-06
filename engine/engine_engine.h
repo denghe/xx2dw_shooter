@@ -1,8 +1,5 @@
 ﻿#pragma once
-#include "engine_baseex.h"
-#include "engine_node.h"
-#include "engine_label.h"
-#include "engine_scale9sprite.h"
+#include "engine_base3.h"
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -32,8 +29,7 @@ template <typename T> concept Has_OnTouchCancel = requires(T t) { { t.OnTouchCan
 // Derived content requires:
 // constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 template<typename Derived>
-struct Engine : EngineBaseEx {
-    xx::Tasks tasks;
+struct Engine : EngineBase3 {
 
     Engine() {
 

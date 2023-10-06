@@ -15,7 +15,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 
 		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
 			// todo: - hp ?
-			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gLooper.rnd.Next<int32_t>(1, 500));
+			gLooper.effects_damageText.Emplace().Emplace()->Init(pos, gEngine->rnd.Next<int32_t>(1, 500));
 			gLooper.effects_explosion.Emplace().Emplace()->Init(pos);
 			r->RemoveFromOwner();	// dispose monster
 			break;	// suicide

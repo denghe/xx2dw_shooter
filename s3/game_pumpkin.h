@@ -13,7 +13,7 @@ struct Pumpkin : CircleObj {
 
 	void Init(Vec2<> const& pos_) {
 		radius = cRadius;
-		frameIndex = gLooper.rnd.Next<float>(cFrameMaxIndex - 0.1);
+		frameIndex = gEngine->rnd.Next<float>(cFrameMaxIndex - 0.1);
 		pos = pos_;
 		SGCAdd(gLooper.sgcMonsters, pos_);
 		quad.SetAnchor({ 0.5, float(cSize.x) / 2 / cSize.y });
@@ -50,7 +50,7 @@ struct Pumpkin : CircleObj {
 			if (numCross) {
 				//printf("numCross = %d\n", numCross);
 				if (combineForce.IsZero()) {											// move by random angle
-					auto r = gLooper.rnd.Next<float>(M_PI * 2);
+					auto r = gEngine->rnd.Next<float>(M_PI * 2);
 					newPos += (XY{ std::cos(r), std::sin(r) } + XY{ 0, 0.1 }) * cSpeed;
 				} else {																// move by v
 					newPos += (combineForce.MakeNormalize() + XY{ 0, 0.1 }) * cSpeed;
@@ -68,7 +68,7 @@ struct Pumpkin : CircleObj {
 			//		combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
 			//	}
 			//	if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-			//		auto r = gLooper.rnd.Next<float>(M_PI * 2);
+			//		auto r = gEngine->rnd.Next<float>(M_PI * 2);
 			//		newPos += XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 			//	} else {
 			//		newPos += combineForce.MakeNormalize() * cSpeed;

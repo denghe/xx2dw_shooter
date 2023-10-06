@@ -62,7 +62,7 @@ xx::Task<> Monster1::MainLogic() {
 			}
 			//if (combineForce.IsZero()) {						// move by random angle
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-				auto r = gLooper.rnd.Next<float>(M_PI * 2);
+				auto r = gEngine->rnd.Next<float>(M_PI * 2);
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 				//printf("r = %f   pos = %f %f   newPos = %f %f\n", r, pos.x, pos.y, newPos.x, newPos.y);
 			} else {

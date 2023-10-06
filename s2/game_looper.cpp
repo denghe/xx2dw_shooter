@@ -61,9 +61,9 @@ void GameLooper::Draw() {
 		for (auto& room : rooms) { room->Draw(); }
 
 		if (!hasCross) {
-			ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, "calculate done.");
+			ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, "calculate done.");
 		} else {
-			ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, "keyboard Z X zoom.");
+			ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, "keyboard Z X zoom.");
 		}
 	}
 }
@@ -140,7 +140,7 @@ xx::Task<> Room::MainLogic() {
 			++numCross;
 			float r;
 			if (pos == room->pos) {
-				r = gLooper.rnd.Next<float>(M_PI * 2);
+				r = gEngine->rnd.Next<float>(M_PI * 2);
 			} else {
 				auto d = (pos - room->pos).As<float>();
 				r = std::atan2(d.y, d.x);

@@ -20,7 +20,7 @@ struct MagicWeapon : Sprite {
 	void Init(int index, xx::Shared<Owner> const& owner_, XY const& bornPos) {
 		mainLogic = MainLogic();
 		radius = cRadius;
-		flyRadian = gLooper.rnd.Next<float>(cFlyRadianMin, cFlyRadianMax);
+		flyRadian = gEngine->rnd.Next<float>(cFlyRadianMin, cFlyRadianMax);
 		owner = owner_;
 		pos = bornPos;
 		frames = &gLooper.frames_magicWeapon;

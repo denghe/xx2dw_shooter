@@ -19,10 +19,12 @@ struct Scale9Sprite : Node {
 		center = center_;
 		color = color_;
 		colormulti = colormulti_;
+
+		FillTrans();
 	}
 
 	virtual void Draw() override {
-		auto qs = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance).Draw(frame->tex->GetValue(), 9);
+		auto qs = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(frame->tex->GetValue(), 9);
 
 		auto& r = frame->textureRect;
 
@@ -53,15 +55,15 @@ struct Scale9Sprite : Node {
 		float py2 = -float(center.y) * texScale;
 		float py3 = -float(center.y + center.h * sy) * texScale;
 
-		XY sc = scale * texScale;
-		auto basePos = position + XY{ 0, size.y * texScale };
+		XY sc = { texScale,texScale };
+		auto basePos = trans + XY{ 0, size.y * texScale };
 
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 
 		QuadInstanceData* q;
 		q = &qs[0];
-		q->pos = trans(basePos + XY{ px1, py1 });
+		q->pos = basePos + XY{ px1, py1 };
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -70,7 +72,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty1, tw1, th1 };
 
 		q = &qs[1];
-		q->pos = trans(basePos + XY{ px2, py1 });
+		q->pos = basePos + XY{ px2, py1 };
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
@@ -79,7 +81,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty1, tw2, th1 };
 
 		q = &qs[2];
-		q->pos = trans(basePos + XY{ px3, py1 });
+		q->pos = basePos + XY{ px3, py1 };
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -88,7 +90,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx3, ty1, tw3, th1 };
 
 		q = &qs[3];
-		q->pos = trans(basePos + XY{ px1, py2 });
+		q->pos = basePos + XY{ px1, py2 };
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
@@ -97,7 +99,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty2, tw1, th2 };
 
 		q = &qs[4];
-		q->pos = trans(basePos + XY{ px2, py2 });
+		q->pos = basePos + XY{ px2, py2 };
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, sy };
 		q->radians = {};
@@ -106,7 +108,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty2, tw2, th2 };
 
 		q = &qs[5];
-		q->pos = trans(basePos + XY{ px3, py2 });
+		q->pos = basePos + XY{ px3, py2 };
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ 1, sy };
 		q->radians = {};
@@ -115,7 +117,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx3, ty2, tw3, th2 };
 
 		q = &qs[6];
-		q->pos = trans(basePos + XY{ px1, py3 });
+		q->pos = basePos + XY{ px1, py3 };
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};
@@ -124,7 +126,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx1, ty3, tw1, th3 };
 
 		q = &qs[7];
-		q->pos = trans(basePos + XY{ px2, py3 });
+		q->pos = basePos + XY{ px2, py3 };
 		q->anchor = { 0, 1 };
 		q->scale = sc * XY{ sx, 1 };
 		q->radians = {};
@@ -133,7 +135,7 @@ struct Scale9Sprite : Node {
 		q->texRect = { tx2, ty3, tw2, th3 };
 
 		q = &qs[8];
-		q->pos = trans(basePos + XY{ px3, py3 });
+		q->pos = basePos + XY{ px3, py3 };
 		q->anchor = { 0, 1 };
 		q->scale = sc;
 		q->radians = {};

@@ -208,6 +208,15 @@ constexpr static RGBA8 RGBA8_Blue{0,0,255,255};
 constexpr static RGBA8 RGBA8_White{255,255,255,255};
 constexpr static RGBA8 RGBA8_Black{0,0,0,255};
 
+namespace xx {
+    template<typename T>
+    struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<RGBA8, T>>> {
+        static inline void Append(std::string& s, RGBA8 const& in) {
+            ::xx::Append(s, in.r, ", ", in.g, ", ", in.b, ", ", in.a);
+        }
+    };
+}
+
 // 4 floats color
 struct RGBA {
     float r, g, b, a;
@@ -259,15 +268,6 @@ union UVRect {
 };
 
 
-struct Shader;
-struct EngineBaseBase {
-    float windowWidth = 800, windowHeight = 600;          // can change at Init()
-    float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
-    float flipY{ 1 };   // -1: flip  for ogl frame buffer
-    Shader* shader{};
-};
-
-
 /*******************************************************************************************************************************************/
 /*******************************************************************************************************************************************/
 
@@ -291,16 +291,6 @@ struct AffineTransform {
         ty = pos.y + s_ * scale.x * -anchorSize.x + c_ * scale.y * -anchorSize.y;
     }
 
-    // anchorSize = anchor * size
-    void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
-        a = scale.x;
-        b = 0;
-        c = 0;
-        d = scale.y;
-        tx = pos.x + scale.x * -anchorSize.x;
-        ty = pos.y + scale.y * -anchorSize.y;
-    }
-
     void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
         float c_ = 1, s_ = 0;
         if (radians) {
@@ -313,6 +303,16 @@ struct AffineTransform {
         d = c_ * scale.y;
         tx = pos.x;
         ty = pos.y;
+    }
+
+    // anchorSize = anchor * size
+    void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+        a = scale.x;
+        b = 0;
+        c = 0;
+        d = scale.y;
+        tx = pos.x + scale.x * -anchorSize.x;
+        ty = pos.y + scale.y * -anchorSize.y;
     }
 
     void PosScale(XY const& pos, XY const& scale) {
@@ -342,9 +342,13 @@ struct AffineTransform {
         ty = 0;
     }
 
-    // convert to node space
+    // default apply
     XY operator()(XY const& point) const {
         return { (float)((double)a * point.x + (double)c * point.y + tx), (float)((double)b * point.x + (double)d * point.y + ty) };
+    }
+
+    XY NoRadiansApply(XY const& point) const {
+        return { (float)((double)a * point.x + tx), (float)((double)d * point.y + ty) };
     }
 
     AffineTransform MakeConcat(AffineTransform const& t2) {
@@ -353,7 +357,8 @@ struct AffineTransform {
             t1.tx * t2.a + t1.ty * t2.c + t2.tx, t1.tx * t2.b + t1.ty * t2.d + t2.ty };
     }
 
-    inline static AffineTransform MakeInvert(AffineTransform const& t) {
+    inline AffineTransform MakeInvert() {
+        auto& t = *this;
         auto determinant = 1 / (t.a * t.d - t.b * t.c);
         return { determinant * t.d, -determinant * t.b, -determinant * t.c, determinant * t.a,
             determinant * (t.c * t.ty - t.d * t.tx), determinant * (t.b * t.tx - t.a * t.ty) };

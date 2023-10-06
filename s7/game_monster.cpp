@@ -61,7 +61,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
 			}
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-				auto r = gLooper.rnd.Next<float>(M_PI * 2);
+				auto r = gEngine->rnd.Next<float>(M_PI * 2);
 				newPos += XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 			} else {
 				newPos += combineForce.MakeNormalize() * cSpeed;

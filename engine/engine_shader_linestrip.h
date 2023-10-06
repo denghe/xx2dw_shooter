@@ -16,9 +16,9 @@ struct Shader_LineStrip : Shader {
     std::unique_ptr<uint16_t[]> indexs = std::make_unique<uint16_t[]>(maxIndexNums);
     size_t indexsCount = 0;
 
-    EngineBaseBase* eb{};
+    EngineBase0* eb{};
 
-    void Init(EngineBaseBase* eb_) {
+    void Init(EngineBase0* eb_) {
         eb = eb_;
 
         v = LoadGLVertexShader({ R"(#version 300 es

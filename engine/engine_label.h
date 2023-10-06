@@ -10,20 +10,20 @@ struct Label : Node {
 		position = position_;
 		anchor = anchor_;
 		color = color_;
-		auto siz = txt_.size();
-		fs.Resize(siz);
-		auto& ctc = gEngineBaseEx->ctcDefault;
-		size.x = {};
-		size.y = ctc.canvasHeight;
-		for (size_t i = 0; i < siz; ++i) {
+		auto len = txt_.size();
+		fs.Resize(len);
+		auto& ctc = EngineBase2::Instance().ctcDefault;
+		size = { 0, (float)ctc.canvasHeight };
+		for (size_t i = 0; i < len; ++i) {
 			fs[i] = &ctc.Find(txt_[i]);
 			size.x += fs[i]->texRect.w;
 		}
+		FillTrans();
 	}
 
 	virtual void Draw() override {
-		auto& shader = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance);
-		auto pos = trans(position - size * anchor);
+		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
+		auto pos = trans;
 		for (auto& f : fs) {
 			auto& q = *shader.Draw(f->tex->GetValue(), 1);
 			q.anchor = { 0.f, 0.f };

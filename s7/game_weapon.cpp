@@ -24,7 +24,7 @@ xx::Task<> Weapon_1_Sword::MainLogic_() {
 			auto c = std::cos(r);
 			auto s = -std::sin(r);
 			auto firePos = pos + XY{ c, s } * cFireDistance;
-			//switch (gLooper.rnd.Next<int>(2)) {
+			//switch (gEngine->rnd.Next<int>(2)) {
 			//case 0:
 			//	gLooper.bullets.Emplace().Emplace<Bullet_EyeFire>()->Init(this, firePos, r, c, s);
 			//	break;

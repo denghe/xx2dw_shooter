@@ -2,6 +2,7 @@
 #include "engine_includes.h"
 #include "engine_opengl.h"
 #include "engine_prims.h"
+#include "engine_base0.h"
 
 struct Shader {
     static const size_t maxVertNums = 65535;	// 65535 for primitive restart index

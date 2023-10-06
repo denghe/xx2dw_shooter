@@ -36,7 +36,7 @@ struct DamageNumber : Drawable {
 		auto scale = gLooper.camera.scale;
 		auto beginPos = gLooper.camera.ToGLPos(pos);
 		auto widthInc = cCharPixelWidth * scale;
-		auto qs = gEngineBase->ShaderBegin(gEngineBase->shaderQuadInstance).Draw(texId, size);
+		auto qs = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(texId, size);
 		for (int i = 0; i < size; ++i) {
 			auto& q = qs[i];
 			q.anchor = { 0, 0.5f };

@@ -44,6 +44,19 @@ struct SpaceGridABItem {
 		_sgab->Update(((Derived*)(this)));
 	}
 
+	XX_FORCE_INLINE void SGABAddOrUpdate(SpaceGridAB<Derived, XY_t>& sgab, XY_t const& pos, XY_t const& siz) {
+		assert(!_sgabFlag);
+		assert(_sgabCoveredCellInfos.empty());
+		if (_sgab) {
+			assert(_sgab == &sgab);
+			SGABUpdate(pos, siz);
+		} else {
+			_sgab = &sgab;
+			SGABSetPosSiz(pos, siz);
+			_sgab->Add(((Derived*)(this)));
+		}
+	}
+
 	XX_FORCE_INLINE void SGABRemove() {
 		if (_sgab) {
 			_sgab->Remove(((Derived*)(this)));

@@ -198,6 +198,6 @@ void GameLooper::Draw() {
     dc.Draw();
 
     if (!log.empty()) {
-        ctcDefault.Draw({ -gEngineBase->windowWidth_2, gEngineBase->windowHeight_2 - ctcDefault.canvasHeight_2 }, log);
+        ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, log);
     }
 }

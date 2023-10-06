@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base.h"
+#include "engine_base1.h"
 
 struct FrameBuffer {
     GLFrameBuffer fb;
@@ -42,22 +42,24 @@ struct FrameBuffer {
 
 protected:
     void Begin(xx::Shared<GLTexture>& t, std::optional<RGBA8> const& c = {}) {
-        gEngineBase->ShaderEnd();
-        bak.x = std::exchange(gEngineBase->windowWidth, t->Width());
-        bak.y = std::exchange(gEngineBase->windowHeight, t->Height());
-        gEngineBase->flipY = -1;
+        auto& ge = EngineBase1::Instance();
+        ge.ShaderEnd();
+        bak.x = std::exchange(ge.windowWidth, t->Width());
+        bak.y = std::exchange(ge.windowHeight, t->Height());
+        ge.flipY = -1;
         BindGLFrameBufferTexture(fb, *t);
-        gEngineBase->GLViewport();
+        ge.GLViewport();
         if (c.has_value()) {
-            gEngineBase->GLClear(c.value());
+            ge.GLClear(c.value());
         }
     }
     void End() {
-        gEngineBase->ShaderEnd();
+        auto& ge = EngineBase1::Instance();
+        ge.ShaderEnd();
         UnbindGLFrameBuffer();
-        gEngineBase->windowWidth = bak.x;
-        gEngineBase->windowHeight = bak.y;
-        gEngineBase->flipY = 1;
-        gEngineBase->GLViewport();
+        ge.windowWidth = bak.x;
+        ge.windowHeight = bak.y;
+        ge.flipY = 1;
+        ge.GLViewport();
     }
 };
