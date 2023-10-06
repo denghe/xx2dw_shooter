@@ -210,26 +210,26 @@ struct EngineBase1 : EngineBase0 {
 
         XY v{};
         MoveDirections md;
-        constexpr const float SQR2 = 1.4142135623730950488016887242097;
+        constexpr const float SQR2_2 = 1.4142135623730950488016887242097 / 2;
 
         if (n == 2) {
             if (flags.w) {
                 md = MoveDirections::Up;
                 if (flags.d) {
                     (int&)md |= (int)MoveDirections::Right;
-                    v = { SQR2, -SQR2 };	// up right
+                    v = { SQR2_2, -SQR2_2 };	// up right
                 } else if (flags.a) {
                     (int&)md |= (int)MoveDirections::Left;
-                    v = { -SQR2, -SQR2 };	// up left
+                    v = { -SQR2_2, -SQR2_2 };	// up left
                 }
             } else if (flags.s) {
                 md = MoveDirections::Down;
                 if (flags.d) {
                     (int&)md |= (int)MoveDirections::Right;
-                    v = { SQR2, SQR2 };		// right down
+                    v = { SQR2_2, SQR2_2 };		// right down
                 } else if (flags.a) {
                     (int&)md |= (int)MoveDirections::Left;
-                    v = { -SQR2, SQR2 };	// left down
+                    v = { -SQR2_2, SQR2_2 };	// left down
                 }
             }
         } else if (n == 1) {
