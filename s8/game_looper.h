@@ -1,20 +1,9 @@
 ﻿#pragma once
 #include "engine_engine.h"
-#include "engine_gdesign.h"
-#include "engine_chartexcache.h"
-#include "engine_fpsviewer.h"
-#include "engine_dynamictexturepacker.h"
-#include "engine_curvemovepath.h"
-#include "engine_spacegrid_box.h"
-#include "engine_spacegrid_circle.h"
-#include "engine_spacegrid_ringdiffuse.h"
-#include "engine_tiledmap_sede.h"
-#include "engine_camera.h"
-#include "engine_linestrip.h"
 
 int32_t main();
 
-constexpr GDesign<1280, 720, 120> gDesign;
+static constexpr GDesign<1280, 720, 120> gDesign;
 
 struct DragCircle {
 	constexpr static float cSpeed{ 1000.f / gDesign.fps };
@@ -59,8 +48,7 @@ struct Shadow {
 
 
 
-struct GameLooper : Engine<GameLooper> {
-	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	constexpr static int shadowsCap = fps * 2;
 	std::string log;
 
@@ -74,7 +62,6 @@ struct GameLooper : Engine<GameLooper> {
 
 	DragCircle* mouseFocus{};
 
-	void Init();
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

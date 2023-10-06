@@ -24,8 +24,8 @@ xx::Task<> Shooter::MainLogic() {
 			needFire = gLooper.fireTouchId != -1;
 			// todo: touch special area for special fire ?
 		} else {
-			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
-				AddPosition(*inc);
+			if (auto inc = gLooper.GetKeyboardMoveInc(); inc.has_value()) {
+				AddPosition(inc->second);
 			}
 			auto v = gLooper.mouse.pos - pos;
 			r = std::atan2(v.y, v.x);
@@ -66,72 +66,4 @@ xx::Task<> Shooter::MainLogic() {
 
 		co_yield 0;
 	}
-}
-
-std::optional<XY> Shooter::GetKeyboardMoveInc() {
-	union Dirty {
-		struct {
-			union {
-				struct {
-					uint8_t a, d;
-				};
-				uint16_t ad;
-			};
-			union {
-				struct {
-					uint8_t s, w;
-				};
-				uint16_t sw;
-			};
-		};
-		uint32_t all{};
-	} flags;
-	int32_t n = 0;
-
-	if (gLooper.Pressed(KeyboardKeys::A)) { flags.a = 255; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::S)) { flags.s = 255; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::D)) { flags.d = 255; ++n; }
-	if (gLooper.Pressed(KeyboardKeys::W)) { flags.w = 255; ++n; }
-
-	if (n > 2) {
-		if (flags.ad > 255 << 8) {
-			flags.ad = 0;
-			n -= 2;
-		}
-		if (flags.sw > 255 << 8) {
-			flags.sw = 0;
-			n -= 2;
-		}
-	}
-	if (!n) return {};
-
-	XY v{};
-
-	if (n == 2) {
-		if (flags.w) {
-			if (flags.d) {
-				v = { gSQ, gSQ };	// up right
-			} else if (flags.a) {
-				v = { -gSQ, gSQ };	// up left
-			}
-		} else if (flags.s) {
-			if (flags.d) {
-				v = { gSQ, -gSQ };	// right down
-			} else if (flags.a) {
-				v = { -gSQ, -gSQ };	// left down
-			}
-		}
-	} else if (n == 1) {
-		if (flags.w) {
-			v.y = 1;	// up
-		} else if (flags.s) {
-			v.y = -1;	// down
-		} else if (flags.a) {
-			v.x = -1;	// left
-		} else if (flags.d) {
-			v.x = 1;	// right
-		}
-	}
-
-	return v * cSpeed;
 }

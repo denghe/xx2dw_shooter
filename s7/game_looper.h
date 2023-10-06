@@ -1,7 +1,11 @@
 ﻿#pragma once
-#include "game_looper_base.h"
+#include "engine_engine.h"
 
-constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
+int32_t main();
+
+static constexpr GDesign<1280, 720, 240> gDesign;
+
+static constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
 
 struct Player;
 struct DamageNumber;
@@ -14,8 +18,7 @@ struct Bullet;
 struct Monster;
 struct Experience;
 
-struct GameLooper : GameLooperBase<GameLooper> {
-	void Init();
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

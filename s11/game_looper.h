@@ -1,8 +1,11 @@
 ﻿#pragma once
-#include "game_looper_base.h"
+#include "engine_engine.h"
 
-struct GameLooper : GameLooperBase<GameLooper> {
-	void Init();
+int32_t main();
+
+constexpr static GDesign<1280, 720, 60> gDesign;
+
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

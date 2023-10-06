@@ -36,8 +36,9 @@ struct EngineBase0 {
     xx::Tasks tasks;
     Rnd rnd;
 
-    float fps{};    // cache
-    float windowWidth = 800, windowHeight = 600;          // can change at Init()
+    // fill after Init()
+    float framePerSeconds{};
+    float windowWidth = 800, windowHeight = 600;
     float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
     float flipY{ 1 };   // -1: flip  for ogl frame buffer
     Shader* shader{};

@@ -2,13 +2,10 @@
 #include "engine_engine.h"
 
 int32_t main();
+static constexpr GDesign<640, 480, 60> gDesign;
 
-constexpr GDesign<640, 480, 60> gDesign;
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 
-struct GameLooper : Engine<GameLooper> {
-	constexpr static float fps = gDesign.fps, frameDelay = 1.f / fps, maxFrameDelay = 1.f;
-
-	void Init();
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

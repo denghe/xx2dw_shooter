@@ -34,7 +34,7 @@ struct Button : MouseEventHandlerNode {
 
 	xx::TaskGuard bgChangeColormulti;
 	xx::Task<> BgHighlight() {
-		auto step = cBgChangeColormultiSpeed / gEngine->fps;
+		auto step = cBgChangeColormultiSpeed / gEngine->framePerSeconds;
 		while(true) {
 			if (bg->colormulti < cBgColormultiHighlight) {
 				bg->colormulti += step;
@@ -45,8 +45,9 @@ struct Button : MouseEventHandlerNode {
 			co_yield 0;
 		}
 	}
+
 	xx::Task<> BgNormal() {
-		auto step = cBgChangeColormultiSpeed / gEngine->fps;
+		auto step = cBgChangeColormultiSpeed / gEngine->framePerSeconds;
 		for (; bg->colormulti > cBgColormultiNormal; bg->colormulti -= step) {
 			co_yield 0;
 		}

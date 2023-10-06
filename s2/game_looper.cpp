@@ -8,11 +8,6 @@ int32_t main() {
 GameLooper gLooper;
 
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
-}
-
 xx::Task<> GameLooper::MainTask() {
 	camera.SetScale(0.25);
 

@@ -1,12 +1,15 @@
 ﻿#pragma once
-#include "game_looper_base.h"
+#include "engine_engine.h"
+
+int32_t main();
+
+static constexpr GDesign<1280, 720, 60> gDesign;
 
 struct Hero;
 template<typename Owner>
 struct MagicWeapon;
 
-struct GameLooper : GameLooperBase<GameLooper> {
-	void Init();
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

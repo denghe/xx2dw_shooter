@@ -8,9 +8,9 @@
 #include "engine_scale9sprite.h"
 
 struct EngineBase2 : EngineBase1 {
+    XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
+
     CharTexCache<24> ctcDefault;
     FpsViewer fpsViewer;
     bool showFps{ true };
-
-    XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
 };

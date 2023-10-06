@@ -12,12 +12,9 @@ struct MouseEventHandlerNode : Node, SpaceGridABItem<MouseEventHandlerNode, XY> 
 	}
 
 	virtual void TransUpdate() override {
-		auto min = trans;
-		auto max = trans + size;
-		auto siz = max - min;
-		auto pos = min + siz / 2;
+		auto pos = trans + size / 2;
 		auto& hs = gEngine->mouseEventHandlers;
-		SGABAddOrUpdate(hs, hs.max_2 + pos, siz);
+		SGABAddOrUpdate(hs, hs.max_2 + pos, size);
 	}
 
 	~MouseEventHandlerNode() {

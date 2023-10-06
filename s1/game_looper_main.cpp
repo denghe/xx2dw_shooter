@@ -10,24 +10,6 @@ GameLooper gLooper;
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
-	touchMode = {};
-    mouse.pos = { (float)e.targetX - windowWidth_2, windowHeight - (float)e.targetY - windowHeight_2 };
-    return EM_TRUE;
-}
-EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
-	touchMode = {};
-	mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
-    return EM_TRUE;
-}
-EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
-	mouse.btnStates[e.button] = false;
-    return EM_TRUE;
-}
-
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-
 EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 	touchMode = true;
 	if (e.numTouches == 1) {
@@ -75,26 +57,4 @@ EM_BOOL GameLooper::OnTouchEnd(EmscriptenTouchEvent const& e) {
 
 EM_BOOL GameLooper::OnTouchCancel(EmscriptenTouchEvent const& e) {
 	return OnTouchEnd(e);
-}
-
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-
-EM_BOOL GameLooper::OnKeyDown(EmscriptenKeyboardEvent const& e) {
-	if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-		keyboardKeysStates[e.which] = true;
-		return EM_TRUE;
-	}
-	return EM_FALSE;
-}
-EM_BOOL GameLooper::OnKeyUp(EmscriptenKeyboardEvent const& e) {
-	if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-		keyboardKeysStates[e.which] = false;
-		return EM_TRUE;
-	}
-	return EM_FALSE;
-}
-
-bool GameLooper::Pressed(KeyboardKeys k) const {
-	return keyboardKeysStates[(int32_t)k];
 }

@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
+int32_t main() {
+	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
+		return gLooper.JsLoopCallback(ms);
+		}, nullptr);
 }
+GameLooper gLooper;
 
 xx::Task<> GameLooper::MainTask() {
 	camera.SetMaxFrameSize({ gMaxFramePixelWidth, gMaxFramePixelHeight });		// camera init

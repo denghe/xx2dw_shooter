@@ -16,27 +16,12 @@ xx::Task<> Shooter::MainLogic() {
 		float r, sr, cr;
 		bool needFire{};
 
-		if (gLooper.touchMode) {
-			if (gLooper.aimTouchMovePos == gLooper.aimTouchStartPos) {
-				r = touchLastRotation;
-			} else {
-				auto v = gLooper.aimTouchMovePos - gLooper.aimTouchStartPos;
-				touchLastRotation = r = std::atan2(v.y, v.x);
-				if (v.x * v.x + v.y * v.y > cTouchDistance * cTouchDistance) {
-					cr = std::cos(r);
-					sr = std::sin(r);
-					pos += XY{ cr, -sr } * cSpeed;
-				}
-			}
-			needFire = gLooper.fireTouchId != -1;								// todo: touch special area for special fire ?
-		} else {
-			if (auto inc = GetKeyboardMoveInc(); inc.has_value()) {
-				pos += *inc;
-			}
-			auto v = gLooper.mouse.pos/* - pos*/;
-			r = std::atan2(v.y, v.x);
-			needFire = gLooper.mouse.btnStates[0];
+		if (auto inc = gLooper.GetKeyboardMoveInc(); inc.has_value()) {
+			pos += inc->second;
 		}
+		auto v = gLooper.mouse.pos/* - pos*/;
+		r = std::atan2(v.y, v.x);
+		needFire = gLooper.mouse.btnStates[0];
 
 		r = -r;
 		auto d = r - radians;
@@ -87,72 +72,4 @@ xx::Task<> Shooter::MainLogic() {
 
 		co_yield 0;
 	}
-}
-
-std::optional<XY> Shooter::GetKeyboardMoveInc() {
-	union Dirty {
-		struct {
-			union {
-				struct {
-					uint8_t a, d;
-				};
-				uint16_t ad;
-			};
-			union {
-				struct {
-					uint8_t s, w;
-				};
-				uint16_t sw;
-			};
-		};
-		uint32_t all{};
-	} flags;
-	int32_t n = 0;
-
-	if (gLooper.KeyDown(KeyboardKeys::A)) { flags.a = 255; ++n; }
-	if (gLooper.KeyDown(KeyboardKeys::S)) { flags.s = 255; ++n; }
-	if (gLooper.KeyDown(KeyboardKeys::D)) { flags.d = 255; ++n; }
-	if (gLooper.KeyDown(KeyboardKeys::W)) { flags.w = 255; ++n; }
-
-	if (n > 2) {
-		if (flags.ad > 255 << 8) {
-			flags.ad = 0;
-			n -= 2;
-		}
-		if (flags.sw > 255 << 8) {
-			flags.sw = 0;
-			n -= 2;
-		}
-	}
-	if (!n) return {};
-
-	XY v{};
-
-	if (n == 2) {
-		if (flags.w) {
-			if (flags.d) {
-				v = { gDesign.sqr2, -gDesign.sqr2 };	// up right
-			} else if (flags.a) {
-				v = { -gDesign.sqr2, -gDesign.sqr2 };	// up left
-			}
-		} else if (flags.s) {
-			if (flags.d) {
-				v = { gDesign.sqr2, gDesign.sqr2 };		// right down
-			} else if (flags.a) {
-				v = { -gDesign.sqr2, gDesign.sqr2 };	// left down
-			}
-		}
-	} else if (n == 1) {
-		if (flags.w) {
-			v.y = -1;	// up
-		} else if (flags.s) {
-			v.y = 1;	// down
-		} else if (flags.a) {
-			v.x = -1;	// left
-		} else if (flags.d) {
-			v.x = 1;	// right
-		}
-	}
-
-	return v * cSpeed;
 }

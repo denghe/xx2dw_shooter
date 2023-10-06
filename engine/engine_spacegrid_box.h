@@ -51,9 +51,7 @@ struct SpaceGridABItem {
 			assert(_sgab == &sgab);
 			SGABUpdate(pos, siz);
 		} else {
-			_sgab = &sgab;
-			SGABSetPosSiz(pos, siz);
-			_sgab->Add(((Derived*)(this)));
+			SGABAdd(sgab, pos, siz);
 		}
 	}
 
@@ -222,7 +220,7 @@ struct SpaceGridAB {
 
 	template<typename F>
 	void ForeachPoint(XY_t const& p, F&& func) {
-		auto crIdx = p / cellSize;
+		auto crIdx = p.template As<int32_t>() / cellSize;
 		if (crIdx.x < 0 || crIdx.x >= max.x
 		 || crIdx.y < 0 || crIdx.y >= max.y) return;
 		auto c = cells[crIdx.y * numCols + crIdx.x];
@@ -246,8 +244,8 @@ struct SpaceGridAB {
 		assert(maxXY.x < max.x && maxXY.y < max.y);
 
 		// calc covered cells
-		auto crIdxFrom = minXY / cellSize;
-		auto crIdxTo = maxXY / cellSize;
+		auto crIdxFrom = minXY.template As<int32_t>() / cellSize;
+		auto crIdxTo = maxXY.template As<int32_t>() / cellSize;
 
 		// except set flag
 		if constexpr (enableExcept) {

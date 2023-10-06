@@ -3,27 +3,17 @@
 #define XX2DW_SHOOTER_PCH_H_
 
 #include "engine_engine.h"
-#include "engine_gdesign.h"
-#include "engine_chartexcache.h"
-#include "engine_fpsviewer.h"
-#include "engine_dynamictexturepacker.h"
-#include "engine_curvemovepath.h"
-#include "engine_spacegrid_box.h"
-#include "engine_spacegrid_circle.h"
-#include "engine_spacegrid_ringdiffuse.h"
-
 
 int32_t main();
 
-
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-constexpr GDesign<1024, 768> gDesign;
-constexpr float gScale = 4;	// scale texture
-constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
-constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
-constexpr float gSQ = 0.7071067811865475244;
+static constexpr GDesign<1024, 768> gDesign;
+static constexpr float gScale = 4;	// scale texture
+static constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
+static constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
+static constexpr float gSQ = 0.7071067811865475244;
 
 struct ObjBase : Quad, xx::Tasks {
 	float frameIndex{};
@@ -60,29 +50,18 @@ struct ShooterBullet2;
 struct Explosion;
 struct DamageText;
 
-struct GameLooper : Engine<GameLooper> {
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
 
 	long aimTouchId{ -1 }, fireTouchId{ -1 };
 	XY aimTouchStartPos, aimTouchMovePos;	// virtual joy
 	bool touchMode{};
 
-	EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e);
-	EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e);
-
-	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);
-	EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e);
-	EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e);
-
 	EM_BOOL OnTouchStart(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchMove(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchEnd(EmscriptenTouchEvent const& e);
 	EM_BOOL OnTouchCancel(EmscriptenTouchEvent const& e);
 
-
-	bool Pressed(KeyboardKeys k) const;
-
-	void Init();
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();
@@ -188,7 +167,6 @@ struct Shooter : ObjBase {
 
 	void Init();
 	xx::Task<> MainLogic();
-	std::optional<XY> GetKeyboardMoveInc();
 };
 
 /*****************************************************************************************************/

@@ -7,11 +7,6 @@ int32_t main() {
 }
 GameLooper gLooper;											// global var for easy use
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
-}
-
 xx::Task<> GameLooper::MainTask() {
 	ls.FillCirclePoints({}, 100);
 	co_return;

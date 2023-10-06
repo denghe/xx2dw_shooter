@@ -7,12 +7,6 @@ int32_t main() {
 }
 GameLooper gLooper;											// global var for easy use
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
-	printf("2\n");
-}
-
 xx::Task<> GameLooper::MainTask() {
 	{
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");

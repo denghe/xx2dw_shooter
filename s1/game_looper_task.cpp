@@ -1,10 +1,5 @@
 ﻿#include "pch.h"
 
-void GameLooper::Init() {
-	windowWidth = gDesign.width;
-	windowHeight = gDesign.height;
-}
-
 xx::Task<> GameLooper::MainTask() {
 	// preload texs
     auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");

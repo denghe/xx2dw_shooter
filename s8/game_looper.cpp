@@ -130,11 +130,6 @@ EM_BOOL GameLooper::OnMouseUp(EmscriptenMouseEvent const& e) {
 
 
 
-void GameLooper::Init() {
-    windowWidth = gDesign.width;
-    windowHeight = gDesign.height;
-}
-
 void GameLooper::Update() {
     poly.mainTask();
 

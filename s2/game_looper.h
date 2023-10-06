@@ -1,5 +1,9 @@
 ﻿#pragma once
-#include "game_looper_base.h"
+#include "engine_engine.h"
+
+int32_t main();
+
+static constexpr GDesign<1280, 800, 240> gDesign;
 
 static constexpr int gRoomCellSize = 16;
 static constexpr int gMaxRoomWidth = gDesign.width / gRoomCellSize;
@@ -9,8 +13,7 @@ static constexpr int gMaxRoomHeight_2 = gMaxRoomHeight / 2;
 
 struct Room;
 
-struct GameLooper : GameLooperBase<GameLooper> {
-	void Init();
+struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();

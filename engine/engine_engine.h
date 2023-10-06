@@ -144,11 +144,17 @@ struct Engine : EngineBase3 {
         // emscripten_set_beforeunload_callback(userData, callback)                    
 
 
-        if constexpr(Has_Init<Derived>) {
+        if constexpr (Has_Init<Derived>) {
             ((Derived*)this)->Init();
-            windowWidth_2 = windowWidth / 2;
-            windowHeight_2 = windowHeight / 2;
         }
+
+        windowWidth = ((Derived*)this)->width;
+        windowHeight = ((Derived*)this)->height;
+        windowWidth_2 = ((Derived*)this)->width / 2;
+        windowHeight_2 = ((Derived*)this)->height / 2;
+        framePerSeconds = ((Derived*)this)->fps;
+        mouseEventHandlers.Init(128, 128, ((Derived*)this)->width * 2, ((Derived*)this)->height * 2);
+
         GLInit();
 
         if constexpr(Has_AfterInit<Derived>) {
