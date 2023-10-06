@@ -8,6 +8,8 @@ struct Button : MouseEventHandlerNode {
 	constexpr static float cBgColormultiNormal{ 1 };
 	constexpr static float cBgColormultiDark{ 0.75 };
 	constexpr static float cBgChangeColormultiSpeed{ 5 };
+	constexpr static float cBgChangeColormultiSpeed2{ 2 };
+	constexpr static XY cTextPadding{ 20, 5 };
 
 	std::function<void()> onClicked = [] { xx::CoutN("button clicked."); };
 
@@ -15,19 +17,18 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Scale9Sprite> bg;
 
 	// todo: color ? colormut ? anchor ?
-	void Init(int z_, XY const& position_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
 		anchor = { 0.5, 0.5 };
 
 		XY cornerSize{ float(frame_->textureRect.w - center_.w), float(frame_->textureRect.h - center_.h) };
-		static constexpr XY padding{ 20, 5 };
 		lbl = MakeChildren<Label>();
-		lbl->Init(z + 2, (cornerSize + padding) / 2, {}, RGBA8_White, txt_);
-		size = lbl->size + cornerSize + padding;
+		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, {}, RGBA8_White, txt_);
+		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
-		bg->Init(z + 1, {}, texScale_, size / texScale_, std::move(frame_), center_, { 0x5f, 0x15, 0xd9, 0xff });
+		bg->Init(z + 1, {}, texScale_, size / texScale_, std::move(frame_), center_, color_);
 
 		FillTransRecursive();
 	}
@@ -47,7 +48,7 @@ struct Button : MouseEventHandlerNode {
 	}
 
 	xx::Task<> BgNormal() {
-		auto step = cBgChangeColormultiSpeed / gEngine->framePerSeconds;
+		auto step = cBgChangeColormultiSpeed2 / gEngine->framePerSeconds;
 		for (; bg->colormulti > cBgColormultiNormal; bg->colormulti -= step) {
 			co_yield 0;
 		}

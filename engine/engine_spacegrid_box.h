@@ -45,8 +45,6 @@ struct SpaceGridABItem {
 	}
 
 	XX_FORCE_INLINE void SGABAddOrUpdate(SpaceGridAB<Derived, XY_t>& sgab, XY_t const& pos, XY_t const& siz) {
-		assert(!_sgabFlag);
-		assert(_sgabCoveredCellInfos.empty());
 		if (_sgab) {
 			assert(_sgab == &sgab);
 			SGABUpdate(pos, siz);
@@ -97,7 +95,7 @@ struct SpaceGridAB {
 		assert(c->_sgabMin.x < c->_sgabMax.x);
 		assert(c->_sgabMin.y < c->_sgabMax.y);
 		assert(c->_sgabMin.x >= 0 && c->_sgabMin.y >= 0);
-		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->maxY);
+		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->max.y);
 
 		// calc covered cells
 		auto crIdxFrom = c->_sgabMin.template As<int32_t>() / cellSize;
@@ -161,7 +159,7 @@ struct SpaceGridAB {
 		assert(c->_sgabMin.x < c->_sgabMax.x);
 		assert(c->_sgabMin.y < c->_sgabMax.y);
 		assert(c->_sgabMin.x >= 0 && c->_sgabMin.y >= 0);
-		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->maxY);
+		assert(c->_sgabMax.x < c->_sgab->max.x && c->_sgabMax.y < c->_sgab->max.y);
 
 		// calc covered cells
 		auto crIdxFrom = c->_sgabMin.template As<int32_t>() / cellSize;
