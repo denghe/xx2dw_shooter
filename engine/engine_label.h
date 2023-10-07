@@ -5,10 +5,11 @@ struct Label : Node {
 	xx::List<TinyFrame const*, int32_t> fs;
 	RGBA8 color;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, RGBA8 color_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
 		anchor = anchor_;
+		scale = scale_;
 		color = color_;
 		auto len = txt_.size();
 		fs.Resize(len);
@@ -23,7 +24,7 @@ struct Label : Node {
 
 	virtual void Draw() override {
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
-		auto pos = trans;
+		XY pos = trans;
 		for (auto& f : fs) {
 			auto& q = *shader.Draw(f->tex->GetValue(), 1);
 			q.anchor = { 0.f, 0.f };
@@ -31,9 +32,9 @@ struct Label : Node {
 			q.colormulti = 1;
 			q.pos = pos;
 			q.radians = {};
-			q.scale = { 1, 1 };
+			q.scale = {trans.a, trans.d};
 			q.texRect.data = f->texRect.data;
-			pos.x += f->texRect.w;
+			pos.x += f->texRect.w * trans.a;
 		}
 	}
 };

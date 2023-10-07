@@ -5,8 +5,8 @@ struct Node {
 	xx::List<xx::Shared<Node>, int32_t> children;
 	xx::Weak<Node> parent;	// fill by MakeChildren
 
-	/*AffineTransform*/XY trans{};
-	XY position{}, anchor{ 0.5, 0.5 }, size{};
+	SimpleAffineTransform trans;
+	XY position{}, scale{ 1, 1 }, anchor{ 0.5, 0.5 }, size{};
 	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
 	bool visible{ true };
@@ -14,9 +14,9 @@ struct Node {
 	// for init
 	XX_FORCE_INLINE void FillTrans() {
 		if (parent) {
-			trans = parent->trans + position - anchor * size;
+			trans = SimpleAffineTransform::MakePosScaleAnchorSize(position, scale, anchor * size).MakeConcat(parent->trans);
 		} else {
-			trans = position - anchor * size;
+			trans.PosScaleAnchorSize(position, scale, anchor * size);
 		}
 		TransUpdate();
 	}

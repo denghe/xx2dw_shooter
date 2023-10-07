@@ -56,7 +56,7 @@ struct Scale9Sprite : Node {
 		float py3 = -float(center.y + center.h * sy) * texScale;
 
 		XY sc = { texScale,texScale };
-		auto basePos = trans + XY{ 0, size.y * texScale };
+		auto basePos = trans({ 0, size.y * texScale });
 
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };

@@ -356,13 +356,14 @@ struct AffineTransform {
         return { (float)((double)a * point.x + tx), (float)((double)d * point.y + ty) };
     }
 
+    // child concat parent
     AffineTransform MakeConcat(AffineTransform const& t2) {
         auto& t1 = *this;
         return { t1.a * t2.a + t1.b * t2.c, t1.a * t2.b + t1.b * t2.d, t1.c * t2.a + t1.d * t2.c, t1.c * t2.b + t1.d * t2.d,
             t1.tx * t2.a + t1.ty * t2.c + t2.tx, t1.tx * t2.b + t1.ty * t2.d + t2.ty };
     }
 
-    inline AffineTransform MakeInvert() {
+    AffineTransform MakeInvert() {
         auto& t = *this;
         auto determinant = 1 / (t.a * t.d - t.b * t.c);
         return { determinant * t.d, -determinant * t.b, -determinant * t.c, determinant * t.a,
@@ -406,6 +407,67 @@ namespace xx {
     struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<AffineTransform, T>>> {
         static inline void Append(std::string& s, AffineTransform const& in) {
             ::xx::Append(s, in.a, ", ", in.b, ", ", in.c, ", ", in.d, ", ", in.tx, ", ", in.ty);
+        }
+    };
+}
+
+
+// without rotation support
+struct SimpleAffineTransform {
+    float a{ 1 }, d{ 1 };
+    float tx{}, ty{};
+
+    // anchorSize = anchor * size
+    void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+        a = scale.x;
+        d = scale.y;
+        tx = pos.x - scale.x * anchorSize.x;
+        ty = pos.y - scale.y * anchorSize.y;
+    }
+
+    void Identity() {
+        a = 1;
+        d = 1;
+        tx = 0;
+        ty = 0;
+    }
+
+    operator XY() const {
+        return { tx, ty };
+    }
+
+    XY operator()(XY const& point) const {
+        return { (float)((double)a * point.x + tx), (float)((double)d * point.y + ty) };
+    }
+
+    // child concat parent
+    SimpleAffineTransform MakeConcat(SimpleAffineTransform const& t2) {
+        auto& t1 = *this;
+        return { t1.a * t2.a, t1.d * t2.d, t1.tx * t2.a + t2.tx, t1.ty * t2.d + t2.ty };
+    }
+
+    SimpleAffineTransform MakeInvert() {
+        auto& t = *this;
+        auto determinant = 1 / (t.a * t.d);
+        return { determinant * t.d, determinant * t.a, determinant * (-t.d * t.tx), determinant * (-t.a * t.ty) };
+    }
+
+    inline static SimpleAffineTransform MakeIdentity() {
+        return { 1.0, 1.0, 0.0, 0.0 };
+    }
+
+    inline static SimpleAffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+        SimpleAffineTransform t;
+        t.PosScaleAnchorSize(pos, scale, anchorSize);
+        return t;
+    }
+};
+
+namespace xx {
+    template<typename T>
+    struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<SimpleAffineTransform, T>>> {
+        static inline void Append(std::string& s, SimpleAffineTransform const& in) {
+            ::xx::Append(s, in.a, ", ", in.d, ", ", in.tx, ", ", in.ty);
         }
     };
 }

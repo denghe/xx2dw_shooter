@@ -7,12 +7,12 @@ struct MouseEventHandlerNode : Node, SpaceGridABItem<MouseEventHandlerNode, XY> 
 	virtual void OnMouseUp() = 0;
 
 	bool MousePosInArea() {
-		auto p = gEngine->mouse.pos - trans;
+		auto p = trans.MakeInvert()(gEngine->mouse.pos);
 		return Calc::Intersects::BoxPoint({}, size, p);
 	}
 
 	virtual void TransUpdate() override {
-		auto pos = trans + size / 2;
+		auto pos = trans(size / 2);
 		auto& hs = gEngine->mouseEventHandlers;
 		SGABAddOrUpdate(hs, hs.max_2 + pos, size);
 	}

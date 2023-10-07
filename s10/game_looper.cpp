@@ -15,10 +15,15 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;
 
-	root.Emplace()->FillTrans();
+	root.Emplace();// ->scale = { 0.5, 0.5 };
+	root->FillTrans();
 	root->MakeChildren<Button>()->Init(1, {0, -50}, buttonTextureScale, frame_button, buttonUvRect, { 0x5f, 0x15, 0xd9, 0xff }, U"asd👻🎃fqwer");
 	root->MakeChildren<Button>()->Init(1, {}, buttonTextureScale, frame_button, buttonUvRect, { 0x2b, 0x39, 0xfb, 0xff }, U"ASADF");
 	root->MakeChildren<Button>()->Init(1, {0, 50}, buttonTextureScale, frame_button, buttonUvRect, { 0xe7, 0x8d, 0x00, 0xff }, U"zxcv123");
+
+	root->MakeChildren<Label>()->Init(5, { 0, 120 }, {2, 2}, { 0.5, 0.5 }, RGBA8_White, U"this is label");
+
+	
 
 	while (true) {
 		for (float x = -100; x < 100; ++x) {
@@ -42,5 +47,6 @@ void GameLooper::Draw() {
 	if (!ready) return;
 	FillZNodes(tmpZNodes, root);
 	OrderByZDrawAndClear(tmpZNodes);
-	//LineStrip().FillCirclePoints({}, 2, {}, 8).Draw();
+	LineStrip().FillCirclePoints({0, 0}, 2, {}, 8).Draw();
+	LineStrip().FillCirclePoints({0, 120}, 2, {}, 8).Draw();
 }

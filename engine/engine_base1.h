@@ -73,9 +73,7 @@ struct EngineBase1 : EngineBase0 {
     template<typename ST>
     XX_FORCE_INLINE ST& ShaderBegin(ST& s) {
         if (shader != &s) {
-            if (shader) {
-                shader->End();
-            }
+            ShaderEnd();
             s.Begin();
             shader = &s;
         }

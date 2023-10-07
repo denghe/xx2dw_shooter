@@ -16,7 +16,7 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Label> lbl;
 	xx::Shared<Scale9Sprite> bg;
 
-	// todo: color ? colormut ? anchor ?
+	// todo: color ? colormut ? anchor ? scale?
 	void Init(int z_, XY const& position_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
@@ -24,7 +24,7 @@ struct Button : MouseEventHandlerNode {
 
 		XY cornerSize{ float(frame_->textureRect.w - center_.w), float(frame_->textureRect.h - center_.h) };
 		lbl = MakeChildren<Label>();
-		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, {}, RGBA8_White, txt_);
+		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, {1,1}, {}, RGBA8_White, txt_);
 		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
