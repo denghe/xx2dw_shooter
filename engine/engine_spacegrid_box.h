@@ -219,8 +219,8 @@ struct SpaceGridAB {
 	template<typename F>
 	void ForeachPoint(XY_t const& p, F&& func) {
 		auto crIdx = p.template As<int32_t>() / cellSize;
-		if (crIdx.x < 0 || crIdx.x >= max.x
-		 || crIdx.y < 0 || crIdx.y >= max.y) return;
+		if (crIdx.x < 0 || crIdx.x >= numCols
+		 || crIdx.y < 0 || crIdx.y >= numRows) return;
 		auto c = cells[crIdx.y * numCols + crIdx.x];
 		while (c) {
 			auto&& s = c->self;
