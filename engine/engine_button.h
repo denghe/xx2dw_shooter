@@ -36,20 +36,19 @@ struct Button : MouseEventHandlerNode {
 	xx::TaskGuard bgChangeColormulti;
 	xx::Task<> BgHighlight() {
 		auto step = cBgChangeColormultiSpeed / gEngine->framePerSeconds;
+	LabBegin:
 		while(true) {
 			if (bg->colormulti < cBgColormultiHighlight) {
 				bg->colormulti += step;
 			}
 			if (!MousePosInArea()) {
-				bgChangeColormulti(gEngine->tasks, BgNormal());
+				for (; bg->colormulti > cBgColormultiNormal; bg->colormulti -= step) {
+					co_yield 0;
+					if (MousePosInArea()) goto LabBegin;
+				}
+				bg->colormulti = cBgColormultiNormal;
+				co_return;
 			}
-			co_yield 0;
-		}
-	}
-
-	xx::Task<> BgNormal() {
-		auto step = cBgChangeColormultiSpeed2 / gEngine->framePerSeconds;
-		for (; bg->colormulti > cBgColormultiNormal; bg->colormulti -= step) {
 			co_yield 0;
 		}
 	}
