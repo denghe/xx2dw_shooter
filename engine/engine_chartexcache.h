@@ -103,7 +103,7 @@ struct CharTexCache {
             auto& q = *shader.Draw(f->tex->GetValue(), 1);
             q.anchor = { 0.f, 0.f };
             q.color = color;
-            q.colormulti = 1;
+            q.colorplus = {};
             q.pos = pos;
             q.radians = {};
             q.scale = { 1, 1 }; // todo

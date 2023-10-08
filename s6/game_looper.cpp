@@ -57,13 +57,13 @@ xx::Task<> GameLooper::MainTask() {
 
 
 	while (true) {
-		heros[1]->body.colormulti = 255;
-		heros[2]->body.colormulti = 255;
-		heros[3]->body.colormulti = 255;
+		heros[1]->body.colorplus = 1;
+		heros[2]->body.colorplus = 1;
+		heros[3]->body.colorplus = 1;
 		co_await AsyncSleep(0.05);
-		heros[1]->body.colormulti = 1;
-		heros[2]->body.colormulti = 1;
-		heros[3]->body.colormulti = 1;
+		heros[1]->body.colorplus = 0;
+		heros[2]->body.colorplus = 0;
+		heros[3]->body.colorplus = 0;
 		co_await AsyncSleep(0.05);
 	}
 }

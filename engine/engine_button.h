@@ -4,11 +4,11 @@
 #include "engine_scale9sprite.h"
 
 struct Button : MouseEventHandlerNode {
-	constexpr static float cBgColormultiHighlight{ 1.5 };
-	constexpr static float cBgColormultiNormal{ 1 };
-	constexpr static float cBgColormultiDark{ 0.75 };
-	constexpr static float cBgChangeColormultiSpeed{ 5 };
-	constexpr static float cBgChangeColormultiSpeed2{ 2 };
+	constexpr static float cBgColorplusHighlight{ 0.35 };
+	constexpr static float cBgColorplusNormal{ 0 };
+	constexpr static float cBgColorplusDark{ -0.25 };
+	constexpr static float cBgChangeColorplusSpeed{ cBgColorplusHighlight / 0.2 };
+	constexpr static float cBgChangeColorplusSpeed2{ cBgColorplusHighlight / 0.1 };
 	constexpr static XY cTextPadding{ 20, 5 };
 
 	std::function<void()> onClicked = [] { xx::CoutN("button clicked."); };
@@ -16,7 +16,6 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Label> lbl;
 	xx::Shared<Scale9Sprite> bg;
 
-	// todo: color ? colormut ? anchor ? scale?
 	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
@@ -33,20 +32,20 @@ struct Button : MouseEventHandlerNode {
 		FillTransRecursive();
 	}
 
-	xx::TaskGuard bgChangeColormulti;
+	xx::TaskGuard bgChangeColorplus;
 	xx::Task<> BgHighlight() {
-		auto step = cBgChangeColormultiSpeed / gEngine->framePerSeconds;
+		auto step = cBgChangeColorplusSpeed / gEngine->framePerSeconds;
 	LabBegin:
 		while(true) {
-			if (bg->colormulti < cBgColormultiHighlight) {
-				bg->colormulti += step;
+			if (bg->colorplus < cBgColorplusHighlight) {
+				bg->colorplus += step;
 			}
 			if (!MousePosInArea()) {
-				for (; bg->colormulti > cBgColormultiNormal; bg->colormulti -= step) {
+				for (; bg->colorplus > cBgColorplusNormal; bg->colorplus -= step) {
 					co_yield 0;
 					if (MousePosInArea()) goto LabBegin;
 				}
-				bg->colormulti = cBgColormultiNormal;
+				bg->colorplus = cBgColorplusNormal;
 				co_return;
 			}
 			co_yield 0;
@@ -55,18 +54,18 @@ struct Button : MouseEventHandlerNode {
 
 	virtual void OnMouseDown() override {
 		gEngine->mouseEventHandler = xx::WeakFromThis(this);
-		bgChangeColormulti.Clear();
-		bg->colormulti = cBgColormultiDark;
+		bgChangeColorplus.Clear();
+		bg->colorplus = cBgColorplusDark;
 	}
 
 	virtual void OnMouseMove() override {
 		if (gEngine->mouseEventHandler.pointer() != this) {
-			bgChangeColormulti(gEngine->tasks, BgHighlight());
+			bgChangeColorplus(gEngine->tasks, BgHighlight());
 		}
 	}
 
 	virtual void OnMouseUp() override {
-		bg->colormulti = cBgColormultiNormal;
+		bg->colorplus = cBgColorplusNormal;
 		gEngine->mouseEventHandler.Reset();
 		if (MousePosInArea()) {
 			onClicked();

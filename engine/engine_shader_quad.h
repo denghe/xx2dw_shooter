@@ -5,7 +5,7 @@ struct QuadInstanceData {
     XY pos{}, anchor{ 0.5, 0.5 };       // float * 4
 
     XY scale{ 1, 1 };
-    float radians{}, colormulti{ 1 };   // float * 4
+    float radians{}, colorplus{};       // float * 4
 
     RGBA8 color{ 255, 255, 255, 255 };  // u8n * 4
 
@@ -14,7 +14,7 @@ struct QuadInstanceData {
 
 struct Shader_QuadInstance : Shader {
     using Shader::Shader;
-    GLint uCxy{ -1 }, uTex0{ -1 }, aVert{ -1 }, aPosAnchor{ -1 }, aScaleRadiansColormulti{ -1 }, aColor{ -1 }, aTexRect{ -1 };
+    GLint uCxy{ -1 }, uTex0{ -1 }, aVert{ -1 }, aPosAnchor{ -1 }, aScaleRadiansColorplus{ -1 }, aColor{ -1 }, aTexRect{ -1 };
     GLVertexArrays va;
     GLBuffer vb, ib;
 
@@ -33,19 +33,19 @@ uniform vec2 uCxy;	// screen center coordinate
 in vec2 aVert;	// fans index { 0, 0 }, { 0, 1.f }, { 1.f, 0 }, { 1.f, 1.f }
 
 in vec4 aPosAnchor;
-in vec4 aScaleRadiansColormulti;
+in vec4 aScaleRadiansColorplus;
 in vec4 aColor;
 in vec4 aTexRect;
 
 out vec2 vTexCoord;
+out float vColorplus;
 out vec4 vColor;
 
 void main() {
     vec2 pos = aPosAnchor.xy;
     vec2 anchor = aPosAnchor.zw;
-    vec2 scale = vec2(aScaleRadiansColormulti.x * aTexRect.z, aScaleRadiansColormulti.y * aTexRect.w);
-    float radians = aScaleRadiansColormulti.z;
-    float colormulti = aScaleRadiansColormulti.w;
+    vec2 scale = vec2(aScaleRadiansColorplus.x * aTexRect.z, aScaleRadiansColorplus.y * aTexRect.w);
+    float radians = aScaleRadiansColorplus.z;
     vec2 offset = vec2((aVert.x - anchor.x) * scale.x, (aVert.y - anchor.y) * scale.y);
 
     float c = cos(radians);
@@ -56,7 +56,8 @@ void main() {
     );
 
     gl_Position = vec4(v * uCxy, 0, 1);
-    vColor = vec4(aColor.xyz * colormulti, aColor.w);
+    vColor = aColor;
+    vColorplus = aScaleRadiansColorplus.w;
     vTexCoord = vec2(aTexRect.x + aVert.x * aTexRect.z, aTexRect.y + aTexRect.w - aVert.y * aTexRect.w);
 })"sv });
 
@@ -64,13 +65,15 @@ void main() {
 precision highp float;
 uniform sampler2D uTex0;
 
-in vec4 vColor;
 in vec2 vTexCoord;
+in float vColorplus;
+in vec4 vColor;
 
 out vec4 oColor;
 
 void main() {
-    oColor = vColor * texture(uTex0, vTexCoord / vec2(textureSize(uTex0, 0)));
+    vec4 c = vColor * texture(uTex0, vTexCoord / vec2(textureSize(uTex0, 0)));
+    oColor = vec4( c.x + vColorplus, c.y + vColorplus, c.z + vColorplus, c.w );
 })"sv });
 
         p = LinkGLProgram(v, f);
@@ -80,7 +83,7 @@ void main() {
 
         aVert = glGetAttribLocation(p, "aVert");
         aPosAnchor = glGetAttribLocation(p, "aPosAnchor");
-        aScaleRadiansColormulti = glGetAttribLocation(p, "aScaleRadiansColormulti");
+        aScaleRadiansColorplus = glGetAttribLocation(p, "aScaleRadiansColorplus");
         aColor = glGetAttribLocation(p, "aColor");
         aTexRect = glGetAttribLocation(p, "aTexRect");
         CheckGLError();
@@ -102,9 +105,9 @@ void main() {
         glVertexAttribDivisor(aPosAnchor, 1);
         glEnableVertexAttribArray(aPosAnchor);
 
-        glVertexAttribPointer(aScaleRadiansColormulti, 4, GL_FLOAT, GL_FALSE, sizeof(QuadInstanceData), (GLvoid*)offsetof(QuadInstanceData, scale));
-        glVertexAttribDivisor(aScaleRadiansColormulti, 1);
-        glEnableVertexAttribArray(aScaleRadiansColormulti);
+        glVertexAttribPointer(aScaleRadiansColorplus, 4, GL_FLOAT, GL_FALSE, sizeof(QuadInstanceData), (GLvoid*)offsetof(QuadInstanceData, scale));
+        glVertexAttribDivisor(aScaleRadiansColorplus, 1);
+        glEnableVertexAttribArray(aScaleRadiansColorplus);
 
         glVertexAttribPointer(aColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(QuadInstanceData), (GLvoid*)offsetof(QuadInstanceData, color));
         glVertexAttribDivisor(aColor, 1);

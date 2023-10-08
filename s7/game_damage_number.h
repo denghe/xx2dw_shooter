@@ -41,7 +41,7 @@ struct DamageNumber : Drawable {
 			auto& q = qs[i];
 			q.anchor = { 0, 0.5f };
 			q.color = color;
-			q.colormulti = 1;
+			q.colorplus = 0;
 			q.pos = beginPos;
 			q.radians = 0;
 			q.scale = { scale, scale };

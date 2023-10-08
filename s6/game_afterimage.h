@@ -15,14 +15,12 @@ struct Afterimage : Sprite {
 		frameIndex = tar.frameIndex;
 		body = tar.body;
 		body.SetColorAf(alpha);
-		body.SetColormulti(cAlpha);
 	}
 
 	xx::Task<> MainLogic() {
 		while (alpha > 0) {
 			alpha -= cAlphaDecrease;
 			body.SetColorAf(alpha);
-			body.SetColormulti(cAlpha);
 			co_yield 0;
 		}
 	}

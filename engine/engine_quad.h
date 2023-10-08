@@ -93,8 +93,8 @@ struct Quad : QuadInstanceData {
         color.a = 255 * a;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetColormulti(float const& v) {
-        colormulti = v;
+    XX_FORCE_INLINE Quad& SetColorplus(float const& v) {
+        colorplus = v;
         return *this;
     }
     XX_FORCE_INLINE Quad& Draw() const {

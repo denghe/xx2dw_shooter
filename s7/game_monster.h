@@ -30,10 +30,10 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 				damageEffect(gEngine->tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {
 						damageEffectLeftDuration -= gDesign.frameDelay;
-						body.SetColormulti(255);
+						body.SetColorplus(1);
 						co_yield 0;
 					}
-					body.SetColormulti(1);
+					body.SetColorplus(0);
 				});
 			}
 			damageEffectLeftDuration = cDamageEffectDurationSecs;	// renew
