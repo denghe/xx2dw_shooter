@@ -3,7 +3,7 @@
 
 int32_t main();
 
-constexpr static GDesign<1280, 720, 60> gDesign;
+constexpr GDesign<1280, 720, 60> gDesign;
 
 struct KeyComboTest;
 
@@ -25,105 +25,88 @@ enum class Combos {
 	asd, dsd, sd,
 };
 
+constexpr std::array<char const*, 3> Combos_txt = {
+	"ASD J", "DSD J", "SD J"
+};
+
 struct KeyComboTest {
 	constexpr static float cTimeoutSecs = 0.2;
 	constexpr static float cCastSecs = 1;
+	bool casting{};
+	xx::List<Combos, int32_t> matchResults;
+
+	bool DetectKeys(std::initializer_list<KeyboardKeys> allow, std::initializer_list<KeyboardKeys> deny = {}) {
+		for (auto& k : allow) {
+			if (!gLooper.KeyDown(k)) return false;
+		}
+		for (auto& k : deny) {
+			if (gLooper.KeyDown(k)) return false;
+		}
+		return true;
+	}
+
+	xx::Task<bool> DetectKeys(float timeout, std::initializer_list<KeyboardKeys> allow, std::initializer_list<KeyboardKeys> deny = {}) {
+		for (auto endTime = gLooper.nowSecs + timeout; endTime > gLooper.nowSecs;) {
+			for (auto& k : allow) {
+				if (!gLooper.KeyDown(k)) goto LabContinue;
+			}
+			for (auto& k : deny) {
+				if (gLooper.KeyDown(k)) goto LabContinue;
+			}
+			co_return true;
+		LabContinue:
+			co_yield 0;
+		}
+		co_return false;
+	}
+
+	xx::Task<> Cast(Combos c) {
+		if (casting) co_return;
+		matchResults.Add(c);
+		co_yield 0;													// wait sort & select by priority
+		if (matchResults.Find(c) == -1) co_return;
+		matchResults.Clear();
+
+		casting = true;
+		auto sgCasting = xx::MakeSimpleScopeGuard([this] { casting = false; });
+
+		for (auto endTime = gLooper.nowSecs + cCastSecs; endTime > gLooper.nowSecs;) {
+			gLooper.ctcDefault.Draw({ 0, -100 }, std::string(Combos_txt[(int)c]) + " casted...");
+			co_yield 0;
+		}
+	}
 
 	xx::TaskGuard matchASD;
 	xx::Task<> MatchASD() {
-		for (auto endTime = gLooper.nowSecs + cTimeoutSecs; endTime > gLooper.nowSecs;) {
-			if (gLooper.KeyDown(KeyboardKeys::S) &&
-				!gLooper.KeyDown(KeyboardKeys::D)) goto Lab1;
-			co_yield 0;
-		}
-		co_return;
-	Lab1:
-		for (auto endTime = gLooper.nowSecs + cTimeoutSecs; endTime > gLooper.nowSecs;) {
-			if (gLooper.KeyDown(KeyboardKeys::D)) goto Lab2;
-			co_yield 0;
-		}
-		co_return;
-	Lab2:
-		matchResults.Add(Combos::asd);
-		co_yield 0;
-		if (matchResults.Find(Combos::asd) == -1) co_return;
-		matchResults.Clear();
-		for (auto endTime = gLooper.nowSecs + cCastSecs; endTime > gLooper.nowSecs;) {
-			gLooper.ctcDefault.Draw({ 0, -100 }, "ASD fired...");
-			co_yield 0;
-		}
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::S }, { KeyboardKeys::D })) co_return;
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::D })) co_return;
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::J })) co_return;
+		co_await Cast(Combos::asd);
 	}
 
 	xx::TaskGuard matchSD;
 	xx::Task<> MatchSD() {
-		for (auto endTime = gLooper.nowSecs + cTimeoutSecs; endTime > gLooper.nowSecs;) {
-			if (gLooper.KeyDown(KeyboardKeys::D)) goto Lab1;
-			co_yield 0;
-		}
-		co_return;
-	Lab1:
-		matchResults.Add(Combos::sd);
-		co_yield 0;
-		if (matchResults.Find(Combos::sd) == -1) co_return;
-		matchResults.Clear();
-		for (auto endTime = gLooper.nowSecs + cCastSecs; endTime > gLooper.nowSecs;) {
-			gLooper.ctcDefault.Draw({ 0, -100 }, "SD fired...");
-			co_yield 0;
-		}
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::D })) co_return;
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::J })) co_return;
+		co_await Cast(Combos::sd);
 	}
 
 	xx::TaskGuard matchDSD;
 	xx::Task<> MatchDSD() {
-		for (auto endTime = gLooper.nowSecs + cTimeoutSecs; endTime > gLooper.nowSecs;) {
-			if (gLooper.KeyDown(KeyboardKeys::S) &&
-				!gLooper.KeyDown(KeyboardKeys::D)) goto Lab1;
-			co_yield 0;
-		}
-		co_return;
-	Lab1:
-		for (auto endTime = gLooper.nowSecs + cTimeoutSecs; endTime > gLooper.nowSecs;) {
-			if (gLooper.KeyDown(KeyboardKeys::D)) goto Lab2;
-			co_yield 0;
-		}
-		co_return;
-	Lab2:
-		matchResults.Add(Combos::dsd);
-		co_yield 0;
-		if (matchResults.Find(Combos::dsd) == -1) co_return;
-		matchResults.Clear();
-		for (auto endTime = gLooper.nowSecs + cCastSecs; endTime > gLooper.nowSecs;) {
-			gLooper.ctcDefault.Draw({ 0, -100 }, "DSD fired...");
-			co_yield 0;
-		}
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::S }, { KeyboardKeys::D })) co_return;
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::D })) co_return;
+		if (!co_await DetectKeys(cTimeoutSecs, { KeyboardKeys::J })) co_return;
+		co_await Cast(Combos::dsd);
 	}
-
-	bool HasAnyMatch() const {
-		return matchASD || matchSD || matchDSD;
-	}
-
-	xx::List<Combos, int32_t> matchResults;
 
 	void Update() {
-
-		if (!HasAnyMatch() &&
-			gLooper.KeyDown(KeyboardKeys::A) &&
-			!gLooper.KeyDown(KeyboardKeys::S) &&
-			!gLooper.KeyDown(KeyboardKeys::D)
-			) {
+		if (!matchASD && DetectKeys({ KeyboardKeys::A }, { KeyboardKeys::S, KeyboardKeys::D })) {
 			matchASD(gLooper.tasks, MatchASD());
 		}
-
-		if (!HasAnyMatch() &&
-			gLooper.KeyDown(KeyboardKeys::S) &&
-			!gLooper.KeyDown(KeyboardKeys::D)
-			) {
+		if (!matchSD && DetectKeys({ KeyboardKeys::S }, { KeyboardKeys::D })) {
 			matchSD(gLooper.tasks, MatchSD());
 		}
-
-		if (!HasAnyMatch() &&
-			gLooper.KeyDown(KeyboardKeys::D) &&
-			!gLooper.KeyDown(KeyboardKeys::S)
-			) {
+		if (!matchDSD && DetectKeys({ KeyboardKeys::D }, { KeyboardKeys::S })) {
 			matchDSD(gLooper.tasks, MatchDSD());
 		}
 

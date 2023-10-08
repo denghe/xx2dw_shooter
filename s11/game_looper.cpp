@@ -21,6 +21,7 @@ xx::Task<> GameLooper::MainTask() {
 	root->MakeChildren<Button>()->Init(0, { -50, 0 }, anchor, textureScale, frame_button, uvr, color, U"A");
 	root->MakeChildren<Button>()->Init(0, { 0, 0 }, anchor, textureScale, frame_button, uvr, color, U"S");
 	root->MakeChildren<Button>()->Init(0, { 50, 0 }, anchor, textureScale, frame_button, uvr, color, U"D");
+	root->MakeChildren<Button>()->Init(0, { 150, 0 }, anchor, textureScale, frame_button, uvr, color, U"J");
 	kct.Emplace();
 	ready = true;
 	co_return;
@@ -31,6 +32,7 @@ void GameLooper::Update() {
 	root->children[0]->children[1].ReinterpretCast<Scale9Sprite>()->colorplus = KeyDown(KeyboardKeys::A) ? 1.5 : 1;
 	root->children[1]->children[1].ReinterpretCast<Scale9Sprite>()->colorplus = KeyDown(KeyboardKeys::S) ? 1.5 : 1;
 	root->children[2]->children[1].ReinterpretCast<Scale9Sprite>()->colorplus = KeyDown(KeyboardKeys::D) ? 1.5 : 1;
+	root->children[3]->children[1].ReinterpretCast<Scale9Sprite>()->colorplus = KeyDown(KeyboardKeys::J) ? 1.5 : 1;
 	kct->Update();
 }
 
