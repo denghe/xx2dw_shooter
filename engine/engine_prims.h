@@ -267,6 +267,15 @@ union UVRect {
     uint64_t data;
 };
 
+namespace xx {
+    template<typename T>
+    struct StringFuncs<T, std::enable_if_t<std::is_same_v<UVRect, std::decay_t<T>>>> {
+        static inline void Append(std::string& s, UVRect const& in) {
+            ::xx::Append(s, in.x, ", ", in.y, ", ", in.w, ", ", in.h);
+        }
+    };
+}
+
 
 enum class MoveDirections : int {
     Down = 1, Left = 2, Right = 4, Up = 8

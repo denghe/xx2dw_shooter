@@ -49,6 +49,22 @@ struct Node {
 	virtual ~Node() {};
 };
 
+namespace xx {
+	template<typename T>
+	struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<Node, T>>> {
+		static inline void Append(std::string& s, Node const& in) {
+			::xx::Append(s, "{ trans = ", in.trans
+				, ", position = ", in.position
+				, ", scale = ", in.scale
+				, ", anchor = ", in.anchor
+				, ", size = ", in.size
+				, " }"
+			);
+		}
+	};
+}
+
+
 /**********************************************************************************************/
 /**********************************************************************************************/
 

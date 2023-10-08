@@ -8,12 +8,12 @@ struct Scale9Sprite : Node {
 	float texScale;
 	float colormulti;
 
-	void Init(int z_, XY const& position_, float texScale_, XY const& size_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colormulti_ = 1) {
+	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, XY const& size_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colormulti_ = 1) {
 		assert(size_.x > 6 && size_.y > 8);
 		z = z_;
 		position = position_;
 		size = size_;
-		anchor = {};
+		anchor = anchor_;
 		texScale = texScale_;
 		frame = std::move(frame_);
 		center = center_;
@@ -21,11 +21,13 @@ struct Scale9Sprite : Node {
 		colormulti = colormulti_;
 
 		FillTrans();
+		//xx::CoutN("Scale9Sprite = ", *this);
 	}
 
 	virtual void Draw() override {
 		auto qs = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(frame->tex->GetValue(), 9);
 
+		// todo: cache?
 		auto& r = frame->textureRect;
 
 		uint16_t tx1 = 0;
@@ -44,20 +46,34 @@ struct Scale9Sprite : Node {
 		uint16_t th2 = center.h;
 		uint16_t th3 = r.h - (center.y + center.h);
 
-		float sx = float(size.x - tw1 - tw3) / tw2;
-		float sy = float(size.y - th1 - th3) / th2;
+		// actual
+		XY siz{ size.x * trans.a, size.y * trans.d };
+		XY ts{ texScale * trans.a, texScale * trans.d };
+
+		float sx = float(siz.x - tw1 * ts.x - tw3 * ts.x) / tw2;
+		float sy = float(siz.y - th1 * ts.y - th3 * ts.y) / th2;
+#ifndef NDEBUG
+		if (sx < 0 || sy < 0) {
+			xx::CoutN(" sx = ", sx, " sy = ", sy, " ts = ", ts);
+			xx_assert(false);
+		}
+#endif
 
 		float px1 = 0;
-		float px2 = center.x * texScale;
-		float px3 = (center.x + center.w * sx) * texScale;
+		float px2 = tw1 * ts.x;
+		float px3 = siz.x - tw3 * ts.x;
 
-		float py1 = 0;
-		float py2 = -float(center.y) * texScale;
-		float py3 = -float(center.y + center.h * sy) * texScale;
+		// todo: set base Y
+		float py1 = siz.y;
+		float py2 = siz.y -(th1 * ts.y);
+		float py3 = siz.y -(siz.y - th3 * ts.y);
 
-		XY sc = { texScale,texScale };
-		auto basePos = trans({ 0, size.y * texScale });
+		XY sc = ts;
+		XY basePos = trans;
 
+		//xx::CoutN("center = ", center);
+		//xx::CoutN("px1 = ", px1, " px2 = ", px2, " px3 = ", px3);
+		//xx::CoutN("py1 = ", py1, " py2 = ", py2, " py3 = ", py3);
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 
@@ -65,7 +81,7 @@ struct Scale9Sprite : Node {
 		q = &qs[0];
 		q->pos = basePos + XY{ px1, py1 };
 		q->anchor = { 0, 1 };
-		q->scale = sc;
+		q->scale = ts;
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -74,7 +90,7 @@ struct Scale9Sprite : Node {
 		q = &qs[1];
 		q->pos = basePos + XY{ px2, py1 };
 		q->anchor = { 0, 1 };
-		q->scale = sc * XY{ sx, 1 };
+		q->scale = { sx, ts.y };
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -83,7 +99,7 @@ struct Scale9Sprite : Node {
 		q = &qs[2];
 		q->pos = basePos + XY{ px3, py1 };
 		q->anchor = { 0, 1 };
-		q->scale = sc;
+		q->scale = ts;
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -92,7 +108,7 @@ struct Scale9Sprite : Node {
 		q = &qs[3];
 		q->pos = basePos + XY{ px1, py2 };
 		q->anchor = { 0, 1 };
-		q->scale = sc * XY{ 1, sy };
+		q->scale = { ts.x, sy };
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -101,7 +117,7 @@ struct Scale9Sprite : Node {
 		q = &qs[4];
 		q->pos = basePos + XY{ px2, py2 };
 		q->anchor = { 0, 1 };
-		q->scale = sc * XY{ sx, sy };
+		q->scale = { sx, sy };
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -110,7 +126,7 @@ struct Scale9Sprite : Node {
 		q = &qs[5];
 		q->pos = basePos + XY{ px3, py2 };
 		q->anchor = { 0, 1 };
-		q->scale = sc * XY{ 1, sy };
+		q->scale = { ts.x, sy };
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -119,7 +135,7 @@ struct Scale9Sprite : Node {
 		q = &qs[6];
 		q->pos = basePos + XY{ px1, py3 };
 		q->anchor = { 0, 1 };
-		q->scale = sc;
+		q->scale = ts;
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -128,7 +144,7 @@ struct Scale9Sprite : Node {
 		q = &qs[7];
 		q->pos = basePos + XY{ px2, py3 };
 		q->anchor = { 0, 1 };
-		q->scale = sc * XY{ sx, 1 };
+		q->scale = { sx, ts.y };
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;
@@ -137,7 +153,7 @@ struct Scale9Sprite : Node {
 		q = &qs[8];
 		q->pos = basePos + XY{ px3, py3 };
 		q->anchor = { 0, 1 };
-		q->scale = sc;
+		q->scale = ts;
 		q->radians = {};
 		q->colormulti = colormulti;
 		q->color = c;

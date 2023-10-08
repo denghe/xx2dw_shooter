@@ -17,18 +17,18 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Scale9Sprite> bg;
 
 	// todo: color ? colormut ? anchor ? scale?
-	void Init(int z_, XY const& position_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
-		anchor = { 0.5, 0.5 };
+		anchor = anchor_;
 
 		XY cornerSize{ float(frame_->textureRect.w - center_.w), float(frame_->textureRect.h - center_.h) };
 		lbl = MakeChildren<Label>();
-		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, {1,1}, {}, RGBA8_White, txt_);
+		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, { 1,1 }, {}, RGBA8_White, txt_);
 		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
-		bg->Init(z + 1, {}, texScale_, size / texScale_, std::move(frame_), center_, color_);
+		bg->Init(z + 1, {}, {}, texScale_, size, std::move(frame_), center_, color_);
 
 		FillTransRecursive();
 	}

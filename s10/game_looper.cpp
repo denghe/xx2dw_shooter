@@ -15,28 +15,42 @@ xx::Task<> GameLooper::MainTask() {
 	}
 	ready = true;
 
-	root.Emplace();// ->scale = { 0.5, 0.5 };
+	root.Emplace()->scale = { 0.45, 0.45 };
 	root->FillTrans();
-	root->MakeChildren<Button>()->Init(1, {0, -50}, buttonTextureScale, frame_button, buttonUvRect, { 0x5f, 0x15, 0xd9, 0xff }, U"asd👻🎃fqwer");
-	root->MakeChildren<Button>()->Init(1, {}, buttonTextureScale, frame_button, buttonUvRect, { 0x2b, 0x39, 0xfb, 0xff }, U"ASADF");
-	root->MakeChildren<Button>()->Init(1, {0, 50}, buttonTextureScale, frame_button, buttonUvRect, { 0xe7, 0x8d, 0x00, 0xff }, U"zxcv123");
+	//root->MakeChildren<Button>()->Init(1, { 0, -50 }, {0.5, 0.5}, buttonTextureScale, frame_button, buttonUvRect, { 0x5f, 0x15, 0xd9, 0xff }, U"asd👻🎃fqwer");
+	//root->MakeChildren<Button>()->Init(1, {}, { 0.5, 0.5 }, buttonTextureScale, frame_button, buttonUvRect, { 0x2b, 0x39, 0xfb, 0xff }, U"ASADF");
+	//root->MakeChildren<Button>()->Init(1, {0, 50}, { 0.5, 0.5 }, buttonTextureScale, frame_button, buttonUvRect, { 0xe7, 0x8d, 0x00, 0xff }, U"zxcv123");
 
-	root->MakeChildren<Label>()->Init(5, { 0, 120 }, {2, 2}, { 0.5, 0.5 }, RGBA8_White, U"this is label");
+	//auto lbl = root->MakeChildren<Label>();
+	//lbl->Init(5, { 0, 0 }, { 1, 1 }, { 0.5, 0.5 }, RGBA8_White, U"this is label");
+	//root->MakeChildren<Scale9Sprite>()->Init(4, { 0, 0 }, { 0.5, 0.5 }, 4, lbl->size, frame_button, buttonUvRect, {0x2b, 0x39, 0xfb, 0xff});
 
+	//rnd.NextWord()
+	for (size_t i = 0; i < 10000; i++) {
+		XY pos{ rnd.Next<float>(-width, width), rnd.Next<float>(-height, height) };
+		RGBA8 color;
+		(uint32_t&)color = rnd.Next<uint32_t>();
+		color.a = 255;
+		auto txt = xx::StringU8ToU32(rnd.NextWord());
+		root->MakeChildren<Button>()->Init(1, pos, {0.5, 0.5}, buttonTextureScale, frame_button, buttonUvRect, color, txt);
+	}
 	
 
-	while (true) {
-		for (float x = -100; x < 100; ++x) {
-			root->position.x = x;
-			root->FillTransRecursive();
-			co_yield 0;
-		}
-		for (float x = 100; x > -100; --x) {
-			root->position.x = x;
-			root->FillTransRecursive();
-			co_yield 0;
-		}
-	}
+	//while (true) {
+	//	for (float x = -100; x < 100; ++x) {
+	//		root->position.x = x;
+	//		root->position.y = x;
+	//		root->FillTransRecursive();
+	//		co_yield 0;
+	//	}
+	//	for (float x = 100; x > -100; --x) {
+	//		root->position.x = x;
+	//		root->position.y = x;
+	//		root->FillTransRecursive();
+	//		co_yield 0;
+	//	}
+	//}
+	co_yield 0;
 }
 
 void GameLooper::Update() {
