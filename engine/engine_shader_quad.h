@@ -5,7 +5,7 @@ struct QuadInstanceData {
     XY pos{}, anchor{ 0.5, 0.5 };       // float * 4
 
     XY scale{ 1, 1 };
-    float radians{}, colorplus{};       // float * 4
+    float radians{}, colorplus{ 1 };    // float * 4
 
     RGBA8 color{ 255, 255, 255, 255 };  // u8n * 4
 
@@ -73,7 +73,7 @@ out vec4 oColor;
 
 void main() {
     vec4 c = vColor * texture(uTex0, vTexCoord / vec2(textureSize(uTex0, 0)));
-    oColor = vec4( c.x + vColorplus, c.y + vColorplus, c.z + vColorplus, c.w );
+    oColor = vec4( (c.x + 0.00001f) * vColorplus, (c.y + 0.00001f) * vColorplus, (c.z + 0.00001f) * vColorplus, c.w );
 })"sv });
 
         p = LinkGLProgram(v, f);

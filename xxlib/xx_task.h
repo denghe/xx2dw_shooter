@@ -170,9 +170,11 @@ namespace xx {
     struct TaskGuard {
         Tasks* ptr;
         Tasks::IndexAndVersion iv;
+
         TaskGuard() : ptr(nullptr) {};
         TaskGuard(TaskGuard const&) = delete;
         TaskGuard& operator=(TaskGuard const&) = delete;
+
         TaskGuard(TaskGuard && o) noexcept {
             ptr = o.ptr;
             iv = o.iv;
@@ -184,12 +186,14 @@ namespace xx {
             std::swap(iv, o.iv);
             return *this;
         }
+
         XX_FORCE_INLINE void Clear() {
             if (ptr) {
                 ptr->tasks.Remove(iv);
                 ptr = {};
             }
         }
+
         ~TaskGuard() {
             Clear();
         }
@@ -198,7 +202,19 @@ namespace xx {
         void operator()(Tasks& tasks, T &&t) {
             Clear();
             ptr = &tasks;
-            iv = tasks.Add(std::forward<T>(t));
+            iv = tasks.Add([](T tt, Tasks*& p) -> Task<> {
+                if constexpr (std::is_convertible_v<Task<>, T>) {
+                    assert(!tt);
+                    co_await tt;
+                } else {
+                    co_await tt();
+                }
+                p = {};
+            }(std::forward<T>(t), ptr));
+        }
+
+        operator bool() const {
+            return !!ptr;
         }
     };
 

@@ -4,9 +4,9 @@
 #include "engine_scale9sprite.h"
 
 struct Button : MouseEventHandlerNode {
-	constexpr static float cBgColorplusHighlight{ 0.35 };
-	constexpr static float cBgColorplusNormal{ 0 };
-	constexpr static float cBgColorplusDark{ -0.25 };
+	constexpr static float cBgColorplusHighlight{ 1.5 };
+	constexpr static float cBgColorplusNormal{ 1 };
+	constexpr static float cBgColorplusDark{ 0.75 };
 	constexpr static float cBgChangeColorplusSpeed{ cBgColorplusHighlight / 0.2 };
 	constexpr static float cBgChangeColorplusSpeed2{ cBgColorplusHighlight / 0.1 };
 	constexpr static XY cTextPadding{ 20, 5 };
