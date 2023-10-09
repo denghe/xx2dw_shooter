@@ -21,13 +21,11 @@ struct Scale9Sprite : Node {
 		colorplus = colorplus_;
 
 		FillTrans();
-		//xx::CoutN("Scale9Sprite = ", *this);
 	}
 
 	virtual void Draw() override {
 		auto qs = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(frame->tex->GetValue(), 9);
 
-		// todo: cache?
 		auto& r = frame->textureRect;
 
 		uint16_t tx1 = 0;
@@ -63,17 +61,12 @@ struct Scale9Sprite : Node {
 		float px2 = tw1 * ts.x;
 		float px3 = siz.x - tw3 * ts.x;
 
-		// todo: set base Y
 		float py1 = siz.y;
 		float py2 = siz.y -(th1 * ts.y);
 		float py3 = siz.y -(siz.y - th3 * ts.y);
 
 		XY sc = ts;
 		XY basePos = trans;
-
-		//xx::CoutN("center = ", center);
-		//xx::CoutN("px1 = ", px1, " px2 = ", px2, " px3 = ", px3);
-		//xx::CoutN("py1 = ", py1, " py2 = ", py2, " py3 = ", py3);
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 

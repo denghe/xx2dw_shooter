@@ -8,7 +8,6 @@ struct Button : MouseEventHandlerNode {
 	constexpr static float cBgColorplusNormal{ 1 };
 	constexpr static float cBgColorplusDark{ 0.75 };
 	constexpr static float cBgChangeColorplusSpeed{ cBgColorplusHighlight / 0.2 };
-	constexpr static float cBgChangeColorplusSpeed2{ cBgColorplusHighlight / 0.1 };
 	constexpr static XY cTextPadding{ 20, 5 };
 
 	std::function<void()> onClicked = [] { xx::CoutN("button clicked."); };
@@ -40,33 +39,34 @@ struct Button : MouseEventHandlerNode {
 			if (bg->colorplus < cBgColorplusHighlight) {
 				bg->colorplus += step;
 			}
-			if (!MousePosInArea()) {
-				for (; bg->colorplus > cBgColorplusNormal; bg->colorplus -= step) {
-					co_yield 0;
-					if (MousePosInArea()) goto LabBegin;
-				}
-				bg->colorplus = cBgColorplusNormal;
-				co_return;
-			}
 			co_yield 0;
+			if (!MousePosInArea()) break;
 		}
+		for (; bg->colorplus > cBgColorplusNormal; bg->colorplus -= step) {
+			co_yield 0;
+			if (MousePosInArea()) goto LabBegin;
+		}
+		bg->colorplus = cBgColorplusNormal;
+		co_return;
 	}
 
 	virtual void OnMouseDown() override {
+		assert(!gEngine->mouseEventHandler);
 		gEngine->mouseEventHandler = xx::WeakFromThis(this);
 		bgChangeColorplus.Clear();
 		bg->colorplus = cBgColorplusDark;
 	}
 
 	virtual void OnMouseMove() override {
-		if (gEngine->mouseEventHandler.pointer() != this) {
+		if (gEngine->mouseEventHandler.pointer() != this && !bgChangeColorplus) {
 			bgChangeColorplus(gEngine->tasks, BgHighlight());
 		}
 	}
 
 	virtual void OnMouseUp() override {
-		bg->colorplus = cBgColorplusNormal;
+		assert(gEngine->mouseEventHandler.pointer() == this);
 		gEngine->mouseEventHandler.Reset();
+		bg->colorplus = cBgColorplusNormal;
 		if (MousePosInArea()) {
 			onClicked();
 		}
