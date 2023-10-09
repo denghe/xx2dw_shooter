@@ -16,16 +16,16 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 		SGCRemove();
 	}
 
-	void Hit(int damage) {
+	void Hit(int damage, Hero* hiter = nullptr) {
 		assert(damage > 0);
 		if (damage >= hp) {
-			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,0,0,255 }, hp);
+			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, hiter ? pos - hiter->pos : XY{}, { 255,0,0,255 }, hp);
 			gLooper.bloods.Emplace().Emplace()->Init(pos);
 			Experience::CreateTo(gLooper.experiences)->Init(pos, 0, 10);
 			RemoveFromOwner();
 		} else {
 			hp -= damage;
-			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, { 255,255,255,255 }, damage);
+			gLooper.damageNumbers.Emplace().Emplace()->Init(pos, hiter ? pos - hiter->pos : XY{}, { 255,255,255,255 }, damage);
 			if (damageEffectLeftDuration <= 0) {
 				damageEffect(gEngine->tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {

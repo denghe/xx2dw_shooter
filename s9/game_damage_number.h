@@ -13,6 +13,7 @@ struct DamageNumber : Drawable {
 	int size{};
 	GLuint texId{};
 	RGBA8 color{};
+	XY d{};
 
 	XX_FORCE_INLINE void SetDamage(int i) {
 		size = {};
@@ -25,12 +26,13 @@ struct DamageNumber : Drawable {
 		rects[size++].data = gLooper.frames_number_outlined[i]->textureRect.data;
 	}
 
-	void Init(XY const& pos_, RGBA8 color_, int damage) {
+	void Init(XY const& pos_, XY const& d_, RGBA8 color_, int damage) {
 		mainLogic = MainLogic_();
 		color = color_;
 		texId = gLooper.frames_number_outlined[0]->tex->GetValue();
 		SetDamage(damage);
 		pos = { pos_.x - cCharPixelWidth * size / 2, pos_.y };
+		d = d_;
 	}
 
 	virtual void Draw() override {
@@ -54,7 +56,6 @@ struct DamageNumber : Drawable {
 	xx::Task<> MainLogic_() {
 		// move away
 		float ds{ cMoveDurationSeconds };
-		auto d = pos - gLooper.heros[0]->pos;
 		auto inc = d.MakeNormalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
 		for (int i = 0; i < cMoveDurationSeconds / gDesign.frameDelay; ++i) {
 			pos += inc;
