@@ -195,6 +195,19 @@ struct UV {
     uint16_t u, v;
 };
 
+// 3 bytes color
+struct RGB8 {
+    uint8_t r, g, b;
+    bool operator==(RGB8 const&) const = default;
+    bool operator!=(RGB8 const&) const = default;
+};
+constexpr static RGB8 RGB8_Zero{ 0,0,0 };
+constexpr static RGB8 RGB8_Red{ 255,0,0 };
+constexpr static RGB8 RGB8_Green{ 0,255,0 };
+constexpr static RGB8 RGB8_Blue{ 0,0,255 };
+constexpr static RGB8 RGB8_White{ 255,255,255 };
+constexpr static RGB8 RGB8_Black{ 0,0,0 };
+
 // 4 bytes color
 struct RGBA8 {
     uint8_t r, g, b, a;
@@ -527,9 +540,9 @@ namespace RotateControl {
         auto bak = b;
         if ((b - a) * (b - a) > M_PI * M_PI) {
             if (b < a) {
-                b += M_PI * 2;
+                b += float(M_PI * 2);
             } else {
-                b -= M_PI * 2;
+                b -= float(M_PI * 2);
             }
         }
         if (b > a) {
@@ -539,7 +552,7 @@ namespace RotateControl {
             } else {
                 a += step;
                 if (a >= M_PI) {
-                    a -= M_PI * 2;
+                    a -= float(M_PI * 2);
                 }
             }
         } else {
@@ -549,7 +562,7 @@ namespace RotateControl {
             } else {
                 a -= step;
                 if (a <= -M_PI) {
-                    a += M_PI * 2;
+                    a += float(M_PI * 2);
                 }
             }
         }

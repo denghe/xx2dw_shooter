@@ -17,6 +17,7 @@
 #include <GLES3/gl3.h>
 #  else
 #include <glad.h>
+#include <GLFW/glfw3.h>
 #  endif
 
 #define EM_BOOL int
