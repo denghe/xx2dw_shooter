@@ -526,7 +526,7 @@ namespace TMX {
 						auto h = (float)info.image->height;
 						f->anchor = { 0, tileHeight / h };
 						f->spriteSize = { w, h };
-						f->textureRect = { 0, 0, w, h };
+						f->textureRect = { 0, 0, (uint16_t)w, (uint16_t)h };
 					} else {
 						auto u = (float)tileset->margin + (tileset->spacing + tileset->tilewidth) * x;
 						auto v = (float)tileset->margin + (tileset->spacing + tileset->tileheight) * y;
@@ -534,7 +534,7 @@ namespace TMX {
 						auto h = (float)tileset->tileheight;
 						f->anchor = { 0, tileHeight / h };
 						f->spriteSize = { w, h };
-						f->textureRect = { u, v, w, h };
+						f->textureRect = { (uint16_t)u, (uint16_t)v, (uint16_t)w, (uint16_t)h };
 					}
 				}
 			}

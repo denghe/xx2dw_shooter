@@ -7,13 +7,13 @@
 #include "engine_spacegrid_circle.h"
 #include "engine_spacegrid_ringdiffuse.h"
 
-// type same as EmscriptenKeyboardEvent.what
 using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
 enum class KeyboardKeys : KeyboardKeys_t {
     Unknown = 0,
     A = 65,
     B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z
     , MAX_VALUE
+    // todo: more
 };
 
 enum class MouseEvents : int {
