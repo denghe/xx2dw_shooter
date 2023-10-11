@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_node.h"
+#include <engine_node.h>
 
 struct Label : Node {
 	xx::List<TinyFrame const*, int32_t> fs;
@@ -11,11 +11,11 @@ struct Label : Node {
 		anchor = anchor_;
 		scale = scale_;
 		color = color_;
-		auto len = txt_.size();
+		auto len = (int)txt_.size();
 		fs.Resize(len);
 		auto& ctc = EngineBase2::Instance().ctcDefault;
 		size = { 0, (float)ctc.canvasHeight };
-		for (size_t i = 0; i < len; ++i) {
+		for (int i = 0; i < len; ++i) {
 			fs[i] = &ctc.Find(txt_[i]);
 			size.x += fs[i]->texRect.w;
 		}

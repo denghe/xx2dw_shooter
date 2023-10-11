@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_shader.h"
+#include <engine_shader.h>
 
 // 1 point data ( for draw line strip )
 struct XYRGBA8 : XY, RGBA8 {};
@@ -10,11 +10,11 @@ struct Shader_LineStrip : Shader {
     GLVertexArrays va;
     GLBuffer vb, ib;
 
-    static const size_t maxIndexNums = maxVertNums * 1.5;
+    static const int32_t maxIndexNums = int32_t(maxVertNums * 1.5);
     std::unique_ptr<XYRGBA8[]> points = std::make_unique<XYRGBA8[]>(maxVertNums);
-    size_t pointsCount = 0;
+    int32_t pointsCount = 0;
     std::unique_ptr<uint16_t[]> indexs = std::make_unique<uint16_t[]>(maxIndexNums);
-    size_t indexsCount = 0;
+    int32_t indexsCount = 0;
 
     EngineBase0* eb{};
 
@@ -77,7 +77,7 @@ void main() {
     virtual void Begin() override {
         assert(!eb->shader);
         glUseProgram(p);
-        glUniform2f(uCxy, 2 / eb->windowWidth, 2 / eb->windowHeight * eb->flipY);
+        glUniform2f(uCxy, 2 / eb->windowSize.x, 2 / eb->windowSize.y * eb->flipY);
         glBindVertexArray(va);
     }
 
@@ -103,7 +103,7 @@ void main() {
         indexsCount = 0;
     }
 
-    XYRGBA8* Draw(size_t const& pc) {
+    XYRGBA8* Draw(int32_t pc) {
         assert(eb->shader == this);
         assert(pc <= maxVertNums);
         auto&& c = pointsCount + pc;
@@ -112,7 +112,7 @@ void main() {
             c = pc;
         }
         auto rtv = &points[pointsCount];
-        for (size_t i = pointsCount; i < c; ++i) {
+        for (auto i = pointsCount; i < c; ++i) {
             indexs[indexsCount++] = i;
         }
         indexs[indexsCount++] = 65535;	// primitive restart
@@ -121,7 +121,7 @@ void main() {
         return rtv;
     }
 
-    void Draw(XYRGBA8* pointsBuf, size_t const& pc) {
+    void Draw(XYRGBA8* pointsBuf, int32_t pc) {
         memcpy(Draw(pc), pointsBuf, sizeof(XYRGBA8) * pc);
     }
 

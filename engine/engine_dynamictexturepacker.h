@@ -1,9 +1,9 @@
 ﻿#pragma once
-#include "rect_pack_2d.h"
-#include "engine_base1.h"
-#include "engine_framebuffer.h"
-#include "engine_quad.h"
-#include "engine_frames.h"
+#include <rect_pack_2d.h>
+#include <engine_base1.h>
+#include <engine_framebuffer.h>
+#include <engine_quad.h>
+#include <engine_frames.h>
 
 template<int texWH_ = 2048>
 struct DynamicTexturePacker : Frames {

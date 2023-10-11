@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_framebuffer.h"
+#include <engine_framebuffer.h>
 
 // sprite
 struct Quad : QuadInstanceData {
@@ -90,7 +90,7 @@ struct Quad : QuadInstanceData {
         return *this;
     }
     XX_FORCE_INLINE Quad& SetColorAf(float const& a) {
-        color.a = 255 * a;
+        color.a = uint8_t(255 * a);
         return *this;
     }
     XX_FORCE_INLINE Quad& SetColorplus(float const& v) {

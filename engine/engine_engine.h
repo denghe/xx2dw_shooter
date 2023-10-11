@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base3.h"
+#include <engine_base3.h>
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -26,8 +26,7 @@ template <typename T> concept Has_OnTouchMove = requires(T t) { { t.OnTouchMove(
 template <typename T> concept Has_OnTouchEnd = requires(T t) { { t.OnTouchEnd(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnTouchCancel = requires(T t) { { t.OnTouchCancel(std::declval<EmscriptenTouchEvent const&>()) } -> std::same_as<EM_BOOL>; };
 
-// Derived content requires:
-// constexpr static float fps = 60, frameDelay = 1.f / fps, maxFrameDelay = frameDelay * 3;
+// Derived need inherit from gDesign
 template<typename Derived>
 struct Engine : EngineBase3 {
 

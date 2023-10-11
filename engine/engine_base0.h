@@ -1,11 +1,12 @@
 ﻿#pragma once
-#include "engine_includes.h"
-#include "engine_gdesign.h"
-#include "engine_rnd.h"
-#include "engine_curvemovepath.h"
-#include "engine_spacegrid_box.h"
-#include "engine_spacegrid_circle.h"
-#include "engine_spacegrid_ringdiffuse.h"
+#include <engine_includes.h>
+#include <engine_prims.h>
+#include <engine_gdesign.h>
+#include <engine_rnd.h>
+#include <engine_curvemovepath.h>
+#include <engine_spacegrid_box.h>
+#include <engine_spacegrid_circle.h>
+#include <engine_spacegrid_ringdiffuse.h>
 
 using KeyboardKeys_t = decltype(EmscriptenKeyboardEvent::which);
 enum class KeyboardKeys : KeyboardKeys_t {
@@ -37,9 +38,14 @@ struct EngineBase0 {
     Rnd rnd;
 
     // fill after Init()
-    float framePerSeconds{};
-    float windowWidth = 800, windowHeight = 600;
-    float windowWidth_2 = windowWidth / 2, windowHeight_2 = windowHeight / 2;
+    float framePerSeconds{}, maxFrameDelay{};
+    XY windowSize{}, windowSize_2{};
+    void SetWindowSize(float w, float h) {
+        XY wh{ w, h };
+        windowSize = wh;
+        windowSize_2 = wh / 2;
+    }
+
     float flipY{ 1 };   // -1: flip  for ogl frame buffer
     Shader* shader{};
 

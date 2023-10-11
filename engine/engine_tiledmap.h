@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_camera.h"
+#include <engine_camera.h>
 
 // tiled map xml version data loader & container. full supported to version 1.9x( compress algorithm only support zstandard )
 // https://doc.mapeditor.org/en/stable/reference/tmx-map-format/#
@@ -411,23 +411,23 @@ namespace TMX {
 	};
 
 	inline XX_FORCE_INLINE int Map::GetMinColumnIndex(Camera const& camera, int offset) const {
-		int r = camera.minX / tileWidth + offset;
+		int r = int(camera.minX / tileWidth) + offset;
 		return r < 0 ? 0 : r;
 	}
 
 	inline XX_FORCE_INLINE int Map::GetMaxColumnIndex(Camera const& camera, int offset) const {
-		int r = camera.maxX / tileWidth + offset;
-		return r > width ? width : r;
+		int r = int(camera.maxX / tileWidth) + offset;
+		return r > (int)width ? (int)width : r;
 	}
 
 	inline XX_FORCE_INLINE int Map::GetMinRowIndex(Camera const& camera, int offset) const {
-		int r = camera.minY / tileHeight + offset;
+		int r = int(camera.minY / tileHeight) + offset;
 		return r < 0 ? 0 : r;
 	}
 
 	inline XX_FORCE_INLINE int Map::GetMaxRowIndex(Camera const& camera, int offset) const {
-		int r = camera.maxY / tileHeight + offset;
-		return r > height ? height : r;
+		int r = int(camera.maxY / tileHeight) + offset;
+		return r > (int)height ? (int)height : r;
 	}
 
 	inline XX_FORCE_INLINE XY Map::GetBasePos(Camera const& camera) const {

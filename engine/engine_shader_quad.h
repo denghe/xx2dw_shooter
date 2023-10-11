@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_shader.h"
+#include <engine_shader.h>
 
 struct QuadInstanceData {
     XY pos{}, anchor{ 0.5, 0.5 };       // float * 4
@@ -18,10 +18,10 @@ struct Shader_QuadInstance : Shader {
     GLVertexArrays va;
     GLBuffer vb, ib;
 
-    static const size_t maxQuadNums{ 200000 };
+    static const int32_t maxQuadNums{ 200000 };
     GLuint lastTextureId{};
     std::unique_ptr<QuadInstanceData[]> quadInstanceDatas = std::make_unique<QuadInstanceData[]>(maxQuadNums);
-    size_t quadCount{};
+    int32_t quadCount{};
     EngineBase0* eb{};
 
     void Init(EngineBase0* eb_) {
@@ -128,7 +128,7 @@ void main() {
         glUseProgram(p);
         glActiveTexture(GL_TEXTURE0/* + textureUnit*/);
         glUniform1i(uTex0, 0);
-        glUniform2f(uCxy, 2 / eb->windowWidth, 2 / eb->windowHeight * eb->flipY);
+        glUniform2f(uCxy, 2 / eb->windowSize.x, 2 / eb->windowSize.y * eb->flipY);
         glBindVertexArray(va);
     }
 
@@ -157,7 +157,7 @@ void main() {
         quadCount = 0;
     }
 
-    QuadInstanceData* Draw(GLuint texId, int numQuads) {
+    QuadInstanceData* Draw(GLuint texId, int32_t numQuads) {
         assert(eb->shader == this);
         assert(numQuads <= maxQuadNums);
         if (quadCount + numQuads > maxQuadNums || (lastTextureId && lastTextureId != texId)) {

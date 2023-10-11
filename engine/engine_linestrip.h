@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base1.h"
+#include <engine_base1.h>
 
 struct LineStrip {
 	std::vector<XYRGBA8> pointsBuf;
@@ -111,7 +111,7 @@ struct LineStrip {
 	}
 	LineStrip& SetColorAf(float const& a) {
 		dirty = true;
-		color.a = 255 * a;
+		color.a = uint8_t(255 * a);
 		return *this;
 	}
 	LineStrip& SetColorA(uint8_t const& a) {
@@ -135,7 +135,7 @@ struct LineStrip {
 
 	void Draw() {
 		Update();
-		if (auto&& ps = pointsBuf.size()) {
+		if (int ps = (int)pointsBuf.size()) {
 			EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderLineStrip).Draw(pointsBuf.data(), ps);
 		}
 	}

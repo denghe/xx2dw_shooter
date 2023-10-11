@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_includes.h"
+#include <engine_includes.h>
 
 struct CurvePoint {
     XY pos{};
@@ -253,7 +253,7 @@ struct MovePathCache {
         this->loop = mp.loop;
         auto td = mp.totalDistance + stepDistance;
         points.clear();
-        points.reserve(std::ceil(mp.totalDistance / stepDistance));
+        points.reserve((size_t)std::ceil(mp.totalDistance / stepDistance));
 
         MovePathSteper mpr;
         mpr.mp.pointer = (MovePath*)&mp;	// tmp fill fake ptr instead Init(std::move(mp));
@@ -267,7 +267,7 @@ struct MovePathCache {
     }
 
     MovePathCachePoint* Move(float const& totalDistance) {
-        int i = totalDistance / stepDistance;
+        int i = int(totalDistance / stepDistance);
         if (loop) {
             return &points[i % points.size()];
         } else {

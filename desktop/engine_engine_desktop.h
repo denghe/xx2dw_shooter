@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base3.h"
+#include <engine_base3.h>
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
@@ -7,7 +7,7 @@ template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std:
 template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
 template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } -> std::same_as<xx::Task<>>; };
 
-// need inherit from gDesign
+// Derived need inherit from gDesign
 template<typename Derived>
 struct Engine : EngineBase3 {
 
@@ -17,12 +17,9 @@ struct Engine : EngineBase3 {
             ((Derived*)this)->Init();
         }
 
-        windowWidth = ((Derived*)this)->width;
-        windowHeight = ((Derived*)this)->height;
-        windowWidth_2 = ((Derived*)this)->width / 2;
-        windowHeight_2 = ((Derived*)this)->height / 2;
         framePerSeconds = ((Derived*)this)->fps;
-        mouseEventHandlers.Init(128, 128, ((Derived*)this)->width * 2, ((Derived*)this)->height * 2);
+        this->SetWindowSize(((Derived*)this)->width, ((Derived*)this)->height);
+        mouseEventHandlers.Init(128, 128, (int)this->windowSize.x * 2, (int)this->windowSize.y * 2);
 
         GLInit();
 
@@ -40,37 +37,44 @@ struct Engine : EngineBase3 {
         }
     }
 
-    //EM_BOOL JsLoopCallback(double ms) {
-    //    (void)ms;
-    //    auto s = xx::NowSteadyEpochSeconds();
-    //    delta = s - nowSecs;
-    //    nowSecs = s;
 
-    //    GLUpdateBegin();
+    void Run() {
 
-    //    if (delta > ((Derived*)this)->maxFrameDelay) {
-    //        delta = ((Derived*)this)->maxFrameDelay;
-    //    }
-    //    timePool += delta;
-    //    while (timePool >= ((Derived*)this)->frameDelay) {
-    //        timePool -= ((Derived*)this)->frameDelay;
-    //        ++frameNumber;
-    //        fpsViewer.Update();
-    //        if constexpr (Has_Update<Derived>) {
-    //            ((Derived*)this)->Update();
-    //        }
-    //        tasks();
-    //    }
-    //    if constexpr (Has_Draw<Derived>) {
-    //        ((Derived*)this)->Draw();
-    //    }
-    //    if (showFps) {
-    //        fpsViewer.Draw(ctcDefault);
-    //    }
+        while (!glfwWindowShouldClose(wnd) && !running) {
+            glfwPollEvents();
 
-    //    GLUpdateEnd();
-    //    return running;
-    //}
+            auto s = xx::NowSteadyEpochSeconds();
+            delta = s - nowSecs;
+            nowSecs = s;
+
+            GLUpdateBegin();
+
+            if (delta > maxFrameDelay) {
+                delta = maxFrameDelay;
+            }
+            timePool += delta;
+            while (timePool >= ((Derived*)this)->frameDelay) {
+                timePool -= ((Derived*)this)->frameDelay;
+                ++frameNumber;
+                fpsViewer.Update();
+                if constexpr (Has_Update<Derived>) {
+                    ((Derived*)this)->Update();
+                }
+                tasks();
+            }
+            if constexpr (Has_Draw<Derived>) {
+                ((Derived*)this)->Draw();
+            }
+            if (showFps) {
+                fpsViewer.Draw(ctcDefault);
+            }
+
+            GLUpdateEnd();
+
+            glfwSwapBuffers(wnd);
+        }
+    }
+
 
     // task utils
     xx::Task<> AsyncSleep(double secs) {

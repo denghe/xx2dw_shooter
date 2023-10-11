@@ -81,7 +81,7 @@ namespace xx {
 			}
 			else {	// len_ > len
 				Reserve(len_);
-				if constexpr (!std::is_pod_v<T>) {
+				if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
 					for (SizeType i = this->len; i < len_; ++i) {
 						new (buf + i) T();
 					}

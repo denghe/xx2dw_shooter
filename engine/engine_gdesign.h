@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_prims.h"
+#include <engine_prims.h>
 
 template<int width_, int height_, int fps_ = 60>
 struct GDesign {
@@ -52,5 +52,5 @@ struct GDesign {
     static constexpr XY xy8{ x8, y8 };
     static constexpr XY xy9{ x9, y9 };
 
-    static constexpr float sqr2 = 0.7071067811865475244;
+    static constexpr float sqr2 = float(0.7071067811865475244);
 };

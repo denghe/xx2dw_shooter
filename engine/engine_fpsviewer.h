@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base1.h"
+#include <engine_base1.h>
 
 struct FpsViewer {
     double lastSecs{}, drawCounter{}, updateCounter{}, fps{}, ups{};
@@ -30,6 +30,6 @@ struct FpsViewer {
                  + " DC:" + std::to_string(Shader::drawCall)
                  + " VC:" + std::to_string(Shader::drawVerts);
 
-        ctc.Draw({ -gEngine->windowWidth_2, -gEngine->windowHeight_2 }, s, RGBA8_Green, { 0, 0 });
+        ctc.Draw({ -gEngine->windowSize_2.x, -gEngine->windowSize_2.y }, s, RGBA8_Green, { 0, 0 });
     }
 };

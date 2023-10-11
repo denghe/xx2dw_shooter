@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_spacegrid_ringdiffuse.h"
+#include <engine_spacegrid_ringdiffuse.h>
 
 // space grid index system for circle
 template<typename Item, typename XY_t = Vec2<int32_t>>

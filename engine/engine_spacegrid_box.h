@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_prims.h"
+#include <engine_prims.h>
 
 // space grid index system for AABB bounding box. coordinate (0, 0) at left-top, +x = right, +y = buttom
 template<typename Item, typename XY_t = Vec2<int32_t>>
@@ -81,8 +81,8 @@ struct SpaceGridAB {
 		cellSize.x = cellWidth_;
 		cellSize.y = cellHeight_;
 
-		max.y = cellHeight_ * numRows;
-		max.x = cellWidth_ * numCols;
+		max.y = float(cellHeight_ * numRows);
+		max.x = float(cellWidth_ * numCols);
 		max_2 = max / 2;
 
 		cells.resize(numRows * numCols);

@@ -1,14 +1,12 @@
 ﻿#pragma once
-#include "engine_base1.h"
-#include "engine_chartexcache.h"
-#include "engine_tiledmap_sede.h"
-#include "engine_fpsviewer.h"
-#include "engine_linestrip.h"
-#include "engine_dynamictexturepacker.h"
-#include "engine_scale9sprite.h"
-#include "engine_camera.h"
-#include "engine_node.h"
-#include "engine_node_derived.h"
+#include <engine_base1.h>
+#include <engine_chartexcache.h>
+#include <engine_tiledmap_sede.h>
+#include <engine_fpsviewer.h>
+#include <engine_linestrip.h>
+#include <engine_dynamictexturepacker.h>
+#include <engine_scale9sprite.h>
+#include <engine_camera.h>
 
 struct EngineBase2 : EngineBase1 {
     XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
@@ -16,85 +14,6 @@ struct EngineBase2 : EngineBase1 {
     CharTexCache<24> ctcDefault;
     FpsViewer fpsViewer;
     bool showFps{ true };
-
-
-    /*****************************************************************************************************/
-    /*****************************************************************************************************/
-
-    // for sort
-    xx::List<ZNode> tmpZNodes;
-
-    EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
-        touchMode = false;
-        mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
-        assert(!mouseEventHandler);
-        mouseEventHandlers.ForeachPoint(mouseEventHandlers.max_2 + mouse.pos, [&](auto o) {
-            tmpZNodes.Emplace(o->z, o);
-            });
-        std::sort(tmpZNodes.buf, tmpZNodes.buf + tmpZNodes.len, ZNode::GreaterThanComparer);	// event big z first
-        for (auto& zn : tmpZNodes) {
-            ((MouseEventHandlerNode*)zn.n)->OnMouseDown();
-            if (mouseEventHandler) break;
-        }
-        tmpZNodes.Clear();
-        return EM_TRUE;
-    }
-
-    EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e) {
-        mouse.pos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
-        if (mouseEventHandler) {
-            mouseEventHandler->OnMouseMove();
-        } else {
-            mouseEventHandlers.ForeachPoint(mouseEventHandlers.max_2 + mouse.pos, [&](auto o) {
-                tmpZNodes.Emplace(o->z, o);
-                });
-            std::sort(tmpZNodes.buf, tmpZNodes.buf + tmpZNodes.len, ZNode::GreaterThanComparer);	// event big z first
-            for (auto& zn : tmpZNodes) {
-                ((MouseEventHandlerNode*)zn.n)->OnMouseMove();
-                if (mouseEventHandler) break;
-            }
-            tmpZNodes.Clear();
-        }
-        return EM_TRUE;
-    }
-
-    EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e) {
-        mouse.btnStates[e.button] = false;
-        if (mouseEventHandler) {
-            mouseEventHandler->OnMouseUp();
-            mouseEventHandler = {};
-        }
-        return EM_TRUE;
-    }
-
-    /*****************************************************************************************************/
-    /*****************************************************************************************************/
-
-    EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e) {
-        if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-            keyboardKeysStates[e.which] = true;
-            return EM_TRUE;
-        }
-        return EM_FALSE;
-    }
-    EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e) {
-        if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-            keyboardKeysStates[e.which] = false;
-            return EM_TRUE;
-        }
-        return EM_FALSE;
-    }
-
-    bool KeyDown(KeyboardKeys k) const {
-        return keyboardKeysStates[(KeyboardKeys_t)k];
-    }
-
-    bool KeyDownDelay(KeyboardKeys k, double delaySecs) {
-        if (!KeyDown(k)) return false;
-        if (this->keyboardKeysDelays[(KeyboardKeys_t)k] > this->nowSecs) return false;
-        this->keyboardKeysDelays[(KeyboardKeys_t)k] = this->nowSecs + delaySecs;
-        return true;
-    }
 
     std::optional<std::pair<MoveDirections, XY>> GetKeyboardMoveInc() {
         union Dirty {
@@ -135,7 +54,7 @@ struct EngineBase2 : EngineBase1 {
 
         XY v{};
         MoveDirections md;
-        constexpr const float SQR2_2 = 1.4142135623730950488016887242097 / 2;
+        constexpr const float SQR2_2 = float(1.4142135623730950488016887242097 / 2);
 
         if (n == 2) {
             if (flags.w) {

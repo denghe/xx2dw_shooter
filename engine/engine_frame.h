@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "engine_includes.h"
-#include "engine_opengl.h"
-#include "engine_prims.h"
+#include <engine_includes.h>
+#include <engine_opengl.h>
+#include <engine_prims.h>
 
 // sprite frame
 struct Frame {

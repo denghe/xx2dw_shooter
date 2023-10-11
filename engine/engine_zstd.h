@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "engine_includes.h"
-#include "zstd.h"
+#include <engine_includes.h>
+#include <zstd.h>
 
 inline void ZstdDecompress(std::string_view const& src, xx::Data& dst) {
     auto&& siz = ZSTD_getFrameContentSize(src.data(), src.size());

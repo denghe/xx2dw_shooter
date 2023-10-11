@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "engine_base0.h"
+#include <engine_base0.h>
 
 struct Node {
 	xx::List<xx::Shared<Node>, int32_t> children;
@@ -84,7 +84,7 @@ inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
 	if (!n->visible) return;
 	zns.Emplace(n->z, n);
-	for (int i = zns.len - 1; i < zns.len; ++i) {
+	for (auto i = zns.len - 1; i < zns.len; ++i) {
 		n = zns[i].n;
 		for (auto& c : n->children) {
 			assert(c);

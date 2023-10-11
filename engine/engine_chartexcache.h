@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "engine_base1.h"
-#include "engine_framebuffer.h"
-#include "engine_frame.h"
-#include "engine_quad.h"
+#include <engine_base1.h>
+#include <engine_framebuffer.h>
+#include <engine_frame.h>
+#include <engine_quad.h>
 
 template<int charSize_ = 24, int canvasWidth_ = int(charSize_ / 0.75), int canvasHeight_ = int(charSize_ / 0.75), int texWidth_ = 2048, int texHeight_ = 2048>
 struct CharTexCache {
@@ -26,7 +26,6 @@ struct CharTexCache {
         auto ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
         cq.SetFrame(Frame::Create(std::move(ct))).SetAnchor({ 0, 1 });
 
-        char buf[16];
         for (char32_t c = 0; c < 256; ++c) {
             MakeCharFrame(c);
         }
@@ -68,10 +67,10 @@ struct CharTexCache {
         });
 
         f->tex = t;
-        f->texRect.x = cp.x;
-        f->texRect.y = texHeight - 1 - cp.y;        // flip y for uv
-        f->texRect.w = cw;
-        f->texRect.h = canvasHeight;
+        f->texRect.x = uint16_t(cp.x);
+        f->texRect.y = uint16_t(texHeight - 1 - cp.y);        // flip y for uv
+        f->texRect.w = uint16_t(cw);
+        f->texRect.h = uint16_t(canvasHeight);
         return *f;
     }
 
