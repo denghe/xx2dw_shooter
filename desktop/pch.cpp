@@ -1,4 +1,8 @@
 #include "pch.h"
+#define GLAD_MALLOC(sz)       malloc(sz)
+#define GLAD_FREE(ptr)        free(ptr)
+#define GLAD_GL_IMPLEMENTATION
+#include <glad.h>
 
 enum class TextAlign {
     CENTER = 0x33, /** Horizontal center and vertical center. */
@@ -10,6 +14,23 @@ enum class TextAlign {
     BOTTOM_LEFT = 0x21, /** Horizontal left and vertical bottom. */
     LEFT = 0x31, /** Horizontal left and vertical center. */
     TOP_LEFT = 0x11, /** Horizontal left and vertical top. */
+};
+
+enum class Overflow {
+    NONE,           // In NONE mode, the dimensions is (0,0) and the content size will change dynamically to fit the label.
+    CLAMP,          // In CLAMP mode, when label content goes out of the bounding box, it will be clipped.
+    SHRINK,         // In SHRINK mode, the font size will change dynamically to adapt the content size.
+    RESIZE_HEIGHT   // In RESIZE_HEIGHT mode, you can only change the width of label and the height is changed automatically.
+};
+
+struct FontDefinition {
+    std::string _fontName;
+    int _fontSize{};
+    XY _dimensions{};
+    RGB8 _fontFillColor{ RGB8_Zero };
+    uint8_t _fontAlpha{ 255 };
+    bool _enableWrap{ true };
+    Overflow _overflow{};
 };
 
 struct BitmapDC {
@@ -71,10 +92,10 @@ struct BitmapDC {
         return true;
     }
 
-    SIZE sizeWithText(std::wstring_view text, DWORD dwFmt, std::string_view fontName, int textSize, LONG nWidthLimit, LONG nHeightLimit, bool enableWrap, int overflow) {
+    SIZE sizeWithText(std::wstring_view text, DWORD dwFmt, std::string_view fontName, int textSize, LONG nWidthLimit, LONG nHeightLimit, bool enableWrap, Overflow overflow) {
         if (text.empty()) return {};
         RECT rc{};
-        DWORD dwCalcFmt = DT_CALCRECT;
+        DWORD dwCalcFmt = DT_CALCRECT | DT_NOPREFIX;
         if (!enableWrap) {
             dwCalcFmt |= DT_SINGLELINE;
         }
@@ -82,7 +103,7 @@ struct BitmapDC {
             rc.right = nWidthLimit;
             dwCalcFmt |= DT_WORDBREAK | (dwFmt & DT_CENTER) | (dwFmt & DT_RIGHT);
         }
-        if (overflow == 2) {
+        if (overflow == Overflow::SHRINK) {
             LONG actualWidth = nWidthLimit + 1;
             LONG actualHeight = nHeightLimit + 1;
             int newFontSize = textSize + 1;
@@ -120,10 +141,10 @@ struct BitmapDC {
         return true;
     }
 
-    int drawText(std::string_view text, SIZE& tSize, TextAlign eAlign, std::string_view fontName, int textSize, bool enableWrap, int overflow) {
+    int drawText(std::string_view text, SIZE& tSize, TextAlign eAlign, std::string_view fontName, int textSize, bool enableWrap, Overflow overflow) {
         if (text.empty()) return 0;
 
-        DWORD dwFmt = DT_WORDBREAK;
+        DWORD dwFmt = DT_WORDBREAK | DT_NOPREFIX;
         if (!enableWrap) {
             dwFmt |= DT_SINGLELINE;
         }
@@ -145,25 +166,6 @@ struct BitmapDC {
         std::wstring ws;
         ws.resize(text.size());
         ws.resize(MultiByteToWideChar(CP_UTF8, 0, text.data(), (int)text.size(), ws.data(), (int)ws.size()));
-
-        if (text.find_first_of('&') != text.npos) {
-            int bufSiz = (int)ws.size();
-            std::wstring ws2;
-            ws2.resize(bufSiz * 2 + 1);
-            int fixedIndex{};
-            for (int index{}; index < bufSiz; ++index) {
-                if (ws[index] == '&') {
-                    ws2[fixedIndex] = '&';
-                    ws2[fixedIndex + 1] = '&';
-                    fixedIndex += 2;
-                } else {
-                    ws2[fixedIndex] = ws[index];
-                    fixedIndex += 1;
-                }
-            }
-            ws2.resize(fixedIndex);
-            ws = std::move(ws2);
-        }
 
         SIZE newSize = sizeWithText(ws, dwFmt, fontName, textSize, tSize.cx, tSize.cy, enableWrap, overflow);
         RECT rcText{};
@@ -235,35 +237,6 @@ static BitmapDC& sharedBitmapDC()
     return s_BmpDC;
 }
 
-enum class TextHAlignment {
-    LEFT,
-    CENTER,
-    RIGHT
-};
-
-enum class TextVAlignment {
-    TOP,
-    CENTER,
-    BOTTOM
-};
-
-enum class Overflow {
-    NONE,           // In NONE mode, the dimensions is (0,0) and the content size will change dynamically to fit the label.
-    CLAMP,          // In CLAMP mode, when label content goes out of the bounding box, it will be clipped.
-    SHRINK,         // In SHRINK mode, the font size will change dynamically to adapt the content size.
-    RESIZE_HEIGHT   // In RESIZE_HEIGHT mode, you can only change the width of label and the height is changed automatically.
-};
-
-struct FontDefinition {
-    std::string _fontName;
-    int _fontSize{};
-    XY _dimensions{};
-    RGB8 _fontFillColor{ RGB8_Zero };
-    uint8_t _fontAlpha{ 255 };
-    bool _enableWrap{ true };
-    Overflow _overflow{};
-};
-
 xx::Data getTextureDataForText(std::string_view text, const FontDefinition& textDefinition, TextAlign align, int& width, int& height) {
     BitmapDC& dc = sharedBitmapDC();
 
@@ -273,7 +246,7 @@ xx::Data getTextureDataForText(std::string_view text, const FontDefinition& text
 
     // draw text. does changing to SIZE here affects the font size by rounding from float?
     SIZE size = { (LONG)textDefinition._dimensions.x, (LONG)textDefinition._dimensions.y };
-    if (!dc.drawText(text, size, align, textDefinition._fontName, textDefinition._fontSize, textDefinition._enableWrap, (int)textDefinition._overflow)) return {};
+    if (!dc.drawText(text, size, align, textDefinition._fontName, textDefinition._fontSize, textDefinition._enableWrap, textDefinition._overflow)) return {};
 
     xx::Data ret;
     ret.Resize(size.cx * size.cy * 4);
@@ -307,8 +280,99 @@ xx::Data getTextureDataForText(std::string_view text, const FontDefinition& text
     return ret;
 }
 
-
 int main() {
 
-	return 0;
+    glfwSetErrorCallback([](int error, const char* description) {
+        xx::CoutN("glfwSetErrorCallback error = ", error, " description = ", description);
+        xx_assert(false);
+    });
+
+    if (!glfwInit()) return -1;
+    auto sg_glfw = xx::MakeSimpleScopeGuard([] { glfwTerminate(); });
+
+    glfwDefaultWindowHints();
+    glfwWindowHint(GLFW_DEPTH_BITS, 0);
+    glfwWindowHint(GLFW_STENCIL_BITS, 0);
+
+    auto wnd = glfwCreateWindow(1280, 800, "this is title", nullptr, nullptr);
+    if (!wnd) return -2;
+    auto sg_wnd = xx::MakeSimpleScopeGuard([&] { glfwDestroyWindow(wnd); });
+
+    glfwSetFramebufferSizeCallback(wnd, [](GLFWwindow* wnd, int w, int h) {
+        xx::CoutN("glfwSetFramebufferSizeCallback w, h = ", w, ", ", h);
+    });
+
+    int width{}, height{};
+    glfwGetFramebufferSize(wnd, &width, &height);
+
+    glfwMakeContextCurrent(wnd);
+
+    glfwSetInputMode(wnd, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
+    glfwSwapInterval(0);	// no v-sync by default
+
+    if (!gladLoadGL(glfwGetProcAddress)) return -3;
+
+    // dump & cleanup glfw3 error
+    while (auto e = glGetError()) {
+        xx::CoutN("glGetError() == ", e);
+    };
+
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(65535);
+    glPointSize(5);
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    auto lastSecs = xx::NowSteadyEpochSeconds();
+    int64_t drawCounter{};
+    double fps{};
+    while (!glfwWindowShouldClose(wnd)) {
+        glfwPollEvents();
+        glViewport(0, 0, width, height);
+        glClearColor(0, 0, 0, 0);
+        glDepthMask(true);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDepthMask(false);
+
+        //
+        ++drawCounter;
+        auto nowSecs = xx::NowSteadyEpochSeconds();
+        if (auto elapsedSecs = nowSecs - lastSecs; elapsedSecs >= 1) {
+            lastSecs = nowSecs;
+            fps = drawCounter / elapsedSecs;
+            drawCounter = 0;
+            xx::CoutN("fps = ", fps);
+        }
+
+        glfwSwapBuffers(wnd);
+    }
+    return 0;
 }
+
+//xx::engine.SetWH(w, h);
+//xx::engine.SetWH(width, height);
+//glfwSetCursorPos(wnd, xx::engine.mousePosition.x, xx::engine.mousePosition.y);
+
+//glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
+//    if (key < 0) return;    // macos fn key == -1
+//    xx::engine.kbdStates[key] = action;
+//});
+
+//glfwSetCharCallback(wnd, [](GLFWwindow* wnd, unsigned int key) {
+//    xx::engine.kbdInputs.push_back(key);
+//});
+
+//glfwSetScrollCallback(wnd, MouseScrollCallback);
+//glfwSetCursorEnterCallback(wnd, CursorEnterCallback);
+
+//glfwSetCursorPosCallback(wnd, [](GLFWwindow* wnd, double x, double y) {
+//    xx::engine.mousePosition = { (float)x - xx::engine.w / 2, xx::engine.h / 2 - (float)y };
+//});
+
+//glfwSetMouseButtonCallback(wnd, [](GLFWwindow* wnd, int button, int action, int mods) {
+//    xx::engine.mbtnStates[button] = action;
+//});
