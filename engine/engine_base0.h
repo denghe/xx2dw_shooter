@@ -38,7 +38,7 @@ struct EngineBase0 {
     Rnd rnd;
 
     // fill after Init()
-    float framePerSeconds{}, maxFrameDelay{};
+    float framePerSeconds{}, maxFrameDelay{ 1 };
     XY windowSize{}, windowSize_2{};
     void SetWindowSize(float w, float h) {
         XY wh{ w, h };

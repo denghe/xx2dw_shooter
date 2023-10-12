@@ -62,9 +62,11 @@ struct CharTexCache {
         }
 
         auto& t = texs.back();
-        fb.DrawTo(t, {}, [&]() {
-            cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();
-        });
+        if (cw > 0) {
+            fb.DrawTo(t, {}, [&]() {
+                cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();
+            });
+        }
 
         f->tex = t;
         f->texRect.x = uint16_t(cp.x);

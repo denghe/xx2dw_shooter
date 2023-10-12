@@ -39,8 +39,9 @@ struct Engine : EngineBase3 {
 
 
     void Run() {
+        xx_assert(framePerSeconds);
 
-        while (!glfwWindowShouldClose(wnd) && !running) {
+        while (!glfwWindowShouldClose(wnd) && running) {
             glfwPollEvents();
 
             auto s = xx::NowSteadyEpochSeconds();

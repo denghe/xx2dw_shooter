@@ -53,7 +53,6 @@ struct EngineBase1 : EngineBase0 {
 
         wnd = glfwCreateWindow(1280, 800, title.c_str(), nullptr, nullptr);
         xx_assert(wnd);
-        //bdc.Init(glfwGetWin32Window(wnd));
 
         //glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
         //    if (key < 0) return;    // macos fn key == -1
@@ -117,10 +116,10 @@ struct EngineBase1 : EngineBase0 {
 
     XX_FORCE_INLINE void GLClear(RGBA8 c) {
         glClearColor(c.r / 255.f, c.g / 255.f, c.b / 255.f, c.a / 255.f);
-        //glClear(GL_COLOR_BUFFER_BIT);
-        glDepthMask(true);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glDepthMask(false);
+        glClear(GL_COLOR_BUFFER_BIT);
+        //glDepthMask(true);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glDepthMask(false);
     }
 
     XX_FORCE_INLINE void GLUpdateBegin() {

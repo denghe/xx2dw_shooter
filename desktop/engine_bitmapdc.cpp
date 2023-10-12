@@ -202,8 +202,8 @@ xx::Data BitmapDC::getTextureDataForText(std::string_view text, const FontDefini
     SIZE size = { (LONG)textDefinition._dimensions.x, (LONG)textDefinition._dimensions.y };
     if (!drawText(text, size, align, textDefinition._fontName, textDefinition._fontSize, textDefinition._enableWrap, textDefinition._overflow)) return {};
 
-    xx::Data ret;
-    ret.Resize(size.cx * size.cy * 4);
+    xx::Data d;
+    d.Resize(size.cx * size.cy * 4);
 
     struct {
         BITMAPINFOHEADER bmiHeader;
@@ -217,13 +217,13 @@ xx::Data BitmapDC::getTextureDataForText(std::string_view text, const FontDefini
 
     // copy pixel data
     bi.bmiHeader.biHeight = (bi.bmiHeader.biHeight > 0) ? -bi.bmiHeader.biHeight : bi.bmiHeader.biHeight;
-    GetDIBits(_dc, _bmp, 0, height, ret.buf, (LPBITMAPINFO)&bi, DIB_RGB_COLORS);
+    GetDIBits(_dc, _bmp, 0, height, d.buf, (LPBITMAPINFO)&bi, DIB_RGB_COLORS);
 
     COLORREF textColor = (textDefinition._fontFillColor.b << 16 | textDefinition._fontFillColor.g << 8 | textDefinition._fontFillColor.r) & 0x00ffffff;
     float alpha = textDefinition._fontAlpha / 255.0f;
     COLORREF* pPixel = nullptr;
     for (int y = 0; y < height; ++y) {
-        pPixel = (COLORREF*)ret.buf + y * width;
+        pPixel = (COLORREF*)d.buf + y * width;
         for (int x = 0; x < width; ++x) {
             COLORREF& clr = *pPixel;
             clr = ((BYTE)(GetRValue(clr) * alpha) << 24) | textColor;
@@ -231,20 +231,33 @@ xx::Data BitmapDC::getTextureDataForText(std::string_view text, const FontDefini
         }
     }
 
-    return ret;
+    // to rgba( rgb == ffffff, a keep )
+    for (int i = 0, e = d.len / 4; i < e; ++i) {
+        auto& v = ((uint32_t*)d.buf)[i];
+        v |= (0xffffff | (GetRValue(v) << 24));
+    }
+    return d;
 }
 
 std::optional<BitmapDC> dc;
-
-float upload_unicode_char_to_texture(int charSize, char const* buf) {
-    int w, h;
-    auto d = dc->getTextureDataForText(buf, { "", 24 }, TextAlign::CENTER, w, h);
-    // todo
-    return (float)w;
-}
 
 void init_gCanvas(int charSize, int width, int height, const char* font) {
     if (!dc.has_value()) {
         dc.emplace().Init( glfwGetWin32Window( EngineBase1::Instance().wnd ) );
     }
+}
+
+float upload_unicode_char_to_texture(int charSize, char const* buf) {
+    int w{}, h{};
+    auto d = dc->getTextureDataForText(buf, { "", 24 }, TextAlign::LEFT, w, h);
+    if (w > 0) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, d.buf);
+    }
+    CheckGLError();
+    xx::CoutN("upload_unicode_char_to_texture w = ", w, " h = ", h);
+    return (float)w;
 }
