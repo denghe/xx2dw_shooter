@@ -10,8 +10,8 @@ void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 xx::Task<> ShooterBullet1::MainLogic() {
 	while (true) {
 		AddPosition(inc);
-		if ((pos.x > gLooper.windowWidth_2 + cRadius * 2) || (pos.x < -gLooper.windowWidth_2 - cRadius * 2) ||
-			(pos.y > gLooper.windowHeight_2 + cRadius * 2) || (pos.y < -gLooper.windowHeight_2 - cRadius * 2)) break;
+		if ((pos.x > gLooper.windowSize_2.x + cRadius * 2) || (pos.x < -gLooper.windowSize_2.x - cRadius * 2) ||
+			(pos.y > gLooper.windowSize_2.y + cRadius * 2) || (pos.y < -gLooper.windowSize_2.y - cRadius * 2)) break;
 
 		if (auto r = gLooper.FindNeighborMonster(pos, cRadius)) {
 			// todo: - hp ?

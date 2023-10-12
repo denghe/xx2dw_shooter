@@ -28,7 +28,7 @@ struct EngineBase1 : EngineBase0 {
 
     void GLInit() {
 #ifdef __EMSCRIPTEN__
-        emscripten_set_canvas_element_size("canvas", (int)windowWidth, (int)windowHeight);
+        emscripten_set_canvas_element_size("canvas", (int)windowSize.x, (int)windowSize.y);
         EmscriptenWebGLContextAttributes attrs;
         emscripten_webgl_init_context_attributes(&attrs);
         attrs.alpha = 0;

@@ -115,7 +115,7 @@ EM_BOOL GameLooper::OnMouseDown(EmscriptenMouseEvent const& e) {
 }
 
 EM_BOOL GameLooper::OnMouseMove(EmscriptenMouseEvent const& e) {
-    mouse.pos = { (float)e.targetX - this->windowWidth_2, this->windowHeight - (float)e.targetY - this->windowHeight_2 };
+    mouse.pos = { (float)e.targetX - this->windowSize_2.x, this->windowSize.y - (float)e.targetY - this->windowSize_2.y };
     if (mouseFocus) {
         mouseFocus->OnMouseMove();
     }
@@ -193,6 +193,6 @@ void GameLooper::Draw() {
     dc.Draw();
 
     if (!log.empty()) {
-        ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, log);
+        ctcDefault.Draw({ -gEngine->windowSize_2.x, gEngine->windowSize_2.y - ctcDefault.canvasHeight_2 }, log);
     }
 }

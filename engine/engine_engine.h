@@ -147,12 +147,9 @@ struct Engine : EngineBase3 {
             ((Derived*)this)->Init();
         }
 
-        windowWidth = ((Derived*)this)->width;
-        windowHeight = ((Derived*)this)->height;
-        windowWidth_2 = ((Derived*)this)->width / 2;
-        windowHeight_2 = ((Derived*)this)->height / 2;
         framePerSeconds = ((Derived*)this)->fps;
-        mouseEventHandlers.Init(128, 128, ((Derived*)this)->width * 2, ((Derived*)this)->height * 2);
+        this->SetWindowSize(((Derived*)this)->width, ((Derived*)this)->height);
+        mouseEventHandlers.Init(128, 128, (int)this->windowSize.x * 2, (int)this->windowSize.y * 2);
 
         GLInit();
 

@@ -129,6 +129,7 @@ if(MSVC)
 endif()
 
 include_directories(
+	../stb
 	../engine
 	../3rd
 	../xxlib

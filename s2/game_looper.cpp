@@ -56,9 +56,9 @@ void GameLooper::Draw() {
 		for (auto& room : rooms) { room->Draw(); }
 
 		if (!hasCross) {
-			ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, "calculate done.");
+			ctcDefault.Draw({ -gEngine->windowSize_2.x, gEngine->windowSize_2.y - ctcDefault.canvasHeight_2 }, "calculate done.");
 		} else {
-			ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, "keyboard Z X zoom.");
+			ctcDefault.Draw({ -gEngine->windowSize_2.x, gEngine->windowSize_2.y - ctcDefault.canvasHeight_2 }, "keyboard Z X zoom.");
 		}
 	}
 }

@@ -202,8 +202,8 @@ void GameLooper::Draw() {
 	effects_damageText.Foreach([&](auto& o) { o->Draw(); });
 		
 	// todo: more Draw
-	ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
-	ctcDefault.Draw({ -gEngine->windowWidth_2, gEngine->windowHeight_2 - ctcDefault.canvasHeight_2 - ctcDefault.canvasHeight }, std::string("monsters.Count() == ") + std::to_string(monsters.Count()));
+	ctcDefault.Draw({ -gEngine->windowSize_2.x, gEngine->windowSize_2.y - ctcDefault.canvasHeight_2 }, "A S D W move, Z X zoom, MOUSE fire");
+	ctcDefault.Draw({ -gEngine->windowSize_2.x, gEngine->windowSize_2.y - ctcDefault.canvasHeight_2 - ctcDefault.canvasHeight }, std::string("monsters.Count() == ") + std::to_string(monsters.Count()));
 }
 
 

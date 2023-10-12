@@ -15,7 +15,7 @@ EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 	if (e.numTouches == 1) {
 		auto&& t = e.touches[0];
 		aimTouchId = t.identifier;
-		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - windowWidth_2, windowHeight - (float)t.targetY - windowHeight_2 };
+		aimTouchStartPos = aimTouchMovePos = { (float)t.targetX - windowSize_2.x, windowSize.y - (float)t.targetY - windowSize_2.y };
 	} else {
 		for (int32_t i = 0; i < e.numTouches; ++i) {
 			auto&& t = e.touches[i];
@@ -34,7 +34,7 @@ EM_BOOL GameLooper::OnTouchMove(EmscriptenTouchEvent const& e) {
 		auto&& t = e.touches[i];
 		if (!t.isChanged) continue;
 		if (aimTouchId == t.identifier) {
-			aimTouchMovePos = { (float)t.targetX - windowWidth_2, windowHeight - (float)t.targetY - windowHeight_2 };
+			aimTouchMovePos = { (float)t.targetX - windowSize_2.x, windowSize.y - (float)t.targetY - windowSize_2.y };
 		}
 	}
 	return EM_TRUE;
