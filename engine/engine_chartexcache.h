@@ -8,6 +8,7 @@ template<int charSize_ = 24, int canvasWidth_ = int(charSize_ / 0.75), int canva
 struct CharTexCache {
     static constexpr int charSize = charSize_, canvasWidth = canvasWidth_, canvasHeight = canvasHeight_, texWidth = texWidth_, texHeight = texHeight_;
     static constexpr int canvasWidth_2 = canvasWidth / 2, canvasHeight_2 = canvasHeight / 2;
+    static constexpr float padding = 1;
     std::vector<xx::Shared<GLTexture>> texs;
     Quad cq;
     FrameBuffer fb;
@@ -53,7 +54,7 @@ struct CharTexCache {
         auto cp = p;
         if (p.x + cw > texWidth) {                  // line wrap
             cp.x = 0;
-            p.x = cw;
+            p.x = cw + padding;
             if (p.y - canvasHeight < 0) {                     // new page
                 texs.emplace_back(FrameBuffer::MakeTexture(Vec2{ texWidth, texHeight }));
                 p.y = cp.y = texHeight - 1;
@@ -62,7 +63,7 @@ struct CharTexCache {
                 cp.y = p.y;
             }
         } else {                                    // current line
-            p.x += cw;
+            p.x += cw + padding;
         }
 
         auto& t = texs.back();
@@ -70,10 +71,14 @@ struct CharTexCache {
 #ifndef __EMSCRIPTEN__
             cq.texRect.w = (uint16_t)cw;
             cq.texRect.h = (uint16_t)ch;
-#endif
+            fb.DrawTo(t, {}, [&]() {
+                cq.SetPosition(cp + XY{ -texWidth / 2, (canvasHeight - ch) - texHeight / 2 }).Draw();
+            });
+#else
             fb.DrawTo(t, {}, [&]() {
                 cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();
             });
+#endif
         }
 
         f->tex = t;
