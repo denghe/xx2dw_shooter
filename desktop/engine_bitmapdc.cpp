@@ -247,7 +247,7 @@ void init_gCanvas(int charSize, int width, int height, const char* font) {
     }
 }
 
-float upload_unicode_char_to_texture(int charSize, char const* buf) {
+std::pair<float, float> upload_unicode_char_to_texture(int charSize, char const* buf) {
     int w{}, h{};
     auto d = dc->getTextureDataForText(buf, { "", 24 }, TextAlign::LEFT, w, h);
     if (w > 0) {
@@ -258,6 +258,5 @@ float upload_unicode_char_to_texture(int charSize, char const* buf) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, d.buf);
     }
     CheckGLError();
-    xx::CoutN("upload_unicode_char_to_texture w = ", w, " h = ", h);
-    return (float)w;
+    return { (float)w, (float)h };
 }

@@ -2,7 +2,8 @@
 
 GameLooper gLooper;
 int32_t main() {
-	gLooper.showFps = false;
+	gLooper.showFps = true;
+	gLooper.title = "xx2dw_desktop";
 	gLooper.Run();
 }
 
@@ -14,5 +15,4 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	Quad().SetFrame(Frame::Create(ctcDefault.texs[0])).SetAnchor({0.5,1}).Draw();
 }

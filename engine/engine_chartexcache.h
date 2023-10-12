@@ -11,7 +11,6 @@ struct CharTexCache {
     std::vector<xx::Shared<GLTexture>> texs;
     Quad cq;
     FrameBuffer fb;
-    float cw{};
     XY p{ 0, texHeight - 1 };
 
     std::array<TinyFrame, 256> bases;
@@ -35,7 +34,12 @@ struct CharTexCache {
         char buf[16];
         buf[xx::Char32ToUtf8(c, buf)] = '\0';
         glBindTexture(GL_TEXTURE_2D, cq.texId);
-        cw = upload_unicode_char_to_texture(charSize, buf);
+#ifndef __EMSCRIPTEN__
+        auto [cw, ch] = upload_unicode_char_to_texture(charSize, buf);
+#else
+        float cw = upload_unicode_char_to_texture(charSize, buf);
+        float ch = canvasHeight;
+#endif
         glBindTexture(GL_TEXTURE_2D, 0);
 
         TinyFrame* f{};
@@ -63,6 +67,10 @@ struct CharTexCache {
 
         auto& t = texs.back();
         if (cw > 0) {
+#ifndef __EMSCRIPTEN__
+            cq.texRect.w = cw;
+            cq.texRect.h = ch;
+#endif
             fb.DrawTo(t, {}, [&]() {
                 cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();
             });
@@ -72,7 +80,7 @@ struct CharTexCache {
         f->texRect.x = uint16_t(cp.x);
         f->texRect.y = uint16_t(texHeight - 1 - cp.y);        // flip y for uv
         f->texRect.w = uint16_t(cw);
-        f->texRect.h = uint16_t(canvasHeight);
+        f->texRect.h = uint16_t(ch);
         return *f;
     }
 

@@ -41,7 +41,7 @@ struct EmscriptenKeyboardEvent {
 
 #define EMSCRIPTEN_WEBGL_CONTEXT_HANDLE void*
 
-float upload_unicode_char_to_texture(int charSize, char const* buf);
+std::pair<float, float> upload_unicode_char_to_texture(int charSize, char const* buf);
 void init_gCanvas(int charSize, int width, int height, const char* font);
 
 #endif
