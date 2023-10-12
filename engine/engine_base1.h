@@ -172,6 +172,10 @@ struct EngineBase1 : EngineBase0 {
         return xx::Make<GLTexture>(LoadTexture(fn));
     }
 
+    xx::Shared<Frame> LoadSharedFrame(std::string_view const& fn) {
+        return Frame::Create(LoadSharedTexture(fn));
+    }
+
     // more load here ?
 
     /*****************************************************************************************************/
