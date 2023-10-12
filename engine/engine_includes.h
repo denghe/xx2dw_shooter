@@ -6,6 +6,9 @@
 #include <xx_data.h>
 #include <xx_file.h>
 
+/*
+// copy these code to pch.cpp
+
 //#define STBI_NO_JPEG
 //#define STBI_NO_PNG
 #define STBI_NO_GIF
@@ -15,6 +18,9 @@
 #define STBI_NO_HDR
 #define STBI_NO_TGA
 #define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+*/
 #include <stb_image.h>
 
 #ifdef __EMSCRIPTEN__
@@ -28,6 +34,17 @@
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
 #  else
+
+/*
+// copy these code to pch.cpp
+
+#define GLAD_MALLOC(sz)       malloc(sz)
+#define GLAD_FREE(ptr)        free(ptr)
+#define GLAD_GL_IMPLEMENTATION
+#include <glad.h>
+
+*/
+
 #include <glad.h>
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -42,9 +59,9 @@
 #define EM_UTF8 char
 
 struct EmscriptenMouseEvent {
-	unsigned short button;
-	long targetX;
-	long targetY;
+    unsigned short button{};
+    long targetX{};
+    long targetY{};
 };
 
 struct EmscriptenKeyboardEvent {
@@ -190,7 +207,7 @@ enum class KeyboardKeys : KeyboardKeys_t {
     VolumeDown = 25         // Key: Android volume down button
 };
 
-enum class Mbtns : uint8_t {
+enum class MouseButtons : uint8_t {
     Left = 0,               // Mouse button left
     Right = 1,              // Mouse button right
     Middle = 2,             // Mouse button middle (pressed wheel)
@@ -200,7 +217,7 @@ enum class Mbtns : uint8_t {
     Back = 6,               // Mouse button back (advanced mouse device)
 };
 
-enum class GpdBtns : uint8_t {
+enum class GamePadButtons : uint8_t {
     Unknown = 0,            // Unknown button, just for error checking
     LeftFaceUp,             // Gamepad left DPAD up button
     LeftFaceRight,          // Gamepad left DPAD right button
@@ -221,7 +238,7 @@ enum class GpdBtns : uint8_t {
     RightThumb              // Gamepad joystick pressed button right
 };
 
-enum class GpadAxiss : uint8_t {
+enum class GamePadAxiss : uint8_t {
     LeftX = 0,              // Gamepad left stick X axis
     LeftY = 1,              // Gamepad left stick Y axis
     RightX = 2,             // Gamepad right stick X axis

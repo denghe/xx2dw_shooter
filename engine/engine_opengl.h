@@ -217,7 +217,7 @@ inline void UnbindGLFrameBuffer() {
 /**********************************************************************************************************************************/
 /**********************************************************************************************************************************/
 
-GLuint LoadGLTexture_core(int textureUnit = 0) {
+inline GLuint LoadGLTexture_core(int textureUnit = 0) {
 	GLuint t{};
 	glGenTextures(1, &t);
 	glActiveTexture(GL_TEXTURE0 + textureUnit);
@@ -226,7 +226,7 @@ GLuint LoadGLTexture_core(int textureUnit = 0) {
 	return t;
 }
 
-GLTexture LoadGLTexture(std::string_view const& buf, std::string_view const& fullPath) {
+inline GLTexture LoadGLTexture(std::string_view const& buf, std::string_view const& fullPath) {
 	xx_assert(buf.size() > 12);
 
 	/***********************************************************************************************************************************/

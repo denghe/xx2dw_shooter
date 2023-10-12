@@ -21,7 +21,6 @@ include_directories(
 	../engine
 	../3rd
 	../xxlib
-	../desktop
 )
 
 file(GLOB sources
@@ -32,8 +31,6 @@ file(GLOB sources
 	../engine/*.c
 	../engine/*.hpp
 	../engine/*.h
-	../desktop/engine_bitmapdc.*
-	../desktop/engine_engine_desktop.h
 	../xxlib/*.cpp
 	../xxlib/*.c
 	../xxlib/*.hpp

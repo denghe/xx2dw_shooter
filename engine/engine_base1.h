@@ -51,10 +51,10 @@ struct EngineBase1 : EngineBase0 {
         xx_assert(wnd);
 
         // todo
-        //glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
-        //    if (key < 0) return;    // macos fn key == -1
-        //    xx::engine.kbdStates[key] = action;
-        //});
+        glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
+            if (key < 0) return;    // macos fn key == -1
+            EngineBase1::Instance().OnKeyDown(EmscriptenKeyboardEvent{ .which = (unsigned long)key });
+        });
 
         //glfwSetCharCallback(wnd, [](GLFWwindow* wnd, unsigned int key) {
         //    xx::engine.kbdInputs.push_back(key);
@@ -63,13 +63,20 @@ struct EngineBase1 : EngineBase0 {
         //glfwSetScrollCallback(wnd, MouseScrollCallback);
         //glfwSetCursorEnterCallback(wnd, CursorEnterCallback);
 
-        //glfwSetCursorPosCallback(wnd, [](GLFWwindow* wnd, double x, double y) {
-        //    xx::engine.mousePosition = { (float)x - xx::engine.w / 2, xx::engine.h / 2 - (float)y };
-        //});
+        glfwSetCursorPosCallback(wnd, [](GLFWwindow* wnd, double x, double y) {
+            EngineBase1::Instance().OnMouseMove(EmscriptenMouseEvent{ .targetX = (long)x, .targetY = (long)y });
+        });
 
-        //glfwSetMouseButtonCallback(wnd, [](GLFWwindow* wnd, int button, int action, int mods) {
-        //    xx::engine.mbtnStates[button] = action;
-        //});
+        glfwSetMouseButtonCallback(wnd, [](GLFWwindow* wnd, int button, int action, int mods) {
+            // mods 0b 0011 win alt ctrl shift
+            // action 1: down  0: up
+            // button: MouseButtons enum
+            if (action) {
+                EngineBase1::Instance().OnMouseDown(EmscriptenMouseEvent{ .button = (uint16_t)button });
+            } else {
+                EngineBase1::Instance().OnMouseUp(EmscriptenMouseEvent{ .button = (uint16_t)button });
+            }
+        });
 
         glfwSetFramebufferSizeCallback(wnd, [](GLFWwindow* wnd, int w, int h) {
             gEngine->SetWindowSize((float)w, (float)h);
@@ -84,11 +91,11 @@ struct EngineBase1 : EngineBase0 {
         glfwSetInputMode(wnd, GLFW_LOCK_KEY_MODS, GLFW_TRUE);
         glfwSwapInterval(0);	// no v-sync by default
 
-        assert(gladLoadGL(glfwGetProcAddress));
+        xx_assert(gladLoadGL(glfwGetProcAddress));
 
         // dump & cleanup glfw3 error
         while (auto e = glGetError()) {
-            xx::CoutN("glGetError() == ", e);
+            xx::CoutN("glGetError() == ", (int)e);
         };
 
         glEnable(GL_PRIMITIVE_RESTART);
@@ -125,7 +132,6 @@ struct EngineBase1 : EngineBase0 {
 
         Shader::ClearCounter();
     }
-
     XX_FORCE_INLINE void GLUpdateEnd() {
         ShaderEnd();
     }
@@ -162,7 +168,9 @@ struct EngineBase1 : EngineBase0 {
         return LoadGLTexture(d, p);
     }
 
-    xx::Shared<GLTexture> LoadSharedTexture(std::string_view const& fn);
+    xx::Shared<GLTexture> LoadSharedTexture(std::string_view const& fn) {
+        return xx::Make<GLTexture>(LoadTexture(fn));
+    }
 
     // more load here ?
 

@@ -7,6 +7,9 @@
 #include <engine_dynamictexturepacker.h>
 #include <engine_scale9sprite.h>
 #include <engine_camera.h>
+#ifndef __EMSCRIPTEN__
+#include <engine_bitmapdc.h>
+#endif
 
 struct EngineBase2 : EngineBase1 {
     XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
