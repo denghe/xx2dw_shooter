@@ -68,8 +68,8 @@ struct CharTexCache {
         auto& t = texs.back();
         if (cw > 0) {
 #ifndef __EMSCRIPTEN__
-            cq.texRect.w = cw;
-            cq.texRect.h = ch;
+            cq.texRect.w = (uint16_t)cw;
+            cq.texRect.h = (uint16_t)ch;
 #endif
             fb.DrawTo(t, {}, [&]() {
                 cq.SetPosition(cp + XY{ -texWidth / 2, -texHeight / 2 }).Draw();

@@ -9,7 +9,8 @@ struct Frames {
         for (auto& f : frames) {
             if (f->key == key) return f;
         }
-        throw std::logic_error(xx::ToString(key, " is not found"));
+        xx::CoutN(key, " is not found");
+        xx_assert(false);
     }
 
     xx::Shared<Frame> const& Get(char const* const& buf, size_t const& len) const {

@@ -1,15 +1,11 @@
 ﻿#pragma once
-#include <engine_includes.h>
+#include <engine_base0.h>
 #include <engine_opengl.h>
-#include <engine_prims.h>
 #include <engine_shader.h>
 #include <engine_shader_quad.h>
 #include <engine_shader_linestrip.h>
 #include <engine_frame.h>
 #include <engine_texturepacker.h>
-#include <engine_rnd.h>
-#include <engine_zstd.h>
-#include <engine_base0.h>
 #include <engine_node.h>
 #include <engine_node_derived.h>
 
@@ -54,6 +50,7 @@ struct EngineBase1 : EngineBase0 {
         wnd = glfwCreateWindow(1280, 800, title.c_str(), nullptr, nullptr);
         xx_assert(wnd);
 
+        // todo
         //glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
         //    if (key < 0) return;    // macos fn key == -1
         //    xx::engine.kbdStates[key] = action;
@@ -155,6 +152,19 @@ struct EngineBase1 : EngineBase0 {
 
 
 
+
+    /*****************************************************************************************************/
+    /*****************************************************************************************************/
+
+    // load texture from file
+    GLTexture LoadTexture(std::string_view const& fn) {
+        auto [d, p] = LoadFileData(fn);
+        return LoadGLTexture(d, p);
+    }
+
+    xx::Shared<GLTexture> LoadSharedTexture(std::string_view const& fn);
+
+    // more load here ?
 
     /*****************************************************************************************************/
     /*****************************************************************************************************/

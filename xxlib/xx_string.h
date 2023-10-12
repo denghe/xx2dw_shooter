@@ -131,7 +131,8 @@ namespace xx {
             o[4] = 0b1000'0000 | (c & 0b0011'1111);
             return 4;
         }
-        throw std::logic_error("out of char32_t handled range");
+        xx_assert(false);   // out of char32_t handled range
+        return {};
     }
 
 

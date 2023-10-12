@@ -14,9 +14,7 @@ struct FrameBuffer {
 
     // need ogl frame env
     FrameBuffer& Init() {
-        if (fb) {
-            throw std::logic_error("excessive initializations ?");
-        }
+        xx_assert(!fb);   // excessive initializations ?
         fb = MakeGLFrameBuffer();
         return *this;
     }

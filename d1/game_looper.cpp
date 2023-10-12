@@ -3,12 +3,10 @@
 GameLooper gLooper;
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_desktop";
+	gLooper.title = "xx2dw_d1";
 	gLooper.Init();
 	gLooper.Run();
 }
-
-// todo: file system  picture load ...
 
 xx::Task<> GameLooper::MainTask() {
 	co_return;

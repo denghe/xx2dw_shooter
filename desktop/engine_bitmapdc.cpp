@@ -1,4 +1,4 @@
-#include "pch.h"
+#include <pch.h>
 #define GLAD_MALLOC(sz)       malloc(sz)
 #define GLAD_FREE(ptr)        free(ptr)
 #define GLAD_GL_IMPLEMENTATION
@@ -232,7 +232,7 @@ xx::Data BitmapDC::getTextureDataForText(std::string_view text, const FontDefini
     }
 
     // to rgba( rgb == ffffff, a keep )
-    for (int i = 0, e = d.len / 4; i < e; ++i) {
+    for (int i = 0, e = (int)d.len / 4; i < e; ++i) {
         auto& v = ((uint32_t*)d.buf)[i];
         v |= (0xffffff | (GetRValue(v) << 24));
     }
@@ -251,10 +251,7 @@ std::pair<float, float> upload_unicode_char_to_texture(int charSize, char const*
     int w{}, h{};
     auto d = dc->getTextureDataForText(buf, { "", 24 }, TextAlign::LEFT, w, h);
     if (w > 0) {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        GLTexParameteri();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, d.buf);
     }
     CheckGLError();

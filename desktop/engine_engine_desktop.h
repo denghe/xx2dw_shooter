@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include <engine_base3.h>
 
-template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
 template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std::same_as<void>; };
 template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
@@ -11,11 +10,9 @@ template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } ->
 template<typename Derived>
 struct Engine : EngineBase3 {
 
-    Engine() {
-
-        if constexpr (Has_Init<Derived>) {
-            ((Derived*)this)->Init();
-        }
+    void Init() {
+        rootPath = ToSearchPath((std::string&)std::filesystem::absolute("./").u8string());
+        SearchPathReset();
 
         framePerSeconds = ((Derived*)this)->fps;
         this->SetWindowSize(((Derived*)this)->width, ((Derived*)this)->height);
@@ -36,7 +33,6 @@ struct Engine : EngineBase3 {
             tasks.Add(((Derived*)this)->MainTask());
         }
     }
-
 
     void Run() {
         xx_assert(framePerSeconds);
