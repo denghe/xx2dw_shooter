@@ -283,7 +283,7 @@ inline void init_gCanvas(int charSize, int width, int height, const char* font) 
 
 inline std::pair<float, float> upload_unicode_char_to_texture(int charSize, char const* buf) {
     int w{}, h{};
-    auto d = BitmapDC::instance->getTextureDataForText(buf, { "", 24 }, TextAlign::LEFT, w, h);
+    auto d = BitmapDC::instance->getTextureDataForText(buf, { "Arial", 24 }, TextAlign::LEFT, w, h);
     if (w > 0) {
         GLTexParameteri();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, d.buf);

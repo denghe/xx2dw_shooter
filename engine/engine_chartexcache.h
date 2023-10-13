@@ -72,7 +72,7 @@ struct CharTexCache {
             cq.texRect.w = (uint16_t)cw;
             cq.texRect.h = (uint16_t)ch;
             fb.DrawTo(t, {}, [&]() {
-                cq.SetPosition(cp + XY{ -texWidth / 2, (canvasHeight - ch) - texHeight / 2 }).Draw();
+                cq.SetPosition(cp + XY{ -texWidth / 2, (canvasHeight - ch) / 2 - texHeight / 2 }).Draw();
             });
 #else
             fb.DrawTo(t, {}, [&]() {
