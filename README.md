@@ -1,8 +1,17 @@
 # intro
-shooter game ( keyboard ASDW move control , mouse left button fire )
+xx2d web version game engine ( also support desktop development )
 
 # language
 c++20 with coroutine
+
+
+#projects
+web: ( all in ./CMakeLists.txt )
+s*
+
+desktop: ( single project )
+d*
+
 
 # env
 https://emscripten.org/index.html
