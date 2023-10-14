@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 if(MSVC)
 	# cmake when compiler choose: -T ClangCL
-	set(CMAKE_GENERATOR_TOOLSET "ClangCL")
+	set(CMAKE_GENERATOR_TOOLSET "ClangCL")	
 endif()
 
 project(xx2dw_shooter)
@@ -31,3 +31,4 @@ add_subdirectory(s8)
 add_subdirectory(s9)
 add_subdirectory(s10)
 add_subdirectory(s11)
+add_subdirectory(s12)

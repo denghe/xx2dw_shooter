@@ -1,15 +1,12 @@
-﻿#include "pch.h"
-
-GameLooper gLooper;
-int32_t main() {
-	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d2";
-	gLooper.Init();
-	gLooper.Run();
-}
+﻿#include <pch.h>
 
 xx::Task<> GameLooper::MainTask() {
-	rq.Emplace()->SetFrame(LoadSharedFrame("res/laser.png")).SetScale({ 2,1 });
+#ifdef __EMSCRIPTEN__
+	auto frameLaser = Frame::Create( co_await AsyncLoadTextureFromUrl("res/laser.png") );
+#else
+	auto frameLaser = LoadSharedFrame("res/laser.png");
+#endif
+	rq.Emplace()->SetFrame(frameLaser).SetScale({ 2,1 });
 	while (true) {
 		for (float x = 0; x < 1; x += 0.1f) {
 			rq->SetTexOffsetXPercentage(x);
@@ -26,5 +23,7 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
-	rq->Draw();
+	if (rq) {
+		rq->Draw();
+	}
 }
