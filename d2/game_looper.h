@@ -7,5 +7,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Update();
 	xx::Task<> MainTask();
 	void Draw();
+
+	xx::Shared<RepeatQuad> rq;
 };
 extern GameLooper gLooper;

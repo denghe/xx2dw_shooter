@@ -3,10 +3,13 @@
 #include <engine_chartexcache.h>
 #include <engine_tiledmap_sede.h>
 #include <engine_fpsviewer.h>
+#include <engine_quad.h>
+#include <engine_repeat_quad.h>
 #include <engine_linestrip.h>
 #include <engine_dynamictexturepacker.h>
 #include <engine_scale9sprite.h>
 #include <engine_camera.h>
+
 #ifndef __EMSCRIPTEN__
 #include <engine_bitmapdc.h>
 #endif
