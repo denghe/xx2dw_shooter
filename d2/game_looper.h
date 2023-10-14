@@ -1,9 +1,5 @@
 ﻿#pragma once
-#ifdef __EMSCRIPTEN__
-#include "engine_engine.h"
-#else
-#include "engine_engine_desktop.h"
-#endif
+#include <engine.h>
 
 constexpr GDesign<1280, 720, 60> gDesign;
 
