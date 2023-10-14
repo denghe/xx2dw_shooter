@@ -1,20 +1,13 @@
 ﻿#include "pch.h"
 
-GameLooper gLooper;
-int32_t main() {
-	gLooper.showFps = true;
-	gLooper.title = "xx2dw_desktop";
-	gLooper.Init();
-	gLooper.Run();
-}
-
-// todo: chinese directory  compatibility
-
 xx::Task<> GameLooper::MainTask() {
-	xx::CoutN(this->rootPath);
+#ifdef __EMSCRIPTEN__
+	frame_button = Frame::Create(co_await AsyncLoadTextureFromUrl("res/button.png"));
+#else
 	frame_button = LoadSharedFrame("res/button.png");
+#endif
 
-#if 0
+#if 1
 	root.Emplace()->scale = { 0.45f, 0.45f };
 	root->FillTrans();
 	for (size_t i = 0; i < 10000; i++) {
@@ -40,6 +33,9 @@ void GameLooper::Update() {
 }
 
 void GameLooper::Draw() {
+#ifdef __EMSCRIPTEN__
+	if (!frame_button) return;
+#endif
 	FillZNodes(tmpZNodes, root);
 	OrderByZDrawAndClear(tmpZNodes);
 	LineStrip().FillCirclePoints({ 0, 0 }, 2, {}, 8).Draw();
