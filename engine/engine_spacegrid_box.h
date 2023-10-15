@@ -64,6 +64,7 @@ struct SpaceGridABItem {
 template<typename Item, typename XY_t>
 struct SpaceGridAB {
 	using ItemCellInfo = SpaceGridABItemCellInfo<Item>;
+	using VT = XY_t::ElementType;
 	Vec2<int32_t> cellSize;
 	XY_t max, max_2;
 	int32_t numRows{}, numCols{};
@@ -81,8 +82,7 @@ struct SpaceGridAB {
 		cellSize.x = cellWidth_;
 		cellSize.y = cellHeight_;
 
-		max.y = float(cellHeight_ * numRows);
-		max.x = float(cellWidth_ * numCols);
+		max = { VT(cellWidth_ * numCols), VT(cellHeight_ * numRows) };
 		max_2 = max / 2;
 
 		cells.resize(numRows * numCols);

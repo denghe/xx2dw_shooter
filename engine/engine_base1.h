@@ -52,8 +52,15 @@ struct EngineBase1 : EngineBase0 {
 
         // todo
         glfwSetKeyCallback(wnd, [](GLFWwindow* wnd, int key, int scancode, int action, int mods) {
+            // mods 0b 0011 win alt ctrl shift
+            // action 1: down  0: up  2: repeat
             if (key < 0) return;    // macos fn key == -1
-            EngineBase1::Instance().OnKeyDown(EmscriptenKeyboardEvent{ .which = (unsigned long)key });
+            if (action == 0) {
+                EngineBase1::Instance().OnKeyUp(EmscriptenKeyboardEvent{ .which = (unsigned long)key });
+            } else if (action == 1) {
+                EngineBase1::Instance().OnKeyDown(EmscriptenKeyboardEvent{ .which = (unsigned long)key });
+            }
+            // else action == 2
         });
 
         //glfwSetCharCallback(wnd, [](GLFWwindow* wnd, unsigned int key) {
@@ -163,17 +170,38 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     // load texture from file
+    template<bool autoDecompress = false>
     GLTexture LoadTexture(std::string_view const& fn) {
-        auto [d, p] = LoadFileData(fn);
+        auto [d, p] = LoadFileData<autoDecompress>(fn);
         return LoadGLTexture(d, p);
     }
 
+    template<bool autoDecompress = false>
     xx::Shared<GLTexture> LoadSharedTexture(std::string_view const& fn) {
-        return xx::Make<GLTexture>(LoadTexture(fn));
+        return xx::Make<GLTexture>(LoadTexture<autoDecompress>(fn));
     }
 
+    template<bool autoDecompress = false>
     xx::Shared<Frame> LoadSharedFrame(std::string_view const& fn) {
-        return Frame::Create(LoadSharedTexture(fn));
+        return Frame::Create(LoadSharedTexture<autoDecompress>(fn));
+    }
+
+    template<bool autoDecompress = false>
+    xx::Shared<TexturePacker> LoadTexturePacker(std::string_view const& fn) {
+        auto [blistData, fp] = LoadFileData<autoDecompress>(fn);
+        xx_assert(blistData);
+
+        auto tp = xx::Make<TexturePacker>();
+        int r = tp->Load(blistData, fp);
+        xx_assert(!r);
+
+        auto tex = LoadSharedTexture<autoDecompress>(tp->realTextureFileName);
+        xx_assert(tex);
+
+        for (auto& f : tp->frames) {
+            f->tex = tex;
+        }
+        return tp;
     }
 
     // more load here ?
@@ -231,18 +259,12 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     EM_BOOL OnKeyDown(EmscriptenKeyboardEvent const& e) {
-        if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-            keyboardKeysStates[e.which] = true;
-            return EM_TRUE;
-        }
-        return EM_FALSE;
+        keyboardKeysStates[e.which] = true;
+        return EM_TRUE;
     }
     EM_BOOL OnKeyUp(EmscriptenKeyboardEvent const& e) {
-        if (e.which >= (int32_t)KeyboardKeys::A && e.which <= (int32_t)KeyboardKeys::Z) {
-            keyboardKeysStates[e.which] = false;
-            return EM_TRUE;
-        }
-        return EM_FALSE;
+        keyboardKeysStates[e.which] = false;
+        return EM_TRUE;
     }
 
     bool KeyDown(KeyboardKeys k) const {

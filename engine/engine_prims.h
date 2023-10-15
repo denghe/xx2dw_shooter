@@ -610,12 +610,12 @@ namespace TranslateControl {
             auto incX = dx2, incY = dy2;
             auto dSeq = dx2 * dx2 + dy2 * dy2;
             if (dSeq == T{}) {
-                incX = bHalfWidth + cr * 0.7071067811865475 + 1;
-                incY = bHalfHeight + cr * 0.7071067811865475 + 1;
+                incX = bHalfWidth + T(cr * 0.7071067811865475 + 1);
+                incY = bHalfHeight + T(cr * 0.7071067811865475 + 1);
             } else {
                 auto d = std::sqrt(dSeq);
-                incX = bHalfWidth + cr * dx2 / d + 1;
-                incY = bHalfHeight + cr * dy2 / d + 1;
+                incX = bHalfWidth + T(cr * dx2 / d) + 1;
+                incY = bHalfHeight + T(cr * dy2 / d) + 1;
             }
 
             if (cx < bx) {

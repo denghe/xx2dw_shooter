@@ -151,7 +151,8 @@ struct EngineBase0 {
     }
 
     // read all data by full path
-    xx::Data LoadFileDataWithFullPath(std::string_view const& fp, bool autoDecompress = true) {
+    template<bool autoDecompress = false>
+    xx::Data LoadFileDataWithFullPath(std::string_view const& fp) {
         xx::Data d;
         if (int r = xx::ReadAllBytes((std::u8string_view&)fp, d)) {
             xx::CoutN("file read error. r = ", r, ", fn = ", fp);
@@ -161,8 +162,8 @@ struct EngineBase0 {
             xx::CoutN("file content is empty. fn = ", fp);
             xx_assert(false);
         }
-        if (autoDecompress && d.len >= 4) {
-            if (d[0] == 0x28 && d[1] == 0xB5 && d[2] == 0x2F && d[3] == 0xFD) {	// zstd
+        if constexpr(autoDecompress) {
+            if (d.len >= 4 && d[0] == 0x28 && d[1] == 0xB5 && d[2] == 0x2F && d[3] == 0xFD) {	// zstd
                 xx::Data d2;
                 ZstdDecompress(d, d2);
                 return d2;
@@ -172,13 +173,14 @@ struct EngineBase0 {
     }
 
     // read all data by GetFullPath( fn )
-    std::pair<xx::Data, std::string> LoadFileData(std::string_view const& fn, bool autoDecompress = true) {
+    template<bool autoDecompress = false>
+    std::pair<xx::Data, std::string> LoadFileData(std::string_view const& fn) {
         auto p = GetFullPath(fn);
         if (p.empty()) {
             xx::CoutN("fn can't find: ", fn);
             xx_assert(false);
         }
-        auto d = LoadFileDataWithFullPath(p, autoDecompress);
+        auto d = LoadFileDataWithFullPath<autoDecompress>(p);
         return { std::move(d), std::move(p) };
     }
 
