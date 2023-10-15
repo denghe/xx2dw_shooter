@@ -14,7 +14,7 @@ void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s)
 }
 
 xx::Task<> Bullet_EyeFire::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 	for (float life = 1; life > 0; life -= cLifeDelta) {
 		pos += inc;
 
@@ -45,7 +45,7 @@ void Bullet_EyeFireBlue::Init(Weapon* hw, XY const& pos_, float r, float c, floa
 }
 
 xx::Task<> Bullet_EyeFireBlue::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 	for (float life = 1; life > 0; life -= cLifeDelta) {
 		pos += inc;
 
@@ -69,14 +69,14 @@ void Bullet_Fireball::Init(Weapon* hw, XY const& pos_, float r, float c, float s
 	radians = -r;
 	inc = XY{ c, s } * cSpeed;
 	player = hw->player;
-	damage = gEngine->rnd.Next<float>(cDamageMin, cDamageMax);
+	damage = gEngine->rnd.Next<float>((float)cDamageMin, (float)cDamageMax);
 	frames = &gLooper.frames_fireball_10;
 	frameIndex = 0;
 	body.SetAnchor(cAnchor);
 }
 
 xx::Task<> Bullet_Fireball::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 	for (float life = 1; life > 0; life -= cLifeDelta) {
 		pos += inc;
 
@@ -100,14 +100,14 @@ void Bullet_Explosion::Init(Bullet* fb) {
 	player = fb->player;
 	damage = fb->damage;
 	radius = cRadius;
-	radians = gEngine->rnd.Next<float>(M_PI * 2);
+	radians = gEngine->rnd.Next<float>(float(M_PI * 2));
 	frames = &gLooper.frames_explosion;
 	frameIndex = 0;
 	body.SetAnchor(cAnchor);
 }
 
 xx::Task<> Bullet_Explosion::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 	assert(frameMaxIndex > cDamageFrameIndex);
 	for (; frameIndex < cDamageFrameIndex; frameIndex += cFrameInc) co_yield 0;
 	ForeachByRange(gLooper.monstersGrid, gLooper.sgrdd, pos, radius, [&](Monster* m) {

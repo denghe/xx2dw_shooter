@@ -92,7 +92,7 @@ struct Sprite : Drawable {
 		body.SetScale(scale * XY{ flipX ? -gLooper.camera.scale : gLooper.camera.scale, gLooper.camera.scale })
 			.SetPosition(gLooper.camera.ToGLPos(pos))
 			.SetRotate(radians)
-			.SetFrame((*frames)[frameIndex])
+			.SetFrame((*frames)[(size_t)frameIndex])
 			.Draw();
 	}
 

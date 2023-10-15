@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-# sources map to d2
+# sources map to d12
 set(name s12)
 project(${name})
 
@@ -112,9 +112,9 @@ file(GLOB sources
 	../3rd/*.c
 	../3rd/*.hpp
 	../3rd/*.h
-	../d2/*.cpp		# sources map to d2
-	../d2/*.c
-	../d2/*.h
+	../d12/*.cpp		# sources map to d12
+	../d12/*.c
+	../d12/*.h
 )
 
 add_executable(${name} ${sources})
@@ -135,11 +135,11 @@ include_directories(
 	../engine
 	../3rd
 	../xxlib
-	../d2			# sources map to d2
+	../d12			# sources map to d12
 )
 
 target_precompile_headers(${name}
-	PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/../d2/pch.h>		# sources map to d2
+	PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/../d12/pch.h>		# sources map to d12
 )
 
 file(GLOB_RECURSE assets

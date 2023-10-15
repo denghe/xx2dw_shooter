@@ -59,8 +59,7 @@ struct SpaceGridC {
         assert(pos.y >= 0 && pos.y < maxY);
 
         // calc rIdx & cIdx
-        int rIdx = pos.y / maxDiameter, cIdx = pos.x / maxDiameter;
-        int idx = rIdx * numCols + cIdx;
+        auto idx = PosToCellIdx(pos);
         assert(idx <= cells.size());
         assert(!cells[idx] || !cells[idx]->_sgcPrev);
 
@@ -161,7 +160,7 @@ struct SpaceGridC {
     XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY_t const& pos) {
         assert(pos.x >= 0 && pos.x < maxX);
         assert(pos.y >= 0 && pos.y < maxY);
-        return { pos.x / maxDiameter, pos.y / maxDiameter };
+        return { int32_t(pos.x / maxDiameter), int32_t(pos.y / maxDiameter) };
     }
     
     // return cell's index
@@ -183,8 +182,9 @@ struct SpaceGridC {
             assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
             assert(c->_sgcNext != c);
             assert(c->_sgcPrev != c);
+            auto next = c->_sgcNext;
             if (f(c)) return true;
-            c = c->_sgcNext;
+            c = next;
         }
         return false;
     }
@@ -205,8 +205,9 @@ struct SpaceGridC {
                 assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
                 assert(c->_sgcNext != c);
                 assert(c->_sgcPrev != c);
+                auto next = c->_sgcNext;
                 if (f(c)) return;
-                c = c->_sgcNext;
+                c = next;
             }
         }
     }
@@ -223,8 +224,9 @@ struct SpaceGridC {
                 assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
                 assert(c->_sgcNext != c);
                 assert(c->_sgcPrev != c);
+                auto next = c->_sgcNext;
                 if (f(c)) return;
-                c = c->_sgcNext;
+                c = next;
             }
         }
     }

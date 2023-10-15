@@ -14,7 +14,7 @@ void Monster_Dragon_BabyWhite::Init(int hp_, XY const& pos_) {
 }
 
 xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 
 	// scale in
 	auto scaleStep = cScale / gDesign.fps;
@@ -69,10 +69,10 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
 			}
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-				auto r = gEngine->rnd.Next<float>(M_PI * 2);
+				auto r = gEngine->rnd.Next<float>(float(M_PI * 2));
 				newPos += XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 			} else {
-				newPos += (combineForce.MakeNormalize() - XY{0.32, 0})* cSpeed;	// 0.32 for fix inhomogeneous
+				newPos += (combineForce.MakeNormalize() - XY{0.32f, 0})* cSpeed;	// 0.32 for fix inhomogeneous
 			}
 		} else {
 			if (dd > cSpeed * cSpeed) {							// follow shooter directly

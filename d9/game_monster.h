@@ -5,7 +5,7 @@
 #include "game_experience.h"
 
 struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
-	constexpr static float cDamageEffectDurationSecs{ 0.2 };
+	constexpr static float cDamageEffectDurationSecs{ 0.2f };
 
 	int32_t hp{};
 	float speed{};
@@ -44,8 +44,8 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 
 struct Monster_Dragon_BabyWhite : Monster {
 	constexpr static char const* cResPrefix{ "dragon_babywhite_" };
-	constexpr static XY cAnchor{ 0.5, 0.3 };
-	constexpr static float cScale{ 0.2 };
+	constexpr static XY cAnchor{ 0.5f, 0.3f };
+	constexpr static float cScale{ 0.2f };
 	constexpr static float cRadius{ 5 * cScale };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 30.f / gDesign.fps };

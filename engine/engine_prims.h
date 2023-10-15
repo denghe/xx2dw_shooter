@@ -134,7 +134,6 @@ struct Vec2 {
     template<typename U = float>
     Vec2& Normalize() {
         auto v = std::sqrt(U(x * x + y * y));
-        assert(v);
         x = T(x / v);
         y = T(y / v);
         return *this;
@@ -142,7 +141,6 @@ struct Vec2 {
     template<typename R = T, typename U = float>
     auto MakeNormalize() const -> Vec2<R> {
         auto v = std::sqrt(U(x * x + y * y));
-        assert(v);
         return { R(x / v), R(y / v) };
     }
 

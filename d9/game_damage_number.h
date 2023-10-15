@@ -5,8 +5,8 @@ struct DamageNumber : Drawable {
 	constexpr static char const* cResPrefix{ "number_outlined_" };
 	constexpr static float cMoveSpeedMin { 20 / gDesign.fps };
 	constexpr static float cMoveSpeedMax { 50 / gDesign.fps };
-	constexpr static float cMoveDurationSeconds{ 0.5 };
-	constexpr static float cFadeOutDurationSeconds{ 0.2 };
+	constexpr static float cMoveDurationSeconds{ 0.5f };
+	constexpr static float cFadeOutDurationSeconds{ 0.2f };
 	constexpr static float cCharPixelWidth{ 8 };
 
 	std::array<UVRect, 12> rects{};									// todo: store pos ?
@@ -63,10 +63,10 @@ struct DamageNumber : Drawable {
 		}
 
 		// fade out
-		constexpr int lifeCycle_fadeout{ cFadeOutDurationSeconds / gDesign.frameDelay };
+		constexpr int lifeCycle_fadeout{ int(cFadeOutDurationSeconds / gDesign.frameDelay) };
 		constexpr float step = 255.f / lifeCycle_fadeout;
 		for (float a = 255.f; a >= 0; a -= step) {
-			color.a = a;
+			color.a = (uint8_t)a;
 			co_yield 0;
 		}
 		color.a = 0;

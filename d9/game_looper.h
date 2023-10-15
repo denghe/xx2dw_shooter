@@ -1,7 +1,5 @@
 ﻿#pragma once
-#include "engine_engine.h"
-
-int32_t main();
+#include <engine.h>
 
 static constexpr GDesign<1280, 720, 120> gDesign;
 

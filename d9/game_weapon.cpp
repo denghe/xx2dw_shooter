@@ -94,7 +94,7 @@ xx::Task<> Weapon_19_Stuff::MainLogic() {
 
 		// fire
 		if (nextFireSecs <= gLooper.nowSecs) {
-			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
+			nextFireSecs = (float)gLooper.nowSecs + cFireDelaySecs;
 			auto r = -radians;
 			auto c = std::cos(r);
 			auto s = -std::sin(r);

@@ -19,7 +19,7 @@ struct Experience : Sprite, Removeable<Experience>, SpaceGridCItem<Experience, X
 		scale = { cScale,cScale };
 		radius = cRadius;
 		frames = &gLooper.frames_icon_gem;
-		frameIndex = iconIndex;
+		frameIndex = (float)iconIndex;
 		SGCAdd(gLooper.experiencesGrid, pos);
 	}
 

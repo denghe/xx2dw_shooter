@@ -1,15 +1,13 @@
 ﻿#include "pch.h"
 
-int32_t main() {
-	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-		return gLooper.JsLoopCallback(ms);
-	}, nullptr);
-}
-GameLooper gLooper;											// global var for easy use
-
 xx::Task<> GameLooper::MainTask() {
+	rnd.SetSeed(0);
 	{
+#ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+#else
+		auto tp = LoadTexturePacker("res/dungeon.blist");
+#endif
 		xx_assert(tp);
 		size_t n{};
 		n = tp->GetToByPrefix(frames_number_outlined, DamageNumber::cResPrefix);
@@ -62,8 +60,8 @@ xx::Task<> GameLooper::MainTask() {
 	heros.Emplace().Emplace<Hero_FloatingEye>()->Init(player1, ori + XY{ 0, 8 });
 	while (true) {
 		for (int i = 0; i < 15; ++i) {
-			auto a = rnd.Next<float>(M_PI * 2);
-			auto r = rnd.Next<float>(70, 220);
+			auto a = rnd.Next<float>(float(M_PI * 2));
+			auto r = rnd.Next<float>(70.f, 220.f);
 			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{ std::cos(a), std::sin(a) } *r);
 		}
 		co_yield 0;
@@ -72,10 +70,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
-		camera.DecreaseScale(0.02, 0.02);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
-		camera.IncreaseScale(0.02, 5);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02f)) {				// zoom control
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5.f);
 	}
 	if (!ready) return;										// todo: show loading ?
 

@@ -3,7 +3,7 @@
 
 struct Bullet : Sprite {
 	xx::Weak<Player> player;
-	float damage;
+	int32_t damage;
 	// todo: hit check ?
 };
 
@@ -14,7 +14,7 @@ struct Bullet_EyeFire : Bullet {
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cLifeDelta{ 1.f / 5.f / gDesign.fps };
 	constexpr static float cSpeed{ 300.f / gDesign.fps };
-	constexpr static float cDamage{ 10 };
+	constexpr static int32_t cDamage{ 10 };
 
 	XY inc{};
 	float speed{ cSpeed };
@@ -30,7 +30,7 @@ struct Bullet_EyeFireBlue : Bullet {
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cLifeDelta{ 1.f / 5.f / gDesign.fps };
 	constexpr static float cSpeed{ 300.f / gDesign.fps };
-	constexpr static float cDamage{ 8 };
+	constexpr static int32_t cDamage{ 8 };
 
 	XY inc{};
 	float speed{ cSpeed };
@@ -46,7 +46,7 @@ struct Bullet_Fireball : Bullet {
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cLifeDelta{ 1.f / 5.f / gDesign.fps };
 	constexpr static float cSpeed{ 300.f / gDesign.fps };
-	constexpr static float cDamageMin{ 15 }, cDamageMax{ 30 };
+	constexpr static int32_t cDamageMin{ 15 }, cDamageMax{ 30 };
 
 	XY inc{};
 	float speed{ cSpeed };
