@@ -22,7 +22,7 @@ struct CharTexCache {
         fb.Init();
         init_gCanvas(charSize, canvasWidth, canvasHeight, font);
 
-        texs.emplace_back(FrameBuffer::MakeTexture(Vec2{ texWidth, texHeight }));
+        texs.emplace_back(FrameBuffer::MakeTexture({ texWidth, texHeight }));
         auto ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
         cq.SetFrame(Frame::Create(std::move(ct))).SetAnchor({ 0, 1 });
 
@@ -56,7 +56,7 @@ struct CharTexCache {
             cp.x = 0;
             p.x = cw + padding;
             if (p.y - canvasHeight < 0) {                     // new page
-                texs.emplace_back(FrameBuffer::MakeTexture(Vec2{ texWidth, texHeight }));
+                texs.emplace_back(FrameBuffer::MakeTexture({ texWidth, texHeight }));
                 p.y = cp.y = texHeight - 1;
             } else {                                // new line
                 p.y -= canvasHeight;

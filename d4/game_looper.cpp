@@ -43,13 +43,13 @@ xx::Task<> GameLooper::MainTask() {
 		for (int x = 0, xe = tiledMap->width; x < xe; ++x) {
 			if (auto&& info = tiledMap->GetGidInfo(layerTrees, y, x)) {
 				frame_tree = info->GetFrame();
-				trees.emplace_back().Emplace()->Init(x * tileWidth, y * tileHeight);
+				trees.emplace_back().Emplace()->Init(float(x * tileWidth), float(y * tileHeight));
 			}
 		}
 	}
 
-	float mapPixelWidth = tileWidth * tiledMap->width;
-	float mapPixelHeight = tileHeight * tiledMap->height;
+	float mapPixelWidth = float(tileWidth * tiledMap->width);
+	float mapPixelHeight = float(tileHeight * tiledMap->height);
 
 
 	shooter.Emplace()->Init({ mapPixelWidth / 2, mapPixelHeight / 2 });	// make player plane
@@ -60,7 +60,7 @@ xx::Task<> GameLooper::MainTask() {
 	while (true) {
 		auto basePos = shooter->pos;
 		for (size_t i = 0; i < 20; i++) {
-			auto a = rnd.Next<float>(M_PI * 2);
+			auto a = rnd.Next<float>(float(M_PI * 2));
 			auto r = rnd.Next<float>(1200, 12200);
 			CreateMonster<Monster1>()->Init(basePos + XY{ std::cos(a), std::sin(a) } * r);
 		}
@@ -104,10 +104,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
-		camera.DecreaseScale(0.02, 0.02);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
-		camera.IncreaseScale(0.02, 5);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02f)) {				// zoom control
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5);
 	}
 	if (!ready) return;
 
@@ -128,7 +128,7 @@ void GameLooper::Draw() {
 
 	auto& tm = *tiledMap;
 	for (auto& a : tm.anims) {
-		a->Update(delta);
+		a->Update((float)delta);
 	}
 
 	auto scaledTileSize = tm.GetScaledTileSize(camera);

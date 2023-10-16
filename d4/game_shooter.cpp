@@ -17,7 +17,7 @@ xx::Task<> Shooter::MainLogic() {
 		bool needFire{};
 
 		if (auto inc = gLooper.GetKeyboardMoveInc(); inc.has_value()) {
-			pos += inc->second;
+			pos += inc->second * cSpeed;
 		}
 		auto v = gLooper.mouse.pos/* - pos*/;
 		r = std::atan2(v.y, v.x);
@@ -27,9 +27,9 @@ xx::Task<> Shooter::MainLogic() {
 		auto d = r - radians;
 		if (d * d > M_PI * M_PI) {
 			if (r < radians) {
-				r += M_PI * 2;
+				r += float(M_PI * 2);
 			} else {
-				r -= M_PI * 2;
+				r -= float(M_PI * 2);
 			}
 		}
 		if (r > radians) {
@@ -39,7 +39,7 @@ xx::Task<> Shooter::MainLogic() {
 				radians += cFrameMaxChangeRadian;
 			}
 			if (radians > M_PI) {
-				radians -= M_PI * 2;
+				radians -= float(M_PI * 2);
 			}
 		} else {
 			if (radians - r <= cFrameMaxChangeRadian) {
@@ -48,11 +48,11 @@ xx::Task<> Shooter::MainLogic() {
 				radians -= cFrameMaxChangeRadian;
 			}
 			if (radians < -M_PI) {
-				radians += M_PI * 2;
+				radians += float(M_PI * 2);
 			}
 		}
 
-		r = -radians + M_PI * 4;
+		r = -radians + float(M_PI * 4);
 		cr = std::cos(r);
 		sr = std::sin(r);
 

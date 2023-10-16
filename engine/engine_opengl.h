@@ -239,11 +239,11 @@ inline GLTexture LoadGLTexture(std::string_view const& buf, std::string_view con
 		uint16_t encodedHeight = (p[10] << 8) | p[11];		// 4 align height
 		uint16_t width = (p[12] << 8) | p[13];				// width
 		uint16_t height = (p[14] << 8) | p[15];				// height
-		assert(width > 0 && height > 0 && encodedWidth >= width && encodedWidth - width < 4 && encodedHeight >= height && encodedHeight - height < 4);
+		xx_assert(width > 0 && height > 0 && encodedWidth >= width && encodedWidth - width < 4 && encodedHeight >= height && encodedHeight - height < 4);
 		if (format == 1) {
-			assert(buf.size() == 16 + encodedWidth * encodedHeight / 2);
+			xx_assert(buf.size() == 16 + encodedWidth * encodedHeight / 2);
 		} else if (format == 3) {
-			assert(buf.size() == 16 + encodedWidth * encodedHeight);
+			xx_assert(buf.size() == 16 + encodedWidth * encodedHeight);
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 8 - 4 * (width & 0x1));
 		} else {
 			xx::CoutN("unsppported PKM 20 format. only support ETC2_RGB_NO_MIPMAPS & ETC2_RGBA_NO_MIPMAPS. fn = ", fullPath);

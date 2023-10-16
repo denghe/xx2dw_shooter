@@ -6,6 +6,7 @@
 #include <engine_shader_linestrip.h>
 #include <engine_frame.h>
 #include <engine_texturepacker.h>
+#include <engine_tiledmap_sede.h>
 #include <engine_node.h>
 #include <engine_node_derived.h>
 
@@ -169,16 +170,11 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
     /*****************************************************************************************************/
 
-    // load texture from file
-    template<bool autoDecompress = false>
-    GLTexture LoadGLTexture(std::string_view const& fn) {
-        auto [d, p] = LoadFileData<autoDecompress>(fn);
-        return LoadGLTexture(d, p);
-    }
-
     template<bool autoDecompress = false>
     xx::Shared<GLTexture> LoadTexture(std::string_view const& fn) {
-        return xx::Make<GLTexture>(LoadGLTexture<autoDecompress>(fn));
+        auto [d, p] = LoadFileData<autoDecompress>(fn);
+        xx_assert(d);
+        return xx::Make<GLTexture>(LoadGLTexture(d, p));
     }
 
     template<bool autoDecompress = false>
@@ -204,35 +200,22 @@ struct EngineBase1 : EngineBase0 {
         return tp;
     }
 
-    //template<bool autoDecompress = false>
-    //xx::Shared<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
-    //    auto map = xx::Make<TMX::Map>();
-    //    // load bmx & fill
-    //    {
-    //        auto sd = LoadFileData<autoDecompress>(bmxPath);
-    //        xx_assert(sd);
-
-    //        xx::TmxData td;
-    //        td = std::move(*sd);
-    //        auto r = td.Read(*map);
-    //        xx_assert(!r);
-    //    }
-    //    // load textures
-    //    auto n = map->images.size();
-    //    for (auto& img : map->images) {
-    //        tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
-    //            img->texture = LoadTexture(url.c_str());
-    //            --n;
-    //            //printf("url loaded: %s\n", url.c_str());
-    //        });
-    //    }
-    //    while (n) co_yield 0;	// wait all
-
-    //    // fill ext data for easy use
-    //    map->FillExts();
-
-    //    co_return map;
-    //}
+    template<bool autoDecompress = false>
+    xx::Shared<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
+        auto map = xx::Make<TMX::Map>();
+        {
+            auto [d, fp] = LoadFileData<autoDecompress>(bmxPath);
+            xx_assert(d);
+            xx::TmxData td(std::move(d));
+            auto r = td.Read(*map);
+            xx_assert(!r);
+        }
+        for (auto& img : map->images) {
+            img->texture = LoadTexture(root + img->source);
+        }
+        map->FillExts();
+        return map;
+    }
 
     // more load here ?
 

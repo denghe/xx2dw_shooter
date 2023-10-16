@@ -22,6 +22,7 @@ struct Quad : QuadInstanceData {
     XX_FORCE_INLINE Quad& ClearFrame() {
         frame.Reset();
         texId = 0;
+        return *this;
     }
 
     template<typename T = float>

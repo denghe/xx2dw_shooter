@@ -25,14 +25,14 @@ void Monster1::Hit(int damage) {
 		hp -= damage;
 		float dispersedVal = 20 / gScale * scale;
 		gLooper.effects_damageText.Emplace().Emplace()->Init({ gEngine->rnd.Next(pos.x - dispersedVal, pos.x + dispersedVal), gEngine->rnd.Next(pos.y - dispersedVal, pos.y + dispersedVal) }, damage, {255,255,0,255});
-		if (hertLife <= 0) {
+		if (!hitLogic) {
 			hitLogic(gEngine->tasks, [this]()->xx::Task<> {
 				while (hertLife) {
 					--hertLife;
-					body.SetColorplus(1);
+					body.SetColorplus(100000);
 					co_yield 0;
 				}
-				body.SetColorplus(0);
+				body.SetColorplus(1);
 			});
 		}
 		hertLife = cHertLife;
@@ -41,6 +41,9 @@ void Monster1::Hit(int damage) {
 
 xx::Task<> Monster1::MainLogic() {
 	float tarScale = gEngine->rnd.Next<float>(cScale, cMaxScale);
+#if defined(_WIN32) && defined(NDEBUG)	// known issue: optimize bug
+	xx_assert(tarScale >= cScale && tarScale <= cMaxScale);
+#endif
 	float scaleStep = tarScale / cScaleSteps;
 	// scale in
 	body.SetScale(0);
@@ -93,7 +96,7 @@ xx::Task<> Monster1::MainLogic() {
 				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
 			}
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
-				auto r = gEngine->rnd.Next<float>(M_PI * 2);
+				auto r = gEngine->rnd.Next<float>(float(M_PI * 2));
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 			} else {
 				newPos += combineForce.MakeNormalize() * cSpeed;
@@ -117,7 +120,7 @@ xx::Task<> Monster1::MainLogic() {
 			sg.ForeachAABB(minXY, maxXY);
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& b : sg.results) {
-				TranslateControl::MoveCircleIfIntersectsBox<float>(b->_sgabPos.x, b->_sgabPos.y, Tree::cBoxWidth / 2, Tree::cBoxHeight / 2, newPos.x, newPos.y, radius);
+				TranslateControl::MoveCircleIfIntersectsBox<float>((float)b->_sgabPos.x, (float)b->_sgabPos.y, (float)Tree::cBoxWidth / 2, (float)Tree::cBoxHeight / 2, newPos.x, newPos.y, radius);
 			}
 		}
 

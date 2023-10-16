@@ -11,6 +11,7 @@ struct Frames {
         }
         xx::CoutN(key, " is not found");
         xx_assert(false);
+        return {};
     }
 
     xx::Shared<Frame> const& Get(char const* buf, size_t len) const {

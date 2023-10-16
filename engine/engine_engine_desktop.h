@@ -11,7 +11,8 @@ template<typename Derived>
 struct Engine : EngineBase3 {
 
     void Init() {
-        rootPath = ToSearchPath((std::string&)std::filesystem::absolute("./").u8string());
+        auto u8s = std::filesystem::absolute("./").u8string();
+        rootPath = ToSearchPath((std::string&)u8s);
         SearchPathReset();
 
         framePerSeconds = ((Derived*)this)->fps;

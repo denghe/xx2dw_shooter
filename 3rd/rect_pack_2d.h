@@ -302,8 +302,6 @@ namespace rect_pack_2d {
 		vec[1].clear();
 		std::memcpy(&vec[0][0], v, sizeof(rect_xywhf*) * n);
 
-		bin* b = 0;
-
 		while (true) {
 			auto& b = bins.emplace_back();
 

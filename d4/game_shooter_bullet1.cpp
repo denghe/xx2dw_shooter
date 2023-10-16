@@ -10,7 +10,7 @@ void ShooterBullet1::Draw() {
 
 void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	mainLogic = MainLogic();
-	radians = M_PI * 2 + M_PI / 2 - radians_;
+	radians = float(M_PI * 2 + M_PI / 2 - radians_);
 	inc = inc_ * cSpeed;
 	pos = bornPos;
 	damage = gEngine->rnd.Next(cDamage, cMaxDamage);
@@ -49,7 +49,7 @@ xx::Task<> ShooterBullet1::MainLogic() {
 			sg.ForeachAABB(minXY, maxXY);
 			auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 			for (auto& tree : sg.results) {
-				if (Calc::Intersects::BoxCircle<float>(tree->_sgabPos.x, tree->_sgabPos.y, gLooper.tileWidth_2, gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
+				if (Calc::Intersects::BoxCircle<float>((float)tree->_sgabPos.x, (float)tree->_sgabPos.y, (float)gLooper.tileWidth_2, (float)gLooper.tileHeight_2, pos.x, pos.y, cRadius)) {
 					co_return;
 				}
 			}

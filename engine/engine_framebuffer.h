@@ -19,8 +19,7 @@ struct FrameBuffer {
         return *this;
     }
 
-    template<typename WH>
-    inline static xx::Shared<GLTexture> MakeTexture(WH const& wh, bool hasAlpha = true) {
+    inline static xx::Shared<GLTexture> MakeTexture(Vec2<uint32_t> const& wh, bool hasAlpha = true) {
         return xx::Make<GLTexture>(GLTexture::Create(wh.x, wh.y, hasAlpha));
     }
 
