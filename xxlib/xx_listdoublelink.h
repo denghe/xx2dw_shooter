@@ -61,7 +61,7 @@ namespace xx {
 			Clear<true>();
 		}
 
-		void Reserve(IndexType const& newCap) noexcept {
+		void Reserve(IndexType newCap) noexcept {
 			assert(newCap > 0);
 			if (newCap <= cap) return;
 			cap = newCap;
@@ -148,7 +148,7 @@ namespace xx {
 			return *new (&AddCore<add_to_tail>()) U(std::forward<Args>(args)...);
 		}
 
-		bool Exists(IndexType const& idx) const {
+		bool Exists(IndexType idx) const {
 			assert(idx >= 0);
 			if (idx >= len) return false;
 			return buf[idx].version >= 0;
@@ -158,7 +158,7 @@ namespace xx {
 			return buf[iv.index].version == iv.version;
 		}
 
-		void Remove(IndexType const& idx) {
+		void Remove(IndexType idx) {
 			assert(Exists(idx));
 
 			auto& node = buf[idx];
@@ -190,7 +190,7 @@ namespace xx {
 			return true;
 		}
 
-		IndexAndVersion ToIndexAndVersion(IndexType const& idx) const {
+		IndexAndVersion ToIndexAndVersion(IndexType idx) const {
 			return { idx, buf[idx].version };
 		}
 
@@ -199,22 +199,22 @@ namespace xx {
 			return buf[iv.index].next;
 		}
 
-		IndexType Next(IndexType const& idx) const {
+		IndexType Next(IndexType idx) const {
 			assert(Exists(idx));
 			return buf[idx].next;
 		}
 
-		IndexType Prev(IndexType const& idx) const {
+		IndexType Prev(IndexType idx) const {
 			assert(Exists(idx));
 			return buf[idx].prev;
 		}
 
-		T const& At(IndexType const& idx) const {
+		T const& At(IndexType idx) const {
 			assert(Exists(idx));
 			return buf[idx].value;
 		}
 
-		T& At(IndexType const& idx) {
+		T& At(IndexType idx) {
 			assert(Exists(idx));
 			return buf[idx].value;
 		}
@@ -224,7 +224,7 @@ namespace xx {
 			return buf[iv.index].value;
 		}
 
-		T& At(IndexAndVersion const& iv) {
+		T& At(IndexAndVersion iv) {
 			assert(Exists(iv));
 			return buf[iv.index].value;
 		}
@@ -256,12 +256,12 @@ namespace xx {
 			}
 		}
 
-		T const& operator[](IndexType const& idx) const noexcept {
+		T const& operator[](IndexType idx) const noexcept {
 			assert(Exists(idx));
 			return buf[idx].value;
 		}
 
-		T& operator[](IndexType const& idx) noexcept {
+		T& operator[](IndexType idx) noexcept {
 			assert(Exists(idx));
 			return buf[idx].value;
 		}

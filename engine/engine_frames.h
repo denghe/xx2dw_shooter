@@ -13,7 +13,7 @@ struct Frames {
         xx_assert(false);
     }
 
-    xx::Shared<Frame> const& Get(char const* const& buf, size_t const& len) const {
+    xx::Shared<Frame> const& Get(char const* buf, size_t len) const {
         return Get(std::string_view(buf, len));
     }
 

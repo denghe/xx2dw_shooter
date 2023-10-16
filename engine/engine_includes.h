@@ -82,6 +82,17 @@ struct EmscriptenKeyboardEvent {
 	unsigned long which;
 };
 
+struct EmscriptenTouchEvent {
+    struct Foo {
+        int identifier{};
+        bool isChanged{};
+        int targetX{}, targetY{};
+    };
+    int numTouches{};
+    std::array<Foo, 16> touches{};
+    // todo
+};
+
 #define EMSCRIPTEN_WEBGL_CONTEXT_HANDLE void*
 
 std::pair<float, float> upload_unicode_char_to_texture(int charSize, char const* buf);

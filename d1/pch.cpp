@@ -25,12 +25,12 @@ GameLooper gLooper;
 int32_t main() {
 	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
 		return gLooper.JsLoopCallback(ms);
-	}, nullptr);
+		}, nullptr);
 }
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d12";
+	gLooper.title = "xx2dw_d1";
 	gLooper.Init();
 	gLooper.Run();
 }

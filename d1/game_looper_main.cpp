@@ -1,15 +1,5 @@
 ﻿#include "pch.h"
 
-int32_t main() {
-    emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-        return gLooper.JsLoopCallback(ms);
-    }, nullptr);
-}
-GameLooper gLooper;
-
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-
 EM_BOOL GameLooper::OnTouchStart(EmscriptenTouchEvent const& e) {
 	touchMode = true;
 	if (e.numTouches == 1) {

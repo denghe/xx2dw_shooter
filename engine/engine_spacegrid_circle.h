@@ -37,7 +37,7 @@ struct SpaceGridC {
     int32_t maxY{}, maxX{}, maxY1{}, maxX1{}, numItems{}, numActives{};	// for easy check & stat
     std::vector<Item*> cells;
 
-    void Init(int32_t const& numRows_, int32_t const& numCols_, int32_t const& maxDiameter_) {
+    void Init(int32_t const& numRows_, int32_t numCols_, int32_t maxDiameter_) {
         numRows = numRows_;
         numCols = numCols_;
         maxDiameter = maxDiameter_;
@@ -49,7 +49,7 @@ struct SpaceGridC {
         cells.resize(numRows * numCols);
     }
 
-    void Add(Item* const& c, XY_t const& pos) {
+    void Add(Item* c, XY_t const& pos) {
         assert(c);
         assert(c->_sgc == this);
         assert(c->_sgcIdx == -1);
@@ -78,7 +78,7 @@ struct SpaceGridC {
         ++numItems;
     }
 
-    void Remove(Item* const& c) {
+    void Remove(Item* c) {
         assert(c);
         assert(c->_sgc == this);
         assert(!c->_sgcPrev && cells[c->_sgcIdx] == c || c->_sgcPrev->_sgcNext == c && cells[c->_sgcIdx] != c);
@@ -109,7 +109,7 @@ struct SpaceGridC {
         --numItems;
     }
 
-    void Update(Item* const& c, XY_t const& pos) {
+    void Update(Item* c, XY_t const& pos) {
         assert(c);
         assert(c->_sgc == this);
         assert(c->_sgcIdx > -1);

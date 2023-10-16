@@ -20,7 +20,7 @@ struct FrameBuffer {
     }
 
     template<typename WH>
-    inline static xx::Shared<GLTexture> MakeTexture(WH const& wh, bool const& hasAlpha = true) {
+    inline static xx::Shared<GLTexture> MakeTexture(WH const& wh, bool hasAlpha = true) {
         return xx::Make<GLTexture>(GLTexture::Create(wh.x, wh.y, hasAlpha));
     }
 
@@ -32,7 +32,7 @@ struct FrameBuffer {
     }
 
     template<typename Func>
-    xx::Shared<GLTexture> Draw(Vec2<uint32_t> const& wh, bool const& hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
+    xx::Shared<GLTexture> Draw(Vec2<uint32_t> const& wh, bool hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
         auto t = MakeTexture(wh, hasAlpha);
         DrawTo(t, c, std::forward<Func>(func));
         return t;

@@ -72,7 +72,7 @@ struct SpaceGridAB {
 	std::vector<ItemCellInfo*> cells;
 	std::vector<Item*> results;	// tmp store Foreach items
 
-	void Init(int32_t const& numRows_, int32_t const& numCols_, int32_t const& cellWidth_, int32_t const& cellHeight_) {
+	void Init(int32_t numRows_, int32_t numCols_, int32_t cellWidth_, int32_t cellHeight_) {
 		assert(cells.empty());
 		assert(!numItems);
 		assert(!numActives);
@@ -88,7 +88,7 @@ struct SpaceGridAB {
 		cells.resize(numRows * numCols);
 	}
 
-	void Add(Item* const& c) {
+	void Add(Item* c) {
 		assert(c);
 		assert(c->_sgab == this);
 		assert(c->_sgabCoveredCellInfos.empty());
@@ -125,7 +125,7 @@ struct SpaceGridAB {
 		++numItems;
 	}
 
-	void Remove(Item* const& c) {
+	void Remove(Item* c) {
 		assert(c);
 		assert(c->_sgab == this);
 		assert(c->_sgabCoveredCellInfos.size());
@@ -152,7 +152,7 @@ struct SpaceGridAB {
 		--numItems;
 	}
 
-	void Update(Item* const& c) {
+	void Update(Item* c) {
 		assert(c);
 		assert(c->_sgab == this);
 		assert(c->_sgabCoveredCellInfos.size());
@@ -235,7 +235,7 @@ struct SpaceGridAB {
 	// fill items to results. need ClearResults()
 	// auto guard = xx::MakeSimpleScopeGuard([&] { sg.ClearResults(); });
 	template<bool enableLimit = false, bool enableExcept = false>
-	void ForeachAABB(XY_t const& minXY, XY_t const& maxXY, int32_t* limit = nullptr, Item* const& except = nullptr) {
+	void ForeachAABB(XY_t const& minXY, XY_t const& maxXY, int32_t* limit = nullptr, Item* except = nullptr) {
 		assert(minXY.x < maxXY.x);
 		assert(minXY.y < maxXY.y);
 		assert(minXY.x >= 0 && minXY.y >= 0);

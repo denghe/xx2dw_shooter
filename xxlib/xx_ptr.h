@@ -68,10 +68,10 @@ namespace xx {
             return (*pointer)(std::forward<Args>(args)...);
         }
 
-        XX_INLINE auto& operator[](size_t const& idx) {
+        XX_INLINE auto& operator[](size_t idx) {
             return pointer->operator[](idx);
         }
-        XX_INLINE auto const& operator[](size_t const& idx) const {
+        XX_INLINE auto const& operator[](size_t idx) const {
             return pointer->operator[](idx);
         }
 
@@ -136,7 +136,7 @@ namespace xx {
         }
 
         template<typename U>
-        void Reset(U *const &ptr) {
+        void Reset(U* ptr) {
             static_assert(std::is_same_v<T, U> || std::is_base_of_v<T, U>);
             if (pointer == ptr) return;
             Reset();
@@ -153,7 +153,7 @@ namespace xx {
         Shared() = default;
 
         template<typename U>
-        XX_INLINE Shared(U *const &ptr) {
+        XX_INLINE Shared(U* ptr) {
             static_assert(std::is_base_of_v<T, U>);
             pointer = ptr;
             if (ptr) {
@@ -161,7 +161,7 @@ namespace xx {
             }
         }
 
-        XX_INLINE Shared(T *const &ptr) {
+        XX_INLINE Shared(T* ptr) {
             pointer = ptr;
             if (ptr) {
                 ++((HeaderType *) ptr - 1)->sharedCount;
@@ -169,42 +169,42 @@ namespace xx {
         }
 
         template<typename U>
-        XX_INLINE Shared(Shared<U> const &o) : Shared(o.pointer) {}
+        XX_INLINE Shared(Shared<U> const& o) : Shared(o.pointer) {}
 
-        XX_INLINE Shared(Shared const &o) : Shared(o.pointer) {}
+        XX_INLINE Shared(Shared const& o) : Shared(o.pointer) {}
 
         template<typename U>
-        XX_INLINE Shared(Shared<U> &&o) noexcept {
+        XX_INLINE Shared(Shared<U>&& o) noexcept {
             static_assert(std::is_base_of_v<T, U>);
             pointer = o.pointer;
             o.pointer = nullptr;
         }
 
-        XX_INLINE Shared(Shared &&o) noexcept {
+        XX_INLINE Shared(Shared&& o) noexcept {
             pointer = o.pointer;
             o.pointer = nullptr;
         }
 
         template<typename U>
-        XX_INLINE Shared &operator=(U *const &ptr) {
+        XX_INLINE Shared &operator=(U* ptr) {
             static_assert(std::is_base_of_v<T, U>);
             Reset(ptr);
             return *this;
         }
 
-        XX_INLINE Shared &operator=(T *const &ptr) {
+        XX_INLINE Shared &operator=(T* ptr) {
             Reset(ptr);
             return *this;
         }
 
         template<typename U>
-        XX_INLINE Shared &operator=(Shared<U> const &o) {
+        XX_INLINE Shared &operator=(Shared<U> const& o) {
             static_assert(std::is_base_of_v<T, U>);
             Reset(o.pointer);
             return *this;
         }
 
-        XX_INLINE Shared &operator=(Shared const &o) {
+        XX_INLINE Shared &operator=(Shared const& o) {
             Reset(o.pointer);
             return *this;
         }
@@ -223,12 +223,12 @@ namespace xx {
         }
 
         template<typename U>
-        XX_INLINE bool operator==(Shared<U> const &o) const noexcept {
+        XX_INLINE bool operator==(Shared<U> const& o) const noexcept {
             return pointer == o.pointer;
         }
 
         template<typename U>
-        XX_INLINE bool operator!=(Shared<U> const &o) const noexcept {
+        XX_INLINE bool operator!=(Shared<U> const& o) const noexcept {
             return pointer != o.pointer;
         }
 
@@ -303,7 +303,7 @@ namespace xx {
         }
 
         // unsafe
-        [[maybe_unused]] XX_INLINE void SetH(void* const& h_) {
+        [[maybe_unused]] XX_INLINE void SetH(void* h_) {
             h = (HeaderType*)h_;
         }
 
@@ -326,7 +326,7 @@ namespace xx {
         }
 
         template<typename U>
-        XX_INLINE void Reset(Shared<U> const &s) {
+        XX_INLINE void Reset(Shared<U> const& s) {
             static_assert(std::is_same_v<T, U> || std::is_base_of_v<T, U>);
             Reset();
             if (s.pointer) {
@@ -591,14 +591,14 @@ namespace xx {
 
     // unsafe
     template<typename T>
-    Shared<T> SharedFromThis(T *const &thiz) {
+    Shared<T> SharedFromThis(T * thiz) {
         assert(thiz);
         return *(Shared<T> *) &thiz;
     }
 
     // unsafe
     template<typename T>
-    Weak<T> WeakFromThis(T *const &thiz) {
+    Weak<T> WeakFromThis(T * thiz) {
         assert(thiz);
         return (*(Shared<T>*)&thiz).ToWeak();
     }

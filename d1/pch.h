@@ -1,10 +1,8 @@
 ﻿#pragma once
-#ifndef XX2DW_SHOOTER_PCH_H_
-#define XX2DW_SHOOTER_PCH_H_
+#ifndef XX2DW_SHOOTER_D1_PCH_H_
+#define XX2DW_SHOOTER_D1_PCH_H_
 
-#include "engine_engine.h"
-
-int32_t main();
+#include "engine.h" 
 
 /*****************************************************************************************************/
 /*****************************************************************************************************/
@@ -13,7 +11,7 @@ static constexpr GDesign<1024, 768> gDesign;
 static constexpr float gScale = 4;	// scale texture
 static constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
 static constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
-static constexpr float gSQ = 0.7071067811865475244;
+static constexpr float gSQ = 0.70710678f;
 
 struct ObjBase : Quad, xx::Tasks {
 	float frameIndex{};

@@ -56,7 +56,7 @@ struct Rnd {
         SetSeed(std::random_device()());
     }
 
-    void SetSeed(uint32_t const& seed) {
+    void SetSeed(uint32_t seed) {
         this->seed = seed;
         MT[0] = seed;
         index = SIZE;
@@ -129,7 +129,7 @@ struct Rnd {
     }
 
     template<typename V>
-    V Next(V const& from, V const& to) {
+    V Next(V from, V to) {
         if (from == to) return from;
         assert(from < to);
         if constexpr (std::is_floating_point_v<V>) {
@@ -153,7 +153,7 @@ struct Rnd {
     }
 
     template<typename V>
-    V Next(V const& to) {
+    V Next(V to) {
         return Next((V)0, to);
     }
 

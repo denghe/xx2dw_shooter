@@ -58,7 +58,7 @@ struct Anim {
         }
     }
 
-    bool Update(float const& delta) {
+    bool Update(float delta) {
         auto bak = cursor;
         timePool += delta;
     LabBegin:

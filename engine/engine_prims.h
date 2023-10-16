@@ -31,16 +31,16 @@ struct Vec2 {
         return { T(x / v.x), T(y / v.y) };
     }
 
-    Vec2 operator+(IsArithmetic auto const& v) const {
+    Vec2 operator+(IsArithmetic auto v) const {
         return { T(x + v), T(y + v) };
     }
-    Vec2 operator-(IsArithmetic auto const& v) const {
+    Vec2 operator-(IsArithmetic auto v) const {
         return { T(x - v), T(y - v) };
     }
-    Vec2 operator*(IsArithmetic auto const& v) const {
+    Vec2 operator*(IsArithmetic auto v) const {
         return { T(x * v), T(y * v) };
     }
-    Vec2 operator/(IsArithmetic auto const& v) const {
+    Vec2 operator/(IsArithmetic auto v) const {
         return { T(x / v), T(y / v) };
     }
 
@@ -66,22 +66,22 @@ struct Vec2 {
         return *this;
     }
 
-    Vec2& operator+=(IsArithmetic auto const& v) {
+    Vec2& operator+=(IsArithmetic auto v) {
         x = T(x + v);
         y = T(y + v);
         return *this;
     }
-    Vec2 operator-=(IsArithmetic auto const& v) {
+    Vec2 operator-=(IsArithmetic auto v) {
         x = T(x - v);
         y = T(y - v);
         return *this;
     }
-    Vec2& operator*=(IsArithmetic auto const& v) {
+    Vec2& operator*=(IsArithmetic auto v) {
         x = T(x * v);
         y = T(y * v);
         return *this;
     }
-    Vec2 operator/=(IsArithmetic auto const& v) {
+    Vec2 operator/=(IsArithmetic auto v) {
         x = T(x / v);
         y = T(y / v);
         return *this;
@@ -95,20 +95,20 @@ struct Vec2 {
         return x != v.x || y != v.y;
     }
 
-    static Vec2 Make(IsArithmetic auto const& vx, IsArithmetic auto const& vy) {
+    static Vec2 Make(IsArithmetic auto vx, IsArithmetic auto vy) {
         return { T(vx), T(vy) };
     }
 
-    static Vec2 Make(IsArithmetic auto const& vxy) {
-        return { T(vxy), T(vxy) };
+    static Vec2 Make(IsArithmetic auto v) {
+        return { T(v), T(v) };
     }
 
     Vec2 MakeAdd(HasFieldXY auto const& v) const {
-        return { x + v.x, y + v.y };
+        return { T(x + v.x), T(y + v.y) };
     }
 
-    Vec2 MakeAdd(IsArithmetic auto const& vx, IsArithmetic auto const& vy) const {
-        return { x + vx, y + vy };
+    Vec2 MakeAdd(IsArithmetic auto vx, IsArithmetic auto vy) const {
+        return { T(x + vx), T(y + vy) };
     }
 
     void Set(HasFieldXY auto const& v) {
@@ -236,21 +236,21 @@ struct RGBA {
         return { uint8_t(r * 255), uint8_t(g * 255), uint8_t(b * 255), uint8_t(a * 255) };
     }
 
-    RGBA operator+(RGBA const& v) const {
+    RGBA operator+(RGBA v) const {
         return { r + v.r, g + v.g, b + v.b, a + v.a };
     }
-    RGBA operator-(RGBA const& v) const {
+    RGBA operator-(RGBA v) const {
         return { r - v.r, g - v.g, b - v.b, a - v.a };
     }
 
-    RGBA operator*(IsArithmetic auto const& v) const {
+    RGBA operator*(IsArithmetic auto v) const {
         return { r * v, g * v, b * v, a * v };
     }
-    RGBA operator/(IsArithmetic auto const& v) const {
+    RGBA operator/(IsArithmetic auto v) const {
         return { r / v, g / v, b / v, a / v };
     }
 
-    RGBA& operator+=(RGBA const& v) {
+    RGBA& operator+=(RGBA v) {
         r += v.r;
         g += v.g;
         b += v.b;
@@ -302,7 +302,7 @@ struct AffineTransform {
     float tx, ty;
 
     // anchorSize = anchor * size
-    void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+    void PosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float radians, XY const& anchorSize) {
         float c_ = 1, s_ = 0;
         if (radians) {
             c_ = std::cos(-radians);
@@ -316,7 +316,7 @@ struct AffineTransform {
         ty = pos.y + s_ * scale.x * -anchorSize.x + c_ * scale.y * -anchorSize.y;
     }
 
-    void PosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+    void PosScaleRadians(XY const& pos, XY const& scale, float radians) {
         float c_ = 1, s_ = 0;
         if (radians) {
             c_ = std::cos(-radians);
@@ -390,7 +390,7 @@ struct AffineTransform {
             determinant * (t.c * t.ty - t.d * t.tx), determinant * (t.b * t.tx - t.a * t.ty) };
     }
 
-    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float const& radians, XY const& anchorSize) {
+    inline static AffineTransform MakePosScaleRadiansAnchorSize(XY const& pos, XY const& scale, float radians, XY const& anchorSize) {
         AffineTransform at;
         at.PosScaleRadiansAnchorSize(pos, scale, radians, anchorSize);
         return at;
@@ -402,7 +402,7 @@ struct AffineTransform {
         return at;
     }
 
-    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float const& radians) {
+    inline static AffineTransform MakePosScaleRadians(XY const& pos, XY const& scale, float radians) {
         AffineTransform at;
         at.PosScaleRadians(pos, scale, radians);
         return at;
@@ -577,7 +577,7 @@ namespace TranslateControl {
     // b: box    c: circle    w: width    h: height    r: radius
     // if intersect, cx & cy will be changed & return true
     template<typename T = int32_t>
-    bool MoveCircleIfIntersectsBox(T const& bx, T const& by, T const& bHalfWidth, T const& bHalfHeight, T& cx, T& cy, T const& cr) {
+    bool MoveCircleIfIntersectsBox(T bx, T by, T bHalfWidth, T bHalfHeight, T& cx, T& cy, T cr) {
         auto dx = std::abs(cx - bx);
         if (dx > bHalfWidth + cr) return false;
 
@@ -674,7 +674,7 @@ namespace Calc {
         // b: box    c: circle    r: radius
         // if intersect return true
         template<typename T = int32_t>
-        bool BoxCircle(T const& bx, T const& by, T const& bHalfWidth, T const& bHalfHeight, T const& cx, T const& cy, T const& cr) {
+        bool BoxCircle(T bx, T by, T bHalfWidth, T bHalfHeight, T cx, T cy, T cr) {
             auto dx = std::abs(cx - bx);
             if (dx > bHalfWidth + cr) return false;
 

@@ -33,7 +33,7 @@ struct LineStrip {
 		return *this;
 	}
 
-	LineStrip& FillCirclePoints(XY const& center, float const& radius, std::optional<float> const& angle = {}, int const& segments = 100, XY const& scale = { 1,1 }) {
+	LineStrip& FillCirclePoints(XY const& center, float radius, std::optional<float> const& angle = {}, int segments = 100, XY const& scale = { 1,1 }) {
 		dirty = true;
 		points.reserve(segments + 2);
 		points.resize(segments + 1);
@@ -81,7 +81,7 @@ struct LineStrip {
 		return *this;
 	}
 
-	LineStrip& SetRotate(float const& r) {
+	LineStrip& SetRotate(float r) {
 		dirty = true;
 		radians = r;
 		return *this;
@@ -92,7 +92,7 @@ struct LineStrip {
 		scale = s;
 		return *this;
 	}
-	LineStrip& SetScale(float const& s) {
+	LineStrip& SetScale(float s) {
 		dirty = true;
 		scale = { s, s };
 		return *this;
@@ -104,17 +104,17 @@ struct LineStrip {
 		return *this;
 	}
 
-	LineStrip& SetColor(RGBA8 const& c) {
+	LineStrip& SetColor(RGBA8 c) {
 		dirty = true;
 		color = c;
 		return *this;
 	}
-	LineStrip& SetColorAf(float const& a) {
+	LineStrip& SetColorAf(float a) {
 		dirty = true;
 		color.a = uint8_t(255 * a);
 		return *this;
 	}
-	LineStrip& SetColorA(uint8_t const& a) {
+	LineStrip& SetColorA(uint8_t a) {
 		dirty = true;
 		color.a = a;
 		return *this;

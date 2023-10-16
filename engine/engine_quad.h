@@ -33,11 +33,11 @@ struct Quad : QuadInstanceData {
         anchor = a;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetRotate(float const& r) {
+    XX_FORCE_INLINE Quad& SetRotate(float r) {
         radians = r;
         return *this;
     }
-    XX_FORCE_INLINE Quad& AddRotate(float const& r) {
+    XX_FORCE_INLINE Quad& AddRotate(float r) {
         radians += r;
         return *this;
     }
@@ -45,7 +45,7 @@ struct Quad : QuadInstanceData {
         scale = s;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetScale(float const& s) {
+    XX_FORCE_INLINE Quad& SetScale(float s) {
         scale = { s, s };
         return *this;
     }
@@ -53,7 +53,7 @@ struct Quad : QuadInstanceData {
         scale += s;
         return *this;
     }
-    XX_FORCE_INLINE Quad& AddScale(float const& s) {
+    XX_FORCE_INLINE Quad& AddScale(float s) {
         scale += XY{ s, s };
         return *this;
     }
@@ -61,11 +61,11 @@ struct Quad : QuadInstanceData {
         pos = p;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetPositionX(float const& x) {
+    XX_FORCE_INLINE Quad& SetPositionX(float x) {
         pos.x = x;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetPositionY(float const& y) {
+    XX_FORCE_INLINE Quad& SetPositionY(float y) {
         pos.y = y;
         return *this;
     }
@@ -73,27 +73,27 @@ struct Quad : QuadInstanceData {
         pos += p;
         return *this;
     }
-    XX_FORCE_INLINE Quad& AddPositionX(float const& x) {
+    XX_FORCE_INLINE Quad& AddPositionX(float x) {
         pos.x += x;
         return *this;
     }
-    XX_FORCE_INLINE Quad& AddPositionY(float const& y) {
+    XX_FORCE_INLINE Quad& AddPositionY(float y) {
         pos.y += y;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetColor(RGBA8 const& c) {
+    XX_FORCE_INLINE Quad& SetColor(RGBA8 c) {
         color = c;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetColorA(uint8_t const& a) {
+    XX_FORCE_INLINE Quad& SetColorA(uint8_t a) {
         color.a = a;
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetColorAf(float const& a) {
+    XX_FORCE_INLINE Quad& SetColorAf(float a) {
         color.a = uint8_t(255 * a);
         return *this;
     }
-    XX_FORCE_INLINE Quad& SetColorplus(float const& v) {
+    XX_FORCE_INLINE Quad& SetColorplus(float v) {
         colorplus = v;
         return *this;
     }

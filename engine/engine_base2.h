@@ -60,7 +60,7 @@ struct EngineBase2 : EngineBase1 {
 
         XY v{};
         MoveDirections md;
-        constexpr const float SQR2_2 = float(1.4142135623730950488016887242097 / 2);
+        constexpr const float SQR2_2 = 0.70710677f;
 
         if (n == 2) {
             if (flags.w) {

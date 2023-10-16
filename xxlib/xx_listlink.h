@@ -51,7 +51,7 @@ namespace xx {
 			Clear<true>();
 		}
 
-		void Reserve(SizeType const& newCap) noexcept {
+		void Reserve(SizeType newCap) noexcept {
 			assert(newCap > 0);
 			if (newCap <= cap) return;
 			cap = newCap;
@@ -113,7 +113,7 @@ namespace xx {
 		}
 
 		// return next index
-		SizeType Remove(SizeType const& idx, SizeType const& prevIdx = -1) {
+		SizeType Remove(SizeType idx, SizeType prevIdx = -1) {
 			assert(idx >= 0);
 			assert(idx < len);
 
@@ -134,7 +134,7 @@ namespace xx {
 			return r;
 		}
 
-		SizeType Next(SizeType const& idx) const {
+		SizeType Next(SizeType idx) const {
 			return buf[idx].next;
 		}
 
@@ -159,13 +159,13 @@ namespace xx {
 			len = 0;
 		}
 
-		T const& operator[](SizeType const& idx) const noexcept {
+		T const& operator[](SizeType idx) const noexcept {
 			assert(idx >= 0);
 			assert(idx < len);
 			return buf[idx].value;
 		}
 
-		T& operator[](SizeType const& idx) noexcept {
+		T& operator[](SizeType idx) noexcept {
 			assert(idx >= 0);
 			assert(idx < len);
 			return buf[idx].value;

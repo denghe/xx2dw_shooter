@@ -122,7 +122,7 @@ struct GLTexture : GLRes<GLResTypes::Texture, GLsizei, GLsizei, std::string> {
     auto const& FileName() const { return std::get<3>(vs); }
 
     template<GLuint filter = GL_NEAREST /* GL_LINEAR */, GLuint wraper = GL_CLAMP_TO_EDGE /* GL_REPEAT */>
-    static GLTexture Create(uint32_t const& w, uint32_t const& h, bool const& hasAlpha) {
+    static GLTexture Create(uint32_t w, uint32_t h, bool hasAlpha) {
         auto t = GLGenTextures<false, filter, wraper>();
         auto c = hasAlpha ? GL_RGBA : GL_RGB;
         glTexImage2D(GL_TEXTURE_2D, 0, c, w, h, 0, c, GL_UNSIGNED_BYTE, {});
@@ -134,7 +134,7 @@ struct GLTexture : GLRes<GLResTypes::Texture, GLsizei, GLsizei, std::string> {
 /**********************************************************************************************************************************/
 /**********************************************************************************************************************************/
 
-inline GLShader LoadGLShader(GLenum const& type, std::initializer_list<std::string_view>&& codes_) {
+inline GLShader LoadGLShader(GLenum type, std::initializer_list<std::string_view>&& codes_) {
     assert(codes_.size() && (type == GL_VERTEX_SHADER || type == GL_FRAGMENT_SHADER));
     auto&& shader = glCreateShader(type);
     xx_assert(shader);
@@ -172,7 +172,7 @@ inline GLShader LoadGLFragmentShader(std::initializer_list<std::string_view>&& c
     return LoadGLShader(GL_FRAGMENT_SHADER, std::move(codes_));
 }
 
-inline GLProgram LinkGLProgram(GLuint const& vs, GLuint const& fs) {
+inline GLProgram LinkGLProgram(GLuint vs, GLuint fs) {
     auto program = glCreateProgram();
 	xx_assert(program);
     glAttachShader(program, vs);
@@ -203,7 +203,7 @@ inline GLFrameBuffer MakeGLFrameBuffer() {
     return GLFrameBuffer(f);
 }
 
-inline void BindGLFrameBufferTexture(GLuint const& f, GLuint const& t) {
+inline void BindGLFrameBufferTexture(GLuint f, GLuint t) {
     glBindFramebuffer(GL_FRAMEBUFFER, f);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, t, 0);
     assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);

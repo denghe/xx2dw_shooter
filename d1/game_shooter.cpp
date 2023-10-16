@@ -34,7 +34,7 @@ xx::Task<> Shooter::MainLogic() {
 			needFire = gLooper.mouse.btnStates[0];
 			needFire2 = gLooper.mouse.btnStates[2];
 		}
-		SetRotate(M_PI * 2 - r);
+		SetRotate(float(M_PI * 2 - r));
 
 		if (needFire) {
 			XY inc{ cr, sr };

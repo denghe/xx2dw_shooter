@@ -5,6 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+# sources map to d1
 set(name s1)
 project(${name})
 
@@ -98,7 +99,7 @@ if (EMSCRIPTEN)
 
 endif()
 
-file(GLOB_RECURSE sources
+file(GLOB sources
 	../engine/*.cpp
 	../engine/*.c
 	../engine/*.hpp
@@ -111,15 +112,16 @@ file(GLOB_RECURSE sources
 	../3rd/*.c
 	../3rd/*.hpp
 	../3rd/*.h
-	*.cpp
-	*.c
-	*.h
+	../d1/*.cpp		# sources map to d1
+	../d1/*.c
+	../d1/*.h
 )
 
 add_executable(${name} ${sources})
 target_link_libraries(${name} libzstd_static)
 
 if(MSVC)
+	add_definitions(-D__EMSCRIPTEN__)
 	include_directories(
 		$ENV{EMSDK}/upstream/emscripten/system/lib/libcxx/include
 		$ENV{EMSDK}/upstream/emscripten/system/include
@@ -133,10 +135,11 @@ include_directories(
 	../engine
 	../3rd
 	../xxlib
+	../d1			# sources map to d1
 )
 
 target_precompile_headers(${name}
-	PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.h>
+	PUBLIC $<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/../d1/pch.h>		# sources map to d1
 )
 
 file(GLOB_RECURSE assets

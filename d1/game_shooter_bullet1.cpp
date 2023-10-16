@@ -1,27 +1,14 @@
 ﻿#include "pch.h"
 
-void ShooterBullet2::Init(XY const& bornPos, XY const& inc_, float radians_) {
+void ShooterBullet1::Init(XY const& bornPos, XY const& inc_, float radians_) {
 	Add(MainLogic());
 	SetFrame(gLooper.frames_bullets[cFrameIndex]).SetScale(gScale);
-	radians = M_PI * 2 + M_PI / 2 - radians_;
-	pos = bornPos;
+	radians = float(M_PI * 2 + M_PI / 2 - radians_);
 	inc = inc_ * cSpeed;
+	pos = bornPos;
 }
-xx::Task<> ShooterBullet2::MainLogic() {
-	xx::Weak<MonsterBase> tar;
+xx::Task<> ShooterBullet1::MainLogic() {
 	while (true) {
-		if (!tar) {
-			if (auto o = gLooper.FindNearestMonster(pos, cMaxLookupDistance)) {
-				tar = xx::WeakFromThis(o);
-			}
-		}
-		if (tar) {
-			auto v = tar->pos - pos;
-			auto r = std::atan2(v.y, v.x);
-			radians = M_PI * 2 + M_PI / 2 - r;
-			inc = XY{ std::cos(r), std::sin(r) } * cSpeed;
-		}
-
 		AddPosition(inc);
 		if ((pos.x > gLooper.windowSize_2.x + cRadius * 2) || (pos.x < -gLooper.windowSize_2.x - cRadius * 2) ||
 			(pos.y > gLooper.windowSize_2.y + cRadius * 2) || (pos.y < -gLooper.windowSize_2.y - cRadius * 2)) break;

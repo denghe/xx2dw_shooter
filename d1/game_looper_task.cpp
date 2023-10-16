@@ -2,7 +2,11 @@
 
 xx::Task<> GameLooper::MainTask() {
 	// preload texs
-    auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
+#ifdef __EMSCRIPTEN__
+	auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
+#else
+	auto tp = LoadTexturePacker("res/pics.blist");
+#endif
 	xx_assert(tp);
 
 	tp->GetToByPrefix(frames_monster_1, "ma");
@@ -65,8 +69,8 @@ xx::Task<> GameLooper::MainTask() {
 
 	while (true) {
 		for (size_t i = 0; i < 30; i++) {
-			auto a = rnd.Next<float>(M_PI * 2);
-			auto r = rnd.Next<float>(384, 400);
+			auto a = rnd.Next<float>(float(M_PI * 2));
+			auto r = rnd.Next<float>(384.f, 400.f);
 			NewMonster<Monster1>(XY{ std::cos(a), std::sin(a) } *r);
 		}
 		co_yield 0;

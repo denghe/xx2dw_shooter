@@ -10,7 +10,7 @@ struct Shader_LineStrip : Shader {
     GLVertexArrays va;
     GLBuffer vb, ib;
 
-    static const int32_t maxIndexNums = int32_t(maxVertNums * 1.5);
+    static constexpr int32_t maxIndexNums = int32_t(maxVertNums * 1.5);
     std::unique_ptr<XYRGBA8[]> points = std::make_unique<XYRGBA8[]>(maxVertNums);
     int32_t pointsCount = 0;
     std::unique_ptr<uint16_t[]> indexs = std::make_unique<uint16_t[]>(maxIndexNums);

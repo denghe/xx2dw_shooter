@@ -14,7 +14,7 @@ struct CurvePoint {
         return { pos - v.pos, tension, numSegments };
     }
 
-    inline CurvePoint operator*(float const& v) const {
+    inline CurvePoint operator*(float v) const {
         return { pos * v, tension, numSegments };
     }
 };
@@ -206,7 +206,7 @@ struct MovePathSteper {
         return { .pos = p.pos, .radians = p.radians, .movedDistance = {}, .terminated = false };
     }
 
-    MoveResult MoveForward(float const& stepDistance) {
+    MoveResult MoveForward(float stepDistance) {
         assert(mp);
         assert(mp->points.size());
         auto& ps = mp->points;
@@ -246,7 +246,7 @@ struct MovePathCache {
     bool loop{};
     float stepDistance{};
 
-    void Init(MovePath const& mp, float const& stepDistance = 1.f) {
+    void Init(MovePath const& mp, float stepDistance = 1.f) {
         assert(stepDistance > 0);
         assert(mp.totalDistance > stepDistance);
         this->stepDistance = stepDistance;
@@ -266,7 +266,7 @@ struct MovePathCache {
         mpr.mp.pointer = {};	// clear fake ptr
     }
 
-    MovePathCachePoint* Move(float const& totalDistance) {
+    MovePathCachePoint* Move(float totalDistance) {
         int i = int(totalDistance / stepDistance);
         if (loop) {
             return &points[i % points.size()];
