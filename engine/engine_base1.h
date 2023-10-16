@@ -171,19 +171,19 @@ struct EngineBase1 : EngineBase0 {
 
     // load texture from file
     template<bool autoDecompress = false>
-    GLTexture LoadTexture(std::string_view const& fn) {
+    GLTexture LoadGLTexture(std::string_view const& fn) {
         auto [d, p] = LoadFileData<autoDecompress>(fn);
         return LoadGLTexture(d, p);
     }
 
     template<bool autoDecompress = false>
-    xx::Shared<GLTexture> LoadSharedTexture(std::string_view const& fn) {
-        return xx::Make<GLTexture>(LoadTexture<autoDecompress>(fn));
+    xx::Shared<GLTexture> LoadTexture(std::string_view const& fn) {
+        return xx::Make<GLTexture>(LoadGLTexture<autoDecompress>(fn));
     }
 
     template<bool autoDecompress = false>
-    xx::Shared<Frame> LoadSharedFrame(std::string_view const& fn) {
-        return Frame::Create(LoadSharedTexture<autoDecompress>(fn));
+    xx::Shared<Frame> LoadFrame(std::string_view const& fn) {
+        return Frame::Create(LoadTexture<autoDecompress>(fn));
     }
 
     template<bool autoDecompress = false>
@@ -195,7 +195,7 @@ struct EngineBase1 : EngineBase0 {
         int r = tp->Load(blistData, fp);
         xx_assert(!r);
 
-        auto tex = LoadSharedTexture<autoDecompress>(tp->realTextureFileName);
+        auto tex = LoadTexture<autoDecompress>(tp->realTextureFileName);
         xx_assert(tex);
 
         for (auto& f : tp->frames) {
@@ -203,6 +203,36 @@ struct EngineBase1 : EngineBase0 {
         }
         return tp;
     }
+
+    //template<bool autoDecompress = false>
+    //xx::Shared<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
+    //    auto map = xx::Make<TMX::Map>();
+    //    // load bmx & fill
+    //    {
+    //        auto sd = LoadFileData<autoDecompress>(bmxPath);
+    //        xx_assert(sd);
+
+    //        xx::TmxData td;
+    //        td = std::move(*sd);
+    //        auto r = td.Read(*map);
+    //        xx_assert(!r);
+    //    }
+    //    // load textures
+    //    auto n = map->images.size();
+    //    for (auto& img : map->images) {
+    //        tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
+    //            img->texture = LoadTexture(url.c_str());
+    //            --n;
+    //            //printf("url loaded: %s\n", url.c_str());
+    //        });
+    //    }
+    //    while (n) co_yield 0;	// wait all
+
+    //    // fill ext data for easy use
+    //    map->FillExts();
+
+    //    co_return map;
+    //}
 
     // more load here ?
 

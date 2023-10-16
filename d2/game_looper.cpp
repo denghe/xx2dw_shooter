@@ -1,19 +1,14 @@
 ﻿#include "pch.h"
-
-int32_t main() {
-	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-		return gLooper.JsLoopCallback(ms);
-		}, nullptr);
-}
-GameLooper gLooper;
-
-
 xx::Task<> GameLooper::MainTask() {
 	camera.SetScale(0.25);
 
 	// load wall texs
 	{
+#ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+#else
+		auto tp = LoadTexturePacker("res/dungeon.blist");
+#endif
 		xx_assert(tp);
 		tp->GetToByPrefix(frames_walls, "wall_");
 	}
@@ -41,10 +36,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
-		camera.DecreaseScale(0.02, 0.02);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
-		camera.IncreaseScale(0.02, 5);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02f)) {				// zoom control
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5.f);
 	}
 	if (!ready) return;
 	hasCross = {};
@@ -80,8 +75,8 @@ void Room::Draw() {
 	float basePosX = (int)pos.x * gRoomCellSize - pixelSize_2.x;
 	float basePosY = (int)-pos.y * gRoomCellSize + pixelSize_2.y;
 
-	for (int y = 0, ye = size.y - 1; y <= ye; ++y) {
-		for (int x = 0, xe = size.x - 1; x <= xe; ++x) {
+	for (int y = 0, ye = (int)size.y - 1; y <= ye; ++y) {
+		for (int x = 0, xe = (int)size.x - 1; x <= xe; ++x) {
 
 			XY p{ float(basePosX + x * gRoomCellSize), basePosY - y * gRoomCellSize };
 
@@ -135,7 +130,7 @@ xx::Task<> Room::MainLogic() {
 			++numCross;
 			float r;
 			if (pos == room->pos) {
-				r = gEngine->rnd.Next<float>(M_PI * 2);
+				r = gEngine->rnd.Next<float>(float(M_PI * 2));
 			} else {
 				auto d = (pos - room->pos).As<float>();
 				r = std::atan2(d.y, d.x);

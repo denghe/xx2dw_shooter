@@ -1,13 +1,11 @@
 ﻿#pragma once
-#include "engine_engine.h"
+#include "engine.h"
 
-int32_t main();
-
-static constexpr GDesign<1280, 800, 240> gDesign;
+constexpr GDesign<1280, 800, 240> gDesign;
 
 static constexpr int gRoomCellSize = 16;
-static constexpr int gMaxRoomWidth = gDesign.width / gRoomCellSize;
-static constexpr int gMaxRoomHeight = gDesign.height / gRoomCellSize;
+static constexpr int gMaxRoomWidth = (int)gDesign.width / gRoomCellSize;
+static constexpr int gMaxRoomHeight = (int)gDesign.height / gRoomCellSize;
 static constexpr int gMaxRoomWidth_2 = gMaxRoomWidth / 2;
 static constexpr int gMaxRoomHeight_2 = gMaxRoomHeight / 2;
 
