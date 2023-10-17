@@ -28,7 +28,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 	auto&& tarHero = gLooper.heros[0];
 
 	while (true) {
-		if (damageEffectLeftDuration > 0) co_yield 0;					// when hert, can't move
+		if (damageEffectLeftDuration > 0) co_yield 0;			// when hert, can't move
 
 		// physics simulate
 		// calc neighbor cross force
@@ -58,7 +58,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 		XY newPos = pos;
 		if (numCross) {											// cross?
 			if (dd) {
-				combineForce += d / std::sqrt(dd) / 100;		// weak force assign for ship follow
+				combineForce += d / std::sqrt(dd) / 10;			// weak force assign for ship follow
 			}
 			if (combineForce.x * combineForce.x < 0.0001 && combineForce.y * combineForce.y < 0.0001) {
 				auto r = gEngine->rnd.Next<float>(float(M_PI * 2));

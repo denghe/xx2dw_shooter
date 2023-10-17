@@ -30,10 +30,10 @@ struct Monster : Sprite, Removeable<Monster>, SpaceGridCItem<Monster, XY> {
 				damageEffect(gEngine->tasks, [this]()->xx::Task<> {
 					while (damageEffectLeftDuration > 0) {
 						damageEffectLeftDuration -= gDesign.frameDelay;
-						body.SetColorplus(1);
+						body.SetColorplus(100000);
 						co_yield 0;
 					}
-					body.SetColorplus(0);
+					body.SetColorplus(1);
 				});
 			}
 			damageEffectLeftDuration = cDamageEffectDurationSecs;	// renew
@@ -47,7 +47,7 @@ struct Monster_Dragon_BabyWhite : Monster {
 	constexpr static XY cAnchor{ 0.5f, 0.3f };
 	constexpr static float cRadius{ 5 };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
-	constexpr static float cSpeed{ 30.f / gDesign.fps };
+	constexpr static float cSpeed{ 60.f / gDesign.fps };
 
 	void Init(int hp_, XY const& pos_);
 	xx::Task<> MainLogic_();

@@ -68,10 +68,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
-		camera.DecreaseScale(0.02, 0.02);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
-		camera.IncreaseScale(0.02, 5);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02f)) {				// zoom control
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5);
 	}
 	if (!ready) return;										// todo: show loading ?
 
