@@ -14,7 +14,7 @@ void Bullet_EyeFire::Init(Weapon* hw, XY const& pos_, float r, float c, float s)
 }
 
 xx::Task<> Bullet_EyeFire::MainLogic_() {
-	float frameMaxIndex = frames->size();
+	float frameMaxIndex = (float)frames->size();
 	for (float life = 1; life > 0; life -= cLifeDelta) {
 		pos += inc;
 

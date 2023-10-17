@@ -1,15 +1,12 @@
 ﻿#include "pch.h"
 
-int32_t main() {
-	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-		return gLooper.JsLoopCallback(ms);
-	}, nullptr);
-}
-GameLooper gLooper;											// global var for easy use
-
 xx::Task<> GameLooper::MainTask() {
 	{
+#ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+#else
+		auto tp = LoadTexturePacker("res/dungeon.blist");
+#endif
 		xx_assert(tp);
 		size_t n{};
 		n = tp->GetToByPrefix(frames_number_outlined, DamageNumber::cResPrefix);
@@ -60,7 +57,7 @@ xx::Task<> GameLooper::MainTask() {
 	heros.Emplace().Emplace<Hero_Pumpkin>()->Init(player1, ori + XY{ 0, 0 });
 	while (true) {
 		for (size_t i = 0; i < 1; i++) {
-			auto a = rnd.Next<float>(M_PI * 2);
+			auto a = rnd.Next<float>(float(M_PI * 2));
 			auto r = rnd.Next<float>(280, 330);
 			Monster::CreateTo<Monster_Dragon_BabyWhite>(monsters)->Init(rnd.Next<int>(10, 50), ori + XY{std::cos(a), std::sin(a)} *r);
 		}

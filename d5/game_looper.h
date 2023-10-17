@@ -1,9 +1,7 @@
 ﻿#pragma once
-#include "engine_engine.h"
+#include <engine.h>
 
-int32_t main();
-
-static constexpr GDesign<1280, 720, 60> gDesign;
+constexpr GDesign<1280, 720, 60> gDesign;
 
 struct Hero;
 template<typename Owner>

@@ -51,8 +51,8 @@ struct DamageNumber : Drawable {
 	}
 
 	xx::Task<> MainLogic_() {
-		constexpr int lifeCycle_move{ cMoveUpDurationSeconds / gDesign.frameDelay };
-		constexpr int lifeCycle_fadeout{ cFadeOutDurationSeconds / gDesign.frameDelay };
+		constexpr int lifeCycle_move{ int(cMoveUpDurationSeconds / gDesign.frameDelay) };
+		constexpr int lifeCycle_fadeout{ int(cFadeOutDurationSeconds / gDesign.frameDelay) };
 		// move up
 		float ds{ cMoveUpDurationSeconds };
 		for (int i = 0; i < lifeCycle_move; ++i) {
@@ -63,7 +63,7 @@ struct DamageNumber : Drawable {
 		// fade out
 		constexpr float step = 255.f / lifeCycle_fadeout;
 		for (float a = 255.f; a >= 0; a -= step) {
-			color.a = a;
+			color.a = (uint8_t)a;
 			co_yield 0;
 		}
 		color.a = 0;

@@ -9,12 +9,12 @@ struct Weapon : Sprite {
 };
 
 struct Weapon_1_Sword : Weapon {
-	constexpr static XY cAnchor{ 0.1, 0.5 };
+	constexpr static XY cAnchor{ 0.1f, 0.5f };
 	constexpr static float cFrameIndex{ 0 };
-	constexpr static float cFrameMaxChangeRadians{ M_PI * 10 / gDesign.fps };
-	constexpr static float cFireDelaySecs{ 0.05 };
+	constexpr static float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
+	constexpr static float cFireDelaySecs{ 0.05f };
 	constexpr static float cFireDistance{ 27 };
-	constexpr static float cFireRecoilDelaySecs{ 0.02 };
+	constexpr static float cFireRecoilDelaySecs{ 0.02f };
 	constexpr static float cFireRecoilSpeed{ 400.f / gDesign.fps };
 	constexpr static float cSearchDistance{ 250.f };
 

@@ -8,13 +8,13 @@ struct Blood : Sprite {
 	void Init(XY const& pos_) {
 		mainLogic = MainLogic_();
 		pos = pos_;
-		radians = gEngine->rnd.Next<float>(M_PI * 2);
+		radians = gEngine->rnd.Next<float>(float(M_PI * 2));
 		frames = &gLooper.frames_blood_4;
 		frameIndex = {};
 	}
 
 	xx::Task<> MainLogic_() {
-		float frameMaxIndex = frames->size();
+		float frameMaxIndex = (float)frames->size();
 		do {
 			co_yield 0;
 			frameIndex += cFrameInc;

@@ -1,15 +1,12 @@
 ﻿#include "pch.h"
 
-int32_t main() {
-	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-		return gLooper.JsLoopCallback(ms);
-	}, nullptr);
-}
-GameLooper gLooper;											// global var for easy use
-
 xx::Task<> GameLooper::MainTask() {
 	{
+#ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+#else
+		auto tp = LoadTexturePacker("res/dungeon.blist");
+#endif
 		xx_assert(tp);
 		tp->GetToByPrefix(frames_heros.emplace_back(), "boy_1_");
 		tp->GetToByPrefix(frames_heros.emplace_back(), "boy_2_");
@@ -30,7 +27,7 @@ xx::Task<> GameLooper::MainTask() {
 	for (int i = 0; i < 500; ++i) {
 		for (int j = 0; j < 100; ++j) {
 			heroMagicWeapons.Emplace().Emplace()->Init(
-				rnd.Next<int>(frames_magicWeapon.size() - 1),
+				rnd.Next<int>((int)frames_magicWeapon.size() - 1),
 				heros[rnd.Next<int>(0, 3)],
 				{ rnd.Next<float>(-80, 80), rnd.Next<float>(-80, 80) }
 			);
@@ -41,10 +38,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
-	if (KeyDownDelay(KeyboardKeys::Z, 0.02)) {				// zoom control
-		camera.DecreaseScale(0.02, 0.02);
-	} else if (KeyDownDelay(KeyboardKeys::X, 0.02)) {
-		camera.IncreaseScale(0.02, 5);
+	if (KeyDownDelay(KeyboardKeys::Z, 0.02f)) {				// zoom control
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5);
 	}
 	if (!ready) return;
 

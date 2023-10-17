@@ -1,11 +1,9 @@
 ﻿#pragma once
-#include "engine_engine.h"
+#include <engine.h>
 
-int32_t main();
+constexpr GDesign<1280, 720, 240> gDesign;
 
-static constexpr GDesign<1280, 720, 240> gDesign;
-
-static constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
+constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
 
 struct Player;
 struct DamageNumber;

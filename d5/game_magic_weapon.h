@@ -8,9 +8,9 @@ struct MagicWeapon : Sprite {
 	constexpr static float cSpeedMin{ 50.f / gDesign.fps };
 	constexpr static float cSpeedMax{ 200.f / gDesign.fps };
 	constexpr static float cSpeedInc{ 10.f / gDesign.fps };
-	constexpr static float cFlyRadianMin{ M_PI * 2 / gDesign.fps };
-	constexpr static float cFlyRadianMax{ M_PI * 20 / gDesign.fps };
-	constexpr static float cAroundRadiansInc{ M_PI * 2 / gDesign.fps };
+	constexpr static float cFlyRadianMin{ float(M_PI * 2 / gDesign.fps) };
+	constexpr static float cFlyRadianMax{ float(M_PI * 20 / gDesign.fps) };
+	constexpr static float cAroundRadiansInc{ float(M_PI * 2 / gDesign.fps) };
 
 	float speed{ cSpeedMin };
 	xx::Weak<Owner> owner;
@@ -22,7 +22,7 @@ struct MagicWeapon : Sprite {
 		owner = owner_;
 		pos = bornPos;
 		frames = &gLooper.frames_magicWeapon;
-		frameIndex = index;
+		frameIndex = (float)index;
 		body.SetRotate(radians).SetAnchor(cAnchor);
 	}
 
@@ -80,7 +80,7 @@ struct MagicWeapon : Sprite {
 
 				rb = -rb;
 				while (true) {									// begin rotate fly around the owner
-					for (float r = rb, re = rb + M_PI * 2; r < re; r += cAroundRadiansInc) {
+					for (float r = rb, re = rb + float(M_PI * 2); r < re; r += cAroundRadiansInc) {
 						if (target) goto LabBegin;
 						if (!owner) goto LabEnd;
 						radians = -r;

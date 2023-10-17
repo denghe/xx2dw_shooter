@@ -19,7 +19,7 @@ xx::Task<> Weapon_1_Sword::MainLogic_() {
 		RotateControl::Step(radians, r, cFrameMaxChangeRadians);
 
 		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
-			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
+			nextFireSecs = (float)gLooper.nowSecs + cFireDelaySecs;
 			r = -radians;
 			auto c = std::cos(r);
 			auto s = -std::sin(r);
@@ -80,7 +80,7 @@ xx::Task<> Weapon_1_Sword::MainLogic2() {
 
 		// fire
 		if (nextFireSecs <= gLooper.nowSecs) {
-			nextFireSecs = gLooper.nowSecs + cFireDelaySecs;
+			nextFireSecs = (float)gLooper.nowSecs + cFireDelaySecs;
 			auto r = -radians;
 			auto c = std::cos(r);
 			auto s = -std::sin(r);
