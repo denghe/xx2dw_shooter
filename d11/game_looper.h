@@ -1,7 +1,5 @@
 ﻿#pragma once
-#include "engine_engine.h"
-
-int32_t main();
+#include <engine.h>
 
 constexpr GDesign<1280, 720, 60> gDesign;
 
@@ -30,10 +28,11 @@ constexpr std::array<char const*, 3> Combos_txt = {
 };
 
 struct KeyComboTest {
-	constexpr static float cTimeoutSecs = 0.2;
+	constexpr static float cTimeoutSecs = 0.2f;
 	constexpr static float cCastSecs = 1;
 	bool casting{};
 	xx::List<Combos, int32_t> matchResults;
+	std::string msg;
 
 	bool DetectKeys(std::initializer_list<KeyboardKeys> allow, std::initializer_list<KeyboardKeys> deny = {}) {
 		for (auto& k : allow) {
@@ -71,9 +70,10 @@ struct KeyComboTest {
 		auto sgCasting = xx::MakeSimpleScopeGuard([this] { casting = false; });
 
 		for (auto endTime = gLooper.nowSecs + cCastSecs; endTime > gLooper.nowSecs;) {
-			gLooper.ctcDefault.Draw({ 0, -100 }, std::string(Combos_txt[(int)c]) + " casted...");
+			msg = std::string(Combos_txt[(int)c]) + " casted...";
 			co_yield 0;
 		}
+		msg.clear();
 	}
 
 	xx::TaskGuard matchASD;

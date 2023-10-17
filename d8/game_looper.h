@@ -1,7 +1,5 @@
 ﻿#pragma once
-#include "engine_engine.h"
-
-int32_t main();
+#include <engine.h>
 
 static constexpr GDesign<1280, 720, 120> gDesign;
 
@@ -21,7 +19,7 @@ struct DragCircle {
 };
 
 struct Poly {
-	constexpr static float cRadiansIncrease{ M_PI * 2 * 2 / gDesign.fps };
+	constexpr static float cRadiansIncrease{ float(M_PI * 2 * 2 / gDesign.fps) };
 
 	void Init();
 	void Draw();
@@ -35,7 +33,7 @@ struct Poly {
 };
 
 struct Shadow {
-	constexpr static float cAlphaDecrease{ 1.f / 0.1 / gDesign.fps };
+	constexpr static float cAlphaDecrease{ 1.f / 0.1f / gDesign.fps };
 
 	void Init(LineStrip const& border_);
 	void Draw();
@@ -49,7 +47,7 @@ struct Shadow {
 
 
 struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
-	constexpr static int shadowsCap = fps * 2;
+	constexpr static int shadowsCap = (int)fps * 2;
 	std::string log;
 
 	EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e);

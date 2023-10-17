@@ -1,16 +1,12 @@
 ﻿#pragma once
 #include <engine_base3.h>
 
-template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
-template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std::same_as<void>; };
-template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
-template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } -> std::same_as<xx::Task<>>; };
-
 // Derived need inherit from gDesign
 template<typename Derived>
 struct Engine : EngineBase3 {
 
     void Init() {
+
         auto u8s = std::filesystem::absolute("./").u8string();
         rootPath = ToSearchPath((std::string&)u8s);
         SearchPathReset();
@@ -20,6 +16,24 @@ struct Engine : EngineBase3 {
         mouseEventHandlers.Init(128, 128, (int)this->windowSize.x * 2, (int)this->windowSize.y * 2);
 
         GLInit();
+
+        if constexpr (Has_OnMouseDown<Derived> || Has_OnMouseUp<Derived>) {
+            static_assert(Has_OnMouseDown<Derived> && Has_OnMouseUp<Derived>);
+
+            glfwSetMouseButtonCallback(wnd, [](GLFWwindow* wnd, int button, int action, int mods) {
+                if (action) {
+                    ((Derived*)gEngine)->OnMouseDown(EmscriptenMouseEvent{ .button = (uint16_t)button });
+                } else {
+                    ((Derived*)gEngine)->OnMouseUp(EmscriptenMouseEvent{ .button = (uint16_t)button });
+                }
+            });
+        }
+
+        if constexpr (Has_OnMouseMove<Derived>) {
+            glfwSetCursorPosCallback(wnd, [](GLFWwindow* wnd, double x, double y) {
+                ((Derived*)gEngine)->OnMouseMove(EmscriptenMouseEvent{ .targetX = (long)x, .targetY = (long)y });
+            });
+        }
 
         if constexpr (Has_AfterInit<Derived>) {
             ((Derived*)this)->AfterInit();

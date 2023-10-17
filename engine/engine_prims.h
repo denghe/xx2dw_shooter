@@ -729,7 +729,7 @@ namespace Calc {
         template<bool vsEndIsFirst = false, typename Vecs>
         bool PolygonPoint(Vecs const& vs, float px, float py) {
             bool collision{};
-            for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+            for (int curr = 0, next = 1, e = vsEndIsFirst ? (int)std::size(vs) - 1 : (int)std::size(vs); curr < e; ++curr, ++next) {
                 if constexpr (!vsEndIsFirst) {
                     if (next == e) next = 0;
                 }
@@ -745,7 +745,7 @@ namespace Calc {
 
         template<bool checkInside = true, bool vsEndIsFirst = true, typename Vecs>
         bool PolyCircle(Vecs const& vs, float cx, float cy, float r) {
-            for (int curr = 0, next = 1, e = vsEndIsFirst ? std::size(vs) - 1 : std::size(vs); curr < e; ++curr, ++next) {
+            for (int curr = 0, next = 1, e = vsEndIsFirst ? (int)std::size(vs) - 1 : (int)std::size(vs); curr < e; ++curr, ++next) {
                 if constexpr (!vsEndIsFirst) {
                     if (next == e) next = 0;
                 }

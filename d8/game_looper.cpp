@@ -1,13 +1,5 @@
 ﻿#include "pch.h"
 
-int32_t main() {
-	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
-		return gLooper.JsLoopCallback(ms);
-	}, nullptr);
-}
-GameLooper gLooper;											// global var for easy use
-
-
 void DragCircle::Init(XY const& pos_, float radius_, int32_t segments) {
     pos = pos_;
     radius = radius_;
@@ -57,13 +49,12 @@ void Poly::Init() {
 }
 
 void Poly::Draw() {
-    printf("%f\n", scale.y);
     border.SetPointsArray(vertsForDraw).SetRotate(radians).SetScale(scale).Draw();
     //border.SetPointsArray(vertsForCalc).SetScale(scale).Draw();
 }
 
 xx::Task<> Poly::MainTask() {
-    constexpr float r1 = -M_PI / 2, r2 = M_PI / 2;
+    constexpr float r1 = float(-M_PI / 2), r2 = float(M_PI / 2);
     while (true) {
         for (radians = r1; radians < r2; radians += cRadiansIncrease) {
             auto at = AffineTransform::MakePosScaleRadians(pos, scale, radians);
