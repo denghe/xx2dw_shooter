@@ -28,13 +28,13 @@ struct Scale9Sprite : Node {
 
 		auto& r = frame->textureRect;
 
-		uint16_t tx1 = 0;
-		uint16_t tx2 = center.x;
-		uint16_t tx3 = center.x + center.w;
+		uint16_t tx1 = r.x + 0;
+		uint16_t tx2 = r.x + center.x;
+		uint16_t tx3 = r.x + center.x + center.w;
 
-		uint16_t ty1 = 0;
-		uint16_t ty2 = center.y;
-		uint16_t ty3 = center.y + center.h;
+		uint16_t ty1 = r.y + 0;
+		uint16_t ty2 = r.y + center.y;
+		uint16_t ty3 = r.y + center.y + center.h;
 
 		uint16_t tw1 = center.x;
 		uint16_t tw2 = center.w;

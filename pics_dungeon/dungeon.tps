@@ -1211,6 +1211,21 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">button_1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>2,2,3,4</rect>
+                <key>scale9Paddings</key>
+                <rect>2,2,3,4</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">crosshair_1_1.png</key>
             <key type="filename">mine_1.png</key>
             <key type="filename">mine_2.png</key>
@@ -1404,6 +1419,21 @@
                 <rect>5,4,9,8</rect>
                 <key>scale9Paddings</key>
                 <rect>5,4,9,8</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">laser_1.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>8,9,16,18</rect>
+                <key>scale9Paddings</key>
+                <rect>8,9,16,18</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -2888,6 +2918,8 @@
                     <filename>explosion_6.png</filename>
                     <filename>explosion_7.png</filename>
                     <filename>explosion_8.png</filename>
+                    <filename>button_1.png</filename>
+                    <filename>laser_1.png</filename>
                 </array>
             </struct>
         </map>
