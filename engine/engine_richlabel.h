@@ -25,10 +25,12 @@ struct RichLabel : Node {
 	struct Text : ItemBase {
 		RGBA8 color;
 		xx::List<TinyFrame const*, int32_t> chars;
-		Text(VAligns align, RGBA8 color) {
+		XY scale;
+		Text(VAligns align, RGBA8 color, XY const& scale) {
 			this->type = ItemTypes::Text;
 			this->align = align;
 			this->color = color;
+			this->scale = scale;
 		}
 	};
 
@@ -102,6 +104,7 @@ struct RichLabel : Node {
 	xx::List<Picture*, int32_t> pics;				// for batch draw
 	float width{}, y{}, lineX{}, lineHeight{};
 	int32_t lineItemsCount{};
+	HAligns halign{};	// when line end, horizontal align current line
 
 	RichLabel& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity = 128) {
 		assert(width_ > 0);
@@ -134,16 +137,16 @@ protected:
 		}
 	}
 
-	Text& MakeText(VAligns align, RGBA8 color) {
-		auto& o = AddItem<Text>(align, color);
-		FillXH(o, (float)EngineBase2::Instance().ctcDefault.canvasHeight);
+	Text& MakeText(VAligns align, RGBA8 color, XY const& scale) {
+		auto& o = AddItem<Text>(align, color, scale);
+		FillXH(o, (float)EngineBase2::Instance().ctcDefault.canvasHeight * scale.y);
 		return o;
 	}
 
-	Text& GetLastText(VAligns align, RGBA8 color) {
-		if (items.Empty() || items.Back().Type() != ItemTypes::Text) return MakeText(align, color);
-		if (auto& t = items.Back().As<Text>(); t.align == align && t.color == color) return t;
-		return MakeText(align, color);
+	Text& GetLastText(VAligns align, RGBA8 color, XY const& scale) {
+		if (items.Empty() || items.Back().Type() != ItemTypes::Text) return MakeText(align, color, scale);
+		if (auto& t = items.Back().As<Text>(); t.align == align && t.color == color && t.scale == scale) return t;
+		return MakeText(align, color, scale);
 	}
 
 	void FillY() {
@@ -158,6 +161,15 @@ protected:
 				o.y = y + leftHeight;
 			} else {	// o.align == VAligns::Center
 				o.y = y + leftHeight / 2;
+			}
+		}
+		if (halign != HAligns::Left) {
+			float left = width - lineX;
+			assert(left >= 0);
+			float x = halign == HAligns::Right ? left : left / 2;
+			for (int e = items.len, i = e - lineItemsCount; i < e; ++i) {
+				auto& o = items[i].As<ItemBase>();
+				o.x += x;
 			}
 		}
 	}
@@ -175,7 +187,7 @@ protected:
 
 public:
 
-	RichLabel& AddText(std::u32string_view const& text, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
+	RichLabel& AddText(std::u32string_view const& text, XY const& scale = { 1, 1 }, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
 		auto& ctc = EngineBase2::Instance().ctcDefault;
 		Text* t{};
 		TinyFrame* charFrame{};
@@ -184,16 +196,16 @@ public:
 			if (c == '\r') continue;
 			else if (c == '\n') {
 				NewLine();
-				MakeText(align, color);
+				MakeText(align, color, scale);
 			} else {
 				charFrame = &ctc.Find(c);
-				charWidth = charFrame->texRect.w;
+				charWidth = charFrame->texRect.w * scale.x;
 				leftWidth = width - lineX;
 				if (leftWidth >= charWidth) {
-					t = &GetLastText(align, color);
+					t = &GetLastText(align, color, scale);
 				} else {
 					NewLine();
-					t = &MakeText(align, color);
+					t = &MakeText(align, color, scale);
 				}
 				t->chars.Add(charFrame);
 				lineX += charWidth;
@@ -242,6 +254,13 @@ public:
 		return AddSpace({ x - lineX, 0 });
 	}
 
+	RichLabel& SetHAlign(HAligns a = HAligns::Left) {
+		halign = a;
+		return *this;
+	}
+
+
+
 	// ... more
 
 	RichLabel& Commit() {
@@ -273,9 +292,9 @@ public:
 					q.colorplus = 1;
 					q.pos = pos;
 					q.radians = {};
-					q.scale = { trans.a, trans.d };
+					q.scale = XY{ trans.a, trans.d } * t.scale;
 					q.texRect.data = f->texRect.data;
-					pos.x += f->texRect.w * trans.a;
+					pos.x += f->texRect.w * trans.a * t.scale.x;
 				}
 				break;
 			}

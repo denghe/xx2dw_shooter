@@ -106,6 +106,11 @@ enum class VAligns {
     Center,
     Bottom
 };
+enum class HAligns {
+    Left,
+    Center,
+    Right
+};
 
 enum class SupportedFileFormats {
     Unknown,

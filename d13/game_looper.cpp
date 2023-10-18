@@ -18,6 +18,9 @@ xx::Task<> GameLooper::MainTask() {
 	auto c = RGBA8_Red;
 
 	rn.Emplace()->Init(z, pos, scale, anchor, w)
+		.SetHAlign(HAligns::Center).AddText(U"halign center\n", {2,2})
+		.SetHAlign(HAligns::Right).AddText(U"halign right\n", {0.5, 0.5})
+		.SetHAlign()
 		.AddPicture(frames_gem[0]).AddText(U" this is gem0. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.AddPicture(frames_gem[1]).AddText(U" this is gem1. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.AddPicture(frames_gem[2]).AddText(U" this is gem2. aksd fhkhsd kfhas dfjd kfljslf.\n")
