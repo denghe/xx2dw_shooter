@@ -1,11 +1,14 @@
 ﻿#include <pch.h>
 
 xx::Task<> GameLooper::MainTask() {
-
-	auto frames = LoadTexturePacker("res/dungeon.blist");
+#ifdef __EMSCRIPTEN__
+	auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+#else
+	auto tp = LoadTexturePacker("res/dungeon.blist");
+#endif
 
 	xx::List<xx::Shared<Frame>, int32_t> frames_gem;
-	frames->GetToByPrefix(frames_gem, "icon_gem_");
+	tp->GetToByPrefix(frames_gem, "icon_gem_");
 
 	XY pos{ 0,0 };
 	XY scale{ 1,1 };
@@ -31,8 +34,10 @@ xx::Task<> GameLooper::MainTask() {
 }
 
 void GameLooper::Update() {
+	if (!rn) return;
 }
 
 void GameLooper::Draw() {
+	if (!rn) return;
 	rn->Draw();
 }
