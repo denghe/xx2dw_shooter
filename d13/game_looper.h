@@ -23,19 +23,19 @@ enum class VAligns {
 struct RichNode : Node {
 
 	enum class ItemTypes {
-		Unknown, Block, Text, Picture	// ... more
+		Unknown, Space, Text, Picture	// ... more
 	};
 
 	struct ItemBase {
 		ItemTypes type;
 		VAligns align;
-		float x, y, h;	// fill by utils func
+		float x, y, h;	// changed by  FillXH , FillY
 	};
 
-	struct Block : ItemBase {
+	struct Space : ItemBase {
 		XY size;
-		Block(VAligns align, XY const& size) {
-			this->type = ItemTypes::Block;
+		Space(VAligns align, XY const& size) {
+			this->type = ItemTypes::Space;
 			this->align = align;
 			this->size = size;
 		}
@@ -63,12 +63,12 @@ struct RichNode : Node {
 	// ... more
 
 	struct Item {
-		std::aligned_storage_t<xx::MaxSizeof_v<Block, Text, Picture>, sizeof(size_t)> data;
+		std::aligned_storage_t<xx::MaxSizeof_v<Space, Text, Picture>, sizeof(size_t)> data;
 
 		Item(Item const&) = delete;
 		Item& operator=(Item const&) = delete;
-		Item& operator=(Item&& o) = delete;
-		Item(Item&& o) {
+		Item& operator=(Item&& o) noexcept = delete;
+		Item(Item&& o) noexcept {
 			memcpy(&data, &o.data, sizeof(data));
 			o.Type() = ItemTypes::Unknown;
 		}
@@ -85,7 +85,7 @@ struct RichNode : Node {
 		template<std::derived_from<ItemBase> T>
 		T& As() {
 			auto& ib = (ItemBase&)data;
-			if constexpr (std::same_as<T, Block>) assert(ib.type == ItemTypes::Block);
+			if constexpr (std::same_as<T, Space>) assert(ib.type == ItemTypes::Space);
 			if constexpr (std::same_as<T, Text>) assert(ib.type == ItemTypes::Text);
 			if constexpr (std::same_as<T, Picture>) assert(ib.type == ItemTypes::Picture);
 			return (T&)ib;
@@ -103,8 +103,8 @@ struct RichNode : Node {
 			switch (ib.type) {
 			case ItemTypes::Unknown:
 				break;
-			case ItemTypes::Block:
-				((Block&)ib).~Block();
+			case ItemTypes::Space:
+				((Space&)ib).~Space();
 				break;
 			case ItemTypes::Text:
 				((Text&)ib).~Text();
@@ -139,17 +139,21 @@ protected:
 
 	template<std::derived_from<ItemBase> T, typename ... Args>
 	T& AddItem(Args&& ...args) {
+		++lineItemsCount;
 		return items.Emplace().Emplace<T>(std::forward<Args>(args)...);
 	}
 
-	Text& MakeText(VAligns align, RGBA8 color) {
-		++lineItemsCount;
-		auto& o = AddItem<Text>(align, color);
+	void FillXH(ItemBase& o, float h) {
 		o.x = lineX;
-		o.h = (float)EngineBase2::Instance().ctcDefault.canvasHeight;
-		if (lineHeight < o.h) {
-			lineHeight = o.h;
+		o.h = h;
+		if (lineHeight < h) {
+			lineHeight = h;
 		}
+	}
+
+	Text& MakeText(VAligns align, RGBA8 color) {
+		auto& o = AddItem<Text>(align, color);
+		FillXH(o, (float)EngineBase2::Instance().ctcDefault.canvasHeight);
 		return o;
 	}
 
@@ -159,7 +163,7 @@ protected:
 		return MakeText(align, color);
 	}
 
-	void FillLineY() {
+	void FillY() {
 		y -= lineHeight;
 		for (int e = items.len, i = e - lineItemsCount; i < e; ++i) {
 			auto& o = items[i].As<ItemBase>();
@@ -182,49 +186,73 @@ protected:
 	}
 
 	void NewLine() {
-		FillLineY();
+		FillY();
 		LineInit();
 	}
 
 public:
 
-	RichNode& AddText(std::u32string_view const& text, RGBA8 color = RGBA8_White, VAligns align = VAligns::Bottom) {
+	RichNode& AddText(std::u32string_view const& text, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
 		auto& ctc = EngineBase2::Instance().ctcDefault;
 		Text* t{};
 		TinyFrame* charFrame{};
 		float charWidth, leftWidth{};
 		for (auto& c : text) {
-			charFrame = &ctc.Find(c);
-			charWidth = charFrame->texRect.w;
-			leftWidth = width - lineX;
-			if (leftWidth >= charWidth) {
-				t = &GetLastText(align, color);
-			} else {
+			if (c == '\r') continue;
+			else if (c == '\n') {
 				NewLine();
-				t = &MakeText(align, color);
+				MakeText(align, color);
+			} else {
+				charFrame = &ctc.Find(c);
+				charWidth = charFrame->texRect.w;
+				leftWidth = width - lineX;
+				if (leftWidth >= charWidth) {
+					t = &GetLastText(align, color);
+				} else {
+					NewLine();
+					t = &MakeText(align, color);
+				}
+				t->chars.Add(charFrame);
+				lineX += charWidth;
 			}
-			t->chars.Add(charFrame);
-			lineX += charWidth;
 		}
-
 		return *this;
 	}
 
-	//RichNode& AddPicture(VAligns align, xx::Shared<Quad> quad) {
-	//	++numLineItems;
-	//	new (&items.Emplace().data) Picture(align, std::move(quad));	// quad size need calcucate scale ?
-	//	return *this;
-	//}
+	RichNode& AddPicture(xx::Shared<Quad> quad, VAligns align = VAligns::Center) {
+		assert(quad);
+		quad->anchor = {};
+		auto size = quad->Size();	// scale ?
+		auto leftWidth = width - lineX;
+		if (leftWidth < size.x) {
+			NewLine();
+		}
+		auto& o = AddItem<Picture>(align, std::move(quad));
+		FillXH(o, size.y);
+		lineX += size.x;
+		return *this;
+	}
 
-	//RichNode& AddBlock(VAligns align, XY const& size) {
-	//	++numLineItems;
-	//	items.emplace_back(Block{ align, size});
-	//	return *this;
-	//}
+	RichNode& AddSpace(XY const& size, VAligns align = VAligns::Center) {
+		auto leftWidth = width - lineX;
+		if (leftWidth < size.x) {
+			NewLine();
+		}
+		auto& o = AddItem<Space>(align, size);
+		FillXH(o, size.y);
+		lineX += size.x;
+		return *this;
+	}
+
+	RichNode& AddSpace(float width) {
+		return AddSpace({ width,0 });
+	}
+
+
 	// ... more
 
 	RichNode& Commit() {
-		FillLineY();
+		FillY();
 		size = { width, -y };
 		FillTrans();
 		return *this;
@@ -234,9 +262,13 @@ public:
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
 		XY basePos = trans;
 		basePos.y -= y;
+
+		// todo: batch combine ?
+
 		for (auto& o : items) {
 			switch (o.Type()) {
-			case ItemTypes::Block: {
+			case ItemTypes::Space: {
+				auto& t = o.As<Space>();
 				// todo
 				break;
 			}
@@ -257,7 +289,9 @@ public:
 				break;
 			}
 			case ItemTypes::Picture: {
-				// todo
+				auto& t = o.As<Picture>();
+				auto pos = basePos + XY{ t.x, t.y };
+				t.quad->SetPosition(pos).Draw();
 				break;
 			}
 			default: xx_assert(false);
