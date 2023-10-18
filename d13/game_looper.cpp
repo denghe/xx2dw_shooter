@@ -13,11 +13,11 @@ xx::Task<> GameLooper::MainTask() {
 	XY pos{ 0,0 };
 	XY scale{ 1,1 };
 	XY anchor{ 0.5, 0.5 };
-	int z{ 0 };
 	float w{ 500 };
 	auto c = RGBA8_Red;
 
-	rn.Emplace()->Init(z, pos, scale, anchor, w)
+	node.Emplace()->FillTrans();
+	node->MakeChildren<RichLabel>()->Init(1, pos, scale, anchor, w)
 		.SetHAlign(HAligns::Center).AddText(U"halign center\n", {2,2})
 		.SetHAlign(HAligns::Right).AddText(U"halign right\n", {0.5, 0.5})
 		.SetHAlign()
@@ -32,15 +32,17 @@ xx::Task<> GameLooper::MainTask() {
 		.AddPicture(frames_gem[8]).AddText(U" this is gem8. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.AddPicture(frames_gem[9]).AddText(U" this is gem9. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.Commit();
+	//node->MakeChildren<Scale9Sprite
 
 	co_return;
 }
 
 void GameLooper::Update() {
-	if (!rn) return;
+	if (!node) return;
 }
 
 void GameLooper::Draw() {
-	if (!rn) return;
-	rn->Draw();
+	if (!node) return;
+	FillZNodes(tmpZNodes, node);
+	OrderByZDrawAndClear(tmpZNodes);
 }

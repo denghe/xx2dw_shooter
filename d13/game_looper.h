@@ -8,6 +8,6 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	xx::Task<> MainTask();
 	void Draw();
 
-	xx::Shared<RichLabel> rn;
+	xx::Shared<Node> node;
 };
 extern GameLooper gLooper;

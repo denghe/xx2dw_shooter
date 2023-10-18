@@ -196,7 +196,6 @@ public:
 			if (c == '\r') continue;
 			else if (c == '\n') {
 				NewLine();
-				MakeText(align, color, scale);
 			} else {
 				charFrame = &ctc.Find(c);
 				charWidth = charFrame->texRect.w * scale.x;

@@ -67,6 +67,15 @@ namespace xx {
 
 /**********************************************************************************************/
 /**********************************************************************************************/
+/*
+example:
+
+void GameLooper::Draw() {
+	FillZNodes(tmpZNodes, node);
+	OrderByZDrawAndClear(tmpZNodes);
+
+*/
+
 
 struct ZNode {
 	decltype(Node::z) z;
