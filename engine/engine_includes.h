@@ -101,6 +101,12 @@ void init_gCanvas(int charSize, int width, int height, const char* font);
 #endif
 
 
+enum class VAligns {
+    Top,
+    Center,
+    Bottom
+};
+
 enum class SupportedFileFormats {
     Unknown,
     Webm,

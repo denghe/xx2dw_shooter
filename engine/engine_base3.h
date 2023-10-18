@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <engine_base2.h>
 #include <engine_label.h>
+#include <engine_richlabel.h>
 #include <engine_button.h>
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
