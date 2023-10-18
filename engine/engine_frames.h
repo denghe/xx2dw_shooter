@@ -46,6 +46,28 @@ struct Frames {
         return n;
     }
 
+    template<typename List>
+    void GetTo(List& fs, std::initializer_list<std::string_view> keys) const {
+        for (auto& k : keys) {
+            fs.Emplace(Get(k));
+        }
+    }
+
+    template<typename List>
+    size_t GetToByPrefix(List& fs, std::string_view const& prefix) const {
+        size_t n{};
+        for (auto& f : frames) {
+            if (f->key.starts_with(prefix)) {
+                auto s = f->key.substr(prefix.size());
+                if (s[0] >= '0' && s[0] <= '9') {
+                    fs.Emplace(f);
+                    ++n;
+                }
+            }
+        }
+        return n;
+    }
+
     xx::Shared<Frame> TryGet(std::string_view const& key) const {
         for (auto& f : frames) {
             if (f->key == key) return f;

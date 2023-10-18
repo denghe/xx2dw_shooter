@@ -118,10 +118,11 @@ struct RichNode : Node {
 	};
 
 	xx::List<Item, int32_t> items;
+	xx::List<Picture*, int32_t> pics;				// for batch draw
 	float width{}, y{}, lineX{}, lineHeight{};
 	int32_t lineItemsCount{};
 
-	RichNode& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_) {
+	RichNode& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity = 128) {
 		assert(width_ > 0);
 		z = z_;
 		position = position_;
@@ -132,6 +133,7 @@ struct RichNode : Node {
 
 		LineInit();
 		items.Clear();
+		items.Reserve(capacity);
 		return *this;
 	}
 
@@ -233,6 +235,12 @@ public:
 		return *this;
 	}
 
+	RichNode& AddPicture(xx::Shared<Frame> frame, VAligns align = VAligns::Center) {
+		auto quad = xx::Make<Quad>();
+		quad->SetFrame(std::move(frame));
+		return AddPicture(std::move(quad), align);
+	}
+
 	RichNode& AddSpace(XY const& size, VAligns align = VAligns::Center) {
 		auto leftWidth = width - lineX;
 		if (leftWidth < size.x) {
@@ -262,9 +270,7 @@ public:
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
 		XY basePos = trans;
 		basePos.y -= y;
-
-		// todo: batch combine ?
-
+		pics.Clear();
 		for (auto& o : items) {
 			switch (o.Type()) {
 			case ItemTypes::Space: {
@@ -290,12 +296,16 @@ public:
 			}
 			case ItemTypes::Picture: {
 				auto& t = o.As<Picture>();
-				auto pos = basePos + XY{ t.x, t.y };
-				t.quad->SetPosition(pos).Draw();
+				pics.Add(&t);
 				break;
 			}
 			default: xx_assert(false);
 			}
+		}
+		for (auto& p : pics) {
+			auto& t = *p;
+			auto pos = basePos + XY{ t.x, t.y };
+			t.quad->SetPosition(pos).Draw();
 		}
 	}
 };
