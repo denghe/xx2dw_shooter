@@ -5,11 +5,13 @@ xx2d web version game engine ( also support desktop development )
 c++20 with coroutine
 
 
-#projects
+# projects
 web: ( all in ./CMakeLists.txt )
+
 s*
 
 desktop: ( single project )
+
 d*
 
 
