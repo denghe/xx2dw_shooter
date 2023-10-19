@@ -31,7 +31,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	bool ready{};
 
 	// res
-	std::vector<xx::Shared<Frame>> frames_floor, frames_wall, frames_pumpkin;
+	std::vector<xx::Ref<Frame>> frames_floor, frames_wall, frames_pumpkin;
 
 	// phys
 	SpaceGridAB<BoxObj> sgabWalls;

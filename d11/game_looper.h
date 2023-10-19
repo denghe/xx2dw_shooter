@@ -11,7 +11,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Draw();
 	bool ready{};
 
-	xx::Shared<Frame> frame_button;
+	xx::Ref<Frame> frame_button;
 	xx::Shared<Node> root;
 
 	xx::Shared<KeyComboTest> kct;

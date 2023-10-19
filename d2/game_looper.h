@@ -20,7 +20,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	bool ready{};
 
 	// res
-	std::vector<xx::Shared<Frame>> frames_walls;
+	std::vector<xx::Ref<Frame>> frames_walls;
 
 	// objs
 	xx::List<xx::Shared<Room>, int32_t> rooms;

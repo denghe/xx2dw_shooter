@@ -25,16 +25,16 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	bool ready{};
 
 	// res
-	std::vector<xx::Shared<Frame>> frames_pumpkin;
-	std::vector<xx::Shared<Frame>> frames_weapon;
-	std::vector<xx::Shared<Frame>> frames_number_outlined;
-	std::vector<xx::Shared<Frame>> frames_blood_4;
-	std::vector<xx::Shared<Frame>> frames_icon_gem;
-	std::vector<xx::Shared<Frame>> frames_eye_fire;
-	std::vector<xx::Shared<Frame>> frames_eye_fire_blue;
-	std::vector<xx::Shared<Frame>> frames_fireball_10;
-	std::vector<xx::Shared<Frame>> frames_explosion;
-	std::vector<xx::Shared<Frame>> frames_dragon_babywhite;
+	std::vector<xx::Ref<Frame>> frames_pumpkin;
+	std::vector<xx::Ref<Frame>> frames_weapon;
+	std::vector<xx::Ref<Frame>> frames_number_outlined;
+	std::vector<xx::Ref<Frame>> frames_blood_4;
+	std::vector<xx::Ref<Frame>> frames_icon_gem;
+	std::vector<xx::Ref<Frame>> frames_eye_fire;
+	std::vector<xx::Ref<Frame>> frames_eye_fire_blue;
+	std::vector<xx::Ref<Frame>> frames_fireball_10;
+	std::vector<xx::Ref<Frame>> frames_explosion;
+	std::vector<xx::Ref<Frame>> frames_dragon_babywhite;
 
 	// players
 	xx::Shared<Player> player1;

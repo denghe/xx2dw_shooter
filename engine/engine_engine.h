@@ -204,7 +204,7 @@ int main() {
                 if constexpr(showLog) {
                     printf("LoadTextureFromUrl( %s ) : loaded. nowSecs = %f, size = %d, %d\n", url, nowSecs, tw, th);
                 }
-                co_return xx::Make<GLTexture>(i, tw, th, url);
+                co_return xx::MakeRef<GLTexture>(i, tw, th, url);
             }
         }
         if constexpr(showLog) {
@@ -279,7 +279,7 @@ int main() {
         auto blistData = co_await AsyncDownloadFromUrl<autoDecompress>(blistUrl);
         if (!blistData) co_return xx::Ref<TexturePacker>{};
 
-        auto tp = xx::Make<TexturePacker>();
+        auto tp = xx::MakeRef<TexturePacker>();
         int r = tp->Load(*blistData, blistUrl);
         xx_assert(!r);
 
@@ -295,7 +295,7 @@ int main() {
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
     xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
-        auto map = xx::Make<TMX::Map>();
+        auto map = xx::MakeRef<TMX::Map>();
         // download bmx & fill
         {
             auto sd = co_await AsyncDownloadFromUrl<autoDecompress>(bmxUrl);

@@ -23,8 +23,8 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	bool ready{};
 
 	// res
-	std::vector<std::vector<xx::Shared<Frame>>> frames_heros;
-	std::vector<xx::Shared<Frame>> frames_magicWeapon;
+	std::vector<std::vector<xx::Ref<Frame>>> frames_heros;
+	std::vector<xx::Ref<Frame>> frames_magicWeapon;
 
 	// sprites
 	xx::ListLink<xx::Shared<Hero>, int32_t> heros;

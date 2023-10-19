@@ -6,7 +6,7 @@ struct Sprite {
 	XY pos;
 	float radius{}, radians{};
 	float frameIndex{};
-	std::vector<xx::Shared<Frame>>const* frames{};
+	std::vector<xx::Ref<Frame>>const* frames{};
 	xx::Task<> mainLogic;
 
 	void Draw() const {

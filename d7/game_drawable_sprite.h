@@ -36,7 +36,7 @@ struct Removeable {
 
 	template<typename U = T>
 	static xx::Shared<U> CreateTo(xx::ListDoubleLink<xx::Shared<T>, int32_t, uint32_t>& container) {
-		auto rtv = xx::Make<U>();
+		auto rtv = xx::MakeShared<U>();
 		container.Emplace(rtv);
 		rtv->container = &container;
 		rtv->indexAndVersionByContainer = container.Tail();
@@ -70,7 +70,7 @@ struct Sprite : Drawable {
 	float frameIndex{};
 	bool flipX{};
 
-	std::vector<xx::Shared<Frame>>const* frames{};
+	std::vector<xx::Ref<Frame>>const* frames{};
 
 	xx::Task<> idle;		// need init
 

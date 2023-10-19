@@ -678,7 +678,7 @@ namespace xx {
     template<typename T>
     struct Ref {
         struct Header {
-            uint32_t sharedCount;
+            uint32_t refCount;
             std::aligned_storage_t<sizeof(T), alignof(T)> value;
         };
 
@@ -721,19 +721,6 @@ namespace xx {
             return pointer != nullptr;
         }
 
-        [[maybe_unused]] [[nodiscard]] XX_INLINE bool Empty() const noexcept {
-            return pointer == nullptr;
-        }
-
-        [[maybe_unused]] [[nodiscard]] XX_INLINE bool HasValue() const noexcept {
-            return pointer != nullptr;
-        }
-
-        [[maybe_unused]] [[nodiscard]] XX_INLINE uint32_t GetSharedCount() const noexcept {
-            if (!pointer) return 0;
-            return GetHeader()->sharedCount;
-        }
-
         // unsafe
         [[maybe_unused]] [[nodiscard]] XX_INLINE Header* GetHeader() const noexcept {
             return container_of(pointer, Header, value);
@@ -742,18 +729,14 @@ namespace xx {
         void Reset() {
             if (pointer) {
                 auto h = GetHeader();
-                pointer = nullptr;
-                assert(h->sharedCount);
-                if (h->sharedCount == 1) {
+                assert(h->refCount);
+                if (h->refCount == 1) {
                     ((T*)(&h->value))->~T();
-                    if constexpr (alignof(T) > alignof(max_align_t)) {
-                        _aligned_free(h);
-                    } else {
-                        free(h);
-                    }
-                    h->sharedCount = 0;
+                    pointer = nullptr;
+                    free(h);
                 } else {
-                    --h->sharedCount;
+                    --h->refCount;
+                    pointer = nullptr;
                 }
             }
         }
@@ -763,7 +746,7 @@ namespace xx {
             Reset();
             if (ptr) {
                 pointer = ptr;
-                ++container_of(ptr, Header, value)->sharedCount;
+                ++container_of(ptr, Header, value)->refCount;
             }
         }
 
@@ -776,7 +759,7 @@ namespace xx {
         XX_INLINE Ref(T* ptr) {
             pointer = ptr;
             if (ptr) {
-                ++container_of(ptr, Header, value)->sharedCount;
+                ++container_of(ptr, Header, value)->refCount;
             }
         }
 
@@ -817,10 +800,11 @@ namespace xx {
             Reset();
             Header* h;
             if constexpr (alignof(T) > alignof(max_align_t)) {
-                h = (Header*)_aligned_malloc(sizeof(Header));
+                h = (Header*)aligned_alloc(alignof(T), sizeof(Header));
             } else {
                 h = (Header*)malloc(sizeof(Header));
             }
+            h->refCount = 1;
             new(&h->value) T(std::forward<Args>(args)...);
             pointer = (T*)&h->value;
             return (Ref&)*this;

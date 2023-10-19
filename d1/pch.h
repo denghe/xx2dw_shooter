@@ -69,8 +69,8 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	SpaceGridRingDiffuseData sgrdd;
 
 	// res
-	xx::Shared<Frame> frame_shooter;
-	std::vector<xx::Shared<Frame>>
+	xx::Ref<Frame> frame_shooter;
+	std::vector<xx::Ref<Frame>>
 		frames_monster_1
 		, frames_monster_2
 		, frames_monster_3
