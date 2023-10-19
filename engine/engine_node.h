@@ -44,6 +44,10 @@ struct Node {
 		return r;
 	}
 
+	void Init() {
+		FillTrans();
+	}
+
 	virtual void TransUpdate() {};
 	virtual void Draw() {};									// draw current node only ( do not contain children )
 	virtual ~Node() {};

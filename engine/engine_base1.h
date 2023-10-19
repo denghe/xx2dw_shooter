@@ -225,6 +225,15 @@ struct EngineBase1 : EngineBase0 {
     // for sort
     xx::List<ZNode> tmpZNodes;
 
+    void DrawNode(Node* tar) {
+        FillZNodes(tmpZNodes, tar);
+        OrderByZDrawAndClear(tmpZNodes);
+    }
+
+    /*****************************************************************************************************/
+    /*****************************************************************************************************/
+
+
     EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
         touchMode = false;
         mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2

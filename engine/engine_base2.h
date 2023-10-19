@@ -9,6 +9,7 @@
 #include <engine_dynamictexturepacker.h>
 #include <engine_scale9sprite.h>
 #include <engine_camera.h>
+#include <engine_scene.h>
 
 #ifndef __EMSCRIPTEN__
 #include <engine_bitmapdc.h>
@@ -17,10 +18,44 @@
 struct EngineBase2 : EngineBase1 {
     XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
 
+    // default font cache
     CharTexCache<24> ctcDefault;
+
     FpsViewer fpsViewer;
     bool showFps{ true };
 
+    // current scene
+    xx::Shared<Scene> scene;
+
+    // scene utils
+    template<std::derived_from<Scene> T>
+    xx::Task<> AsyncSwitchTo() {
+        auto newScene = xx::MakeShared<T>();
+        newScene->Init();
+        scene.Reset();
+        scene = std::move(newScene);
+        co_return;
+    }
+
+    template<std::derived_from<Scene> T>
+    void DelaySwitchTo() {
+        tasks.Add(AsyncSwitchTo<T>());
+    }
+
+    // default Update & Draw for scene
+    void Update() {
+        if (!scene) return;
+        scene->Update();
+        scene->tasks();
+    }
+
+    void Draw() {
+        if (!scene) return;
+        scene->Draw();
+    }
+
+
+    // other utils
     std::optional<std::pair<MoveDirections, XY>> GetKeyboardMoveInc() {
         union Dirty {
             struct {

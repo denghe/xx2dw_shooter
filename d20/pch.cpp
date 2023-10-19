@@ -1,5 +1,5 @@
 #include <pch.h>
-#include <game_looper.h>
+#include <all.h>
 
 
 #ifndef __EMSCRIPTEN__
@@ -34,7 +34,7 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d13";
+	gLooper.title = "xx2dw_d20";
 	gLooper.Init();
 	gLooper.Run();
 }

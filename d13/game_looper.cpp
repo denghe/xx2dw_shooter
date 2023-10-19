@@ -1,4 +1,5 @@
 ﻿#include <pch.h>
+#include <game_looper.h>
 
 xx::Task<> GameLooper::MainTask() {
 #ifdef __EMSCRIPTEN__

@@ -87,13 +87,4 @@ struct Engine : EngineBase3 {
         }
     }
 
-
-    // task utils
-    xx::Task<> AsyncSleep(double secs) {
-        auto e = nowSecs + secs;
-        do {
-            co_yield 0;
-        } while (nowSecs < e);
-    }
-
 };
