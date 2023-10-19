@@ -19,26 +19,26 @@ struct FrameBuffer {
         return *this;
     }
 
-    inline static xx::Shared<GLTexture> MakeTexture(Vec2<uint32_t> const& wh, bool hasAlpha = true) {
-        return xx::Make<GLTexture>(GLTexture::Create(wh.x, wh.y, hasAlpha));
+    inline static xx::Ref<GLTexture> MakeTexture(Vec2<uint32_t> const& wh, bool hasAlpha = true) {
+        return xx::MakeRef<GLTexture>(GLTexture::Create(wh.x, wh.y, hasAlpha));
     }
 
     template<typename Func>
-    void DrawTo(xx::Shared<GLTexture>& t, std::optional<RGBA8> const& c, Func&& func) {
+    void DrawTo(xx::Ref<GLTexture>& t, std::optional<RGBA8> const& c, Func&& func) {
         Begin(t, c);
         func();
         End();
     }
 
     template<typename Func>
-    xx::Shared<GLTexture> Draw(Vec2<uint32_t> const& wh, bool hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
+    xx::Ref<GLTexture> Draw(Vec2<uint32_t> const& wh, bool hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
         auto t = MakeTexture(wh, hasAlpha);
         DrawTo(t, c, std::forward<Func>(func));
         return t;
     }
 
 protected:
-    void Begin(xx::Shared<GLTexture>& t, std::optional<RGBA8> const& c = {}) {
+    void Begin(xx::Ref<GLTexture>& t, std::optional<RGBA8> const& c = {}) {
         auto& ge = EngineBase1::Instance();
         ge.ShaderEnd();
         bak = ge.windowSize;

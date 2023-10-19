@@ -7,7 +7,7 @@ struct RepeatQuad {
 	float texOffsetXPercentage{};
 
 	template<bool forceOverrideTexRectId = false>
-	XX_FORCE_INLINE RepeatQuad& SetFrame(xx::Shared<Frame> f) {
+	XX_FORCE_INLINE RepeatQuad& SetFrame(xx::Ref<Frame> f) {
 		q.SetFrame<forceOverrideTexRectId>(std::move(f));
 		return *this;
 	}

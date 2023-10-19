@@ -5,7 +5,7 @@
 
 // sprite frame
 struct Frame {
-    xx::Shared<GLTexture> tex;
+    xx::Ref<GLTexture> tex;
     std::string key;
     // std::vector<std::string> aliases;	// unused
     std::optional<XY> anchor;
@@ -20,8 +20,8 @@ struct Frame {
     std::vector<float> verticesUV;
 
     // single texture -> frame
-    inline xx::Shared<Frame> static Create(xx::Shared<GLTexture> t) {
-        auto f = xx::Make<Frame>();
+    inline xx::Ref<Frame> static Create(xx::Ref<GLTexture> t) {
+        auto f = xx::MakeRef<Frame>();
         f->key = t->FileName();
         f->anchor = { 0.5, 0.5 };
         f->textureRotated = false;
@@ -35,13 +35,13 @@ struct Frame {
 
 // frame's tiny version
 struct TinyFrame {
-    xx::Shared<GLTexture> tex;
+    xx::Ref<GLTexture> tex;
     UVRect texRect{};
 };
 
 
 struct AnimFrame {
-    xx::Shared<Frame> frame;
+    xx::Ref<Frame> frame;
     float durationSeconds;
 };
 

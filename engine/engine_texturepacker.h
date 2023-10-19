@@ -13,7 +13,6 @@ struct TexturePacker : Frames {
         realTextureFileName.clear();
         plistUrl = plistUrl_;
 
-        auto tp = xx::Make<TexturePacker>();
         std::string rootPath;
         if (auto&& i = plistUrl.find_last_of("/"); i != plistUrl.npos) {
             rootPath = plistUrl.substr(0, i + 1);
@@ -22,7 +21,7 @@ struct TexturePacker : Frames {
         size_t numFrames{};
         if (int r = dr.Read(premultiplyAlpha, realTextureFileName, numFrames)) return r;
         for (size_t i = 0; i < numFrames; ++i) {
-            auto f = xx::Make<Frame>();
+            auto f = xx::MakeRef<Frame>();
             if (int r = dr.Read(f->key, f->anchor)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteOffset.x, (xx::RWFloatUInt16&)f->spriteOffset.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSize.x, (xx::RWFloatUInt16&)f->spriteSize.y)) return r;

@@ -165,7 +165,7 @@ namespace TMX {
 		uint32_t width;
 		uint32_t height;
 		std::optional<RGBA8> transparentColor;	// trans="ff00ff"
-		xx::Shared<GLTexture> texture;
+		xx::Ref<GLTexture> texture;
 	};
 
 	struct Layer_Image : Layer {
@@ -345,9 +345,9 @@ namespace TMX {
 			return tile && tile->image == image;
 		}
 
-		xx::Shared<Anim> anim;
-		xx::Shared<::Frame> frame;
-		xx::Shared<::Frame> const& GetFrame() const {
+		xx::Ref<::Anim> anim;
+		xx::Ref<::Frame> frame;
+		xx::Ref<::Frame> const& GetFrame() const {
 			if (anim) return anim->GetCurrentAnimFrame().frame;
 			else return frame;
 		}
@@ -394,8 +394,8 @@ namespace TMX {
 		/****************************************************/
 		// ext
 		std::vector<xx::Shared<Image>> images;											// all textures here
-		std::vector<GidInfo> gidInfos;														// all gid info here. index == gid
-		std::vector<Anim*> anims;														// point to all gid info's anim for easy update anims
+		std::vector<GidInfo> gidInfos;													// all gid info here. index == gid
+		std::vector<::Anim*> anims;														// point to all gid info's anim for easy update anims
 		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
 
 		void FillExts();																// fill above containers
@@ -473,7 +473,7 @@ namespace TMX {
 		return &gidInfos[gid];
 	}
 
-	// need fill images GLTexture first
+	// need fill images GLTexture first if needed
 	inline void Map::FillExts() {
 		gidInfos.clear();
 		anims.clear();
@@ -519,7 +519,9 @@ namespace TMX {
 
 					auto& f = info.frame.Emplace();
 					f->tex = info.image->texture;
-					f->key = f->tex->FileName();
+					if (f->tex) {
+						f->key = f->tex->FileName();
+					}
 					f->anchor = { 0.5, 0.5 };
 					if (info.IsSingleImage()) {
 						auto w = (float)info.image->width;

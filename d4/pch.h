@@ -62,14 +62,14 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 
 
 	// tiled map container
-	xx::Shared<TMX::Map> tiledMap;
+	xx::Ref<TMX::Map> tiledMap;
 	int32_t tileWidth{}, tileHeight{}, tileWidth_2{}, tileHeight_2{};
 	TMX::Layer_Tile* layerBG{}, *layerTrees{};
 	Camera camera;
 
 	// res
-	xx::Shared<Frame> frame_shooter, frame_tree;
-	std::vector<xx::Shared<Frame>>
+	xx::Ref<Frame> frame_shooter, frame_tree;
+	std::vector<xx::Ref<Frame>>
 		frames_monster_1, frames_monster_2, frames_monster_3
 		, frames_explosion, frames_bullets;
 	// ...

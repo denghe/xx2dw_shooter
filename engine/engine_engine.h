@@ -190,7 +190,7 @@ int main() {
     }
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<xx::Shared<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
+    xx::Task<xx::Ref<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
         if constexpr(showLog) {
             printf("LoadTextureFromUrl( %s ) : begin. nowSecs = %f\n", url, nowSecs);
         }
@@ -210,12 +210,12 @@ int main() {
         if constexpr(showLog) {
             printf("LoadTextureFromUrl( %s ) : timeout. timeoutSeconds = %d\n", url, timeoutSeconds);
         }
-        co_return xx::Shared<GLTexture>{};
+        co_return xx::Ref<GLTexture>{};
     }
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<std::vector<xx::Shared<GLTexture>>> AsyncLoadTexturesFromUrls(std::initializer_list<char const*> urls) {
-        std::vector<xx::Shared<GLTexture>> rtv;
+    xx::Task<std::vector<xx::Ref<GLTexture>>> AsyncLoadTexturesFromUrls(std::initializer_list<char const*> urls) {
+        std::vector<xx::Ref<GLTexture>> rtv;
         rtv.resize(urls.size());
         size_t counter = 0;
         for (size_t i = 0; i < urls.size(); ++i) {
@@ -229,19 +229,19 @@ int main() {
     }
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<xx::Shared<Frame>> AsyncLoadFrameFromUrl(char const* url) {
+    xx::Task<xx::Ref<Frame>> AsyncLoadFrameFromUrl(char const* url) {
         co_return Frame::Create(co_await AsyncLoadTextureFromUrl<showLog, timeoutSeconds>(url));
     }
 
     // todo: timeout support
     template<bool autoDecompress = false>
-    xx::Task<xx::Shared<xx::Data>> AsyncDownloadFromUrl(char const* url) {
+    xx::Task<xx::Ref<xx::Data>> AsyncDownloadFromUrl(char const* url) {
         emscripten_fetch_attr_t attr;
         emscripten_fetch_attr_init(&attr);
         strcpy(attr.requestMethod, "GET");
         attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
 
-        using UD = std::pair<bool*, xx::Shared<xx::Data>*>;
+        using UD = std::pair<bool*, xx::Ref<xx::Data>*>;
 
         attr.onsuccess = [](emscripten_fetch_t* fetch) {
             UD& ud = *(UD*)fetch->userData;
@@ -256,7 +256,7 @@ int main() {
             emscripten_fetch_close(fetch);
         };
 
-        xx::Shared<xx::Data> sd;
+        xx::Ref<xx::Data> sd;
         bool callbacked = false;
         UD ud = { &callbacked, &sd };
         attr.userData = &ud;
@@ -275,9 +275,9 @@ int main() {
 
     // blist == texture packer export cocos plist file's bin version, use xx2d's tools: plist 2 blist convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Shared<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* blistUrl) {
+    xx::Task<xx::Ref<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* blistUrl) {
         auto blistData = co_await AsyncDownloadFromUrl<autoDecompress>(blistUrl);
-        if (!blistData) co_return xx::Shared<TexturePacker>{};
+        if (!blistData) co_return xx::Ref<TexturePacker>{};
 
         auto tp = xx::Make<TexturePacker>();
         int r = tp->Load(*blistData, blistUrl);
@@ -294,7 +294,7 @@ int main() {
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Shared<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
+    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
         auto map = xx::Make<TMX::Map>();
         // download bmx & fill
         {

@@ -9,7 +9,7 @@ struct CharTexCache {
     static constexpr int charSize = charSize_, canvasWidth = canvasWidth_, canvasHeight = canvasHeight_, texWidth = texWidth_, texHeight = texHeight_;
     static constexpr int canvasWidth_2 = canvasWidth / 2, canvasHeight_2 = canvasHeight / 2;
     static constexpr float padding = 1;
-    std::vector<xx::Shared<GLTexture>> texs;
+    std::vector<xx::Ref<GLTexture>> texs;
     Quad cq;
     FrameBuffer fb;
     XY p{ 0, texHeight - 1 };
@@ -23,7 +23,7 @@ struct CharTexCache {
         init_gCanvas(charSize, canvasWidth, canvasHeight, font);
 
         texs.emplace_back(FrameBuffer::MakeTexture({ texWidth, texHeight }));
-        auto ct = xx::Make<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
+        auto ct = xx::MakeRef<GLTexture>(GLGenTextures<true>(), canvasWidth, canvasHeight, "");
         cq.SetFrame(Frame::Create(std::move(ct))).SetAnchor({ 0, 1 });
 
         for (char32_t c = 0; c < 256; ++c) {

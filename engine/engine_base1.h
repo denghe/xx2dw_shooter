@@ -171,23 +171,23 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     template<bool autoDecompress = false>
-    xx::Shared<GLTexture> LoadTexture(std::string_view const& fn) {
+    xx::Ref<GLTexture> LoadTexture(std::string_view const& fn) {
         auto [d, p] = LoadFileData<autoDecompress>(fn);
         xx_assert(d);
-        return xx::Make<GLTexture>(LoadGLTexture(d, p));
+        return xx::MakeRef<GLTexture>(LoadGLTexture(d, p));
     }
 
     template<bool autoDecompress = false>
-    xx::Shared<Frame> LoadFrame(std::string_view const& fn) {
+    xx::Ref<Frame> LoadFrame(std::string_view const& fn) {
         return Frame::Create(LoadTexture<autoDecompress>(fn));
     }
 
     template<bool autoDecompress = false>
-    xx::Shared<TexturePacker> LoadTexturePacker(std::string_view const& fn) {
+    xx::Ref<TexturePacker> LoadTexturePacker(std::string_view const& fn) {
         auto [blistData, fp] = LoadFileData<autoDecompress>(fn);
         xx_assert(blistData);
 
-        auto tp = xx::Make<TexturePacker>();
+        auto tp = xx::MakeRef<TexturePacker>();
         int r = tp->Load(blistData, fp);
         xx_assert(!r);
 
@@ -201,8 +201,8 @@ struct EngineBase1 : EngineBase0 {
     }
 
     template<bool autoDecompress = false>
-    xx::Shared<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
-        auto map = xx::Make<TMX::Map>();
+    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
+        auto map = xx::MakeRef<TMX::Map>();
         {
             auto [d, fp] = LoadFileData<autoDecompress>(bmxPath);
             xx_assert(d);

@@ -15,7 +15,7 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Label> lbl;
 	xx::Shared<Scale9Sprite> bg;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
 		anchor = anchor_;

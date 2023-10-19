@@ -2,13 +2,13 @@
 #include <engine_node.h>
 
 struct Scale9Sprite : Node {
-	xx::Shared<Frame> frame;
+	xx::Ref<Frame> frame;
 	UVRect center;
 	RGBA8 color;
 	float texScale;
 	float colorplus;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, XY const& size_, xx::Shared<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colorplus_ = 1) {
+	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, XY const& size_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colorplus_ = 1) {
 		assert(size_.x > 6 && size_.y > 8);
 		z = z_;
 		position = position_;

@@ -35,8 +35,8 @@ struct RichLabel : Node {
 	};
 
 	struct Picture : ItemBase {
-		xx::Shared<Quad> quad;
-		Picture(VAligns align, xx::Shared<Quad> quad) {
+		xx::Ref<Quad> quad;
+		Picture(VAligns align, xx::Ref<Quad> quad) {
 			this->type = ItemTypes::Picture;
 			this->align = align;
 			this->quad = std::move(quad);
@@ -46,7 +46,7 @@ struct RichLabel : Node {
 	// ... more
 
 	struct Item {
-		std::aligned_storage_t<xx::MaxSizeof_v<Space, Text, Picture>, sizeof(size_t)> data;
+		std::aligned_storage_t<xx::MaxSizeof_v<Space, Text, Picture>> data;
 
 		Item(Item const&) = delete;
 		Item& operator=(Item const&) = delete;
@@ -213,7 +213,7 @@ public:
 		return *this;
 	}
 
-	RichLabel& AddPicture(xx::Shared<Quad> quad, VAligns align = VAligns::Center) {
+	RichLabel& AddPicture(xx::Ref<Quad> quad, VAligns align = VAligns::Center) {
 		assert(quad);
 		quad->anchor = {};
 		auto size = quad->Size();	// scale ?
@@ -227,8 +227,8 @@ public:
 		return *this;
 	}
 
-	RichLabel& AddPicture(xx::Shared<Frame> frame, VAligns align = VAligns::Center) {
-		auto quad = xx::Make<Quad>();
+	RichLabel& AddPicture(xx::Ref<Frame> frame, VAligns align = VAligns::Center) {
+		auto quad = xx::MakeRef<Quad>();
 		quad->SetFrame(std::move(frame));
 		return AddPicture(std::move(quad), align);
 	}

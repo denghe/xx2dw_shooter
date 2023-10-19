@@ -3,11 +3,11 @@
 
 // sprite
 struct Quad : QuadInstanceData {
-    xx::Shared<Frame> frame;
+    xx::Ref<Frame> frame;
     GLuint texId{};   // cache: == *frame->tex
 
     template<bool forceOverrideTexRectId = false>
-    XX_FORCE_INLINE Quad& SetFrame(xx::Shared<Frame> f) {
+    XX_FORCE_INLINE Quad& SetFrame(xx::Ref<Frame> f) {
         assert(f);
         assert(f->tex);
         if constexpr (!forceOverrideTexRectId) {

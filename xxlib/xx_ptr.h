@@ -550,7 +550,7 @@ namespace xx {
 
 
     template<typename T, typename...Args>
-    [[maybe_unused]] [[nodiscard]] Shared<T> Make(Args &&...args) {
+    [[maybe_unused]] [[nodiscard]] Shared<T> MakeShared(Args &&...args) {
         Shared<T> rtv;
         rtv.Emplace(std::forward<Args>(args)...);
         //std::cout << "Make<" << xx::TypeName<T>() << ">.pointer = " << (size_t)rtv.pointer << std::endl;
@@ -558,7 +558,7 @@ namespace xx {
     }
 
     template<typename T, typename ...Args>
-    Shared<T> TryMake(Args &&...args) noexcept {
+    Shared<T> TryMakeShared(Args &&...args) noexcept {
         try {
             return Make<T>(std::forward<Args>(args)...);
         }
@@ -568,13 +568,13 @@ namespace xx {
     }
 
     template<typename T, typename ...Args>
-    Shared<T> &MakeTo(Shared<T> &v, Args &&...args) {
+    Shared<T> &MakeSharedTo(Shared<T> &v, Args &&...args) {
         v = Make<T>(std::forward<Args>(args)...);
         return v;
     }
 
     template<typename T, typename ...Args>
-    Shared<T> &TryMakeTo(Shared<T> &v, Args &&...args) noexcept {
+    Shared<T> &TryMakeSharedTo(Shared<T> &v, Args &&...args) noexcept {
         v = TryMake<T>(std::forward<Args>(args)...);
         return v;
     }
@@ -665,9 +665,204 @@ namespace xx {
         }
     };
 
+
+
+
+
+
+
+
+    /************************************************************************************/
+    // tiny version Shared ( no deleter & weak )
+
+    template<typename T>
+    struct Ref {
+        struct Header {
+            uint32_t sharedCount;
+            std::aligned_storage_t<sizeof(T), alignof(T)> value;
+        };
+
+        using ElementType = T;
+        T* pointer = nullptr;
+
+        XX_INLINE operator T* const& () const noexcept {
+            return pointer;
+        }
+
+        XX_INLINE operator T*& () noexcept {
+            return pointer;
+        }
+
+        XX_INLINE T* const& operator->() const noexcept {
+            return pointer;
+        }
+
+        XX_INLINE T const& Value() const noexcept {
+            return *pointer;
+        }
+
+        XX_INLINE T& Value() noexcept {
+            return *pointer;
+        }
+
+        template<typename ...Args>
+        XX_INLINE decltype(auto) operator()(Args&&...args) {
+            return (*pointer)(std::forward<Args>(args)...);
+        }
+
+        XX_INLINE auto& operator[](size_t idx) {
+            return pointer->operator[](idx);
+        }
+        XX_INLINE auto const& operator[](size_t idx) const {
+            return pointer->operator[](idx);
+        }
+
+        [[maybe_unused]] [[nodiscard]] XX_INLINE operator bool() const noexcept {
+            return pointer != nullptr;
+        }
+
+        [[maybe_unused]] [[nodiscard]] XX_INLINE bool Empty() const noexcept {
+            return pointer == nullptr;
+        }
+
+        [[maybe_unused]] [[nodiscard]] XX_INLINE bool HasValue() const noexcept {
+            return pointer != nullptr;
+        }
+
+        [[maybe_unused]] [[nodiscard]] XX_INLINE uint32_t GetSharedCount() const noexcept {
+            if (!pointer) return 0;
+            return GetHeader()->sharedCount;
+        }
+
+        // unsafe
+        [[maybe_unused]] [[nodiscard]] XX_INLINE Header* GetHeader() const noexcept {
+            return container_of(pointer, Header, value);
+        }
+
+        void Reset() {
+            if (pointer) {
+                auto h = GetHeader();
+                pointer = nullptr;
+                assert(h->sharedCount);
+                if (h->sharedCount == 1) {
+                    ((T*)(&h->value))->~T();
+                    if constexpr (alignof(T) > alignof(max_align_t)) {
+                        _aligned_free(h);
+                    } else {
+                        free(h);
+                    }
+                    h->sharedCount = 0;
+                } else {
+                    --h->sharedCount;
+                }
+            }
+        }
+
+        void Reset(T* ptr) {
+            if (pointer == ptr) return;
+            Reset();
+            if (ptr) {
+                pointer = ptr;
+                ++container_of(ptr, Header, value)->sharedCount;
+            }
+        }
+
+        XX_INLINE ~Ref() {
+            Reset();
+        }
+
+        Ref() = default;
+
+        XX_INLINE Ref(T* ptr) {
+            pointer = ptr;
+            if (ptr) {
+                ++container_of(ptr, Header, value)->sharedCount;
+            }
+        }
+
+        XX_INLINE Ref(Ref const& o) : Ref(o.pointer) {}
+
+        XX_INLINE Ref(Ref&& o) noexcept {
+            pointer = o.pointer;
+            o.pointer = nullptr;
+        }
+
+        XX_INLINE Ref& operator=(T* ptr) {
+            Reset(ptr);
+            return *this;
+        }
+
+        XX_INLINE Ref& operator=(Ref const& o) {
+            Reset(o.pointer);
+            return *this;
+        }
+
+        XX_INLINE Ref& operator=(Ref&& o) {
+            std::swap(pointer, o.pointer);
+            return *this;
+        }
+
+        template<typename U>
+        XX_INLINE bool operator==(Ref<U> const& o) const noexcept {
+            return pointer == o.pointer;
+        }
+
+        template<typename U>
+        XX_INLINE bool operator!=(Ref<U> const& o) const noexcept {
+            return pointer != o.pointer;
+        }
+
+        template<typename...Args>
+        Ref& Emplace(Args &&...args) {
+            Reset();
+            Header* h;
+            if constexpr (alignof(T) > alignof(max_align_t)) {
+                h = (Header*)_aligned_malloc(sizeof(Header));
+            } else {
+                h = (Header*)malloc(sizeof(Header));
+            }
+            new(&h->value) T(std::forward<Args>(args)...);
+            pointer = (T*)&h->value;
+            return (Ref&)*this;
+        }
+
+    };
+
+
+    /************************************************************************************/
+    // helpers
+
+    template<typename T>
+    struct IsPod<Ref<T>, void> : std::true_type {};
+
+    template<typename T>
+    struct IsRef : std::false_type {};
+    template<typename T>
+    struct IsRef<Ref<T>> : std::true_type {};
+    template<typename T>
+    struct IsRef<Ref<T>&> : std::true_type {};
+    template<typename T>
+    struct IsRef<Ref<T> const&> : std::true_type {};
+    template<typename T>
+    constexpr bool IsRef_v = IsRef<T>::value;
+
+    template<typename T, typename...Args>
+    [[maybe_unused]] [[nodiscard]] Ref<T> MakeRef(Args &&...args) {
+        Ref<T> rtv;
+        rtv.Emplace(std::forward<Args>(args)...);
+        return rtv;
+    }
+
+    // unsafe
+    template<typename T>
+    Ref<T>& RefFromThis(T* thiz) {
+        assert(thiz);
+        return (Ref<T>&)thiz;
+    }
+
 }
 
-// 令 Shared Weak 支持放入 hash 容器
+// let Shared Weak Ref support std hash container
 namespace std {
     template<typename T>
     struct hash<xx::Shared<T>> {
@@ -680,6 +875,13 @@ namespace std {
     struct hash<xx::Weak<T>> {
         size_t operator()(xx::Weak<T> const &v) const {
             return (size_t) v.h;
+        }
+    };
+
+    template<typename T>
+    struct hash<xx::Ref<T>> {
+        size_t operator()(xx::Ref<T> const &v) const {
+            return (size_t) v.pointer;
         }
     };
 }

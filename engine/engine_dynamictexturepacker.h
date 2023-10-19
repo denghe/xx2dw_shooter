@@ -16,7 +16,7 @@ struct DynamicTexturePacker : Frames {
     // need ogl frame env
     // return true: success
     template<bool newFrame = false>
-    bool Fill(std::vector<xx::Shared<Frame>>& subFrames) {
+    bool Fill(std::vector<xx::Ref<Frame>>& subFrames) {
         using namespace rect_pack_2d;
         frames.clear();
         frames.reserve(subFrames.size());
@@ -42,7 +42,7 @@ struct DynamicTexturePacker : Frames {
                 Quad q;
                 q.SetAnchor({ 0, 1 });
                 for (auto& r : bin.rects) {
-                    auto& sf = *(xx::Shared<Frame>*)r->ud;
+                    auto& sf = *(xx::Ref<Frame>*)r->ud;
                     q.SetPosition(basePos + XY{ r->x, -r->y }).SetFrame(sf).Draw();
                     if constexpr (newFrame) {
                         auto&& f = frames.emplace_back().Emplace();
@@ -62,8 +62,8 @@ struct DynamicTexturePacker : Frames {
         return true;
     }
 
-    bool Fill(std::vector<xx::Shared<GLTexture>> const& subTexs) {
-        std::vector<xx::Shared<Frame>> fs;
+    bool Fill(std::vector<xx::Ref<GLTexture>> const& subTexs) {
+        std::vector<xx::Ref<Frame>> fs;
         fs.reserve(subTexs.size());
         for (auto& t : subTexs) {
             fs.emplace_back(Frame::Create(t));

@@ -7,7 +7,7 @@ xx::Task<> GameLooper::MainTask() {
 	auto tp = LoadTexturePacker("res/dungeon.blist");
 #endif
 
-	xx::List<xx::Shared<Frame>, int32_t> frames_gem;
+	xx::List<xx::Ref<Frame>, int32_t> frames_gem;
 	tp->GetToByPrefix(frames_gem, "icon_gem_");
 
 	auto& frame_button = tp->Get("button_1");

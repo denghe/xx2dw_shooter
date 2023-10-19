@@ -181,11 +181,11 @@ struct MovePath {
 };
 
 struct MovePathSteper {
-    xx::Shared<MovePath> mp;
+    xx::Ref<MovePath> mp;
     size_t cursor{};	// mp[ index ]
     float cursorDistance{};	// forward
 
-    void Init(xx::Shared<MovePath> mp) {
+    void Init(xx::Ref<MovePath> mp) {
         this->mp = std::move(mp);
         cursor = {};
         cursorDistance = {};
