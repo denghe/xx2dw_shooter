@@ -186,14 +186,14 @@ namespace xx {
 		// ll.Foreach( [&](auto& o) { o..... } );
 		// ll.Foreach( [&](auto& o)->bool { if ( o.... ) return ... } );
 		template<typename F>
-		void Foreach(F&& f) {
-			if constexpr (std::is_void_v<decltype(f(buf[0].value))>) {
+		void Foreach(F&& func) {
+			if constexpr (std::is_void_v<decltype(func(buf[0].value))>) {
 				for (auto idx = head; idx != -1; idx = Next(idx)) {
-					f(buf[idx].value);
+					func(buf[idx].value);
 				}
 			} else {
 				for (SizeType prev = -1, next, idx = head; idx != -1;) {
-					if (f(buf[idx].value)) {
+					if (func(buf[idx].value)) {
 						next = Remove(idx, prev);
 					} else {
 						next = Next(idx);
@@ -206,9 +206,9 @@ namespace xx {
 
 		// ll.FindIf( [&](auto& o)->bool { if ( o.... ) return ... } );
 		template<typename F>
-		std::pair<SizeType, SizeType> FindIf(F&& f) {
+		std::pair<SizeType, SizeType> FindIf(F&& func) {
 			for (SizeType prev = -1, next, idx = head; idx != -1;) {
-				if (f(buf[idx].value)) return {idx, prev};
+				if (func(buf[idx].value)) return {idx, prev};
 				else {
 					next = Next(idx);
 					prev = idx;

@@ -7,7 +7,7 @@ void ScenePlay::Init() {
 
 	auto& btn1 = rootNode->MakeChildren<Button>();
 
-	btn1->Init(1, { 0, 100 }, { 0.5f, 0.5f }
+	btn1->Init(1, { 0, 200 }, { 0.5f, 0.5f }
 		, 2, gLooper.frame_button, { 2,3,2,2 }
 		, { 0x5f, 0x15, 0xd9, 0xff }
 		, U"Exit Game");
