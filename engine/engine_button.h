@@ -28,7 +28,14 @@ struct Button : MouseEventHandlerNode {
 		bg = MakeChildren<Scale9Sprite>();
 		bg->Init(z + 1, {}, {}, texScale_, size, std::move(frame_), center_, color_);
 
+
 		FillTransRecursive();
+	}
+
+	template<typename F>
+	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_, F&& callback) {
+		Init(z_, position_, anchor_, texScale_, frame_, center_, color_, txt_);
+		onClicked = std::forward<F>(callback);
 	}
 
 	xx::TaskGuard bgChangeColorplus;
