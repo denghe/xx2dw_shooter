@@ -15,6 +15,7 @@ xx::Task<> GameLooper::MainTask() {
 		tp->GetToByPrefix(frames_blood_4        , "blood_4_"        );
 		tp->GetToByPrefix(frames_border_1       , "border_1_"       );
 		tp->GetToByPrefix(frames_border_2       , "border_2_"       );
+		tp->GetToByPrefix(frames_border_3       , "border_3_"       );
 		tp->GetToByPrefix(frames_bullet         , "bullet_"         );
 		tp->GetToByPrefix(frames_cheses_1       , "cheses_1_"       );
 		tp->GetToByPrefix(frames_cheses_2       , "cheses_2_"       );
@@ -62,6 +63,7 @@ xx::Task<> GameLooper::MainTask() {
 
 		frame_border_1_2322 = frames_border_1[0];
 		frame_border_2_4522 = frames_border_2[0];
+		frame_border_3_1122 = frames_border_3[0];
 		frame_dot_1_22 = frames_dot_1[0];
 		frame_no = frames_no[0];
 		frame_yes = frames_yes[0];
@@ -78,9 +80,10 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg_panel.center = { 4, 5, 2, 2 };
 	s9cfg_panel.color = RGBA8_White;
 
-	s9cfg_hp = s9cfg_panel;
-	s9cfg_hp.texScale = 0.5;
-	s9cfg_hp.color = {127,0,0,255};
+	s9cfg_hp.frame = frame_border_3_1122;
+	s9cfg_hp.texScale = 1;
+	s9cfg_hp.center = { 1, 1, 2, 2 };
+	s9cfg_hp.color = {90,90,90,255};
 
 	co_await AsyncSwitchTo<SceneMainMenu>();
 }

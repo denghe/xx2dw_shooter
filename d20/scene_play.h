@@ -2,7 +2,7 @@
 #include <game_looper.h>
 
 struct Hero : Quad {
-	static constexpr float cBarHeight{ 7 };
+	static constexpr float cBarHeight{ 6 };
 
 	float hp{}, maxHP{};
 	Quad hpBar;
@@ -23,7 +23,7 @@ struct Hero : Quad {
 
 		hpBar
 			.SetFrame(gLooper.frame_dot_1_22)
-			.SetColor(RGBA8_Red)
+			.SetColor({204,0,0,255})
 			.SetAnchor({ 0, 0.5 });
 
 		Update();
