@@ -11,6 +11,10 @@ struct Node {
 	int z{};													// global z for event priority or batch combine
 	bool visible{ true };
 
+	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
+		return size * scale + padding;
+	}
+
 	// for init
 	XX_FORCE_INLINE void FillTrans() {
 		if (parent) {
@@ -44,7 +48,7 @@ struct Node {
 		return r;
 	}
 
-	void Init() {
+	XX_FORCE_INLINE void Init() {
 		FillTrans();
 	}
 

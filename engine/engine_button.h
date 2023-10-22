@@ -15,26 +15,25 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Label> lbl;
 	xx::Shared<Scale9Sprite> bg;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
 		anchor = anchor_;
 
-		XY cornerSize{ float(frame_->textureRect.w - center_.w), float(frame_->textureRect.h - center_.h) };
+		auto cornerSize = cfg_.GetCornerSize();
 		lbl = MakeChildren<Label>();
-		lbl->Init(z + 2, (cornerSize + cTextPadding) / 2, { 1,1 }, {}, RGBA8_White, txt_);
+		lbl->Init(z + 1, (cornerSize + cTextPadding) / 2, { 1,1 }, {}, RGBA8_White, txt_);
 		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
-		bg->Init(z + 1, {}, {}, texScale_, size, std::move(frame_), center_, color_);
-
+		bg->Init(z, {}, {}, size, cfg_);
 
 		FillTransRecursive();
 	}
 
 	template<typename F>
-	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_, std::u32string_view const& txt_, F&& callback) {
-		Init(z_, position_, anchor_, texScale_, frame_, center_, color_, txt_);
+	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_, F&& callback) {
+		Init(z_, position_, anchor_, cfg_, txt_);
 		onClicked = std::forward<F>(callback);
 	}
 

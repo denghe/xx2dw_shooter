@@ -2,14 +2,18 @@
 #include <all.h>
 
 void SceneMainMenu::Init() {
-
 	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Button>()->Init(1, { 0, 200 }, { 0.5f, 0.5f }
-		, 2, gLooper.frame_border_1_2322, { 2,3,2,2 }, { 0x5f, 0x15, 0xd9, 0xff }
-		, U"New Game"
-		, [&]() {
-			gLooper.DelaySwitchTo<ScenePlay>();
-		});
+
+	auto txt = rootNode->MakeChildren<Label>();
+	txt->Init(2, { 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"xx survivor");
+
+	auto bg = rootNode->MakeChildren<Scale9Sprite>();
+	bg->Init(1, { 0, 200 }, XY{ 0.5f, 0.5f }, txt->CalcBorderSize({ 50, 20 }), gLooper.s9cfg_panel);
+
+	auto btn = rootNode->MakeChildren<Button>();
+	btn->Init(3, { 0, 0 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"New Game", [&]() { 
+		gLooper.DelaySwitchTo<ScenePlay>();
+	});
 }
 
 void SceneMainMenu::Draw() {

@@ -1,6 +1,17 @@
 ﻿#pragma once
 #include <engine_node.h>
 
+struct Scale9SpriteConfig {
+	xx::Ref<Frame> frame;
+	float texScale;
+	UVRect center;
+	RGBA8 color;
+
+	XY GetCornerSize() const {
+		return { float(frame->textureRect.w - center.w), float(frame->textureRect.h - center.h) };
+	}
+};
+
 struct Scale9Sprite : Node {
 	xx::Ref<Frame> frame;
 	UVRect center;
@@ -8,16 +19,16 @@ struct Scale9Sprite : Node {
 	float texScale;
 	float colorplus;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, float texScale_, XY const& size_, xx::Ref<Frame> frame_, UVRect const& center_, RGBA8 color_ = RGBA8_White, float colorplus_ = 1) {
+	void Init(int z_, XY const& position_, XY const& anchor_, XY const& size_, Scale9SpriteConfig const& cfg_, float colorplus_ = 1) {
 		assert(size_.x > 6 && size_.y > 8);
 		z = z_;
 		position = position_;
 		size = size_;
 		anchor = anchor_;
-		texScale = texScale_;
-		frame = std::move(frame_);
-		center = center_;
-		color = color_;
+		texScale = cfg_.texScale;
+		frame = cfg_.frame;
+		center = cfg_.center;
+		color = cfg_.color;
 		colorplus = colorplus_;
 
 		FillTrans();

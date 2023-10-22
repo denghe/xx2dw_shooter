@@ -56,6 +56,9 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 		, frame_no, frame_yes
 		;
 	// ...
+
+	// cfgs
+	Scale9SpriteConfig s9cfg_btn, s9cfg_panel;
 };
 
 extern GameLooper gLooper;

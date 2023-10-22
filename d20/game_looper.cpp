@@ -59,5 +59,15 @@ xx::Task<> GameLooper::MainTask() {
 		// ...
 	}
 
+	s9cfg_btn.frame = frame_border_1_2322;
+	s9cfg_btn.texScale = 2;
+	s9cfg_btn.center = { 2, 3, 2, 2 };
+	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
+
+	s9cfg_panel.frame = frame_border_2_4522;
+	s9cfg_panel.texScale = 2;
+	s9cfg_panel.center = { 4, 5, 2, 2 };
+	s9cfg_panel.color = RGBA8_White;
+
 	co_await AsyncSwitchTo<SceneMainMenu>();
 }
