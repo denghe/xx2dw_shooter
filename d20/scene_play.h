@@ -1,68 +1,46 @@
 ﻿#pragma once
 #include <game_looper.h>
+#include <hero.h>
 
-struct Hero : Quad {
-	static constexpr float cBarHeight{ 6 };
+struct Grass {
+	static constexpr float cScale{ 4 };
 
-	float hp{}, maxHP{};
-	Quad hpBar;
-	Scale9Sprite hpBarBG;
+	struct D {
+		int32_t idx;
+		XY pos;
+	};
+	xx::List<Quad, int32_t> qs;
+	xx::List<D, int32_t> ds;
 
-	void Init(float scale_, float hp_, float maxHp_) {
-		hp = hp_;
-		maxHP = maxHp_;
+	void Init() {
+		auto len = gLooper.frames_grass.len;
+		qs.Resize(len);
+		for (int32_t i = 0; i < len; i++) {
+			qs[i].SetFrame(gLooper.frames_grass[i]).SetScale(cScale);
+		}
 
-		SetFrame(gLooper.frames_human_1[0]);
-		SetScale(scale_);
-		SetAnchor({ 0.5, 0 });
-
-		auto p = GetBarPos();
-		XY ps{ scale.x * texRect.w, cBarHeight };
-		hpBarBG.Init(0, p, { 0.5, 0.5 }
-			, gLooper.s9cfg_hp.GetCornerSize() + ps, gLooper.s9cfg_hp);
-
-		hpBar
-			.SetFrame(gLooper.frame_dot_1_22)
-			.SetColor({204,0,0,255})
-			.SetAnchor({ 0, 0.5 });
-
-		Update();
-	}
-
-	XY GetBarPos() {
-		return pos + XY{ 0, texRect.h * scale.y };
-	}
-
-	float GetBarWidth() {
-		return scale.x * texRect.w * hp / maxHP;
-	}
-
-	void Update() {
-		auto p = GetBarPos();
-		XY ps{ scale.x * texRect.w, cBarHeight };
-
-		hpBarBG.position = pos + XY{ 0, texRect.h * scale.y };
-		hpBarBG.FillTrans();
-
-		auto w_2 = GetBarWidth() / 2;
-		hpBar
-			.SetScale({ w_2, ps.y / 2 })
-			.SetPosition(hpBarBG.position - XY{ ps.x / 2, 0 });
+		auto& r = gLooper.rnd;
+		XY wh_2 = gLooper.windowSize_2;
+		auto to = len - 2;
+		for (size_t i = 0; i < 10000; i++) {
+			ds.Emplace(D{ r.Next<int32_t>(to)
+				, r.Next<float>(-wh_2.x, wh_2.x), r.Next<float>(-wh_2.y, wh_2.y) });
+		}
 	}
 
 	void Draw() {
-		Update();
-		Quad::Draw();
-	}
-	void DrawHP() {
-		hpBar.Draw();
-		hpBarBG.Draw();
+		// todo: grid cut?
+		for (auto& d : ds) {
+			auto& q = qs[d.idx];
+			q.SetPosition(d.pos).Draw();
+		}
 	}
 };
 
 struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
 
+	Grass grass;
 	xx::List<xx::Ref<Hero>, int32_t> heroes;
 
 	virtual void Init() override;

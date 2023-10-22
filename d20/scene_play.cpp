@@ -2,15 +2,19 @@
 #include <all.h>
 
 void ScenePlay::Init() {
+	gLooper.clearColor = { 0x6a, 0xbe, 0x30, 0xff };	// grass color
+	grass.Init();
+
 	rootNode.Emplace()->Init();
 	rootNode->MakeChildren<Button>()->Init(1, { 0, -200 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Exit Game", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
+	auto wh_2 = gLooper.windowSize_2;
 	for (size_t i = 0; i < 10000; i++) {
 		auto&& h = heroes.Emplace().Emplace();
-		h->pos = { gLooper.rnd.Next<float>(-gDesign.width_2 + 50, gDesign.width_2 - 50)
-			, gLooper.rnd.Next<float>(-gDesign.height_2 + 10, gDesign.height_2 - 100) };
+		h->pos = { gLooper.rnd.Next<float>(-wh_2.x + 50, wh_2.x - 50)
+			, gLooper.rnd.Next<float>(-wh_2.y + 10, wh_2.y - 100) };
 		h->Init(gLooper.rnd.Next<float>(1,3), gLooper.rnd.Next<float>(0, 100), 100);
 	}
 
@@ -27,6 +31,7 @@ void ScenePlay::Init() {
 }
 
 void ScenePlay::Draw() {
+	grass.Draw();
 	for (auto& h : heroes) {
 		h->Draw();
 	}

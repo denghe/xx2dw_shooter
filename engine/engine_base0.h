@@ -38,6 +38,7 @@ struct EngineBase0 {
         windowSize_2 = wh / 2;
     }
 
+    RGBA8 clearColor{};
     float flipY{ 1 };   // -1: flip  for ogl frame buffer
     Shader* shader{};
 

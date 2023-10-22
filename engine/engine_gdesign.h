@@ -10,6 +10,8 @@ struct GDesign {
     static constexpr float height = height_;
     static constexpr float width_2 = width / 2;
     static constexpr float height_2 = height / 2;
+    static constexpr XY wh{ width, height };
+    static constexpr XY wh_2{ width_2, height_2 };
     /*
         screen design anchor point
        ┌───────────────────────────────┐

@@ -136,7 +136,7 @@ struct EngineBase1 : EngineBase0 {
 
     XX_FORCE_INLINE void GLUpdateBegin() {
         GLViewport();
-        GLClear({});
+        GLClear(clearColor);
 
         Shader::ClearCounter();
     }
