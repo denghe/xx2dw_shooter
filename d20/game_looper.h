@@ -15,6 +15,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 		frames_border_1,
 		frames_border_2,
 		frames_border_3,
+		frames_border_4,
 		frames_bullet,
 		frames_cheses_1,
 		frames_cheses_2,
@@ -62,7 +63,8 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 
 	xx::Ref<Frame> frame_border_1_2322
 		, frame_border_2_4522
-		, frame_border_3_1122
+		, frame_border_3_2222
+		, frame_border_4_1122
 		, frame_dot_1_22
 		, frame_no, frame_yes
 		;
