@@ -2,9 +2,9 @@
 
 xx::Task<> GameLooper::MainTask() {
 #ifdef __EMSCRIPTEN__
-	frame_button = Frame::Create(co_await AsyncLoadTextureFromUrl("res/button.png"));
+	s9cfg.frame = Frame::Create(co_await AsyncLoadTextureFromUrl("res/button.png"));
 #else
-	frame_button = LoadSharedFrame("res/button.png");
+	s9cfg.frame = LoadFrame("res/button.png");
 #endif
 
 #if 1
@@ -12,11 +12,11 @@ xx::Task<> GameLooper::MainTask() {
 	root->FillTrans();
 	for (size_t i = 0; i < 10000; i++) {
 		XY pos{ rnd.Next<float>(-width, width), rnd.Next<float>(-height, height) };
-		RGBA8 color;
-		(uint32_t&)color = rnd.Next<uint32_t>();
-		color.a = 255;
+		auto cfg = s9cfg;
+		(uint32_t&)s9cfg.color = rnd.Next<uint32_t>();
+		s9cfg.color.a = 255;
 		auto txt = xx::StringU8ToU32(rnd.NextWord());
-		root->MakeChildren<Button>()->Init(1, pos, { 0.5, 0.5 }, buttonTextureScale, frame_button, buttonUvRect, color, txt);
+		root->MakeChildren<Button>()->Init(1, pos, { 0.5, 0.5 }, cfg, txt);
 	}
 #else
 	root.Emplace()->scale = { 3, 3 };
@@ -34,7 +34,7 @@ void GameLooper::Update() {
 
 void GameLooper::Draw() {
 #ifdef __EMSCRIPTEN__
-	if (!frame_button) return;
+	if (!s9cfg.frame) return;
 #endif
 	FillZNodes(tmpZNodes, root);
 	OrderByZDrawAndClear(tmpZNodes);

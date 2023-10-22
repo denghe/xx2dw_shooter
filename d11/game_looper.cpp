@@ -8,14 +8,12 @@ xx::Task<> GameLooper::MainTask() {
 #endif
 
 	constexpr XY anchor{ 0.5, 0.5 };
-	constexpr float textureScale = 4;
-	constexpr UVRect uvr{ 2,3,2,2 };
-	constexpr RGBA8 color{ 0xe7, 0x8d, 0x00, 0xff };
+	Scale9SpriteConfig cfg{ frame_button, 4, { 2,3,2,2 }, { 0xe7, 0x8d, 0x00, 0xff } };
 	root.Emplace()->FillTrans();
-	root->MakeChildren<Button>()->Init(0, { -50, 0 }, anchor, textureScale, frame_button, uvr, color, U"A");
-	root->MakeChildren<Button>()->Init(0, { 0, 0 }, anchor, textureScale, frame_button, uvr, color, U"S");
-	root->MakeChildren<Button>()->Init(0, { 50, 0 }, anchor, textureScale, frame_button, uvr, color, U"D");
-	root->MakeChildren<Button>()->Init(0, { 150, 0 }, anchor, textureScale, frame_button, uvr, color, U"J");
+	root->MakeChildren<Button>()->Init(0, { -50, 0 }, anchor, cfg, U"A");
+	root->MakeChildren<Button>()->Init(0, { 0, 0 }, anchor, cfg, U"S");
+	root->MakeChildren<Button>()->Init(0, { 50, 0 }, anchor, cfg, U"D");
+	root->MakeChildren<Button>()->Init(0, { 150, 0 }, anchor, cfg, U"J");
 	kct.Emplace();
 	ready = true;
 	co_return;

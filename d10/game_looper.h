@@ -9,9 +9,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Draw();
 
 	// res
-	xx::Ref<Frame> frame_button;
-	static constexpr float buttonTextureScale{ 4 };
-	static constexpr UVRect buttonUvRect{ 2,3,2,2 };
+	Scale9SpriteConfig s9cfg{ {}, 4, {2,3,2,2} };
 
 	// objs
 	xx::Shared<Node> root;
