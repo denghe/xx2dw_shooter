@@ -78,5 +78,9 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg_panel.center = { 4, 5, 2, 2 };
 	s9cfg_panel.color = RGBA8_White;
 
+	s9cfg_hp = s9cfg_panel;
+	s9cfg_hp.texScale = 0.5;
+	s9cfg_hp.color = {127,0,0,255};
+
 	co_await AsyncSwitchTo<SceneMainMenu>();
 }

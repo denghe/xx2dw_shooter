@@ -5,7 +5,7 @@ void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
 
 	auto txt = rootNode->MakeChildren<Label>();
-	txt->Init(2, { 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"xx survivor");
+	txt->Init(2, { 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"dungeon portal survivor");
 
 	auto bg = rootNode->MakeChildren<Scale9Sprite>();
 	bg->Init(1, { 0, 200 }, XY{ 0.5f, 0.5f }, txt->CalcBorderSize({ 50, 20 }), gLooper.s9cfg_panel);
