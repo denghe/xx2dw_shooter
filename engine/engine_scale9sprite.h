@@ -3,7 +3,7 @@
 
 struct Scale9SpriteConfig {
 	xx::Ref<Frame> frame;
-	float texScale;
+	XY texScale;
 	UVRect center;
 	RGBA8 color;
 
@@ -20,7 +20,7 @@ struct Scale9Sprite : Node {
 	xx::Ref<Frame> frame;
 	UVRect center;
 	RGBA8 color;
-	float texScale;
+	XY texScale;
 	float colorplus;
 
 	void Init(int z_, XY const& position_, XY const& anchor_, XY const& size_, Scale9SpriteConfig const& cfg_, float colorplus_ = 1) {
@@ -60,7 +60,7 @@ struct Scale9Sprite : Node {
 
 		// actual
 		XY siz{ size.x * trans.a, size.y * trans.d };
-		XY ts{ texScale * trans.a, texScale * trans.d };
+		XY ts{ texScale.x * trans.a, texScale.y * trans.d };
 
 		float sx = float(siz.x - tw1 * ts.x - tw3 * ts.x) / tw2;
 		float sy = float(siz.y - th1 * ts.y - th3 * ts.y) / th2;

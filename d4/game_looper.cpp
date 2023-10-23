@@ -16,9 +16,8 @@ xx::Task<> GameLooper::MainTask() {
 	tp->GetToByPrefix(frames_monster_3, "mc");
 	tp->GetToByPrefix(frames_explosion, "e");
 	tp->GetToByPrefix(frames_bullets, "b");
-	frame_shooter = tp->TryGet("p");
+	frame_shooter = tp->Get("p");
 	xx_assert(frame_shooter);
-
 #ifdef __EMSCRIPTEN__
 	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/m2.bmx", "res/");	// load tiled map data
 #else

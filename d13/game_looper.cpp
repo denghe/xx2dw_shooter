@@ -39,7 +39,7 @@ xx::Task<> GameLooper::MainTask() {
 		.AddPicture(frames_gem[8]).AddText(U" this is gem8. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.AddPicture(frames_gem[9]).AddText(U" this is gem9. aksd fhkhsd kfhas dfjd kfljslf.\n")
 		.Commit();
-	node->MakeChildren<Scale9Sprite>()->Init(1, pos, anchor, rl.size + bgSpacing, { frame_button, 2, { 2,3,2,2 }, bgColor });
+	node->MakeChildren<Scale9Sprite>()->Init(1, pos, anchor, rl.size + bgSpacing, { frame_button, {2,2}, {2,3,2,2}, bgColor });
 
 	co_return;
 }

@@ -42,4 +42,15 @@ struct HpBarCache : DynamicTexturePacker<> {
 
 		xx_assert(Fill(fs));
 	}
+
+	/*
+		// example:
+		auto p = pos + XY{ 0, texRect.h * scale.y };
+		auto&& f = gLooper.hpBarCache->Get(hp, maxHP);
+		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / gLooper.hpBarCache->cWidth , 1 }).Draw();
+	*/
+	xx::Ref<Frame>& Get(int32_t hp, int32_t maxHP) {
+		auto idx = int32_t((float)hp / maxHP * cWidth);
+		return fs[idx];
+	}
 };

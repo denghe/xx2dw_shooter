@@ -17,8 +17,7 @@ struct Hero : Quad {
 
 	void DrawHP() {
 		auto p = pos + XY{ 0, texRect.h * scale.y };
-		auto idx = int((float)hp / maxHP * 100);
-		auto& f = gLooper.hpBarCache->fs[idx];
-		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / 100 , 1 }).Draw();
+		auto&& f = gLooper.hpBarCache->Get(hp, maxHP);
+		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / gLooper.hpBarCache->cWidth , 1 }).Draw();
 	}
 };

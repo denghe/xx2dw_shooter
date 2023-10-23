@@ -73,17 +73,17 @@ xx::Task<> GameLooper::MainTask() {
 	}
 
 	s9cfg_btn.frame = frame_border_1_2322;
-	s9cfg_btn.texScale = 2;
+	s9cfg_btn.texScale = { 2, 2 };
 	s9cfg_btn.center = { 2, 3, 2, 2 };
 	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
 
 	s9cfg_panel.frame = frame_border_2_4522;
-	s9cfg_panel.texScale = 2;
+	s9cfg_panel.texScale = { 2, 2 };
 	s9cfg_panel.center = { 4, 5, 2, 2 };
 	s9cfg_panel.color = RGBA8_White;
 
 	s9cfg_hp.frame = frame_border_4_1122;
-	s9cfg_hp.texScale = 1;
+	s9cfg_hp.texScale = { 3, 1 };
 	s9cfg_hp.center = { 1, 1, 2, 2 };
 	s9cfg_hp.color = {90,90,90,255};
 

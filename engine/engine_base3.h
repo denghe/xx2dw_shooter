@@ -165,8 +165,7 @@ struct EngineBase3 : EngineBase2 {
             tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
                 img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
                 --n;
-                //printf("url loaded: %s\n", url.c_str());
-                });
+            });
         }
         while (n) co_yield 0;	// wait all
 

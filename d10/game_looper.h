@@ -9,7 +9,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	void Draw();
 
 	// res
-	Scale9SpriteConfig s9cfg{ {}, 4, {2,3,2,2} };
+	Scale9SpriteConfig s9cfg{ {}, {4,4}, {2,3,2,2} };
 
 	// objs
 	xx::Shared<Node> root;
