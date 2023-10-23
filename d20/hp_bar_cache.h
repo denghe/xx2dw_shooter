@@ -2,12 +2,12 @@
 #include <game_looper.h>
 
 /*
-   template<int32_t width_ = 100, int32_t height_ = 7>
+   template<int32_t width_ = 64, int32_t height_ = 7>
    struct HpBarCache;
 */
 
 template<int32_t width_, int32_t height_>
-struct HpBarCache : DynamicTexturePacker<> {
+struct HpBarCache : protected DynamicTexturePacker<> {
 	static constexpr XY cPadding{ 4, 4 };
 	static constexpr int32_t cWidth{ width_ };
 	static constexpr float cWidth_2{ (float)width_ / 2 };
@@ -23,10 +23,10 @@ struct HpBarCache : DynamicTexturePacker<> {
 		FrameBuffer fb;
 		fb.Init();
 
-		Quad q;				// hp
+		Quad q;				// blood bar
 		q.SetFrame(gLooper.frame_dot_1_22).SetColor({ 255,0,0,255 }).SetAnchor({ 0, 0.5 }).SetPosition({ -cWidth_2, 0 }); // 204 ?
 
-		Scale9Sprite s9;	// bg
+		Scale9Sprite s9;	// border
 		s9.Init(0, {}, { 0.5, 0.5 }, cfg.GetCornerSize() + XY{ (float)cWidth, cHeight }, cfg);
 		s9.FillTrans();
 
@@ -40,7 +40,7 @@ struct HpBarCache : DynamicTexturePacker<> {
 			fs.emplace_back(Frame::Create(tex));
 		}
 
-		xx_assert(Fill(fs));
+		xx_assert(Fill(fs));	// combine to big texture & release all small textures
 	}
 
 	/*
