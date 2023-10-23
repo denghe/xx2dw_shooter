@@ -24,7 +24,6 @@ struct Scale9Sprite : Node {
 	float colorplus;
 
 	void Init(int z_, XY const& position_, XY const& anchor_, XY const& size_, Scale9SpriteConfig const& cfg_, float colorplus_ = 1) {
-		assert(size_.x > 6 && size_.y > 8);
 		z = z_;
 		position = position_;
 		size = size_;
