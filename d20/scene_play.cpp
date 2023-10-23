@@ -2,7 +2,6 @@
 #include <all.h>
 
 void ScenePlay::Init() {
-	hbc.Init(8, {100});	// todo: more width here
 	grass.Init();
 
 	rootNode.Emplace()->Init();
@@ -15,7 +14,7 @@ void ScenePlay::Init() {
 		auto&& h = heroes.Emplace().Emplace();
 		h->pos = { gLooper.rnd.Next<float>(-wh_2.x + 50, wh_2.x - 50)
 			, gLooper.rnd.Next<float>(-wh_2.y + 10, wh_2.y - 100) };
-		h->Init(gLooper.rnd.Next<float>(1,3), gLooper.rnd.Next<float>(0, 100), 100);
+		h->Init(gLooper.rnd.Next<float>(1,3), gLooper.rnd.Next<int>(0, 100), 100);
 	}
 
 	//tasks.Add([this]()->xx::Task<> {

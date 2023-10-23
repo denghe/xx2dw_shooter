@@ -14,8 +14,20 @@ void SceneMainMenu::Init() {
 	btn->Init(3, { 0, 0 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"New Game", [&]() { 
 		gLooper.DelaySwitchTo<ScenePlay>();
 	});
+
+	// debug: show hp bar
+	q.SetScale(1).SetPosition({ 0, -200 });
+	auto& fs = gLooper.hpBarCache->fs;
+	tasks.Add([&]()->xx::Task<> {
+		for (auto& f : fs) {
+			q.SetFrame(f);
+			co_yield 0;
+		}
+	});
 }
 
 void SceneMainMenu::Draw() {
 	gLooper.DrawNode(rootNode);
+
+	if (q) q.Draw();
 };

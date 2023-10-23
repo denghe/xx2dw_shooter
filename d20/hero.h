@@ -2,60 +2,23 @@
 #include <game_looper.h>
 
 struct Hero : Quad {
-	static constexpr float cBarHeight{ 6 };
+	int hp{}, maxHP{};	// todo: int
+	Quad q;
 
-	float hp{}, maxHP{};	// todo: int
-	Quad hpBar;				// todo: when draw: get from cache
-	Scale9Sprite hpBarBG;
-
-	void Init(float scale_, float hp_, float maxHp_) {
+	void Init(float scale_, int hp_, int maxHp_) {
 		hp = hp_;
 		maxHP = maxHp_;
+		// todo: set q scale by tex size
 
 		SetFrame(gLooper.frames_human_4[0]);
 		SetScale(scale_);
 		SetAnchor({ 0.5, 0 });
-
-		auto p = GetBarPos();
-		XY ps{ scale.x * texRect.w, cBarHeight };
-		hpBarBG.Init(0, p, { 0.5, 0.5 }
-			, gLooper.s9cfg_hp.GetCornerSize() + ps, gLooper.s9cfg_hp);
-
-		hpBar
-			.SetFrame(gLooper.frame_dot_1_22)
-			.SetColor({255,0,0,255})
-			.SetAnchor({ 0, 0.5 });
-
-		Update();
 	}
 
-	XY GetBarPos() {
-		return pos + XY{ 0, texRect.h * scale.y };
-	}
-
-	float GetBarWidth() {
-		return scale.x * texRect.w * hp / maxHP;
-	}
-
-	void Update() {
-		auto p = GetBarPos();
-		XY ps{ scale.x * texRect.w, cBarHeight };
-
-		hpBarBG.position = pos + XY{ 0, texRect.h * scale.y };
-		hpBarBG.FillTrans();
-
-		auto w_2 = GetBarWidth() / 2;
-		hpBar
-			.SetScale({ w_2, ps.y / 2 })
-			.SetPosition(hpBarBG.position - XY{ ps.x / 2, 0 });
-	}
-
-	void Draw() {
-		Update();
-		Quad::Draw();
-	}
 	void DrawHP() {
-		hpBar.Draw();
-		hpBarBG.Draw();
+		auto p = pos + XY{ 0, texRect.h * scale.y };
+		auto idx = int((float)hp / maxHP * 100);
+		auto& f = gLooper.hpBarCache->fs[idx];
+		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / 100 , 1 }).Draw();
 	}
 };

@@ -25,11 +25,23 @@ struct Quad : QuadInstanceData {
         return *this;
     }
 
-    template<typename T = float>
+    operator bool() const {
+        return !!texId;
+    }
+
     XX_FORCE_INLINE XY Size() const {
         assert(frame);
-        return { (T)texRect.w, (T)texRect.h };
+        return { (float)texRect.w, (float)texRect.h };
     }
+
+    XX_FORCE_INLINE XY GetSize() const {
+        return Size();
+    }
+
+    XX_FORCE_INLINE XY GetSizeScaled() const {
+        return Size() * scale;
+    }
+
     XX_FORCE_INLINE Quad& SetAnchor(XY const& a) {
         anchor = a;
         return *this;

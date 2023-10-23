@@ -201,7 +201,7 @@ struct EngineBase1 : EngineBase0 {
     }
 
     template<bool autoDecompress = false>
-    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "res/") {
+    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root/* = "res/"*/) {
         auto map = xx::MakeRef<TMX::Map>();
         {
             auto [d, fp] = LoadFileData<autoDecompress>(bmxPath);

@@ -4,8 +4,8 @@
 namespace xx {
 	struct TmxData : Data {
 		using Data::Data;
-		std::map<int32_t, Shared<TMX::SharedBase>> objs;		// for read
-		std::unordered_map<TMX::SharedBase*, int32_t> keys;		// for write
+		std::map<int32_t, Ref<TMX::RefBase>> objs;		// for read
+		std::unordered_map<TMX::RefBase*, int32_t> keys;		// for write
 		int32_t key{};	// 0: empty   -1: new     > 0: exists key
 	};
 
@@ -323,9 +323,9 @@ namespace xx {
 	};
 
 	template<typename T>
-	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Shared<TMX::Object>, std::decay_t<T>>>> {
+	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Ref<TMX::Object>, std::decay_t<T>>>> {
 		template<bool needReserve = true>
-		static inline void Write(Data& d, Shared<TMX::Object> const& in) {
+		static inline void Write(Data& d, Ref<TMX::Object> const& in) {
 			auto& td = (TmxData&)d;
 			if (!in) {
 				d.Write<needReserve>(0);
@@ -358,14 +358,14 @@ namespace xx {
 				}
 			}
 		}
-		static inline int Read(Data_r& d, Shared<TMX::Object>& out) {
+		static inline int Read(Data_r& d, Ref<TMX::Object>& out) {
 			auto& td = (TmxData&)d;
 			int32_t key;
 			if (int r = d.Read(key)) return r;
 			if (key == 0) {
 				out.Reset();
 			} else if (key > 0) {
-				out = td.objs[key].ReinterpretCast<TMX::Object>();
+				out = td.objs[key].Cast<TMX::Object>();
 			} else {
 				TMX::ObjectTypes ot;
 				if (int r = d.Read(ot)) return r;
@@ -434,9 +434,9 @@ namespace xx {
 	};
 
 	template<typename T>
-	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Shared<TMX::Layer>, std::decay_t<T>>>> {
+	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Ref<TMX::Layer>, std::decay_t<T>>>> {
 		template<bool needReserve = true>
-		static inline void Write(Data& d, Shared<TMX::Layer> const& in) {
+		static inline void Write(Data& d, Ref<TMX::Layer> const& in) {
 			auto& td = (TmxData&)d;
 			if (!in) {
 				d.Write<needReserve>(0);
@@ -463,14 +463,14 @@ namespace xx {
 				}
 			}
 		}
-		static inline int Read(Data_r& d, Shared<TMX::Layer>& out) {
+		static inline int Read(Data_r& d, Ref<TMX::Layer>& out) {
 			auto& td = (TmxData&)d;
 			int32_t key;
 			if (int r = d.Read(key)) return r;
 			if (key == 0) {
 				out.Reset();
 			} else if (key > 0) {
-				out = td.objs[key].ReinterpretCast<TMX::Layer>();
+				out = td.objs[key].Cast<TMX::Layer>();
 			} else {
 				TMX::LayerTypes ot;
 				if (int r = d.Read(ot)) return r;
@@ -525,9 +525,9 @@ namespace xx {
 	};
 
 	template<typename T>
-	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Shared<TMX::Image>, std::decay_t<T>>>> {
+	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Ref<TMX::Image>, std::decay_t<T>>>> {
 		template<bool needReserve = true>
-		static inline void Write(Data& d, Shared<TMX::Image> const& in) {
+		static inline void Write(Data& d, Ref<TMX::Image> const& in) {
 			auto& td = (TmxData&)d;
 			if (!in) {
 				d.Write<needReserve>(0);
@@ -538,14 +538,14 @@ namespace xx {
 				d.Write<needReserve>(-1, in->source, in->width, in->height, in->transparentColor);
 			}
 		}
-		static inline int Read(Data_r& d, Shared<TMX::Image>& out) {
+		static inline int Read(Data_r& d, Ref<TMX::Image>& out) {
 			auto& td = (TmxData&)d;
 			int32_t key;
 			if (int r = d.Read(key)) return r;
 			if (key == 0) {
 				out.Reset();
 			} else if (key > 0) {
-				out = td.objs[key].ReinterpretCast<TMX::Image>();
+				out = td.objs[key].Cast<TMX::Image>();
 			} else {
 				auto sp = MakeShared<TMX::Image>();
 				td.objs[++td.key] = sp;
@@ -582,9 +582,9 @@ namespace xx {
 
 
 	template<typename T>
-	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Shared<TMX::Layer_Object>, std::decay_t<T>>>> {
+	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Ref<TMX::Layer_Object>, std::decay_t<T>>>> {
 		template<bool needReserve = true>
-		static inline void Write(Data& d, Shared<TMX::Layer_Object> const& in) {
+		static inline void Write(Data& d, Ref<TMX::Layer_Object> const& in) {
 			auto& td = (TmxData&)d;
 			if (!in) {
 				d.Write<needReserve>(0);
@@ -595,14 +595,14 @@ namespace xx {
 				d.Write<needReserve>(-1, *in);
 			}
 		}
-		static inline int Read(Data_r& d, Shared<TMX::Layer_Object>& out) {
+		static inline int Read(Data_r& d, Ref<TMX::Layer_Object>& out) {
 			auto& td = (TmxData&)d;
 			int32_t key;
 			if (int r = d.Read(key)) return r;
 			if (key == 0) {
 				out.Reset();
 			} else if (key > 0) {
-				out = td.objs[key].ReinterpretCast<TMX::Layer_Object>();
+				out = td.objs[key].Cast<TMX::Layer_Object>();
 			} else {
 				auto sp = MakeShared<TMX::Layer_Object>();
 				td.objs[++td.key] = sp;
@@ -669,9 +669,9 @@ namespace xx {
 	};
 
 	template<typename T>
-	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Shared<TMX::Tileset>, std::decay_t<T>>>> {
+	struct DataFuncs<T, std::enable_if_t<std::is_same_v<Ref<TMX::Tileset>, std::decay_t<T>>>> {
 		template<bool needReserve = true>
-		static inline void Write(Data& d, Shared<TMX::Tileset> const& in) {
+		static inline void Write(Data& d, Ref<TMX::Tileset> const& in) {
 			auto& td = (TmxData&)d;
 			if (!in) {
 				d.Write<needReserve>(0);
@@ -688,14 +688,14 @@ namespace xx {
 				);
 			}
 		}
-		static inline int Read(Data_r& d, Shared<TMX::Tileset>& out) {
+		static inline int Read(Data_r& d, Ref<TMX::Tileset>& out) {
 			auto& td = (TmxData&)d;
 			int32_t key;
 			if (int r = d.Read(key)) return r;
 			if (key == 0) {
 				out.Reset();
 			} else if (key > 0) {
-				out = td.objs[key].ReinterpretCast<TMX::Tileset>();
+				out = td.objs[key].Cast<TMX::Tileset>();
 			} else {
 				auto sp = MakeShared<TMX::Tileset>();
 				td.objs[++td.key] = sp;

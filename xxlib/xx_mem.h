@@ -53,13 +53,13 @@ namespace xx {
     }
 
     // 带符号整数 解码 return (in 为单数) ? -(in + 1) / 2 : in / 2
-    XX_FORCE_INLINE int16_t ZigZagDecode(uint16_t in) {
+    inline XX_FORCE_INLINE int16_t ZigZagDecode(uint16_t in) {
         return (int16_t)((int16_t)(in >> 1) ^ (-(int16_t)(in & 1)));
     }
-    XX_FORCE_INLINE int32_t ZigZagDecode(uint32_t in) {
+    inline XX_FORCE_INLINE int32_t ZigZagDecode(uint32_t in) {
         return (int32_t)(in >> 1) ^ (-(int32_t)(in & 1));
     }
-    XX_FORCE_INLINE int64_t ZigZagDecode(uint64_t in) {
+    inline XX_FORCE_INLINE int64_t ZigZagDecode(uint64_t in) {
         return (int64_t)(in >> 1) ^ (-(int64_t)(in & 1));
     }
 
@@ -93,13 +93,13 @@ namespace xx {
     }
 
     // 带符号整数 编码  return in < 0 ? (-in * 2 - 1) : (in * 2)
-    XX_FORCE_INLINE uint16_t ZigZagEncode(int16_t in) {
+    inline XX_FORCE_INLINE uint16_t ZigZagEncode(int16_t in) {
         return (uint16_t)((in << 1) ^ (in >> 15));
     }
-    XX_FORCE_INLINE uint32_t ZigZagEncode(int32_t in) {
+    inline XX_FORCE_INLINE uint32_t ZigZagEncode(int32_t in) {
         return (in << 1) ^ (in >> 31);
     }
-    XX_FORCE_INLINE uint64_t ZigZagEncode(int64_t in) {
+    inline XX_FORCE_INLINE uint64_t ZigZagEncode(int64_t in) {
         return (in << 1) ^ (in >> 63);
     }
 }

@@ -6,7 +6,7 @@
 
 namespace TMX {
 
-	struct SharedBase {};	// for all Shared<T>
+	struct RefBase {};	// for all Ref<T>
 
 	enum class PropertyTypes : uint8_t {
 		Bool,
@@ -38,7 +38,7 @@ namespace TMX {
 		MAX_VALUE_UNKNOWN
 	};
 
-	struct Object : SharedBase {
+	struct Object : RefBase {
 		ObjectTypes type = ObjectTypes::MAX_VALUE_UNKNOWN;
 		uint32_t id = 0;
 		std::string name;
@@ -117,7 +117,7 @@ namespace TMX {
 		MAX_VALUE_UNKNOWN
 	};
 
-	struct Layer : SharedBase {
+	struct Layer : RefBase {
 		LayerTypes type = LayerTypes::MAX_VALUE_UNKNOWN;
 		uint32_t id = 0;
 		std::string name;
@@ -153,14 +153,14 @@ namespace TMX {
 	struct Layer_Object : Layer {
 		std::optional<RGBA8> color;
 		DrawOrders draworder = DrawOrders::TopDown;
-		std::vector<xx::Shared<Object>> objects;
+		std::vector<xx::Ref<Object>> objects;
 	};
 
 	struct Layer_Group : Layer {
-		std::vector<xx::Shared<Layer>> layers;
+		std::vector<xx::Ref<Layer>> layers;
 	};
 
-	struct Image : SharedBase {
+	struct Image : RefBase {
 		std::string source;
 		uint32_t width;
 		uint32_t height;
@@ -169,7 +169,7 @@ namespace TMX {
 	};
 
 	struct Layer_Image : Layer {
-		xx::Shared<Image> image;
+		xx::Ref<Image> image;
 		bool repeatX = false;	// repeatx
 		bool repeatY = false;	// repeaty
 	};
@@ -184,8 +184,8 @@ namespace TMX {
 	struct Tile {
 		uint32_t id = 0;
 		std::string class_;
-		xx::Shared<Image> image;	// <image ...>
-		xx::Shared<Layer_Object> collisions;	// <objectgroup> <object <object
+		xx::Ref<Image> image;	// <image ...>
+		xx::Ref<Layer_Object> collisions;	// <objectgroup> <object <object
 		std::vector<Frame> animation;	// <animation> <frame <frame
 		std::vector<Property> properties;	// <properties> <property <property
 	};
@@ -261,7 +261,7 @@ namespace TMX {
 		MAX_VALUE_UNKNOWN
 	};
 
-	struct Tileset : SharedBase {
+	struct Tileset : RefBase {
 		uint32_t firstgid;	// .tmx map/tileset.firstgid
 		std::string source;	// .tmx map/tileset.source
 
@@ -278,7 +278,7 @@ namespace TMX {
 		uint32_t gridHeight = 0;	// <grid height=
 		uint32_t columns = 0;
 		Transformations allowedTransformations;	// <transformations ...
-		xx::Shared<Image> image;
+		xx::Ref<Image> image;
 		uint32_t tilewidth = 0;
 		uint32_t tileheight = 0;
 		uint32_t margin = 0;
@@ -378,8 +378,8 @@ namespace TMX {
 		std::string tiledVersion;	// tiledversion
 		uint32_t nextLayerId = 0;	// nextlayerid
 		uint32_t nextObjectId = 0;	// nextobjectid
-		std::vector<xx::Shared<Tileset>> tilesets;
-		std::vector<xx::Shared<Layer>> layers;
+		std::vector<xx::Ref<Tileset>> tilesets;
+		std::vector<xx::Ref<Layer>> layers;
 
 
 		/****************************************************/
@@ -393,7 +393,7 @@ namespace TMX {
 
 		/****************************************************/
 		// ext
-		std::vector<xx::Shared<Image>> images;											// all textures here
+		std::vector<xx::Ref<Image>> images;											// all textures here
 		std::vector<GidInfo> gidInfos;													// all gid info here. index == gid
 		std::vector<::Anim*> anims;														// point to all gid info's anim for easy update anims
 		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
@@ -403,7 +403,7 @@ namespace TMX {
 		template<std::convertible_to<Layer> LT>
 		LT* FindLayer(std::string_view const& name) const;								// find layer by name( from flatLayers )
 
-		void FillFlatLayers(std::vector<xx::Shared<Layer>>& ls);
+		void FillFlatLayers(std::vector<xx::Ref<Layer>>& ls);
 
 		GidInfo const* GetGidInfo(Layer* L, uint32_t rowIdx, uint32_t colIdx) const;	// for Layer_Tile gidInfos[rowIdx * map.w + colIdx]
 	
@@ -438,7 +438,7 @@ namespace TMX {
 		return { tileWidth * camera.scale, tileHeight * camera.scale };
 	}
 
-	inline void Map::FillFlatLayers(std::vector<xx::Shared<Layer>>& ls) {
+	inline void Map::FillFlatLayers(std::vector<xx::Ref<Layer>>& ls) {
 		for (auto& l : ls) {
 			if (l->type == LayerTypes::GroupLayer) {
 				FillFlatLayers(((Layer_Group&)*l).layers);

@@ -4,6 +4,8 @@
 struct SceneMainMenu : Scene {
 	xx::Shared<Node> rootNode;
 
+	Quad q;
+
 	virtual void Init() override;
 	virtual void Draw() override;
 };
