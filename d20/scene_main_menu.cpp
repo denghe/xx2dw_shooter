@@ -2,8 +2,6 @@
 #include <all.h>
 
 void SceneMainMenu::Init() {
-	gLooper.clearColor = {};
-
 	rootNode.Emplace()->Init();
 
 	auto txt = rootNode->MakeChildren<Label>();

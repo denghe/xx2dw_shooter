@@ -2,7 +2,7 @@
 #include <all.h>
 
 void ScenePlay::Init() {
-	gLooper.clearColor = { 0x6a, 0xbe, 0x30, 0xff };	// grass color
+	hbc.Init(8, {100});	// todo: more width here
 	grass.Init();
 
 	rootNode.Emplace()->Init();

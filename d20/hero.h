@@ -4,8 +4,8 @@
 struct Hero : Quad {
 	static constexpr float cBarHeight{ 6 };
 
-	float hp{}, maxHP{};
-	Quad hpBar;
+	float hp{}, maxHP{};	// todo: int
+	Quad hpBar;				// todo: when draw: get from cache
 	Scale9Sprite hpBarBG;
 
 	void Init(float scale_, float hp_, float maxHp_) {
@@ -24,7 +24,6 @@ struct Hero : Quad {
 		hpBar
 			.SetFrame(gLooper.frame_dot_1_22)
 			.SetColor({255,0,0,255})
-			//.SetColor({204,0,0,255})
 			.SetAnchor({ 0, 0.5 });
 
 		Update();

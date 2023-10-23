@@ -30,20 +30,19 @@ struct DynamicTexturePacker : Frames {
             rectptrs.push_back(&r);
         }
         std::vector<bin> bins;
-        if (!pack(rectptrs.data(), rectptrs.size(), texWH, false, bins)) return false;
+        if (!pack(rectptrs.data(), (int)rectptrs.size(), texWH, false, bins)) return false;
 
         FrameBuffer fb(true);
         for (auto& bin : bins) {
-            int w = xx::Round2n(bin.size.w);
-            int h = xx::Round2n(bin.size.h);
-            auto t = FrameBuffer::MakeTexture({ w, h });
-            XY basePos{ -w / 2, h / 2 };
+            Vec2<> wh{ xx::Round2n(bin.size.w), xx::Round2n(bin.size.h) };
+            auto t = FrameBuffer::MakeTexture(wh.As<uint32_t>());
+            XY basePos{ -wh.x / 2.f, wh.y / 2.f };
             fb.DrawTo(t, {}, [&]() {
                 Quad q;
                 q.SetAnchor({ 0, 1 });
                 for (auto& r : bin.rects) {
                     auto& sf = *(xx::Ref<Frame>*)r->ud;
-                    q.SetPosition(basePos + XY{ r->x, -r->y }).SetFrame(sf).Draw();
+                    q.SetPosition(basePos + XY{ (float)r->x, (float)-r->y }).SetFrame(sf).Draw();
                     if constexpr (newFrame) {
                         auto&& f = frames.emplace_back().Emplace();
                         *f = *sf;
