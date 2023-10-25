@@ -3,7 +3,7 @@
 
 constexpr GDesign<1280, 720, 60> gDesign;
 
-template<int32_t width_ = 64, int32_t height_ = 7>
+template<uint32_t width_ = 64, uint32_t height_ = 7>
 struct HpBarCache;
 
 struct GameLooper : Engine<GameLooper>, decltype(gDesign) {

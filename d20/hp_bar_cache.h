@@ -6,13 +6,24 @@
    struct HpBarCache;
 */
 
-template<int32_t width_, int32_t height_>
+template<uint32_t width_, uint32_t height_>
 struct HpBarCache : protected DynamicTexturePacker<> {
-	static constexpr XY cPadding{ 4, 4 };
-	static constexpr int32_t cWidth{ width_ };
-	static constexpr float cWidth_2{ (float)width_ / 2 };
-	static constexpr int32_t cHeight{ height_ };
-	static constexpr float cHeight_2{ (float)height_ / 2 };
+	static constexpr Vec2<uint32_t> cPadding{ 1, 1 };	// border width
+	static constexpr Vec2<uint32_t> cSpacing{ 1, 1 };
+
+	static constexpr Vec2<uint32_t> cTextureSize{ width_ + cPadding.x + cSpacing.x, height_ + cPadding.y + cSpacing.y };
+
+	static constexpr XY cBackgroundSize{ float(width_ + cPadding.x), float(height_ + cPadding.y) };
+	static constexpr XY cBloodSize{ float(width_), float(height_) };
+
+	static constexpr XY cBackgroundPos{ -cBackgroundSize.x / 2, -cBackgroundSize.y / 2 };
+	static constexpr XY cBloodPos{ -cBloodSize.x / 2, -cBloodSize.y / 2 };
+
+	static constexpr XY cBackgroundScale{ cBackgroundSize.x / 2, cBackgroundSize.y / 2 };
+	static constexpr XY cBloodScale{ cBloodSize.x / 2, cBloodSize.y / 2 };
+
+	static constexpr RGBA8 cBackgroundColor{ RGBA8_Black };
+	static constexpr RGBA8 cBloodColor{ RGBA8_Red };
 
 	// index == hp value
 	std::vector<xx::Ref<Frame>> fs;
@@ -23,19 +34,31 @@ struct HpBarCache : protected DynamicTexturePacker<> {
 		FrameBuffer fb;
 		fb.Init();
 
-		Quad q;				// blood bar
-		q.SetFrame(gLooper.frame_dot_1_22).SetColor({ 255,0,0,255 }).SetAnchor({ 0, 0.5 }).SetPosition({ -cWidth_2, 0 }); // 204 ?
+		//Quad q;			// blood bar
+		//q.SetFrame(gLooper.frame_dot_1_22).SetColor({ 255,0,0,255 }).SetAnchor({ 0, 0.5 }).SetPosition({ -float(width_) / 2, 0 }); // 204 ?
+		//Scale9Sprite s9;	// border
+		//s9.Init(0, {}, { 0.5, 0.5 }, cfg.GetCornerSize() + XY{ (float)width_, (float)height_ }, cfg);
+		//s9.FillTrans();
 
-		Scale9Sprite s9;	// border
-		s9.Init(0, {}, { 0.5, 0.5 }, cfg.GetCornerSize() + XY{ (float)cWidth, cHeight }, cfg);
-		s9.FillTrans();
+		Quad q;
+		q.SetFrame(gLooper.frame_dot_1_22).SetAnchor({});
 
 		fs.clear();
-		for (int i = 0; i <= cWidth; ++i) {
-			auto tex = FrameBuffer::MakeTexture({ uint32_t(cWidth + cPadding.x), uint32_t(cHeight + cPadding.y) });
+		for (int i = 0; i <= width_; ++i) {
+			auto tex = FrameBuffer::MakeTexture(cTextureSize);
 			fb.DrawTo(tex, {}, [&] {
-				q.SetScale({ i / 2.f, cHeight_2 }).Draw();
-				s9.Draw();
+				//q.SetScale({ i / 2.f, (float)height_ / 2.f }).Draw();
+				//s9.Draw();
+
+				q.SetPosition(cBackgroundPos)
+					.SetScale(cBackgroundScale)
+					.SetColor(cBackgroundColor)
+					.Draw();
+
+				q.SetPosition(cBloodPos)
+					.SetScale(cBloodScale * XY{ (float)i / width_, 1 })
+					.SetColor(cBloodColor)
+					.Draw();
 			});
 			fs.emplace_back(Frame::Create(tex));
 		}
@@ -47,10 +70,10 @@ struct HpBarCache : protected DynamicTexturePacker<> {
 		// example:
 		auto p = pos + XY{ 0, texRect.h * scale.y };
 		auto&& f = gLooper.hpBarCache->Get(hp, maxHP);
-		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / gLooper.hpBarCache->cWidth , 1 }).Draw();
+		q.SetFrame(f).SetPosition(p).SetScale({ GetSizeScaled().x / gLooper.hpBarCache->cBloodSize.x , 1 }).Draw();
 	*/
 	xx::Ref<Frame>& Get(int32_t hp, int32_t maxHP) {
-		auto idx = int32_t((float)hp / maxHP * cWidth);
+		auto idx = int32_t((float)hp / maxHP * cBloodSize.x);
 		return fs[idx];
 	}
 };
