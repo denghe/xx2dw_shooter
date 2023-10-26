@@ -45,8 +45,8 @@ void ScenePlay::Draw() {
 		h->Draw();
 	}
 
-	symbolQuad.frame->tex->SetGLTexParm<GL_LINEAR>();
 	light.Draw([&] {
+		symbolQuad.frame->tex->SetGLTexParm<GL_LINEAR>();
 		symbolQuad.Draw();
 	});
 	symbolQuad.frame->tex->SetGLTexParm<GL_NEAREST>();
