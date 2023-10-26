@@ -115,7 +115,6 @@ struct EngineBase1 : EngineBase0 {
         glDisable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         shaderQuadInstance.Init(this);
         shaderLineStrip.Init(this);
@@ -137,6 +136,9 @@ struct EngineBase1 : EngineBase0 {
     XX_FORCE_INLINE void GLUpdateBegin() {
         GLViewport();
         GLClear(clearColor);
+        blend = blendDefault;
+        glBlendFunc(blendDefault[0], blendDefault[1]);
+        glBlendEquation(blendDefault[2]);
 
         Shader::ClearCounter();
     }
@@ -162,9 +164,20 @@ struct EngineBase1 : EngineBase0 {
         }
     }
 
-    // todo: GLSetBlend == if diff GLShaderEnd + set blend + GLShaderBegin
+    std::array<uint32_t, 3> blendDefault{ GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD };
+    std::array<uint32_t, 3> blend{ blendDefault };
 
-
+    template<bool autoEndShader = true>
+    void GLBlendFunc(std::array<uint32_t, 3> args) {
+        if (blend != args) {
+            if constexpr (autoEndShader) {
+                ShaderEnd();
+            }
+            blend = args;
+            glBlendFunc(args[0], args[1]);
+            glBlendEquation(args[2]);
+        }
+    }
 
 
     /*****************************************************************************************************/

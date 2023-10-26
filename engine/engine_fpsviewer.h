@@ -11,9 +11,10 @@ struct FpsViewer {
     // CTC: char texture cache
     template<typename CTC>
     void Draw(CTC& ctc) {
+        auto& eb = EngineBase1::Instance();
         ++drawCounter;
 
-        auto nowSecs = gEngine->nowSecs;
+        auto nowSecs = eb.nowSecs;
         if (auto elapsedSecs = nowSecs - lastSecs; elapsedSecs >= 1) {
             lastSecs = nowSecs;
 
@@ -24,12 +25,14 @@ struct FpsViewer {
             updateCounter = 0;
         }
 
-        EngineBase1::Instance().ShaderEnd();
+        eb.ShaderEnd();
+
         auto s = std::string("FPS:") + std::to_string((uint32_t)fps)
                  + " UPS:" + std::to_string((uint32_t)ups)
                  + " DC:" + std::to_string(Shader::drawCall)
                  + " VC:" + std::to_string(Shader::drawVerts);
 
-        ctc.Draw({ -gEngine->windowSize_2.x, -gEngine->windowSize_2.y }, s, RGBA8_Green, { 0, 0 });
+        eb.GLBlendFunc<false>(eb.blendDefault);
+        ctc.Draw({ -eb.windowSize_2.x, -eb.windowSize_2.y }, s, RGBA8_Green, { 0, 0 });
     }
 };

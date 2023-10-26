@@ -23,7 +23,7 @@ struct HpBarCache : protected DynamicTexturePacker<> {
 	static constexpr XY cBloodScale{ cBloodSize.x / 2, cBloodSize.y / 2 };
 
 	static constexpr RGBA8 cBackgroundColor{ RGBA8_Black };
-	static constexpr RGBA8 cBloodColor{ RGBA8_Red };
+	static constexpr RGBA8 cBloodColor{ RGBA8{204,0,0,255} };
 
 	// index == hp value
 	std::vector<xx::Ref<Frame>> fs;

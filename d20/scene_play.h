@@ -1,36 +1,36 @@
 ﻿#pragma once
 #include <game_looper.h>
 #include <hero.h>
+#include <grass.h>
 
-struct Grass : Quad {
-	static constexpr float cScale{ 4 };
+struct Light : Quad {
 	FrameBuffer fb;
+
 	void Init() {
-		auto tex = FrameBuffer::MakeTexture(gLooper.windowSize.As<uint32_t>());
-		fb.Init().DrawTo(tex, RGBA8{ 0x6a, 0xbe, 0x30, 0xff }, [&] {
-			xx::List<Quad, int32_t> qs;
-			auto len = gLooper.frames_grass.len;
-			qs.Resize(len);
-			for (int32_t i = 0; i < len; i++) {
-				qs[i].SetFrame(gLooper.frames_grass[i]).SetScale(cScale);
-			}
-			auto& r = gLooper.rnd;
-			XY wh_2 = gLooper.windowSize_2;
-			auto to = len - 2;
-			for (size_t i = 0; i < 10000; i++) {
-				auto& q = qs[r.Next<int32_t>(to)];
-				XY pos{ r.Next<float>(-wh_2.x, wh_2.x), r.Next<float>(-wh_2.y, wh_2.y) };
-				q.SetPosition(pos).Draw();
-			}
-		});
+		fb.Init();
+		auto tex = FrameBuffer::MakeTexture(EngineBase1::Instance().windowSize.As<uint32_t>());
 		SetFrame(Frame::Create(tex));
 	}
-	// todo: blood effect frame 1-8 draw to tex
+
+	template<typename F>
+	void Draw(F&& func) {
+		auto& e = EngineBase1::Instance();
+		fb.DrawTo(frame->tex, RGBA8{ 50,50,50,255 }, [&] {
+			e.GLBlendFunc({ GL_SRC_ALPHA, GL_ONE, GL_FUNC_ADD });
+			func();
+		});
+		auto bak = e.blend;
+		e.GLBlendFunc({ GL_DST_COLOR, GL_ZERO, GL_FUNC_ADD });
+		Quad::Draw();
+		e.GLBlendFunc(bak);
+	}
 };
 
 struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
+	Quad symbolQuad;
 
+	Light light;
 	Grass grass;
 	xx::List<xx::Ref<Hero>, int32_t> heroes;
 

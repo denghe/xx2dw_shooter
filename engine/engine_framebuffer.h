@@ -3,7 +3,8 @@
 
 struct FrameBuffer {
     GLFrameBuffer fb;
-    XY bak{};
+    XY bakWndSiz{};
+    std::array<uint32_t, 3> bakBlend;
 
     // need ogl frame env
     explicit FrameBuffer(bool autoInit = false) {
@@ -39,23 +40,26 @@ struct FrameBuffer {
 
 protected:
     void Begin(xx::Ref<GLTexture>& t, std::optional<RGBA8> const& c = {}) {
-        auto& ge = EngineBase1::Instance();
-        ge.ShaderEnd();
-        bak = ge.windowSize;
-        ge.SetWindowSize((float)t->Width(), (float)t->Height());
-        ge.flipY = -1;
+        auto& eb = EngineBase1::Instance();
+        eb.ShaderEnd();
+        bakWndSiz = eb.windowSize;
+        bakBlend = eb.blend;
+        eb.SetWindowSize((float)t->Width(), (float)t->Height());
+        eb.flipY = -1;
         BindGLFrameBufferTexture(fb, *t);
-        ge.GLViewport();
+        eb.GLViewport();
         if (c.has_value()) {
-            ge.GLClear(c.value());
+            eb.GLClear(c.value());
         }
+        eb.GLBlendFunc(eb.blendDefault);
     }
     void End() {
-        auto& ge = EngineBase1::Instance();
-        ge.ShaderEnd();
+        auto& eb = EngineBase1::Instance();
+        eb.ShaderEnd();
         UnbindGLFrameBuffer();
-        ge.SetWindowSize(bak.x, bak.y);
-        ge.flipY = 1;
-        ge.GLViewport();
+        eb.SetWindowSize(bakWndSiz.x, bakWndSiz.y);
+        eb.flipY = 1;
+        eb.GLViewport();
+        eb.GLBlendFunc(bakBlend);
     }
 };
