@@ -10,6 +10,7 @@
 #include <engine_scale9sprite.h>
 #include <engine_camera.h>
 #include <engine_scene.h>
+#include <engine_scissor.h>
 
 #ifndef __EMSCRIPTEN__
 #include <engine_bitmapdc.h>

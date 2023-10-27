@@ -101,6 +101,14 @@ void init_gCanvas(int charSize, int width, int height, const char* font);
 #endif
 
 
+
+
+
+
+enum class MoveDirections : int {
+    Down = 1, Left = 2, Right = 4, Up = 8
+};
+
 enum class VAligns {
     Top,
     Center,

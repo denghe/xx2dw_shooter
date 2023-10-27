@@ -61,6 +61,16 @@ struct LineStrip {
 		return *this;
 	}
 
+	LineStrip& FillRectPoints(XY const& pos, XY const& wh) {
+		points.resize(5);
+		points[0] = { pos.x, pos.y };
+		points[1] = { pos.x + wh.x, pos.y };
+		points[2] = { pos.x + wh.x, pos.y + wh.y };
+		points[3] = { pos.x, pos.y + wh.y };
+		points[4] = { pos.x, pos.y };
+		return *this;
+	}
+
 	// ... more?
 
 	LineStrip& Clear() {
