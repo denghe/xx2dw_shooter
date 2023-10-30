@@ -3,13 +3,14 @@
 
 struct Node {
 	xx::List<xx::Shared<Node>, int32_t> children;
-	xx::Weak<Node> parent;	// fill by MakeChildren
+	xx::Weak<Node> parent;										// fill by MakeChildren
 
 	SimpleAffineTransform trans;
 	XY position{}, scale{ 1, 1 }, anchor{ 0.5, 0.5 }, size{};
+	Rect boundingBox;											// world coordinate. fill by FillTrans()
 	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
-	bool visible{ true };
+	bool visible{ true };										// false: custom handle
 
 	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
 		return size * scale + padding;
@@ -22,6 +23,7 @@ struct Node {
 		} else {
 			trans.PosScaleAnchorSize(position, scale, anchor * size);
 		}
+		// todo: fill boundingBox
 		TransUpdate();
 	}
 
@@ -79,7 +81,12 @@ namespace xx {
 example:
 
 void GameLooper::Draw() {
-	FillZNodes(tmpZNodes, node);
+	FillZNodes(tmpZNodes, rootNode);
+	OrderByZDrawAndClear(tmpZNodes);
+
+	FillZNodes(tmpZNodes, n1);
+	FillZNodes(tmpZNodes, n2);
+	// ...
 	OrderByZDrawAndClear(tmpZNodes);
 
 */
@@ -97,24 +104,41 @@ struct ZNode {
 	}
 };
 
-inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
+//template<bool ignoreRootVisible = false>
+//void FillZNodes(xx::List<ZNode>& zns, Node* n) {
+//	assert(n);
+//	if constexpr (!ignoreRootVisible) {
+//		if (!n->visible) return;
+//	}
+//	// todo: cut by parent AABB?
+//	zns.Emplace(n->z, n);
+//	for (auto i = zns.len - 1; i < zns.len; ++i) {
+//		n = zns[i].n;
+//		for (auto& c : n->children) {
+//			assert(c);
+//			if (!c->visible) continue;
+//			// todo: cut by parent AABB?
+//			zns.Emplace(c->z, c.pointer);
+//		}
+//	}
+//}
+
+template<bool ignoreRootVisible = false>
+void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
-	if (!n->visible) return;
+	if constexpr (!ignoreRootVisible) {
+		if (!n->visible) return;
+	}
+	// todo: cut by parent boundingBox? no cross return?
 	zns.Emplace(n->z, n);
-	for (auto i = zns.len - 1; i < zns.len; ++i) {
-		n = zns[i].n;
-		for (auto& c : n->children) {
-			assert(c);
-			if (!c->visible) continue;
-			zns.Emplace(c->z, c.pointer);
-		}
+	for (auto& c : n->children) {
+		FillZNodes(zns, c);
 	}
 }
 
 inline void OrderByZDrawAndClear(xx::List<ZNode>& zns) {
 	std::sort(zns.buf, zns.buf + zns.len, ZNode::LessThanComparer);	// draw small z first
 	for (auto& zn : zns) {
-		// todo: cut by AABB with camera?
 		zn->Draw();
 	}
 	zns.Clear();

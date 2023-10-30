@@ -2,8 +2,9 @@
 #include <engine_base2.h>
 
 // todo: ScrollView move Directions
+
 struct ScrollView : MouseEventHandlerNode, Scissor {
-	std::function<void()> onDrawContent;	// todo: args -- basePos size scale ?
+	XY basePos{}, scaledSize{};	// todo: replace to boundingBox
 
 	void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = {0.5f, 0.5f}, XY const& scale_ = { 1,1 }) {
 		z = z_;
@@ -11,22 +12,34 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		scale = scale_;
 		anchor = anchor_;
 		size = size_;
-		MouseEventHandlerNode::FillTrans();
+		SyncBasePosScaledSize();
 	}
 
-	template<typename F>
-	void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_, XY const& scale_, F&& callback) {
-		Init(z_, position_, scale_, anchor_, size_);
-		onDrawContent = std::forward<F>(callback);
+	XX_FORCE_INLINE void SyncBasePosScaledSize() {
+		Node::FillTrans();
+		basePos = trans;
+		XY pmax{ trans(size) };
+		scaledSize = pmax - basePos;
+	}
+
+	// todo: MakeChildren set scissor by parent?
+
+	// scan child z & set visible ( call after all children add )
+	void MakeChildrenEnd() {
+		for (auto& n : children) {
+			n->visible = n->z < z;
+		}
 	}
 
 	virtual void Draw() override {
-		auto& eb = EngineBase1::Instance();
-		XY pmin = trans, pmax{ trans(size) };
-		auto wh = pmax - pmin;
-		auto wh_2 = wh / 2.f;
-		DrawTo(pmin, wh, onDrawContent);
-		LineStrip().FillRectPoints(pmin, wh).Draw();
+		DirectDrawTo(basePos, scaledSize, [&] {
+			auto& eb = EngineBase1::Instance();
+			for (auto& n : children) {
+				if (n->visible) continue;
+				FillZNodes<true>(eb.tmpZNodes2, n);
+			}
+			OrderByZDrawAndClear(eb.tmpZNodes2);
+		});
 	};
 
 	// todo: mouse event dispatch to content
