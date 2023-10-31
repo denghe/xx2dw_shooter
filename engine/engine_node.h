@@ -7,10 +7,11 @@ struct Node {
 
 	SimpleAffineTransform trans;
 	XY position{}, scale{ 1, 1 }, anchor{ 0.5, 0.5 }, size{};
-	Rect boundingBox;											// world coordinate. fill by FillTrans()
+	XY worldMinXY{}, worldMaxXY{}, worldSize;					// boundingBox. world coordinate. fill by FillTrans()
 	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
 	bool visible{ true };										// false: custom handle
+	bool cutByParent{ true };									// parent is scissor ?
 
 	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
 		return size * scale + padding;
@@ -23,8 +24,20 @@ struct Node {
 		} else {
 			trans.PosScaleAnchorSize(position, scale, anchor * size);
 		}
-		// todo: fill boundingBox
+
+		worldMinXY = trans;
+		worldMaxXY = trans(size);
+		worldSize = worldMaxXY - worldMinXY;
+
 		TransUpdate();
+	}
+
+	// visible + cut check
+	XX_FORCE_INLINE bool IsVisible() {
+		if (!visible) return false;
+		if (!cutByParent) return true;
+		if (parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
+		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
 	}
 
 	// for update
@@ -44,10 +57,19 @@ struct Node {
 	}
 
 	template<typename T, typename = std::enable_if_t<std::is_base_of_v<Node, T>>>
-	xx::Shared<T>& MakeChildren() {
+	XX_FORCE_INLINE xx::Shared<T>& MakeChildren() {
 		auto& r = children.Emplace().Emplace<T>();
 		r->parent = xx::WeakFromThis(this);
 		return r;
+	}
+
+	void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
+		z = z_;
+		position = position_;
+		scale = scale_;
+		anchor = anchor_;
+		size = size_;
+		FillTrans();
 	}
 
 	XX_FORCE_INLINE void Init() {
@@ -58,6 +80,38 @@ struct Node {
 	virtual void Draw() {};									// draw current node only ( do not contain children )
 	virtual ~Node() {};
 };
+
+/**********************************************************************************************/
+/**********************************************************************************************/
+
+struct ZNode {
+	decltype(Node::z) z;
+	Node* n;
+	XX_FORCE_INLINE Node* operator->() { return n; }
+	inline XX_FORCE_INLINE static bool LessThanComparer(ZNode const& a, ZNode const& b) {
+		return a.z < b.z;
+	}
+	inline XX_FORCE_INLINE static bool GreaterThanComparer(ZNode const& a, ZNode const& b) {
+		return a.z > b.z;
+	}
+};
+
+inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
+	assert(n);
+	if (!n->IsVisible()) return;
+	zns.Emplace(n->z, n);
+	for (auto& c : n->children) {
+		FillZNodes(zns, c);
+	}
+}
+
+inline void OrderByZDrawAndClear(xx::List<ZNode>& zns) {
+	std::sort(zns.buf, zns.buf + zns.len, ZNode::LessThanComparer);	// draw small z first
+	for (auto& zn : zns) {
+		zn->Draw();
+	}
+	zns.Clear();
+}
 
 namespace xx {
 	template<typename T>
@@ -72,74 +126,4 @@ namespace xx {
 			);
 		}
 	};
-}
-
-
-/**********************************************************************************************/
-/**********************************************************************************************/
-/*
-example:
-
-void GameLooper::Draw() {
-	FillZNodes(tmpZNodes, rootNode);
-	OrderByZDrawAndClear(tmpZNodes);
-
-	FillZNodes(tmpZNodes, n1);
-	FillZNodes(tmpZNodes, n2);
-	// ...
-	OrderByZDrawAndClear(tmpZNodes);
-
-*/
-
-
-struct ZNode {
-	decltype(Node::z) z;
-	Node* n;
-	XX_FORCE_INLINE Node* operator->() { return n; }
-	inline XX_FORCE_INLINE static bool LessThanComparer(ZNode const& a, ZNode const& b) {
-		return a.z < b.z;
-	}
-	inline XX_FORCE_INLINE static bool GreaterThanComparer(ZNode const& a, ZNode const& b) {
-		return a.z > b.z;
-	}
-};
-
-//template<bool ignoreRootVisible = false>
-//void FillZNodes(xx::List<ZNode>& zns, Node* n) {
-//	assert(n);
-//	if constexpr (!ignoreRootVisible) {
-//		if (!n->visible) return;
-//	}
-//	// todo: cut by parent AABB?
-//	zns.Emplace(n->z, n);
-//	for (auto i = zns.len - 1; i < zns.len; ++i) {
-//		n = zns[i].n;
-//		for (auto& c : n->children) {
-//			assert(c);
-//			if (!c->visible) continue;
-//			// todo: cut by parent AABB?
-//			zns.Emplace(c->z, c.pointer);
-//		}
-//	}
-//}
-
-template<bool ignoreRootVisible = false>
-void FillZNodes(xx::List<ZNode>& zns, Node* n) {
-	assert(n);
-	if constexpr (!ignoreRootVisible) {
-		if (!n->visible) return;
-	}
-	// todo: cut by parent boundingBox? no cross return?
-	zns.Emplace(n->z, n);
-	for (auto& c : n->children) {
-		FillZNodes(zns, c);
-	}
-}
-
-inline void OrderByZDrawAndClear(xx::List<ZNode>& zns) {
-	std::sort(zns.buf, zns.buf + zns.len, ZNode::LessThanComparer);	// draw small z first
-	for (auto& zn : zns) {
-		zn->Draw();
-	}
-	zns.Clear();
 }

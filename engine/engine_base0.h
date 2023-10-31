@@ -32,10 +32,13 @@ struct EngineBase0 {
     // fill after Init()
     float framePerSeconds{}, maxFrameDelay{ 1 };
     XY windowSize{}, windowSize_2{};
+    XY worldMinXY{}, worldMaxXY{}, worldSize{};             // for node easy access
     void SetWindowSize(float w, float h) {
-        XY wh{ w, h };
-        windowSize = wh;
-        windowSize_2 = wh / 2;
+        windowSize = { w, h };
+        windowSize_2 = windowSize / 2;
+        worldSize = windowSize;
+        worldMinXY = -windowSize_2;
+        worldMaxXY = windowSize_2;
     }
 
     RGBA8 clearColor{};

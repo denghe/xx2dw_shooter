@@ -244,7 +244,7 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     // for sort
-    xx::List<ZNode> tmpZNodes, tmpZNodes2;  // 2 for custom children handler
+    xx::List<ZNode> tmpZNodes;
 
     // for easy draw root node only
     void DrawNode(Node* tar) {

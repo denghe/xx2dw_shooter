@@ -4,41 +4,23 @@
 // todo: ScrollView move Directions
 
 struct ScrollView : MouseEventHandlerNode, Scissor {
-	XY basePos{}, scaledSize{};	// todo: replace to boundingBox
 
-	void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = {0.5f, 0.5f}, XY const& scale_ = { 1,1 }) {
-		z = z_;
-		position = position_;
-		scale = scale_;
-		anchor = anchor_;
-		size = size_;
-		SyncBasePosScaledSize();
-	}
+	xx::List<xx::Shared<Node>, int32_t> content;
+	xx::List<ZNode> tmpZNodes;
 
-	XX_FORCE_INLINE void SyncBasePosScaledSize() {
-		Node::FillTrans();
-		basePos = trans;
-		XY pmax{ trans(size) };
-		scaledSize = pmax - basePos;
-	}
-
-	// todo: MakeChildren set scissor by parent?
-
-	// scan child z & set visible ( call after all children add )
-	void MakeChildrenEnd() {
-		for (auto& n : children) {
-			n->visible = n->z < z;
-		}
+	template<typename T, typename = std::enable_if_t<std::is_base_of_v<Node, T>>>
+	XX_FORCE_INLINE xx::Shared<T>& MakeContent() {
+		auto& r = content.Emplace().Emplace<T>();
+		r->parent = xx::WeakFromThis(this);
+		return r;
 	}
 
 	virtual void Draw() override {
-		DirectDrawTo(basePos, scaledSize, [&] {
-			auto& eb = EngineBase1::Instance();
-			for (auto& n : children) {
-				if (n->visible) continue;
-				FillZNodes<true>(eb.tmpZNodes2, n);
+		DirectDrawTo(worldMinXY, worldSize, [&] {
+			for (auto& n : content) {
+				FillZNodes(tmpZNodes, n);
 			}
-			OrderByZDrawAndClear(eb.tmpZNodes2);
+			OrderByZDrawAndClear(tmpZNodes);
 		});
 	};
 
