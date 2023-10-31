@@ -6,9 +6,9 @@ struct MouseEventHandlerNode : Node, SpaceGridABItem<MouseEventHandlerNode, XY> 
 	virtual void OnMouseMove() = 0;
 	virtual void OnMouseUp() = 0;
 
-	bool MousePosInArea() {
+	XX_FORCE_INLINE bool MousePosInArea() const {
 		auto p = trans.MakeInvert()(gEngine->mouse.pos);
-		return Calc::Intersects::BoxPoint({}, size, p);
+		return PosInArea(p);
 	}
 
 	virtual void TransUpdate() override {

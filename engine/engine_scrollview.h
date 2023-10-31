@@ -4,19 +4,25 @@
 // todo: ScrollView move Directions
 
 struct ScrollView : MouseEventHandlerNode, Scissor {
+	XY contentSize{};
+
+	void Init(int z_, XY const& position_, XY const& size_, XY const& contentSize_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
+		Node::Init(z_, position_, size_, anchor_, scale_);
+		// todo: handle contentSize_
+	}
 
 	xx::List<ZNode> tmpZNodes;
 	template<typename T>
 	XX_FORCE_INLINE xx::Shared<T>& MakeContent() {
 		auto& r = MakeChildren<T>();
-		r->isPrivate = true;
+		r->scissor = xx::WeakFromThis(this);
 		return r;
 	}
 
 	virtual void Draw() override {
 		DirectDrawTo(worldMinXY, worldSize, [&] {
 			for (auto& n : children) {
-				if (n->isPrivate) {
+				if (n->scissor) {
 					FillZNodes<false>(tmpZNodes, n);
 				}
 			}

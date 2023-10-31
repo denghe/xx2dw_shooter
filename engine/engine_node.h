@@ -4,6 +4,7 @@
 struct Node {
 	xx::List<xx::Shared<Node>, int32_t> children;
 	xx::Weak<Node> parent;										// fill by MakeChildren
+	xx::Weak<Node> scissor;										// fill by scroll view MakeContent
 
 	union {
 		SimpleAffineTransform trans{};
@@ -15,12 +16,8 @@ struct Node {
 	XY worldMaxXY{}, worldSize{};								// boundingBox. world coordinate. fill by FillTrans()
 	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
-	bool cutByParent{ true };									// panel true ? parent is scissor true ? combo box pop false ?
-	bool isPrivate{ false };									// true: scroll view's content ? draw by parent
+	bool inParentArea{ true };									// panel true ? combo box pop false ?
 
-	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
-		return size * scale + padding;
-	}
 
 	// for init
 	XX_FORCE_INLINE void FillTrans() {
@@ -37,10 +34,22 @@ struct Node {
 	}
 
 	// for draw FillZNodes
-	XX_FORCE_INLINE bool IsVisible() {
-		if (!cutByParent) return true;
+	XX_FORCE_INLINE bool IsVisible() const {
+		if (scissor && !Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, scissor->worldMinXY, scissor->worldMaxXY)) return false;
+		if (!inParentArea) return true;
 		if (parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
 		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
+	}
+
+	// aabb point check with scissor
+	XX_FORCE_INLINE bool PosInArea(XY const& pos) const {
+		if (scissor && !Calc::Intersects::BoxPoint(scissor->worldMinXY, scissor->worldMaxXY, pos)) return false;
+		return Calc::Intersects::BoxPoint(worldMinXY, worldMaxXY, pos);
+	}
+
+	// for draw bg
+	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
+		return size * scale + padding;
 	}
 
 	// for update
@@ -58,10 +67,18 @@ struct Node {
 		}
 	}
 
+	void SetScissorRecursive(xx::Weak<Node> scissor_) {
+		scissor = scissor_;
+		for (auto& c : children) {
+			c->SetScissorRecursive(scissor_);
+		}
+	}
+
 	template<typename T, typename = std::enable_if_t<std::is_base_of_v<Node, T>>>
 	XX_FORCE_INLINE xx::Shared<T>& MakeChildren() {
 		auto& r = children.Emplace().Emplace<T>();
 		r->parent = xx::WeakFromThis(this);
+		r->scissor = scissor;
 		return r;
 	}
 
@@ -98,11 +115,11 @@ struct ZNode {
 	}
 };
 
-template<bool enablePrivateCheck = true>
+template<bool skipScissorContent = true>
 inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
-	if constexpr (enablePrivateCheck) {
-		if (n->isPrivate) return;
+	if constexpr (skipScissorContent) {
+		if (n->scissor && n->scissor == n->parent) return;
 	}
 	if (!n->IsVisible()) return;
 	zns.Emplace(n->z, n);

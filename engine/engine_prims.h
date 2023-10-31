@@ -461,12 +461,12 @@ struct SimpleAffineTransform {
     }
 
     // child concat parent
-    XX_FORCE_INLINE SimpleAffineTransform MakeConcat(SimpleAffineTransform const& t2) {
+    XX_FORCE_INLINE SimpleAffineTransform MakeConcat(SimpleAffineTransform const& t2) const {
         auto& t1 = *this;
         return { t1.a * t2.a, t1.d * t2.d, t1.tx * t2.a + t2.tx, t1.ty * t2.d + t2.ty };
     }
 
-    XX_FORCE_INLINE SimpleAffineTransform MakeInvert() {
+    XX_FORCE_INLINE SimpleAffineTransform MakeInvert() const {
         auto& t = *this;
         auto determinant = 1 / (t.a * t.d);
         return { determinant * t.d, determinant * t.a, determinant * (-t.d * t.tx), determinant * (-t.a * t.ty) };
