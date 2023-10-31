@@ -10,8 +10,8 @@ struct Node {
 	XY worldMinXY{}, worldMaxXY{}, worldSize;					// boundingBox. world coordinate. fill by FillTrans()
 	float alpha{ 1 };
 	int z{};													// global z for event priority or batch combine
-	bool visible{ true };										// false: custom handle
-	bool cutByParent{ true };									// parent is scissor ?
+	bool cutByParent{ true };									// panel true ? parent is scissor true ? combo box pop false ?
+	bool isPrivate{ false };									// true: scroll view's content ? draw by parent
 
 	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
 		return size * scale + padding;
@@ -32,9 +32,8 @@ struct Node {
 		TransUpdate();
 	}
 
-	// visible + cut check
+	// for draw FillZNodes
 	XX_FORCE_INLINE bool IsVisible() {
-		if (!visible) return false;
 		if (!cutByParent) return true;
 		if (parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
 		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
@@ -42,7 +41,6 @@ struct Node {
 
 	// for update
 	void FillTransRecursive() {
-		if (!visible) return;
 		FillTrans();
 		for (auto& c : children) {
 			c->FillTransRecursive();
@@ -96,8 +94,12 @@ struct ZNode {
 	}
 };
 
+template<bool enablePrivateCheck = true>
 inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	assert(n);
+	if constexpr (enablePrivateCheck) {
+		if (n->isPrivate) return;
+	}
 	if (!n->IsVisible()) return;
 	zns.Emplace(n->z, n);
 	for (auto& c : n->children) {

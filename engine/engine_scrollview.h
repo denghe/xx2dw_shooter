@@ -5,20 +5,19 @@
 
 struct ScrollView : MouseEventHandlerNode, Scissor {
 
-	xx::List<xx::Shared<Node>, int32_t> content;
 	xx::List<ZNode> tmpZNodes;
-
-	template<typename T, typename = std::enable_if_t<std::is_base_of_v<Node, T>>>
+	template<typename T>
 	XX_FORCE_INLINE xx::Shared<T>& MakeContent() {
-		auto& r = content.Emplace().Emplace<T>();
-		r->parent = xx::WeakFromThis(this);
+		auto& r = MakeChildren<T>();
+		r->isPrivate = true;
 		return r;
 	}
-
 	virtual void Draw() override {
 		DirectDrawTo(worldMinXY, worldSize, [&] {
-			for (auto& n : content) {
-				FillZNodes(tmpZNodes, n);
+			for (auto& n : children) {
+				if (n->isPrivate) {
+					FillZNodes<false>(tmpZNodes, n);
+				}
 			}
 			OrderByZDrawAndClear(tmpZNodes);
 		});
