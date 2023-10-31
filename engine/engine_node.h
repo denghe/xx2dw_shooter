@@ -5,7 +5,12 @@ struct Node {
 	xx::List<xx::Shared<Node>, int32_t> children;
 	xx::Weak<Node> parent;										// fill by MakeChildren
 
-	SimpleAffineTransform trans;
+	union {
+		SimpleAffineTransform trans{};
+	struct {
+		XY worldScale, worldMinXY;
+	};
+	};
 	XY position{}, scale{ 1, 1 }, anchor{ 0.5, 0.5 }, size{};
 	XY worldMaxXY{}, worldSize{};								// boundingBox. world coordinate. fill by FillTrans()
 	float alpha{ 1 };
@@ -16,12 +21,6 @@ struct Node {
 	XX_FORCE_INLINE XY CalcBorderSize(XY const& padding = {}) const {
 		return size * scale + padding;
 	}
-
-	// for easy access
-	XX_FORCE_INLINE XY const& WorldMinXY() const { return trans.Offset(); }
-	XX_FORCE_INLINE XY const& WorldMaxXY() const { return worldMaxXY; }
-	XX_FORCE_INLINE XY const& WorldSize() const { return worldSize; }
-	XX_FORCE_INLINE XY const& WorldScale() const { return trans.Scale(); }
 
 	// for init
 	XX_FORCE_INLINE void FillTrans() {
@@ -40,8 +39,8 @@ struct Node {
 	// for draw FillZNodes
 	XX_FORCE_INLINE bool IsVisible() {
 		if (!cutByParent) return true;
-		if (parent) return Calc::Intersects::BoxBox(WorldMinXY(), WorldMaxXY(), parent->WorldMinXY(), parent->WorldMaxXY());
-		return Calc::Intersects::BoxBox(WorldMinXY(), WorldMaxXY(), gEngine->worldMinXY, gEngine->worldMaxXY);
+		if (parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
+		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
 	}
 
 	// for update

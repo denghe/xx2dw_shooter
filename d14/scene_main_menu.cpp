@@ -3,18 +3,17 @@
 
 struct SVContent : Node {
 	virtual void Draw() override {
-		auto basePos = WorldMinXY();
-		Quad().SetFrame(gLooper.frame_no).SetScale(WorldScale() * 2)
-		.SetPosition(basePos)
+		Quad().SetFrame(gLooper.frame_no).SetScale(worldScale * 2)
+		.SetPosition(worldMinXY)
 		.SetAnchor({})
 		.Draw()
-		.SetPosition(basePos + XY{ 0, worldSize.y })
+		.SetPosition(worldMinXY + XY{ 0, worldSize.y })
 		.SetAnchor({0, 1})
 		.Draw()
-		.SetPosition(basePos + XY{ worldSize.x, worldSize.y })
+		.SetPosition(worldMinXY + XY{ worldSize.x, worldSize.y })
 		.SetAnchor({1, 1})
 		.Draw()
-		.SetPosition(basePos + XY{ worldSize.x, 0 })
+		.SetPosition(worldMinXY + XY{ worldSize.x, 0 })
 		.SetAnchor({1, 0})
 		.Draw()
 		;
