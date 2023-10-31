@@ -271,7 +271,7 @@ public:
 
 	virtual void Draw() override {
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
-		XY basePos = trans;
+		auto basePos = trans.Offset();
 		basePos.y -= y;
 		pics.Clear();
 		for (auto& o : items) {

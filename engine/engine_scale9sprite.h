@@ -79,7 +79,7 @@ struct Scale9Sprite : Node {
 		float py2 = siz.y -(th1 * ts.y);
 		float py3 = siz.y -(siz.y - th3 * ts.y);
 
-		XY basePos = trans;
+		auto& basePos = trans.Offset();
 
 		RGBA8 c = { color.r, color.g, color.b, (uint8_t)(color.a * alpha) };
 

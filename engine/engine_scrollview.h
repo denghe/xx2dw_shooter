@@ -12,8 +12,9 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		r->isPrivate = true;
 		return r;
 	}
+
 	virtual void Draw() override {
-		DirectDrawTo(worldMinXY, worldSize, [&] {
+		DirectDrawTo(WorldMinXY(), WorldSize(), [&] {
 			for (auto& n : children) {
 				if (n->isPrivate) {
 					FillZNodes<false>(tmpZNodes, n);

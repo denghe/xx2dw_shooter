@@ -433,45 +433,50 @@ struct SimpleAffineTransform {
     float tx{}, ty{};
 
     // anchorSize = anchor * size
-    void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+    XX_FORCE_INLINE void PosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
         a = scale.x;
         d = scale.y;
         tx = pos.x - scale.x * anchorSize.x;
         ty = pos.y - scale.y * anchorSize.y;
     }
 
-    void Identity() {
+    XX_FORCE_INLINE void Identity() {
         a = 1;
         d = 1;
         tx = 0;
         ty = 0;
     }
 
-    operator XY() const {
-        return { tx, ty };
+    XX_FORCE_INLINE XY const& Offset() const {
+        return (XY&)tx;
     }
 
-    XY operator()(XY const& point) const {
+    XX_FORCE_INLINE XY const& Scale() const {
+        return (XY&)a;
+    }
+
+    // apply
+    XX_FORCE_INLINE XY operator()(XY const& point) const {
         return { (float)((double)a * point.x + tx), (float)((double)d * point.y + ty) };
     }
 
     // child concat parent
-    SimpleAffineTransform MakeConcat(SimpleAffineTransform const& t2) {
+    XX_FORCE_INLINE SimpleAffineTransform MakeConcat(SimpleAffineTransform const& t2) {
         auto& t1 = *this;
         return { t1.a * t2.a, t1.d * t2.d, t1.tx * t2.a + t2.tx, t1.ty * t2.d + t2.ty };
     }
 
-    SimpleAffineTransform MakeInvert() {
+    XX_FORCE_INLINE SimpleAffineTransform MakeInvert() {
         auto& t = *this;
         auto determinant = 1 / (t.a * t.d);
         return { determinant * t.d, determinant * t.a, determinant * (-t.d * t.tx), determinant * (-t.a * t.ty) };
     }
 
-    inline static SimpleAffineTransform MakeIdentity() {
+    XX_FORCE_INLINE inline static SimpleAffineTransform MakeIdentity() {
         return { 1.0, 1.0, 0.0, 0.0 };
     }
 
-    inline static SimpleAffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+    XX_FORCE_INLINE inline static SimpleAffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
         SimpleAffineTransform t;
         t.PosScaleAnchorSize(pos, scale, anchorSize);
         return t;
