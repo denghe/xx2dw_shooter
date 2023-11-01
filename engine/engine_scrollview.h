@@ -1,25 +1,64 @@
 ﻿#pragma once
 #include <engine_base2.h>
 
-// todo: ScrollView move Directions
-
+// content align: left-top
 struct ScrollView : MouseEventHandlerNode, Scissor {
+
+	XY basePos{}, dragLimit{};
 
 	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, XY const& size_, XY const& contentSize_) {
 		Node::Init(z_, position_, scale_, anchor_, size_);
 		children.Clear();
 		auto&& c = MakeChildren<Node>();	// children[0] is content node
 		c->scissor = xx::WeakFromThis(this);
-		c->Init(z_, {}, scale_, {}, contentSize_);
-		// todo: if contentSize_ < size_ ??? calc drag area
+		CalcDragLimit(contentSize_);
+		c->Init(z_, basePos + dragLimit, scale_, {}, contentSize_);
 	}
 
 	template<typename T>
 	XX_FORCE_INLINE xx::Shared<T>& MakeContent() {
-		assert(children.len);
-		auto& r = children[0]->MakeChildren<T>();
+		auto& c = children[0];
+		assert(c->scissor.pointer() == this);
+		auto& r = c->MakeChildren<T>();
 		r->scissor = xx::WeakFromThis(this);
 		return r;
+	}
+
+	XX_FORCE_INLINE void InitContentSize(XY const& contentSize_) {
+		auto& c = children[0];
+		assert(c->scissor.pointer() == this);
+		if (c->size != contentSize_) {
+			c->size = contentSize_;
+			CalcDragLimit(contentSize_);
+			c->position = basePos + dragLimit;
+			c->FillTransRecursive();
+		}
+	}
+
+	XX_FORCE_INLINE void CalcDragLimit(XY const& contentSize_) {
+		if (size.y > contentSize_.y) {
+			basePos = { 0, size.y - contentSize_.y };
+		} else {
+			basePos = {};
+		}
+		dragLimit.x = contentSize_.x > size.x ? contentSize_.x - size.x : 0;
+		dragLimit.y = contentSize_.y > size.y ? -(contentSize_.y - size.y) : 0;
+	}
+
+	XX_FORCE_INLINE bool UpdateContentPosition(XY pos) {
+		auto& c = children[0];
+		assert(c->scissor.pointer() == this);
+		if (pos.x < 0) pos.x = 0;
+		else if (pos.x > dragLimit.x) pos.x = dragLimit.x;
+		if (pos.y > basePos.y) pos.y = basePos.y;
+		else if (pos.y < basePos.y + dragLimit.y) pos.y = basePos.y + dragLimit.y;
+		if (pos != c->position) {
+			c->position = pos;
+			c->FillTransRecursive();
+			xx::CoutN(pos);
+			return true;
+		}
+		return false;
 	}
 
 	xx::List<ZNode> tmpZNodes;
@@ -36,7 +75,6 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		assert(!eb.mouseEventHandler);
 		eb.mouseEventHandler = xx::WeakFromThis(this);
 		mouseLastPos = mouseDownPos = eb.mouse.pos;
-		xx::CoutN("OnMouseDown() ", eb.mouse.pos);
 	}
 
 	virtual void OnMouseMove() override {
@@ -44,10 +82,7 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		if (eb.mouseEventHandler.pointer() == this) {
 			auto d = eb.mouse.pos - mouseLastPos;
 			mouseLastPos = eb.mouse.pos;
-			auto& c = children[0];
-			c->position += d;
-			c->FillTransRecursive();
-			xx::CoutN("c->position ", c->position);
+			UpdateContentPosition(children[0]->position + d);
 		}
 	}
 
@@ -55,13 +90,5 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		auto& eb = EngineBase1::Instance();
 		assert(eb.mouseEventHandler.pointer() == this);
 		eb.mouseEventHandler.Reset();
-		// todo
-		xx::CoutN("OnMouseUp() ", eb.mouse.pos);
-	}
-
-	xx::TaskGuard changePos;
-	xx::Task<> ChangePos() {
-		// todo
-		co_return;
 	}
 };

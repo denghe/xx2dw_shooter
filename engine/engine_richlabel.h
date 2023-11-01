@@ -108,10 +108,7 @@ struct RichLabel : Node {
 
 	RichLabel& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity = 128) {
 		assert(width_ > 0);
-		z = z_;
-		position = position_;
-		anchor = anchor_;
-		scale = scale_;
+		Node::Init(z, position_, scale_, anchor_, { width_, 0 });
 		width = width_;
 		y = {};
 
@@ -187,7 +184,7 @@ protected:
 
 public:
 
-	RichLabel& AddText(std::u32string_view const& text, XY const& scale = { 1, 1 }, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
+	RichLabel& AddText(std::u32string_view const& text, XY const& scale_ = { 1, 1 }, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
 		auto& ctc = EngineBase2::Instance().ctcDefault;
 		Text* t{};
 		TinyFrame* charFrame{};
@@ -197,14 +194,15 @@ public:
 			else if (c == '\n') {
 				NewLine();
 			} else {
+				auto s = scale_ * worldScale;
 				charFrame = &ctc.Find(c);
-				charWidth = charFrame->texRect.w * scale.x;
+				charWidth = charFrame->texRect.w * s.x;
 				leftWidth = width - lineX;
 				if (leftWidth >= charWidth) {
-					t = &GetLastText(align, color, scale);
+					t = &GetLastText(align, color, s);
 				} else {
 					NewLine();
-					t = &MakeText(align, color, scale);
+					t = &MakeText(align, color, s);
 				}
 				t->chars.Add(charFrame);
 				lineX += charWidth;
@@ -271,8 +269,7 @@ public:
 
 	virtual void Draw() override {
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
-		auto basePos = trans.Offset();
-		basePos.y -= y;
+		XY basePos{ worldMinXY.x, worldMaxXY.y };
 		pics.Clear();
 		for (auto& o : items) {
 			switch (o.Type()) {
@@ -291,9 +288,9 @@ public:
 					q.colorplus = 1;
 					q.pos = pos;
 					q.radians = {};
-					q.scale = XY{ trans.a, trans.d } * t.scale;
+					q.scale = worldScale * t.scale;
 					q.texRect.data = f->texRect.data;
-					pos.x += f->texRect.w * trans.a * t.scale.x;
+					pos.x += f->texRect.w * worldScale.x * t.scale.x;
 				}
 				break;
 			}

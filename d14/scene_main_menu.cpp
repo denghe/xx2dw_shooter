@@ -22,25 +22,30 @@ struct SVContent : Node {
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
-	//rootNode->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, {100,100}, gLooper.s9cfg_panel);
 
 	auto sv = rootNode->MakeChildren<ScrollView>();
-	sv->Init(2, { 200, 100 }, { 1, 1 }, {}, { 100, 100 }, { 200, 200 });
+	sv->Init(2, { 200, 100 }, { 1.2f, 1.2f }, {}, { 200, 200 }, { 50, 50 });
 
-	//sv->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, sv->size, gLooper.s9cfg_panel);
-	//sv->MakeChildren<SVContent>()->Init(3, {}, { 1,1 }, {}, sv->size);
+	sv->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, sv->size, gLooper.s9cfg_panel);
+	sv->MakeChildren<SVContent>()->Init(3, {}, { 1,1 }, {}, sv->size);
 
-	sv->MakeContent<RichLabel>()->Init(4, {}, { 1,1 }, {}, sv->size.x)
+	auto&& rl = sv->MakeContent<RichLabel>();
+	rl->Init(4, {}, { 1,1 }, {}, sv->size.x)
 		.AddText(U" asdfasdfasd f sdf sadf sdf sd fs adf asdf sf sdf sadf sdf sd fs adf asdf sa fds df s df.\n")
 		.Commit();
+	
+	sv->InitContentSize(rl->worldSize);
 
-	sv->children[0]->position = { 0, -200 };	// known issue:  -200 ok -201 invisible
-	sv->children[0]->FillTransRecursive();
+	//// known issue: rich label error on scale & anchor {0,1}
+
+	//rootNode.Emplace()->Init(0, {}, { 1.5f,1.5f }, {0,0}, { 1000,1000 });
+
+	//auto&& rl = rootNode->MakeChildren<RichLabel>();
+	//rl->Init(4, {}, { 1,1 }, {0,1}, 200)
+	//	.AddText(U"123asdfasdfasd f sdf sadf sdf sd fs adf asdf sf sdf sadf sdf sd fs adf asdf sa fds df s df.\n")
+	//	.Commit();
 }
 
 void SceneMainMenu::Draw() {
 	gLooper.DrawNode(rootNode);
-	auto& n = rootNode->children[0]->children[0]->children[0];
-	auto b = n->IsVisible();
-	xx::CoutN(b);
 };
