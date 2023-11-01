@@ -4,47 +4,50 @@
 // todo: ScrollView move Directions
 
 struct ScrollView : MouseEventHandlerNode, Scissor {
-	XY contentSize{};
 
-	void Init(int z_, XY const& position_, XY const& size_, XY const& contentSize_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
-		Node::Init(z_, position_, size_, anchor_, scale_);
-		// todo: handle contentSize_
+	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, XY const& size_, XY const& contentSize_) {
+		Node::Init(z_, position_, scale_, anchor_, size_);
+		children.Clear();
+		auto&& c = MakeChildren<Node>();	// children[0] is content node
+		c->scissor = xx::WeakFromThis(this);
+		c->Init(z_, {}, scale_, {}, contentSize_);
+		// todo: if contentSize_ < size_ ??? calc drag area
 	}
 
-	xx::List<ZNode> tmpZNodes;
 	template<typename T>
 	XX_FORCE_INLINE xx::Shared<T>& MakeContent() {
-		auto& r = MakeChildren<T>();
+		assert(children.len);
+		auto& r = children[0]->MakeChildren<T>();
 		r->scissor = xx::WeakFromThis(this);
 		return r;
 	}
 
+	xx::List<ZNode> tmpZNodes;
 	virtual void Draw() override {
 		DirectDrawTo(worldMinXY, worldSize, [&] {
-			for (auto& n : children) {
-				if (n->scissor) {
-					FillZNodes<false>(tmpZNodes, n);
-				}
-			}
+			FillZNodes<false>(tmpZNodes, children[0]);
 			OrderByZDrawAndClear(tmpZNodes);
 		});
 	};
 
-	// todo: mouse event dispatch to content
-
+	XY mouseDownPos{}, mouseLastPos{};
 	virtual void OnMouseDown() override {
 		auto& eb = EngineBase1::Instance();
 		assert(!eb.mouseEventHandler);
 		eb.mouseEventHandler = xx::WeakFromThis(this);
-		// todo
+		mouseLastPos = mouseDownPos = eb.mouse.pos;
 		xx::CoutN("OnMouseDown() ", eb.mouse.pos);
 	}
 
 	virtual void OnMouseMove() override {
 		auto& eb = EngineBase1::Instance();
-		if (eb.mouseEventHandler.pointer() != this/* && !changePos*/) {
-			/*changePos(gEngine->tasks, ChangePos());*/
-			xx::CoutN("OnMouseMove() ", eb.mouse.pos);
+		if (eb.mouseEventHandler.pointer() == this) {
+			auto d = eb.mouse.pos - mouseLastPos;
+			mouseLastPos = eb.mouse.pos;
+			auto& c = children[0];
+			c->position += d;
+			c->FillTransRecursive();
+			xx::CoutN("c->position ", c->position);
 		}
 	}
 

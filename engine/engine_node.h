@@ -41,10 +41,14 @@ struct Node {
 		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
 	}
 
-	// aabb point check with scissor
 	XX_FORCE_INLINE bool PosInArea(XY const& pos) const {
 		if (scissor && !Calc::Intersects::BoxPoint(scissor->worldMinXY, scissor->worldMaxXY, pos)) return false;
 		return Calc::Intersects::BoxPoint(worldMinXY, worldMaxXY, pos);
+	}
+
+	XX_FORCE_INLINE bool PosInScissor(XY const& pos) const {
+		if (!scissor) return true;
+		return Calc::Intersects::BoxPoint(scissor->worldMinXY, scissor->worldMaxXY, pos);
 	}
 
 	// for draw bg
@@ -82,7 +86,7 @@ struct Node {
 		return r;
 	}
 
-	XX_FORCE_INLINE void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
+	XX_FORCE_INLINE void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, XY const& size_) {
 		z = z_;
 		position = position_;
 		scale = scale_;
@@ -92,7 +96,7 @@ struct Node {
 	}
 
 	XX_FORCE_INLINE void Init() {
-		Init(0, {}, gEngine->windowSize, {});
+		Init(0, -gEngine->windowSize_2, { 1,1 }, {}, gEngine->windowSize);
 	}
 
 	virtual void TransUpdate() {};

@@ -258,13 +258,14 @@ struct EngineBase1 : EngineBase0 {
 
     EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
         touchMode = false;
-        mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2
+        mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2( js )
         assert(!mouseEventHandler);
         mouseEventHandlers.ForeachPoint(mouseEventHandlers.max_2 + mouse.pos, [&](auto o) {
             tmpZNodes.Emplace(o->z, o);
-            });
+        });
         std::sort(tmpZNodes.buf, tmpZNodes.buf + tmpZNodes.len, ZNode::GreaterThanComparer);	// event big z first
         for (auto& zn : tmpZNodes) {
+            if (!((MouseEventHandlerNode*)zn.n)->PosInScissor(mouse.pos)) continue;
             ((MouseEventHandlerNode*)zn.n)->OnMouseDown();
             if (mouseEventHandler) break;
         }
@@ -279,9 +280,10 @@ struct EngineBase1 : EngineBase0 {
         } else {
             mouseEventHandlers.ForeachPoint(mouseEventHandlers.max_2 + mouse.pos, [&](auto o) {
                 tmpZNodes.Emplace(o->z, o);
-                });
+            });
             std::sort(tmpZNodes.buf, tmpZNodes.buf + tmpZNodes.len, ZNode::GreaterThanComparer);	// event big z first
             for (auto& zn : tmpZNodes) {
+                if (!((MouseEventHandlerNode*)zn.n)->PosInScissor(mouse.pos)) continue;
                 ((MouseEventHandlerNode*)zn.n)->OnMouseMove();
                 if (mouseEventHandler) break;
             }
