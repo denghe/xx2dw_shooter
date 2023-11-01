@@ -82,7 +82,7 @@ struct Node {
 		return r;
 	}
 
-	void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
+	XX_FORCE_INLINE void Init(int z_, XY const& position_, XY const& size_, XY const& anchor_ = { 0.5f, 0.5f }, XY const& scale_ = { 1,1 }) {
 		z = z_;
 		position = position_;
 		scale = scale_;
@@ -92,7 +92,7 @@ struct Node {
 	}
 
 	XX_FORCE_INLINE void Init() {
-		FillTrans();
+		Init(0, {}, gEngine->windowSize, {});
 	}
 
 	virtual void TransUpdate() {};

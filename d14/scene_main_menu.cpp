@@ -22,16 +22,17 @@ struct SVContent : Node {
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
+	rootNode->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, {100,100}, gLooper.s9cfg_panel);
 
-	auto sv = rootNode->MakeChildren<ScrollView>();
-	sv->Init(2, { -100, 100 }, { 100, 100 }, { 0.5f, 0.5f }, {2, 2});
+	//auto sv = rootNode->MakeChildren<ScrollView>();
+	//sv->Init(2, { 200, 100 }, { 100, 100 }, {}, {2, 2});
 
-	sv->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, sv->size, gLooper.s9cfg_panel);
-	sv->MakeChildren<SVContent>()->Init(3, {}, sv->size, {});
+	//sv->MakeChildren<Scale9Sprite>()->Init(1, {}, {}, sv->size, gLooper.s9cfg_panel);
+	//sv->MakeChildren<SVContent>()->Init(3, {}, sv->size, {});
 
-	sv->MakeContent<RichLabel>()->Init(4, {}, { 1,1 }, {}, sv->size.x)
-		.AddText(U" asdfasdfasd f sdf sadf sdf sd fs adf asdf sf sdf sadf sdf sd fs adf asdf sa fds df s df.\n")
-		.Commit();
+	//sv->MakeContent<RichLabel>()->Init(4, {}, { 1,1 }, {}, sv->size.x)
+	//	.AddText(U" asdfasdfasd f sdf sadf sdf sd fs adf asdf sf sdf sadf sdf sd fs adf asdf sa fds df s df.\n")
+	//	.Commit();
 }
 
 void SceneMainMenu::Draw() {
