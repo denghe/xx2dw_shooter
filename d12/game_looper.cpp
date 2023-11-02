@@ -4,7 +4,7 @@ xx::Task<> GameLooper::MainTask() {
 #ifdef __EMSCRIPTEN__
 	auto frameLaser = Frame::Create( co_await AsyncLoadTextureFromUrl("res/laser.png") );
 #else
-	auto frameLaser = LoadSharedFrame("res/laser.png");
+	auto frameLaser = LoadFrame("res/laser.png");
 #endif
 	rq.Emplace()->SetFrame(frameLaser).SetScale({ 2,1 });
 	while (true) {

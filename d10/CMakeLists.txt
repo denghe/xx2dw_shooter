@@ -35,6 +35,7 @@ file(GLOB sources
 	../xxlib/*.c
 	../xxlib/*.hpp
 	../xxlib/*.h
+	../xxlib/*.natvis
 	../3rd/*.cpp
 	../3rd/*.c
 	../3rd/*.hpp

@@ -472,11 +472,11 @@ struct SimpleAffineTransform {
         return { determinant * t.d, determinant * t.a, determinant * (-t.d * t.tx), determinant * (-t.a * t.ty) };
     }
 
-    XX_FORCE_INLINE inline static SimpleAffineTransform MakeIdentity() {
+    XX_FORCE_INLINE static SimpleAffineTransform MakeIdentity() {
         return { 1.0, 1.0, 0.0, 0.0 };
     }
 
-    XX_FORCE_INLINE inline static SimpleAffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
+    XX_FORCE_INLINE static SimpleAffineTransform MakePosScaleAnchorSize(XY const& pos, XY const& scale, XY const& anchorSize) {
         SimpleAffineTransform t;
         t.PosScaleAnchorSize(pos, scale, anchorSize);
         return t;
@@ -643,6 +643,14 @@ namespace Calc {
 
     inline XX_FORCE_INLINE float Distance(float x1, float y1, float x2, float y2) {
         return std::sqrt(DistancePow2(x1, y1, x2, y2));
+    }
+
+    inline XX_FORCE_INLINE float DistancePow2(XY const& p1, XY const& p2) {
+        return DistancePow2(p1.x, p1.y, p2.x, p2.y);
+    }
+
+    inline XX_FORCE_INLINE float Distance(XY const& p1, XY const& p2) {
+        return Distance(p1.x, p1.y, p2.x, p2.y);
     }
 
     /*

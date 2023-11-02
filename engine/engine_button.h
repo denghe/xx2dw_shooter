@@ -2,6 +2,7 @@
 #include <engine_node_derived.h>
 #include <engine_label.h>
 #include <engine_scale9sprite.h>
+#include <engine_scrollview.h>
 
 struct Button : MouseEventHandlerNode {
 	constexpr static float cBgColorplusHighlight{ 1.5 };
@@ -57,16 +58,27 @@ struct Button : MouseEventHandlerNode {
 		co_return;
 	}
 
+	XY mPos{};
 	virtual void OnMouseDown() override {
 		assert(!gEngine->mouseEventHandler);
 		gEngine->mouseEventHandler = xx::WeakFromThis(this);
 		bgChangeColorplus.Clear();
 		bg->colorplus = cBgColorplusDark;
+		mPos = gEngine->mouse.pos;
 	}
 
 	virtual void OnMouseMove() override {
-		if (gEngine->mouseEventHandler.pointer() != this && !bgChangeColorplus) {
-			bgChangeColorplus(gEngine->tasks, BgHighlight());
+		if (gEngine->mouseEventHandler.pointer() != this) {		// mbtn up
+			if (!bgChangeColorplus) {
+				bgChangeColorplus(gEngine->tasks, BgHighlight());
+			}
+		} else if (scissor) {
+			// check scroll view & detect move distance & set handler to sv
+			if (Calc::DistancePow2(mPos, gEngine->mouse.pos) > 3*3) {
+				gEngine->mouseEventHandler.Reset();
+				bg->colorplus = cBgColorplusNormal;
+				scissor.Lock().As<MouseEventHandlerNode>()->OnMouseDown();
+			}
 		}
 	}
 

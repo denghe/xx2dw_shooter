@@ -6,7 +6,10 @@ void ScenePlay::Init() {
 	grass.Init();
 
 	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Button>()->Init(1, { 0, -200 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Exit Game", [&]() {
+
+	auto basePos = rootNode->size / 2;
+
+	rootNode->MakeChildren<Button>()->Init(1, basePos + XY{ 0, -200 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Exit Game", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 

@@ -12,7 +12,12 @@ struct MouseEventHandlerNode : Node, SpaceGridABItem<MouseEventHandlerNode, XY> 
 
 	virtual void TransUpdate() override {
 		auto& hs = gEngine->mouseEventHandlers;
-		SGABAddOrUpdate(hs, hs.max_2 + worldMinXY + worldSize / 2, worldSize);
+		auto pos = hs.max_2 + worldMinXY + worldSize / 2;
+		if (Calc::Intersects::BoxPoint(XY{}, hs.max, pos)) {
+			SGABAddOrUpdate(hs, pos, worldSize);
+		} else {
+			SGABRemove();
+		}
 	}
 
 	~MouseEventHandlerNode() {

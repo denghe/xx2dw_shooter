@@ -108,7 +108,7 @@ struct RichLabel : Node {
 
 	RichLabel& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity = 128) {
 		assert(width_ > 0);
-		Node::Init(z, position_, scale_, anchor_, { width_, 0 });
+		Node::Init(z_, position_, scale_, anchor_, { width_, 0 });
 		width = width_;
 		y = {};
 

@@ -47,10 +47,20 @@ void SceneMainMenu::Init() {
 		sv->MakeChildren<Scale9Sprite>()->Init(1, {}, { 1,1 }, {}, sv->size, gLooper.s9cfg_panel);
 		sv->MakeChildren<SVContent>()->Init(3, {}, { 1,1 }, {}, sv->size);
 
-		auto&& btn = sv->MakeContent<Button>();
-		btn->Init(4, {}, {}, gLooper.s9cfg_btn, U"asasdfsadfsfdsafsdfsadfasdfsadfsadfasdfsadfasdfsdffasdfasdfasdfdf");
+		XY maxXY{};
+		for (size_t i = 0; i < 1000; i++) {
+			if (i) maxXY.y -= 3;	// margin
+			auto&& btn = sv->MakeContent<Button>();
+			btn->Init(4, {0,maxXY.y}, {0,1}, gLooper.s9cfg_btn, xx::StringU8ToU32("btn " + std::to_string(i)));
+			if (btn->size.x > maxXY.x) maxXY.x = btn->size.x;
+			maxXY.y -= btn->size.y;
+		}
+		maxXY.y = -maxXY.y;
+		for (auto& n : sv->children[0]->children) {
+			n->position.y += maxXY.y;
+		}
 
-		sv->InitContentSize(btn->size);
+		sv->InitContentSize(maxXY);
 	}
 }
 

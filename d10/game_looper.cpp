@@ -7,11 +7,12 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg.frame = LoadFrame("res/button.png");
 #endif
 
-#if 1
-	root.Emplace()->scale = { 0.45f, 0.45f };
+#if 0
+	root.Emplace()->Init();
+	//root->scale = { 0.45f, 0.45f };
 	root->FillTrans();
 	for (size_t i = 0; i < 10000; i++) {
-		XY pos{ rnd.Next<float>(-width, width), rnd.Next<float>(-height, height) };
+		XY pos{ rnd.Next<float>(100, root->size.x - 100), rnd.Next<float>(50, root->size.y - 50) };
 		auto cfg = s9cfg;
 		(uint32_t&)s9cfg.color = rnd.Next<uint32_t>();
 		s9cfg.color.a = 255;
@@ -19,11 +20,13 @@ xx::Task<> GameLooper::MainTask() {
 		root->MakeChildren<Button>()->Init(1, pos, { 0.5, 0.5 }, cfg, txt);
 	}
 #else
-	root.Emplace()->scale = { 3, 3 };
+	root.Emplace()->Init();
+	root->scale = { 1.5f, 1.5f };
 	root->FillTrans();
-	root->MakeChildren<Button>()->Init(1, { 0, -50 }, {0.5, 0.5}, buttonTextureScale, frame_button, buttonUvRect, { 0x5f, 0x15, 0xd9, 0xff }, U"asd👻🎃fqwer");
-	root->MakeChildren<Button>()->Init(1, {}, { 0.5, 0.5 }, buttonTextureScale, frame_button, buttonUvRect, { 0x2b, 0x39, 0xfb, 0xff }, U"ASADF");
-	root->MakeChildren<Button>()->Init(1, {0, 50}, { 0.5, 0.5 }, buttonTextureScale, frame_button, buttonUvRect, { 0xe7, 0x8d, 0x00, 0xff }, U"zxcv123");
+	auto basePos = root->size / 2;
+	root->MakeChildren<Button>()->Init(1, basePos + XY{ 0, -50 }, {0.5, 0.5}, s9cfg, U"asd👻🎃fqwer");
+	root->MakeChildren<Button>()->Init(1, basePos + XY{}, { 0.5, 0.5 }, s9cfg, U"ASADF");
+	root->MakeChildren<Button>()->Init(1, basePos + XY{0, 50}, { 0.5, 0.5 }, s9cfg, U"zxcv123");
 #endif
 
 	co_return;
@@ -36,8 +39,7 @@ void GameLooper::Draw() {
 #ifdef __EMSCRIPTEN__
 	if (!s9cfg.frame) return;
 #endif
-	FillZNodes(tmpZNodes, root);
-	OrderByZDrawAndClear(tmpZNodes);
-	LineStrip().FillCirclePoints({ 0, 0 }, 2, {}, 8).Draw();
-	LineStrip().FillCirclePoints({ 0, 120 }, 2, {}, 8).Draw();
+	DrawNode(root);
+	//LineStrip().FillCirclePoints({ 0, 0 }, 2, {}, 8).Draw();
+	//LineStrip().FillCirclePoints({ 0, 120 }, 2, {}, 8).Draw();
 }
