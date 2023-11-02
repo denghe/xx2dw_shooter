@@ -194,15 +194,14 @@ public:
 			else if (c == '\n') {
 				NewLine();
 			} else {
-				auto s = scale_ * worldScale;
 				charFrame = &ctc.Find(c);
-				charWidth = charFrame->texRect.w * s.x;
+				charWidth = charFrame->texRect.w * scale_.x;
 				leftWidth = width - lineX;
 				if (leftWidth >= charWidth) {
-					t = &GetLastText(align, color, s);
+					t = &GetLastText(align, color, scale_);
 				} else {
 					NewLine();
-					t = &MakeText(align, color, s);
+					t = &MakeText(align, color, scale_);
 				}
 				t->chars.Add(charFrame);
 				lineX += charWidth;
@@ -269,7 +268,7 @@ public:
 
 	virtual void Draw() override {
 		auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
-		XY basePos{ worldMinXY.x, worldMaxXY.y };
+		XY basePos{ worldMinXY.x, worldMinXY.y + worldSize.y };
 		pics.Clear();
 		for (auto& o : items) {
 			switch (o.Type()) {
@@ -280,7 +279,7 @@ public:
 			}
 			case ItemTypes::Text: {
 				auto& t = o.As<Text>();
-				auto pos = basePos + XY{ t.x, t.y };
+				auto pos = basePos + XY{ t.x * worldScale.x, t.y * worldScale.y };
 				for (auto& f : t.chars) {
 					auto& q = *shader.Draw(f->tex->GetValue(), 1);
 					q.anchor = { 0.f, 0.f };
@@ -288,9 +287,9 @@ public:
 					q.colorplus = 1;
 					q.pos = pos;
 					q.radians = {};
-					q.scale = worldScale * t.scale;
+					q.scale = t.scale * worldScale;
 					q.texRect.data = f->texRect.data;
-					pos.x += f->texRect.w * worldScale.x * t.scale.x;
+					pos.x += f->texRect.w * t.scale.x * worldScale.x;
 				}
 				break;
 			}
@@ -304,8 +303,8 @@ public:
 		}
 		for (auto& p : pics) {
 			auto& t = *p;
-			auto pos = basePos + XY{ t.x, t.y };
-			t.quad->SetPosition(pos).Draw();
+			auto pos = basePos + XY{ t.x * worldScale.x, t.y * worldScale.y };
+			t.quad->SetPosition(pos).SetScale(worldScale).Draw();
 		}
 	}
 };

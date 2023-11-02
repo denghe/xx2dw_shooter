@@ -26,7 +26,7 @@ struct Button : MouseEventHandlerNode {
 		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
-		bg->Init(z, {}, {}, size, cfg_);
+		bg->Init(z, {}, {1,1}, {}, size, cfg_);
 
 		FillTransRecursive();
 	}

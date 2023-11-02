@@ -12,7 +12,7 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		auto&& c = MakeChildren<Node>();	// children[0] is content node
 		c->scissor = xx::WeakFromThis(this);
 		CalcDragLimit(contentSize_);
-		c->Init(z_, basePos + dragLimit, scale_, {}, contentSize_);
+		c->Init(z_, basePos + dragLimit, {1,1}, {}, contentSize_);
 	}
 
 	template<typename T>

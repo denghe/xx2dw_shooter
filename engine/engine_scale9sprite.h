@@ -23,18 +23,13 @@ struct Scale9Sprite : Node {
 	XY texScale;
 	float colorplus;
 
-	void Init(int z_, XY const& position_, XY const& anchor_, XY const& size_, Scale9SpriteConfig const& cfg_, float colorplus_ = 1) {
-		z = z_;
-		position = position_;
-		size = size_;
-		anchor = anchor_;
+	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, XY const& size_, Scale9SpriteConfig const& cfg_, float colorplus_ = 1) {
+		Node::Init(z_, position_, scale_, anchor_, size_);
 		texScale = cfg_.texScale;
 		frame = cfg_.frame;
 		center = cfg_.center;
 		color = cfg_.color;
 		colorplus = colorplus_;
-
-		FillTrans();
 	}
 
 	virtual void Draw() override {
