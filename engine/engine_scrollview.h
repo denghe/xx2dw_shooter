@@ -30,7 +30,7 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		if (c->size != contentSize_) {
 			c->size = contentSize_;
 			CalcDragLimit(contentSize_);
-			c->position = basePos + dragLimit;
+			c->position = { basePos.x, basePos.y + dragLimit.y };
 			c->FillTransRecursive();
 		}
 	}
@@ -41,21 +41,21 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		} else {
 			basePos = {};
 		}
-		dragLimit.x = contentSize_.x > size.x ? contentSize_.x - size.x : 0;
+		dragLimit.x = contentSize_.x > size.x ? -(contentSize_.x - size.x) : 0;
 		dragLimit.y = contentSize_.y > size.y ? -(contentSize_.y - size.y) : 0;
 	}
 
 	XX_FORCE_INLINE bool UpdateContentPosition(XY pos) {
 		auto& c = children[0];
 		assert(c->scissor.pointer() == this);
-		if (pos.x < 0) pos.x = 0;
-		else if (pos.x > dragLimit.x) pos.x = dragLimit.x;
+		if (pos.x > 0) pos.x = 0;
+		else if (pos.x < dragLimit.x) pos.x = dragLimit.x;
 		if (pos.y > basePos.y) pos.y = basePos.y;
 		else if (pos.y < basePos.y + dragLimit.y) pos.y = basePos.y + dragLimit.y;
 		if (pos != c->position) {
 			c->position = pos;
 			c->FillTransRecursive();
-			xx::CoutN(pos);
+			//xx::CoutN(pos);
 			return true;
 		}
 		return false;

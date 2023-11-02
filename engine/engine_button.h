@@ -15,6 +15,7 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Label> lbl;
 	xx::Shared<Scale9Sprite> bg;
 
+	// todo: scale support
 	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_) {
 		z = z_;
 		position = position_;
