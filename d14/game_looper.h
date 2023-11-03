@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <engine.h>
 
-constexpr GDesign<1280, 720, 60> gDesign;
+constexpr GDesign<1280, 800, 60> gDesign;
 
 struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	xx::Task<> MainTask();

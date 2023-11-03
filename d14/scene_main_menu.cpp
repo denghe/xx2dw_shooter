@@ -17,7 +17,53 @@ struct SVContent : Node {
 		.SetAnchor({1, 0})
 		.Draw()
 		;
-	};
+	}
+};
+
+struct SVContentBag : Node {
+	static constexpr Vec2<> itemSize{ 16, 16 };	// todo: padding
+	static constexpr XY itemSizef{ 16, 16 };
+
+	ScrollView* sv{};
+	ItemContainer* container{};
+	xx::List<xx::Ref<Frame>, int32_t>* frames{};
+	int32_t numCols{}, numRows{};
+
+	void Init(ScrollView* sv_, ItemContainer* container_) {
+		Node::Init(sv_->z + 1, {}, { 1,1 }, {}, sv_->size);
+
+		sv = sv_;
+		container = container_;
+		frames = &gLooper.frames_cheses_1;
+
+		// calc bag grid size
+		auto& items = container->items;
+		numCols = (int32_t)sv->size.x / itemSize.x;
+		numRows = items.len / numCols;
+		if (numRows * numCols < items.len) ++numRows;
+		size = { float(numCols * itemSize.x), float(numRows * itemSize.y) };
+		sv->InitContentSize(size);
+	}
+
+	virtual void Draw() override {
+		// calculate row cut range
+		auto rowIdxBegin = int32_t(size.y + parent->position.y - sv->size.y) / itemSize.y;
+		auto rowIdxEnd = rowIdxBegin + (int32_t)sv->size.y / itemSize.y + 1;
+		
+		auto& items = container->items;
+		Quad q;
+		auto basePos = worldMinXY;
+		for (int32_t rowIdx = rowIdxBegin; rowIdx <= rowIdxEnd; ++rowIdx) {
+			for (int32_t colIdx = 0; colIdx < numCols; ++colIdx) {
+				auto itemIndex = rowIdx * numCols + colIdx;
+				auto& item = items[itemIndex];
+				auto& frame = frames->At(item->typeId);
+				XY pos{ colIdx * itemSizef.x + itemSizef.x / 2, size.y - rowIdx * itemSizef.y - itemSizef.y / 2 };
+				XY scale{ itemSizef.x / frame->textureRect.w, itemSizef.y / frame->textureRect.h };
+				q.SetFrame(frame).SetScale(scale).SetPosition(basePos + pos).Draw();
+			}
+		}
+	}
 };
 
 void SceneMainMenu::Init() {
@@ -26,7 +72,7 @@ void SceneMainMenu::Init() {
 
 	{
 		auto sv = rootNode->MakeChildren<ScrollView>();
-		sv->Init(2, { 200, 100 }, { 1, 1 }, {}, { 200, 200 }, { 50, 50 });
+		sv->Init(2, { 50, 50 }, { 1, 1 }, {}, { 200, 200 }, { 50, 50 });
 
 		sv->MakeChildren<Scale9Sprite>()->Init(1, {}, { 1,1 }, {}, sv->size, gLooper.s9cfg_panel);
 		sv->MakeChildren<SVContent>()->Init(3, {}, { 1,1 }, {}, sv->size);
@@ -42,7 +88,7 @@ void SceneMainMenu::Init() {
 
 	{
 		auto sv = rootNode->MakeChildren<ScrollView>();
-		sv->Init(2, { 600, 200 }, { 1, 1 }, {}, { 200, 200 }, { 50, 50 });
+		sv->Init(2, { 50, 300 }, { 1, 1 }, {}, { 200, 200 }, { 1, 1 });
 
 		sv->MakeChildren<Scale9Sprite>()->Init(1, {}, { 1,1 }, {}, sv->size, gLooper.s9cfg_panel);
 		sv->MakeChildren<SVContent>()->Init(3, {}, { 1,1 }, {}, sv->size);
@@ -61,6 +107,21 @@ void SceneMainMenu::Init() {
 		}
 
 		sv->InitContentSize(maxXY);
+	}
+
+	{
+		auto& frames = gLooper.frames_cheses_1;
+		player1.Emplace();
+		for (int32_t i = 0; i < 100000; i++) {
+			auto item = xx::MakeShared<ItemBase>();
+			item->typeId = gLooper.rnd.Next<int32_t>(frames.len - 1);
+			player1->bag.Add(std::move(item));
+		}
+
+		auto sv = rootNode->MakeChildren<ScrollView>();
+		sv->Init(2, { 300, 50 }, { 1, 1 }, {}, { 800, 700 }, { 1, 1 });
+		sv->MakeChildren<Scale9Sprite>()->Init(1, { -5, -5 }, { 1,1 }, {}, sv->size + XY{10,10}, gLooper.s9cfg_panel);
+		sv->MakeContent<SVContentBag>()->Init(sv, &player1->bag);
 	}
 }
 
