@@ -24,14 +24,19 @@ struct ScrollView : MouseEventHandlerNode, Scissor {
 		return r;
 	}
 
+	template<bool resetPosition = true>
 	XX_FORCE_INLINE void InitContentSize(XY const& contentSize_) {
 		auto& c = children[0];
 		assert(c->scissor.pointer() == this);
 		if (c->size != contentSize_) {
 			c->size = contentSize_;
 			CalcDragLimit(contentSize_);
-			c->position = { basePos.x, basePos.y + dragLimit.y };
-			c->FillTransRecursive();
+			if constexpr (resetPosition) {
+				c->position = { basePos.x, basePos.y + dragLimit.y };
+				c->FillTransRecursive();
+			} else {
+				UpdateContentPosition(c->position);
+			}
 		}
 	}
 

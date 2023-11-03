@@ -4,19 +4,19 @@
 struct SVContent : Node {
 	virtual void Draw() override {
 		Quad().SetFrame(gLooper.frame_no).SetScale(worldScale * 2)
-		.SetPosition(worldMinXY)
-		.SetAnchor({})
-		.Draw()
-		.SetPosition(worldMinXY + XY{ 0, worldSize.y })
-		.SetAnchor({0, 1})
-		.Draw()
-		.SetPosition(worldMinXY + XY{ worldSize.x, worldSize.y })
-		.SetAnchor({1, 1})
-		.Draw()
-		.SetPosition(worldMinXY + XY{ worldSize.x, 0 })
-		.SetAnchor({1, 0})
-		.Draw()
-		;
+			.SetPosition(worldMinXY)
+			.SetAnchor({})
+			.Draw()
+			.SetPosition(worldMinXY + XY{ 0, worldSize.y })
+			.SetAnchor({ 0, 1 })
+			.Draw()
+			.SetPosition(worldMinXY + XY{ worldSize.x, worldSize.y })
+			.SetAnchor({ 1, 1 })
+			.Draw()
+			.SetPosition(worldMinXY + XY{ worldSize.x, 0 })
+			.SetAnchor({ 1, 0 })
+			.Draw()
+			;
 	}
 };
 
@@ -36,26 +36,32 @@ struct SVContentBag : Node {
 		container = container_;
 		frames = &gLooper.frames_cheses_1;
 
+		UpdateSize();
+	}
+
+	void UpdateSize() {
 		// calc bag grid size
 		auto& items = container->items;
 		numCols = (int32_t)sv->size.x / itemSize.x;
 		numRows = items.len / numCols;
 		if (numRows * numCols < items.len) ++numRows;
 		size = { float(numCols * itemSize.x), float(numRows * itemSize.y) };
-		sv->InitContentSize(size);
+		sv->InitContentSize<false>(size);
 	}
 
 	virtual void Draw() override {
 		// calculate row cut range
 		auto rowIdxBegin = int32_t(size.y + parent->position.y - sv->size.y) / itemSize.y;
 		auto rowIdxEnd = rowIdxBegin + (int32_t)sv->size.y / itemSize.y + 1;
-		
+
 		auto& items = container->items;
 		Quad q;
 		auto basePos = worldMinXY;
 		for (int32_t rowIdx = rowIdxBegin; rowIdx <= rowIdxEnd; ++rowIdx) {
 			for (int32_t colIdx = 0; colIdx < numCols; ++colIdx) {
 				auto itemIndex = rowIdx * numCols + colIdx;
+				if (itemIndex >= items.len)
+					return;
 				auto& item = items[itemIndex];
 				auto& frame = frames->At(item->typeId);
 				XY pos{ colIdx * itemSizef.x + itemSizef.x / 2, size.y - rowIdx * itemSizef.y - itemSizef.y / 2 };
@@ -97,7 +103,7 @@ void SceneMainMenu::Init() {
 		for (size_t i = 0; i < 1000; i++) {
 			if (i) maxXY.y -= 3;	// margin
 			auto&& btn = sv->MakeContent<Button>();
-			btn->Init(4, {0,maxXY.y}, {0,1}, gLooper.s9cfg_btn, xx::StringU8ToU32("btn " + std::to_string(i)));
+			btn->Init(4, { 0,maxXY.y }, { 0,1 }, gLooper.s9cfg_btn, xx::StringU8ToU32("btn " + std::to_string(i)));
 			if (btn->size.x > maxXY.x) maxXY.x = btn->size.x;
 			maxXY.y -= btn->size.y;
 		}
@@ -110,19 +116,28 @@ void SceneMainMenu::Init() {
 	}
 
 	{
-		auto& frames = gLooper.frames_cheses_1;
 		player1.Emplace();
-		for (int32_t i = 0; i < 100000; i++) {
-			auto item = xx::MakeShared<ItemBase>();
-			item->typeId = gLooper.rnd.Next<int32_t>(frames.len - 1);
-			player1->bag.Add(std::move(item));
-		}
 
 		auto sv = rootNode->MakeChildren<ScrollView>();
 		sv->Init(2, { 300, 50 }, { 1, 1 }, {}, { 800, 700 }, { 1, 1 });
-		sv->MakeChildren<Scale9Sprite>()->Init(1, { -5, -5 }, { 1,1 }, {}, sv->size + XY{10,10}, gLooper.s9cfg_panel);
-		sv->MakeContent<SVContentBag>()->Init(sv, &player1->bag);
+		sv->MakeChildren<Scale9Sprite>()->Init(1, { -5, -5 }, { 1,1 }, {}, sv->size + XY{ 10,10 }, gLooper.s9cfg_panel);
+		auto&& bagNode = sv->MakeContent<SVContentBag>();
+		bagNode->Init(sv, &player1->bag);
+
+		tasks.Add([this, bagNode = bagNode]()->xx::Task<> {
+			auto& frames = gLooper.frames_cheses_1;
+			for (int32_t i = 0; i < 503; i++) {
+				for (int32_t j = 0; j < 9; j++) {
+					auto item = xx::MakeShared<ItemBase>();
+					item->typeId = gLooper.rnd.Next<int32_t>(frames.len - 1);
+					player1->bag.Add(std::move(item));
+					bagNode->UpdateSize();
+				}
+				co_yield 0;
+			}
+			});
 	}
+
 }
 
 void SceneMainMenu::Draw() {
