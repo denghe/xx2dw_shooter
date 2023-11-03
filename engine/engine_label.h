@@ -11,6 +11,11 @@ struct Label : Node {
 		anchor = anchor_;
 		scale = scale_;
 		color = color_;
+		SetText(txt_);
+	}
+
+
+	void SetText(std::u32string_view const& txt_) {
 		auto len = (int)txt_.size();
 		fs.Resize(len);
 		auto& ctc = EngineBase2::Instance().ctcDefault;
@@ -20,6 +25,14 @@ struct Label : Node {
 			size.x += fs[i]->texRect.w;
 		}
 		FillTrans();
+	}
+
+	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, RGBA8 color_, std::string_view const& txt_) {
+		Init(z_, position_, scale_, anchor_, color_, xx::StringU8ToU32(txt_));
+	}
+
+	void SetText(std::string_view const& txt_) {
+		SetText(xx::StringU8ToU32(txt_));
 	}
 
 	virtual void Draw() override {

@@ -23,7 +23,7 @@ struct SVContent : Node {
 // todo: support mouse click , drag  move  delete item
 struct SVContentBag : Node {
 	static constexpr Vec2<> itemSize{ 16, 16 };	// todo: padding
-	static constexpr XY itemSizef{ 16, 16 };
+	static constexpr XY itemSizef{ (float)itemSize.x, (float)itemSize.y };
 
 	ScrollView* sv{};
 	ItemContainer* container{};
@@ -125,17 +125,21 @@ void SceneMainMenu::Init() {
 		auto&& bagNode = sv->MakeContent<SVContentBag>();
 		bagNode->Init(sv, &player1->bag, player1->frames);
 
-		tasks.Add([this, bagNode = bagNode]()->xx::Task<> {
+		auto lblCount = rootNode->MakeChildren<Label>();
+		lblCount->Init(4, { 280, 750 }, { 1,1 }, { 1,0.5f }, RGBA8_White, "0");
+
+		tasks.Add([this, bagNode = bagNode, lblCount = lblCount]()->xx::Task<> {
 			auto& frames = gLooper.frames_cheses_1;
 			for (int32_t i = 0; i < 503; i++) {
-				player1->GenerateBagItem(9);
+				player1->GenerateBagItem(123);
 				bagNode->UpdateSize();
+				lblCount->SetText("items count = " + std::to_string(player1->bag.items.len));
 				co_yield 0;
 			}
-			});
+		});
 
 		auto btn = rootNode->MakeChildren<Button>();
-		btn->Init(5, { 200, 700 }, { 1,0.5 }, gLooper.s9cfg_btn, U"Sort");
+		btn->Init(5, { 280, 700 }, { 1,0.5f }, gLooper.s9cfg_btn, U"Sort");
 		btn->onClicked = [this, bagNode]() {
 			player1->SortBag();
 			bagNode->UpdateSize();
