@@ -20,6 +20,7 @@ struct SVContent : Node {
 	}
 };
 
+// todo: support mouse click , drag  move  delete item
 struct SVContentBag : Node {
 	static constexpr Vec2<> itemSize{ 16, 16 };	// todo: padding
 	static constexpr XY itemSizef{ 16, 16 };
@@ -29,12 +30,12 @@ struct SVContentBag : Node {
 	xx::List<xx::Ref<Frame>, int32_t>* frames{};
 	int32_t numCols{}, numRows{};
 
-	void Init(ScrollView* sv_, ItemContainer* container_) {
+	void Init(ScrollView* sv_, ItemContainer* container_, xx::List<xx::Ref<Frame>, int32_t>* frames_) {
 		Node::Init(sv_->z + 1, {}, { 1,1 }, {}, sv_->size);
 
 		sv = sv_;
 		container = container_;
-		frames = &gLooper.frames_cheses_1;
+		frames = frames_;
 
 		UpdateSize();
 	}
@@ -122,20 +123,23 @@ void SceneMainMenu::Init() {
 		sv->Init(2, { 300, 50 }, { 1, 1 }, {}, { 800, 700 }, { 1, 1 });
 		sv->MakeChildren<Scale9Sprite>()->Init(1, { -5, -5 }, { 1,1 }, {}, sv->size + XY{ 10,10 }, gLooper.s9cfg_panel);
 		auto&& bagNode = sv->MakeContent<SVContentBag>();
-		bagNode->Init(sv, &player1->bag);
+		bagNode->Init(sv, &player1->bag, player1->frames);
 
 		tasks.Add([this, bagNode = bagNode]()->xx::Task<> {
 			auto& frames = gLooper.frames_cheses_1;
 			for (int32_t i = 0; i < 503; i++) {
-				for (int32_t j = 0; j < 9; j++) {
-					auto item = xx::MakeShared<ItemBase>();
-					item->typeId = gLooper.rnd.Next<int32_t>(frames.len - 1);
-					player1->bag.Add(std::move(item));
-					bagNode->UpdateSize();
-				}
+				player1->GenerateBagItem(9);
+				bagNode->UpdateSize();
 				co_yield 0;
 			}
 			});
+
+		auto btn = rootNode->MakeChildren<Button>();
+		btn->Init(5, { 200, 700 }, { 1,0.5 }, gLooper.s9cfg_btn, U"Sort");
+		btn->onClicked = [this, bagNode]() {
+			player1->SortBag();
+			bagNode->UpdateSize();
+		};
 	}
 
 }

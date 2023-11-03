@@ -42,7 +42,25 @@ inline void ItemContainer::Remove(ItemBase* item) {
 }
 
 struct Player {
+	xx::List<xx::Ref<Frame>, int32_t>* frames = &gLooper.frames_cheses_1;	// for test
 	ItemContainer equips, bag;	// todo: more
+
+	void GenerateBagItem(int32_t n = 1) {
+		for (int32_t i = 0; i < n; i++) {
+			auto item = xx::MakeShared<ItemBase>();
+			item->typeId = gLooper.rnd.Next<int32_t>(frames->len - 1);
+			bag.Add(std::move(item));
+		}
+	}
+
+	void SortBag() {
+		auto len = bag.items.len;
+		auto b = (ItemBase**)bag.items.buf;
+		std::sort(b, b + len, [](ItemBase* o1, ItemBase* o2)->bool { return o1->typeId < o2->typeId; });
+		for (int32_t i = 0; i < len; ++i) {
+			b[i]->indexAtContainer = i;
+		}
+	}
 };
 
 struct SceneMainMenu : Scene {
