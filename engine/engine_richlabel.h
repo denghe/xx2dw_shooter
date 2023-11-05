@@ -106,7 +106,7 @@ struct RichLabel : Node {
 	int32_t lineItemsCount{};
 	HAligns halign{};	// when line end, horizontal align current line
 
-	RichLabel& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity = 128) {
+	RichLabel& Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity_ = 128) {
 		assert(width_ > 0);
 		Node::Init(z_, position_, scale_, anchor_, { width_, 0 });
 		width = width_;
@@ -114,7 +114,7 @@ struct RichLabel : Node {
 
 		LineInit();
 		items.Clear();
-		items.Reserve(capacity);
+		items.Reserve(capacity_);
 		return *this;
 	}
 
@@ -208,6 +208,9 @@ public:
 			}
 		}
 		return *this;
+	}
+	RichLabel& AddText(std::string_view const& text, XY const& scale_ = { 1, 1 }, RGBA8 color = RGBA8_White, VAligns align = VAligns::Center) {
+		return AddText(xx::StringU8ToU32(text), scale_, color, align);
 	}
 
 	RichLabel& AddPicture(xx::Ref<Quad> quad, VAligns align = VAligns::Center) {
