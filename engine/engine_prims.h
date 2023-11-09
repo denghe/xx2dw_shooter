@@ -126,6 +126,10 @@ struct Vec2 {
         else return x == T{} && y == T{};
     }
 
+    bool IsZeroSimple() const {
+        return x == T{} && y == T{};
+    }
+
     void Clear() {
         x = {};
         y = {};

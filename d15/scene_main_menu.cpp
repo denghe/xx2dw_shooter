@@ -21,12 +21,21 @@ struct InfoPanel : Node {
 
 	// todo: copy code from button
 	// todo: rich label init code use lambda
-	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, int capacity_ = 128) {
-		Node::Init(z_, position_, scale_, anchor_, {width_, 0});
+	template<typename Func>
+	void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, float width_, Func&& fillContent) {
+		assert(width_ > 0);
+		Node::Init(z_, position_, scale_, anchor_, {width_, 1});
 		children.Clear();
-		content.Emplace()->Init(z_ + 1, position_, scale_, anchor_, width_, capacity_);
+		content.Emplace()->Init(z_ + 1, position_, scale_, anchor_, width_);
 		children.Add(content);
 		border.SetFrame(gLooper.frame_dot_1_22);
+
+		fillContent(content);
+		size = content->size + cPadding;
+
+		// bg? border?
+
+		FillTransRecursive();
 	}
 
 	// todo: draw border line + bg like scale 9 sprite
@@ -39,7 +48,9 @@ struct InfoPanel : Node {
 		// //border.SetPosition()
 		// border.SetScale(border.texRect.w / borderSize2.x).SetColor(cBorderColor).Draw();
 		// border.SetScale(border.texRect.w / borderSize1.x).SetColor(cBackgroundColor).Draw();
+		// 
 		//// todo: draw border
+		LineStrip().FillRectPoints(worldMinXY, worldSize).Draw();
 	}
 };
 
@@ -47,8 +58,9 @@ void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
 
 	auto&& ip = rootNode->MakeChildren<InfoPanel>();
-	ip->Init(0, { 600, 400 }, { 1,1 }, { 0.5f, 0.5f }, 300);
-	ip->content->AddText("asdf").Commit();
+	ip->Init(0, {}, { 1,1 }, { 0.5f, 0.5f }, 300, [](xx::Shared<RichLabel>& content) {
+		content->AddText("asdf").Commit();
+	});
 }
 
 void SceneMainMenu::Draw() {

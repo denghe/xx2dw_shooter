@@ -35,9 +35,9 @@ struct Node {
 
 	// for draw FillZNodes
 	XX_FORCE_INLINE bool IsVisible() const {
+		if (size.IsZeroSimple()) return true;
 		if (scissor && !Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, scissor->worldMinXY, scissor->worldMaxXY)) return false;
-		if (!inParentArea) return true;
-		if (parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
+		if (inParentArea && parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
 		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
 	}
 
@@ -83,10 +83,11 @@ struct Node {
 		auto& r = children.Emplace().Emplace<T>();
 		r->parent = xx::WeakFromThis(this);
 		r->scissor = scissor;
+		r->inParentArea = !size.IsZeroSimple();
 		return r;
 	}
 
-	XX_FORCE_INLINE void Init(int z_, XY const& position_, XY const& scale_, XY const& anchor_, XY const& size_) {
+	XX_FORCE_INLINE void Init(int z_ = 0, XY const& position_ = {}, XY const& scale_ = { 1,1 }, XY const& anchor_ = {}, XY const& size_ = {}) {
 		z = z_;
 		position = position_;
 		scale = scale_;
@@ -95,7 +96,7 @@ struct Node {
 		FillTrans();
 	}
 
-	XX_FORCE_INLINE void Init() {
+	XX_FORCE_INLINE void Init_Root() {
 		Init(0, -gEngine->windowSize_2, { 1,1 }, {}, gEngine->windowSize);
 	}
 
