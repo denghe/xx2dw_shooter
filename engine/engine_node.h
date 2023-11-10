@@ -35,7 +35,6 @@ struct Node {
 
 	// for draw FillZNodes
 	XX_FORCE_INLINE bool IsVisible() const {
-		if (size.IsZeroSimple()) return true;
 		if (scissor && !Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, scissor->worldMinXY, scissor->worldMaxXY)) return false;
 		if (inParentArea && parent) return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, parent->worldMinXY, parent->worldMaxXY);
 		return Calc::Intersects::BoxBox(worldMinXY, worldMaxXY, gEngine->worldMinXY, gEngine->worldMaxXY);
@@ -126,8 +125,10 @@ inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	if constexpr (skipScissorContent) {
 		if (n->scissor && n->scissor == n->parent) return;
 	}
-	if (!n->IsVisible()) return;
-	zns.Emplace(n->z, n);
+	if (!n->size.IsZeroSimple()) {
+		if (!n->IsVisible()) return;
+		zns.Emplace(n->z, n);
+	}
 	for (auto& c : n->children) {
 		FillZNodes(zns, c);
 	}
