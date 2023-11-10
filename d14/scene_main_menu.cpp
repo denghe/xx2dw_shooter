@@ -75,7 +75,7 @@ struct SVContentBag : Node {
 
 void SceneMainMenu::Init() {
 
-	rootNode.Emplace()->Init();
+	rootNode.Emplace()->Init(0, -gLooper.windowSize_2);
 
 	{
 		auto sv = rootNode->MakeChildren<ScrollView>();

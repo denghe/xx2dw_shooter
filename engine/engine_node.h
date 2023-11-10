@@ -125,8 +125,7 @@ inline void FillZNodes(xx::List<ZNode>& zns, Node* n) {
 	if constexpr (skipScissorContent) {
 		if (n->scissor && n->scissor == n->parent) return;
 	}
-	if (!n->size.IsZeroSimple()) {
-		if (!n->IsVisible()) return;
+	if ((n->size.x > 0.f || n->size.y > 0.f) && n->IsVisible()) {
 		zns.Emplace(n->z, n);
 	}
 	for (auto& c : n->children) {
