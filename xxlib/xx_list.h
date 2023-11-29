@@ -232,8 +232,8 @@ namespace xx {
 			len += count;
 		}
 
-		template<typename T2>
-		void AddRange(List<T2> const& list) noexcept {
+		template<typename L>
+		void AddRange(L const& list) noexcept {
 			return AddRange(list.buf, list.len);
 		}
 
