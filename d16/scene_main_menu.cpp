@@ -1,99 +1,97 @@
 ﻿#include <pch.h>
 #include <all.h>
 
-// flag
-enum class BuffTags : uint32_t {
+enum class BuffTags : uint32_t {						// bit flag
 	Tag1 = 1, 
 	Tag2 = 2,
 	Tag3 = 4,
-	Tag4 = 8,
 	// ... 2^n
 };
 
 struct BuffInfo {
-	int32_t id{};									// unique key
-	int32_t typeId{};								// group
-	int32_t priority{};								// sort buffs order by
-	BuffTags tags{};								// flag
-	float durationSeconds{};						// total life cycle
-	float intervalSeconds{};						// update tick time
-
-	std::string name, icon, desc;
+	int32_t id{};										// unique key
+	int32_t typeId{};									// group
+	int32_t priority{};									// sort buffs order by
+	BuffTags tags{};									// flag
+	float durationSeconds{};							// total life cycle
+	float intervalSeconds{};							// update tick time
+	std::string name, icon, desc;						// misc
 };
-using BuffInfos = xx::List<xx::Ref<BuffInfo>, int32_t>;
+xx::Listi32<xx::Ref<BuffInfo>> gBuffInfos;				// global config
 
-BuffInfos gBuffInfos;								// global config
+enum class BuffRemoveReasons : uint32_t {
+	None, Clean, Replace, Conflict						// todo: more
+};
 
+struct Buffs;
 struct BuffBase {
-	xx::Ref<BuffInfo> info;
+	typedef void(*OnRemove_t)(BuffBase* self, BuffBase* sender, BuffRemoveReasons reason);
+	xx::Ref<BuffInfo> info;								// todo: local cache for optimize performance?
+	OnRemove_t onRemove{};
 	xx::Task<> mainLogic;
 };
 
-// todo: remove this
-struct BuffPriority {
-	BuffBase* buff;
-	int32_t priority;
-
-	inline static xx::List<BuffPriority, int32_t> tmpContainer;
-	inline static bool OrderBy(BuffPriority const& a, BuffPriority const& b) {
-		return a.priority < b.priority;
-	}
-};
-
 struct Buffs {
-	xx::List<xx::Shared<BuffBase>, int32_t> children;							// buffs store
-	xx::Tasks tasks;
-
-	void Sort() {
-		// todo
-	}
+	xx::Listi32<xx::Shared<BuffBase>> data;
+	bool dirty{ true };
+	xx::Tasks tasks;									// for generate Buff
 
 	void Update() {
-
-		// execute current buffs
-		if (children.len) {
-
-			// todo: if have not new buff, skip sort
-
-			// sort
-			auto& c = BuffPriority::tmpContainer;
-			for (auto& buff : children) {
-				c.Emplace(buff.pointer, buff->info->priority);
-			}
-			std::sort(c.buf, c.buf + c.len, BuffPriority::OrderBy);
-
-			// execute
-			for (int32_t i = c.len - 1; i >= 0; --i) {
-				if (c[i].buff->mainLogic.Resume()) {							// resume main logic. can't make new children here( use tasks delay create )
-					c.SwapRemoveAt(i);
-				} else {
-					++((xx::Shared<BuffBase>&)c[i]).GetHeader()->sharedCount;	// protect
-				}
-			}
-
-			// store
-			if (children.len > c.len) {
-				children.Clear();
-				for (int32_t i = 0, e = c.len; i < e; ++i) {
-					memcpy(&children[i], &c[i].buff, sizeof(BuffBase*));		// restore protected buffs
-				}
-				children.len = c.len;
-			} else {
-				for (int32_t i = 0, e = c.len; i < e; ++i) {
-					--((xx::Shared<BuffBase>&)c[i]).GetHeader()->sharedCount;	// unprotect
-				}
-			}
-
-			// clear
-			c.len = 0;
+		tasks();
+		if (dirty) {
+			dirty = false;
+			std::sort((BuffBase**)data.buf, (BuffBase**)data.buf + data.len
+				, [](auto& a, auto& b) { return a->info->priority < b->info->priority; });
 		}
-
+		for (auto i = data.len - 1; i >= 0; --i) {
+			if (data[i]->mainLogic.Resume()) {
+				data.SwapRemoveAt(i);
+				dirty = true;
+			}
+		}
 	}
+
+	int32_t FindByTypeId(int32_t typeId, int32_t beginIndex = 0) {
+		for (int32_t i = beginIndex, e = data.len; i < e; ++i) {
+			if (data[i]->info->typeId == typeId) return i;
+		}
+		return -1;
+	}
+
+	void RemoveAll(BuffBase* sender, BuffRemoveReasons reason) {
+		for (auto& b : data) {
+			if (b->onRemove) {
+				b->onRemove(b.pointer, sender, reason);
+			}
+		}
+		data.Clear();
+	}
+
+	void Remove(int32_t index, BuffBase* sender, BuffRemoveReasons reason) {
+		data[index]->onRemove(data[index].pointer, sender, reason);
+		data.SwapRemoveAt(index);
+	}
+
+	template<std::derived_from<BuffBase> T = BuffBase>
+	xx::Shared<T> const& At(int32_t index) {
+		assert(data[index].As<T>());
+		return (xx::Shared<T>&)data[index];
+	}
+
+	// todo: more helpers
 };
 
 struct Buff1 : BuffBase {
+	float expirationLifeTime{}, expirationTickTime{};
+
 	inline static xx::Shared<Buff1> CreateTo(Buffs& bs) {
-		// todo: scan exists. update? replace? create fail?
+		if (auto idx = bs.FindByTypeId(0); idx != -1) {
+			auto&& b = bs.At<Buff1>(idx);
+			b->expirationLifeTime = gEngine->nowSecs + b->info->durationSeconds;
+		} else {
+			auto b = xx::MakeShared<Buff1>();
+			b->info = gBuffInfos[0];
+		}
 
 		return {};	// fail
 	}
@@ -107,17 +105,10 @@ struct Buff2 : BuffBase {
 	// todo
 };
 
-struct Buff3 : BuffBase {
-	inline static xx::Shared<Buff3> CreateTo(Buffs& bs) {
-		return {};	// fail
-	}
-	// todo
-};
-
 struct Foo {
 	Buffs bm;
 	void Init() {
-		Buff1::CreateTo(bm);
+		//Buff1::CreateTo(bm);
 		//auto buf1 = bm.MakeChildren<Buff1>();
 		// todo
 	}
@@ -126,11 +117,9 @@ struct Foo {
 void SceneMainMenu::Init() {
 	gBuffInfos.Clear();
 	gBuffInfos.Emplace();	// placeholder
-	int32_t id{};
 	gBuffInfos.Add(
-		xx::MakeShared<BuffInfo>(BuffInfo{ .id = ++id, .typeId = 1, .priority = 1, .name = "buff1_1" }), 
-		xx::MakeShared<BuffInfo>(BuffInfo{ .id = ++id, .typeId = 1, .priority = 2, .name = "buff1_2" }),
-		xx::MakeShared<BuffInfo>(BuffInfo{ .id = ++id, .typeId = 2, .priority = 3, .name = "buff2" })
+		xx::MakeShared<BuffInfo>(BuffInfo{ .id = 0, .typeId = 1, .priority = 1, .name = "buff1" }), 
+		xx::MakeShared<BuffInfo>(BuffInfo{ .id = 1, .typeId = 2, .priority = 2, .name = "buff2" })
 	);
 
 	Foo foo;
@@ -142,6 +131,11 @@ void SceneMainMenu::Draw() {
 };
 
 
+//xx::Weak<Buffs> owner;
+//int32_t indexAtOwner{ -1 };							// fill by update, after sort for easy remove
+			//for (int32_t i = 0, e = data.len; i < e; ++i) {
+			//	data[i]->indexAtOwner = i;
+			//}
 
 //xx::Weak<Buffs> owner;
 //int32_t indexAtOwner{};
@@ -152,3 +146,55 @@ void SceneMainMenu::Draw() {
 	//}
 	//// todo
 
+//// todo: remove this
+//struct BuffPriority {
+//	BuffBase* buff;
+//	int32_t priority;
+//
+//	inline static xx::Listi32<BuffPriority> tmpContainer;
+//	inline static bool OrderBy(BuffPriority const& a, BuffPriority const& b) {
+//		return a.priority < b.priority;
+//	}
+//};
+
+	//void Update() {
+
+	//	// execute current buffs
+	//	if (data.len) {
+
+	//		// todo: if have not new buff, skip sort
+
+	//		// sort
+	//		auto& c = BuffPriority::tmpContainer;
+	//		for (auto& buff : data) {
+	//			c.Emplace(buff.pointer, buff->info->priority);
+	//		}
+	//		std::sort(c.buf, c.buf + c.len, BuffPriority::OrderBy);
+
+	//		// execute
+	//		for (int32_t i = c.len - 1; i >= 0; --i) {
+	//			if (c[i].buff->mainLogic.Resume()) {							// resume main logic. can't make new data here( use tasks delay create )
+	//				c.SwapRemoveAt(i);
+	//			} else {
+	//				++((xx::Shared<BuffBase>&)c[i]).GetHeader()->sharedCount;	// protect
+	//			}
+	//		}
+
+	//		// store
+	//		if (data.len > c.len) {
+	//			data.Clear();
+	//			for (int32_t i = 0, e = c.len; i < e; ++i) {
+	//				memcpy(&data[i], &c[i].buff, sizeof(BuffBase*));		// restore protected buffs
+	//			}
+	//			data.len = c.len;
+	//		} else {
+	//			for (int32_t i = 0, e = c.len; i < e; ++i) {
+	//				--((xx::Shared<BuffBase>&)c[i]).GetHeader()->sharedCount;	// unprotect
+	//			}
+	//		}
+
+	//		// clear
+	//		c.len = 0;
+	//	}
+
+	//}

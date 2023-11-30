@@ -268,4 +268,10 @@ namespace xx {
 	// mem moveable tag
 	template<typename T, typename SizeType>
 	struct IsPod<List<T, SizeType>, void> : std::true_type {};
+
+	template<typename T>
+	using Listi32 = List<T, int32_t>;
+
+	template<typename T>
+	using Listi64 = List<T, ptrdiff_t>;
 }
