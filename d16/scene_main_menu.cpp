@@ -74,7 +74,6 @@ struct Buffs {
 
 	template<std::derived_from<BuffBase> T = BuffBase>
 	xx::Shared<T> const& At(int32_t index) {
-		assert(data[index].As<T>());
 		return (xx::Shared<T>&)data[index];
 	}
 
@@ -87,7 +86,7 @@ struct Buff1 : BuffBase {
 	inline static xx::Shared<Buff1> CreateTo(Buffs& bs) {
 		if (auto idx = bs.FindByTypeId(0); idx != -1) {
 			auto&& b = bs.At<Buff1>(idx);
-			b->expirationLifeTime = gEngine->nowSecs + b->info->durationSeconds;
+			b->expirationLifeTime = (float)gEngine->nowSecs + b->info->durationSeconds;
 		} else {
 			auto b = xx::MakeShared<Buff1>();
 			b->info = gBuffInfos[0];
@@ -125,6 +124,78 @@ void SceneMainMenu::Init() {
 	Foo foo;
 	foo.Init();
 	// todo
+
+	{
+		std::u32string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			xx::IntToStringTo<true, 10>(s, i);
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " u32string xx::IntToStringTo. s = ", s);
+	}
+	{
+		std::u32string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			s.clear();
+			auto tmp = std::to_string(i);
+			if (tmp.size() < 10) {
+				s.append(10 - tmp.size(), '0');
+			}
+			s.append(xx::StringU8ToU32(tmp));
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " u32string std::to_string. s = ", s);
+	}
+	{
+		std::string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			xx::IntToStringTo<true, 10>(s, i);
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " string xx::IntToStringTo. s = ", s);
+	}
+	{
+		std::string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			s.clear();
+			auto tmp = std::to_string(i);
+			if (tmp.size() < 10) {
+				s.append(10 - tmp.size(), '0');
+			}
+			s.append(tmp);
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " string std::to_string. s = ", s);
+	}
+	{
+		std::string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			s.clear();
+			char buf[32];
+			auto len = sprintf_s(buf, "%d", i);
+			if (len < 10) {
+				s.append(10 - len, '0');
+			}
+			s.append(std::string_view(buf, len));
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " string sprintf. s = ", s);
+	}
+	{
+		std::string s;
+		auto secs = xx::NowEpochSeconds();
+		for (int i = 0; i < 10000000; i++) {
+			s.clear();
+			char buf[32];
+			itoa(i, buf, 10);
+			auto len = strlen(buf);
+			if (len < 10) {
+				s.append(10 - len, '0');
+			}
+			s.append(std::string_view(buf, len));
+		}
+		xx::CoutN(xx::NowEpochSeconds(secs), " string itoa. s = ", s);
+	}
 }
 
 void SceneMainMenu::Draw() {
