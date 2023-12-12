@@ -113,6 +113,9 @@ struct Foo {
 	}
 };
 
+
+// todo: test shoot multi monsters simultaneously
+
 void SceneMainMenu::Init() {
 	gBuffInfos.Clear();
 	gBuffInfos.Emplace();	// placeholder
@@ -125,77 +128,6 @@ void SceneMainMenu::Init() {
 	foo.Init();
 	// todo
 
-	{
-		std::u32string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			xx::IntToStringTo<true, 10>(s, i);
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " u32string xx::IntToStringTo. s = ", s);
-	}
-	{
-		std::u32string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			s.clear();
-			auto tmp = std::to_string(i);
-			if (tmp.size() < 10) {
-				s.append(10 - tmp.size(), '0');
-			}
-			s.append(xx::StringU8ToU32(tmp));
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " u32string std::to_string. s = ", s);
-	}
-	{
-		std::string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			xx::IntToStringTo<true, 10>(s, i);
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " string xx::IntToStringTo. s = ", s);
-	}
-	{
-		std::string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			s.clear();
-			auto tmp = std::to_string(i);
-			if (tmp.size() < 10) {
-				s.append(10 - tmp.size(), '0');
-			}
-			s.append(tmp);
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " string std::to_string. s = ", s);
-	}
-	{
-		std::string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			s.clear();
-			char buf[32];
-			auto len = sprintf_s(buf, "%d", i);
-			if (len < 10) {
-				s.append(10 - len, '0');
-			}
-			s.append(std::string_view(buf, len));
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " string sprintf. s = ", s);
-	}
-	{
-		std::string s;
-		auto secs = xx::NowEpochSeconds();
-		for (int i = 0; i < 10000000; i++) {
-			s.clear();
-			char buf[32];
-			itoa(i, buf, 10);
-			auto len = strlen(buf);
-			if (len < 10) {
-				s.append(10 - len, '0');
-			}
-			s.append(std::string_view(buf, len));
-		}
-		xx::CoutN(xx::NowEpochSeconds(secs), " string itoa. s = ", s);
-	}
 }
 
 void SceneMainMenu::Draw() {
