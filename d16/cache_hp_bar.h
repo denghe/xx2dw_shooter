@@ -3,11 +3,11 @@
 
 /*
    template<int32_t width_ = 64, int32_t height_ = 7>
-   struct HpBarCache;
+   struct Cache_HpBar;
 */
 
 template<uint32_t width_, uint32_t height_>
-struct HpBarCache : protected DynamicTexturePacker<> {
+struct Cache_HpBar : protected DynamicTexturePacker<> {
 	static constexpr Vec2<uint32_t> cPadding{ 1, 1 };	// border width
 	static constexpr Vec2<uint32_t> cSpacing{ 1, 1 };
 

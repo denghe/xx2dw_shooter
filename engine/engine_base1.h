@@ -48,7 +48,7 @@ struct EngineBase1 : EngineBase0 {
         glfwWindowHint(GLFW_DEPTH_BITS, 0);
         glfwWindowHint(GLFW_STENCIL_BITS, 0);
 
-        wnd = glfwCreateWindow(1280, 800, title.c_str(), nullptr, nullptr);
+        wnd = glfwCreateWindow((int)windowSize.x, (int)windowSize.y, title.c_str(), nullptr, nullptr);
         xx_assert(wnd);
 
         // todo

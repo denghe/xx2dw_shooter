@@ -89,6 +89,5 @@ xx::Task<> GameLooper::MainTask() {
 
 	hpBarCache.Emplace()->Init(s9cfg_hp);	// todo: more width here
 	
-	//co_await AsyncSwitchTo<SceneMainMenu>();
-	co_await AsyncSwitchTo<ScenePlay>();
+	co_await AsyncSwitchTo<SceneMainMenu>();
 }

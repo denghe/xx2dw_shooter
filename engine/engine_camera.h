@@ -76,10 +76,10 @@ struct Camera {
 	}
 
 	// need calc
-	XX_FORCE_INLINE XY ToGLPos(XY const& logicPos) {
+	XX_FORCE_INLINE XY ToGLPos(XY const& logicPos) const {
 		return (logicPos - original).MakeFlipY() * scale;
 	}
-	XX_FORCE_INLINE XY ToGLPos(Vec2<> const& logicPos) {
+	XX_FORCE_INLINE XY ToGLPos(Vec2<> const& logicPos) const {
 		return (logicPos.As<float>() - original).MakeFlipY() * scale;
 	}
 };

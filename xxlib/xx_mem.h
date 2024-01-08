@@ -34,6 +34,20 @@ namespace xx {
 
 
     /************************************************************************************/
+    // helper structs
+
+    template<typename T>
+    struct FromTo {
+        T from{}, to{};
+    };
+
+    template<typename T>
+    struct CurrentMax {
+        T current{}, max{};
+    };
+
+
+    /************************************************************************************/
     // mem utils
 
     // 数字字节序交换

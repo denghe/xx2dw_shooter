@@ -4,7 +4,7 @@
 constexpr GDesign<1280, 720, 60> gDesign;
 
 template<uint32_t width_ = 64, uint32_t height_ = 7>
-struct HpBarCache;
+struct Cache_HpBar;
 
 struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	xx::Task<> MainTask();
@@ -76,7 +76,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	// cfgs
 	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
 
-	xx::Ref<HpBarCache<>> hpBarCache;
+	xx::Ref<Cache_HpBar<>> hpBarCache;
 };
 
 extern GameLooper gLooper;

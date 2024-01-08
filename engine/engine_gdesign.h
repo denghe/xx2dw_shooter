@@ -8,10 +8,13 @@ struct GDesign {
 
     static constexpr float width = width_;
     static constexpr float height = height_;
+
     static constexpr float width_2 = width / 2;
     static constexpr float height_2 = height / 2;
+
     static constexpr XY wh{ width, height };
     static constexpr XY wh_2{ width_2, height_2 };
+
     /*
         screen design anchor point
        ┌───────────────────────────────┐
@@ -24,6 +27,7 @@ struct GDesign {
        │ 1             2             3 │
        └───────────────────────────────┘
     */
+
     static constexpr float x1 = -width_2;
     static constexpr float y1 = -height_2;
     static constexpr float x2 = 0.f;
@@ -52,6 +56,29 @@ struct GDesign {
     static constexpr XY xy7{ x7, y7 };
     static constexpr XY xy8{ x8, y8 };
     static constexpr XY xy9{ x9, y9 };
+
+    // m mean margin
+    static constexpr float xym = 5.f;
+    static constexpr XY xy1m { x1 + xym, y1 + xym };
+    static constexpr XY xy2m { x2, y2 + xym };
+    static constexpr XY xy3m { x3 - xym, y3 + xym };
+    static constexpr XY xy4m { x4 + xym, y4 };
+    static constexpr XY xy5m { x5, y5 };
+    static constexpr XY xy6m { x6 - xym, y6 };
+    static constexpr XY xy7m { x7 + xym, y7 - xym };
+    static constexpr XY xy8m { x8, y8 - xym };
+    static constexpr XY xy9m { x9 - xym, y9 - xym };
+
+    // a mean anchoa
+    static constexpr XY xy1a { 0, 0 };
+    static constexpr XY xy2a { 0.5, 0 };
+    static constexpr XY xy3a { 1, 0 };
+    static constexpr XY xy4a { 0, 0.5 };
+    static constexpr XY xy5a { 0.5, 0.5 };
+    static constexpr XY xy6a { 1, 0.5 };
+    static constexpr XY xy7a { 0, 1 };
+    static constexpr XY xy8a { 0.5, 1 };
+    static constexpr XY xy9a { 1, 1 };
 
     static constexpr float sqr2 = float(0.7071067811865475244);
 };
