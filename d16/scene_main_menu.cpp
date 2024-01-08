@@ -116,6 +116,7 @@ struct Foo {
 
 // todo: test shoot multi monsters simultaneously
 
+
 void SceneMainMenu::Init() {
 	gBuffInfos.Clear();
 	gBuffInfos.Emplace();	// placeholder

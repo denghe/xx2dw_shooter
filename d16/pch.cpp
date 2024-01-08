@@ -34,7 +34,8 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d15";
+	gLooper.title = "xx2dw_d16";
+	gLooper.clearColor = {0x33,0x33,0x33,0xff};
 	gLooper.Init();
 	gLooper.Run();
 }

@@ -87,5 +87,8 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg_hp.center = { 1, 1, 2, 2 };
 	s9cfg_hp.color = {90,90,90,255};
 
-	co_await AsyncSwitchTo<SceneMainMenu>();
+	hpBarCache.Emplace()->Init(s9cfg_hp);	// todo: more width here
+	
+	//co_await AsyncSwitchTo<SceneMainMenu>();
+	co_await AsyncSwitchTo<ScenePlay>();
 }
