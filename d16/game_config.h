@@ -6,14 +6,15 @@ namespace Config {
 	enum class WeaponTypes {
 		Unknown,
 		Particle,		// fly instance
-		Shape,			// close combat
-		Wave,			// explosion? sound? ( fan diffusion attack )
+		Wave,			// close combat shape? explosion? sound? ( fan diffusion attack )
 		Lightning,		// teleport electronic explosion ( teleport range attack )
-		Laser,			// high brightness light ( line attack )
+		Laser,			// energy / high brightness light ( line attack )
 		Burn,			// fire dot attack
 		Curse,			// debuff attack
 		Summon			// summon friendly forces or resurrect corpses?
 	};
+
+	// 3 types: emitter, transfer, effector
 
 	struct WeaponConfig {
 		WeaponTypes cType{};
