@@ -32,7 +32,7 @@ namespace Config {
 		virtual ~Item() {};
 
 		// fill by init / addchild
-		ItemManager* owner{};
+		ItemManager* im{};
 		ItemManager::Items::IndexAndVersion ownerIV{};
 		ItemTypes type{};
 
@@ -56,7 +56,7 @@ namespace Config {
 		}
 
 		XX_FORCE_INLINE void RemoveFromOwner() {
-			owner->RemoveChild(this);
+			im->RemoveChild(this);
 		}
 	};
 
@@ -69,13 +69,13 @@ namespace Config {
 
 	inline XX_FORCE_INLINE void ItemManager::AddChild(Item* tar) {
 		auto p = &items.AddCore();
-		assert(tar->owner == this);
+		assert(tar->im == this);
 		tar->ownerIV = items.Tail();
 		new (p) xx::Shared<Item>(xx::SharedFromThis(tar));
 	}
 
 	inline XX_FORCE_INLINE void ItemManager::RemoveChild(Item* tar) {
-		assert(tar->owner == this);
+		assert(tar->im == this);
 		assert(items.At(tar->ownerIV).pointer == tar);
 		auto iv = tar->ownerIV;
 		tar->ownerIV = {};
@@ -87,23 +87,32 @@ namespace Config {
 	/*******************************************************************************************/
 
 	struct Trigger : Item {
+		xx::Weak<Item> owner;
 		float delaySeconds{}, openSeconds{}, closeSeconds{};
 		int repeatTimes{};
 		float secs{};
 
-		void Init(ItemManager* owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
+		void Init(ItemManager* im_, xx::Weak<Item> owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
 			assert(!lineNumber);
-			owner = owner_;
+			im = im_;
 			type = ItemTypes::Trigger;
-			owner->AddChild(this);
+			im->AddChild(this);
+			owner = std::move(owner_);
 			delaySeconds = delaySeconds_;
 			openSeconds = openSeconds_;
 			closeSeconds = closeSeconds_;
 			repeatTimes = repeatTimes_;
 			isOpen = false;
+			xx::CoutN("Trigger.Init()");
 		}
 
 		virtual int UpdateCore() override {
+			if (!owner) {
+				xx::CoutN("Trigger.UpdateCore() end");
+				return 0;
+			} else {
+				xx::CoutN("Trigger.UpdateCore()");
+			}
 			COR_BEGIN
 			for (secs = 0; secs < delaySeconds; secs += gLooper.frameDelay) {
 				COR_YIELD
@@ -136,11 +145,11 @@ namespace Config {
 		float lifeCycle{};
 
 		// todo: args
-		void Init(ItemManager* owner_) {
+		void Init(ItemManager* im_) {
 			assert(!lineNumber);
-			owner = owner_;
+			im = im_;
 			type = ItemTypes::Instance;
-			owner->AddChild(this);
+			im->AddChild(this);
 			xx::CoutN("Bullet1.Init()");
 		}
 
@@ -167,14 +176,14 @@ namespace Config {
 		int quanitity{};
 		float secs{};
 
-		void Init(ItemManager* owner_) {
+		void Init(ItemManager* im_) {
 			assert(!lineNumber);
-			owner = owner_;
+			im = im_;
 			type = ItemTypes::Instance | ItemTypes::Emitter;
-			owner->AddChild(this);
+			im->AddChild(this);
 			{
 				auto t = xx::MakeShared<Trigger>();
-				t->Init(owner);
+				t->Init(im, xx::WeakFromThis(this));
 				trigger = t;
 			}
 			quanitity = cQuanitity;
@@ -189,11 +198,14 @@ namespace Config {
 						--quanitity;
 						{
 							auto e = xx::MakeShared<Bullet1>();
-							e->Init(owner);
+							e->Init(im);
 						}
 						for (secs = 0; secs < cCastDelay; secs += gDesign.frameDelay) {
 							COR_YIELD
 						}
+					} else {
+						xx::CoutN("Gun1.UpdateCore() end");
+						COR_EXIT;
 					}
 				}
 				COR_YIELD
@@ -207,8 +219,10 @@ namespace Config {
 
 	inline void TestGun1() {
 		ItemManager im;
-		auto o = xx::MakeShared<Gun1>();
-		o->Init(&im);
+		{
+			auto o = xx::MakeShared<Gun1>();
+			o->Init(&im);
+		}
 
 		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
