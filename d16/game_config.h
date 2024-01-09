@@ -97,9 +97,10 @@ namespace Config {
 		static constexpr float cFrameSpeed{ 30.f / gDesign.fps };
 		static constexpr float cLifeCycle{ 0.5f };
 
-		XY bornPos{}, pos{};
+		XY pos{};
+		float radius{};
 		float radians{};
-		float lifeCycle{};
+		float damage{};
 
 		void Init(ItemManager* im_) {
 			// todo: args
@@ -109,13 +110,42 @@ namespace Config {
 
 		virtual int UpdateCore() override {
 			COR_BEGIN
-			// todo: assign pos, calc inc
-			for (lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
-				// todo: pos += inc;
-				xx::CoutN("Bullet1.UpdateCore() lifeCycle = ", lifeCycle);
-				COR_YIELD
-			}
-			xx::CoutN("Bullet1.UpdateCore() end");
+				//// todo: assign pos, calc inc
+				//for (lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
+				//	// todo: pos += inc;
+				//	xx::CoutN("Bullet1.UpdateCore() lifeCycle = ", lifeCycle);
+				//	COR_YIELD
+				//}
+				//xx::CoutN("Bullet1.UpdateCore() end");
+					// todo: hit check ?
+				;
+			COR_END
+		}
+	};
+
+	template<typename BT = Bullet1>
+	struct Propeller : Item {
+		// pathway ?
+		float lifeCycle{};
+		xx::Weak<BT> target;
+
+		void Init(ItemManager* im_) {
+			// todo: args
+			ItemInit(im_);
+			xx::CoutN("Propeller.Init()");
+		}
+
+		virtual int UpdateCore() override {
+			COR_BEGIN
+				//// todo: assign pos, calc inc
+				//for (lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
+				//	// todo: pos += inc;
+				//	xx::CoutN("Bullet1.UpdateCore() lifeCycle = ", lifeCycle);
+				//	COR_YIELD
+				//}
+				//xx::CoutN("Bullet1.UpdateCore() end");
+					// todo: hit check ?
+				;
 			COR_END
 		}
 	};
