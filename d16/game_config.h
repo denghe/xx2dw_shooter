@@ -172,7 +172,7 @@ namespace Config {
 	struct Gun1 : Item {
 		xx::Weak<Item> trigger;
 		static constexpr int cQuanitity{ 5 };
-		static constexpr float cCastDelay{ 0.1f };
+		static constexpr float cMinCastDelay{ 0.1f };
 		int quanitity{};
 		float secs{};
 
@@ -183,10 +183,11 @@ namespace Config {
 			im->AddChild(this);
 			{
 				auto t = xx::MakeShared<Trigger>();
-				t->Init(im, xx::WeakFromThis(this));
+				t->Init(im, xx::WeakFromThis(this), 0.2f, 0.01f, 0.15f);
 				trigger = t;
 			}
 			quanitity = cQuanitity;
+			xx::CoutN("Gun1.Init()");
 		}
 
 		virtual int UpdateCore() override {
@@ -200,7 +201,7 @@ namespace Config {
 							auto e = xx::MakeShared<Bullet1>();
 							e->Init(im);
 						}
-						for (secs = 0; secs < cCastDelay; secs += gDesign.frameDelay) {
+						for (secs = 0; secs < cMinCastDelay; secs += gDesign.frameDelay) {
 							COR_YIELD
 						}
 					} else {
@@ -219,10 +220,7 @@ namespace Config {
 
 	inline void TestGun1() {
 		ItemManager im;
-		{
-			auto o = xx::MakeShared<Gun1>();
-			o->Init(&im);
-		}
+		xx::MakeShared<Gun1>()->Init(&im);
 
 		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
