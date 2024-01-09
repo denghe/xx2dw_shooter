@@ -16,6 +16,8 @@ void ScenePlay::Init() {
 	//		, gLooper.rnd.Next<float>(-wh_2.y + 10, wh_2.y - 100) };
 	//	h->Init(gLooper.rnd.Next<float>(1,3), gLooper.rnd.Next<int>(0, 100), 100);
 	//}
+
+	Config::TestGun1();
 }
 
 void ScenePlay::Draw() {

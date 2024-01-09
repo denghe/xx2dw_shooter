@@ -5,7 +5,7 @@
 struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
 
-	xx::Shared<Hero> hero;
+	//xx::Shared<Hero> hero;
 
 	Camera camera;
 
