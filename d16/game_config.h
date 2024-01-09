@@ -3,13 +3,9 @@
 
 namespace Config {
 
-	/*******************************************************************************************/
-	/*******************************************************************************************/
-
 	struct Item;
 	struct ItemManager {
-		using Items = xx::ListDoubleLink<xx::Shared<Item>, int32_t, uint32_t>;
-		Items items;
+		xx::ListLink<xx::Shared<Item>, int32_t> items;
 		bool Update();
 	};
 
