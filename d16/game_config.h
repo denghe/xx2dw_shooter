@@ -3,18 +3,6 @@
 
 namespace Config {
 
-	// 2^n flag
-	enum class ItemTypes : uint32_t {
-		Instance = 1,
-		Trigger = 2,
-		Emitter = 4,
-		//...
-	};
-
-	inline ItemTypes operator|(ItemTypes const& a, ItemTypes const& b) {
-		return (ItemTypes)((uint32_t)a | (uint32_t)b);
-	}
-
 	/*******************************************************************************************/
 	/*******************************************************************************************/
 
@@ -29,22 +17,17 @@ namespace Config {
 		virtual ~Item() {};
 
 		ItemManager* im{};
-		ItemTypes type{};
-
-		XX_FORCE_INLINE void ItemInit(ItemManager* im_, ItemTypes type_) {
+		XX_FORCE_INLINE void ItemInit(ItemManager* im_) {
 			assert(!im);
 			assert(im_);
 			assert(!lineNumber);
 			im = im_;
-			type = type_;
 			im->items.Emplace(xx::SharedFromThis(this));
 		}
 
 		int lineNumber{};
 		virtual int UpdateCore() {
-			COR_BEGIN
-				;// COR_YIELD
-			COR_END
+			return 0;	// COR_BEGIN COR_YIELD COR_EXIT COR_END 
 		};
 
 		XX_FORCE_INLINE bool Update() {
@@ -72,7 +55,7 @@ namespace Config {
 		bool isOpen{};
 
 		xx::Weak<Trigger> Init(ItemManager* im_, xx::Weak<Item> owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
-			ItemInit(im_, ItemTypes::Trigger);
+			ItemInit(im_);
 
 			owner = std::move(owner_);
 			delaySeconds = delaySeconds_;
@@ -124,7 +107,7 @@ namespace Config {
 
 		void Init(ItemManager* im_) {
 			// todo: args
-			ItemInit(im_, ItemTypes::Instance);
+			ItemInit(im_);
 			xx::CoutN("Bullet1.Init()");
 		}
 
@@ -154,7 +137,7 @@ namespace Config {
 		float secs{};
 
 		void Init(ItemManager* im_) {
-			ItemInit(im_, ItemTypes::Instance | ItemTypes::Emitter);
+			ItemInit(im_);
 
 			trigger = xx::MakeShared<Trigger>()->Init(im, xx::WeakFromThis(this), 0.2f, 0.01f, 0.15f);
 			quanitity = cQuanitity;
@@ -408,3 +391,22 @@ namespace Config {
 		//XX_FORCE_INLINE void RemoveFromOwner() {
 		//	im->RemoveChild(this);
 		//}
+
+
+	//// 2^n flag
+	//enum class ItemTypes : uint32_t {
+	//	Instance = 1,
+	//	Trigger = 2,
+	//	Emitter = 4,
+	//	//...
+	//};
+
+	//inline ItemTypes operator|(ItemTypes const& a, ItemTypes const& b) {
+	//	return (ItemTypes)((uint32_t)a | (uint32_t)b);
+	//}
+// ItemTypes type{};
+// , ItemTypes type_
+// type = type_;
+// , ItemTypes::Trigger
+// , ItemTypes::Instance
+// , ItemTypes::Instance | ItemTypes::Emitter
