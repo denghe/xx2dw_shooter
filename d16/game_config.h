@@ -16,7 +16,7 @@ namespace Config {
 
 	// base class
 	struct Trigger : Item {
-		bool GetValue() {
+		bool IsOpen() {
 			return task.YieldValue().v != 0;
 		}
 	};
@@ -138,7 +138,8 @@ namespace Config {
 		xx::Task<> MainTask() {
 			xx::Listi32<xx::Shared<Emitter>> subEmitters;	// todo: change container to DoubleLink?
 			while (true) {
-				if (trigger->GetValue()) {
+				trigger->Update();
+				if (trigger->IsOpen()) {
 					if (emitter->Update()) co_return;	// todo: dispose callback?
 					if (auto e = emitter->GetValue()) {
 						subEmitters.Emplace(std::move(e));
