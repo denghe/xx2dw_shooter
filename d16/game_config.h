@@ -169,6 +169,7 @@ namespace Config {
 	/*******************************************************************************************/
 	/*******************************************************************************************/
 
+	template<typename BT = Bullet1>
 	struct Gun1 : Item {
 		xx::Weak<Item> trigger;
 		static constexpr int cQuanitity{ 5 };
@@ -198,7 +199,7 @@ namespace Config {
 					if (quanitity > 0) {
 						--quanitity;
 						{
-							auto e = xx::MakeShared<Bullet1>();
+							auto e = xx::MakeShared<BT>();
 							e->Init(im);
 						}
 						for (secs = 0; secs < cMinCastDelay; secs += gDesign.frameDelay) {
@@ -220,7 +221,7 @@ namespace Config {
 
 	inline void TestGun1() {
 		ItemManager im;
-		xx::MakeShared<Gun1>()->Init(&im);
+		xx::MakeShared<Gun1<Gun1<>>>()->Init(&im);
 
 		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
