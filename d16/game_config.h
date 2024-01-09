@@ -15,7 +15,6 @@ namespace Config {
 		return (ItemTypes)((uint32_t)a | (uint32_t)b);
 	}
 
-
 	/*******************************************************************************************/
 	/*******************************************************************************************/
 
@@ -24,21 +23,22 @@ namespace Config {
 		using Items = xx::ListDoubleLink<xx::Shared<Item>, int32_t, uint32_t>;
 		Items items;
 		bool Update();
-		void AddChild(Item* tar);
-		void RemoveChild(Item* tar);
 	};
 
 	struct Item {
 		virtual ~Item() {};
 
-		// fill by init / addchild
 		ItemManager* im{};
-		ItemManager::Items::IndexAndVersion ownerIV{};
 		ItemTypes type{};
 
-		// for trigger
-		bool isOpen {};
-		//xx::Shared<Item> emitResult;
+		XX_FORCE_INLINE void ItemInit(ItemManager* im_, ItemTypes type_) {
+			assert(!im);
+			assert(im_);
+			assert(!lineNumber);
+			im = im_;
+			type = type_;
+			im->items.Emplace(xx::SharedFromThis(this));
+		}
 
 		int lineNumber{};
 		virtual int UpdateCore() {
@@ -47,16 +47,9 @@ namespace Config {
 			COR_END
 		};
 
-		// helpers
-
 		XX_FORCE_INLINE bool Update() {
 			lineNumber = UpdateCore();
-			// todo: auto remove from item manager
-			return lineNumber == 0;
-		}
-
-		XX_FORCE_INLINE void RemoveFromOwner() {
-			im->RemoveChild(this);
+			return lineNumber == 0;		// will remove by caller
 		}
 	};
 
@@ -67,43 +60,28 @@ namespace Config {
 		return items.Empty();
 	}
 
-	inline XX_FORCE_INLINE void ItemManager::AddChild(Item* tar) {
-		auto p = &items.AddCore();
-		assert(tar->im == this);
-		tar->ownerIV = items.Tail();
-		new (p) xx::Shared<Item>(xx::SharedFromThis(tar));
-	}
-
-	inline XX_FORCE_INLINE void ItemManager::RemoveChild(Item* tar) {
-		assert(tar->im == this);
-		assert(items.At(tar->ownerIV).pointer == tar);
-		auto iv = tar->ownerIV;
-		tar->ownerIV = {};
-		auto r = items.Remove(iv);
-		assert(r);
-	}
-
 	/*******************************************************************************************/
 	/*******************************************************************************************/
 
 	struct Trigger : Item {
-		xx::Weak<Item> owner;
+		xx::Weak<Item> owner;	// Conditions for existence
+
 		float delaySeconds{}, openSeconds{}, closeSeconds{};
 		int repeatTimes{};
 		float secs{};
+		bool isOpen{};
 
-		void Init(ItemManager* im_, xx::Weak<Item> owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
-			assert(!lineNumber);
-			im = im_;
-			type = ItemTypes::Trigger;
-			im->AddChild(this);
+		xx::Weak<Trigger> Init(ItemManager* im_, xx::Weak<Item> owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
+			ItemInit(im_, ItemTypes::Trigger);
+
 			owner = std::move(owner_);
 			delaySeconds = delaySeconds_;
 			openSeconds = openSeconds_;
 			closeSeconds = closeSeconds_;
 			repeatTimes = repeatTimes_;
-			isOpen = false;
 			xx::CoutN("Trigger.Init()");
+
+			return xx::WeakFromThis(this);
 		}
 
 		virtual int UpdateCore() override {
@@ -144,12 +122,9 @@ namespace Config {
 		float radians{};
 		float lifeCycle{};
 
-		// todo: args
 		void Init(ItemManager* im_) {
-			assert(!lineNumber);
-			im = im_;
-			type = ItemTypes::Instance;
-			im->AddChild(this);
+			// todo: args
+			ItemInit(im_, ItemTypes::Instance);
 			xx::CoutN("Bullet1.Init()");
 		}
 
@@ -171,22 +146,17 @@ namespace Config {
 
 	template<typename BT = Bullet1>
 	struct Gun1 : Item {
-		xx::Weak<Item> trigger;
 		static constexpr int cQuanitity{ 5 };
 		static constexpr float cMinCastDelay{ 0.1f };
+
+		xx::Weak<Trigger> trigger;	// emit condition
 		int quanitity{};
 		float secs{};
 
 		void Init(ItemManager* im_) {
-			assert(!lineNumber);
-			im = im_;
-			type = ItemTypes::Instance | ItemTypes::Emitter;
-			im->AddChild(this);
-			{
-				auto t = xx::MakeShared<Trigger>();
-				t->Init(im, xx::WeakFromThis(this), 0.2f, 0.01f, 0.15f);
-				trigger = t;
-			}
+			ItemInit(im_, ItemTypes::Instance | ItemTypes::Emitter);
+
+			trigger = xx::MakeShared<Trigger>()->Init(im, xx::WeakFromThis(this), 0.2f, 0.01f, 0.15f);
 			quanitity = cQuanitity;
 			xx::CoutN("Gun1.Init()");
 		}
@@ -221,7 +191,7 @@ namespace Config {
 
 	inline void TestGun1() {
 		ItemManager im;
-		xx::MakeShared<Gun1<Gun1<>>>()->Init(&im);
+		xx::MakeShared<Gun1<Bullet1>>()->Init(&im);
 
 		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
@@ -419,3 +389,22 @@ namespace Config {
 //	}
 //
 //}
+
+	//inline XX_FORCE_INLINE void ItemManager::AddChild(Item* tar) {
+	//	auto p = &items.AddCore();
+	//	assert(tar->im == this);
+	//	//tar->ownerIV = items.Tail();
+	//	new (p) xx::Shared<Item>(xx::SharedFromThis(tar));
+	//}
+
+	//inline XX_FORCE_INLINE void ItemManager::RemoveChild(Item* tar) {
+	//	assert(tar->im == this);
+	//	assert(items.At(tar->ownerIV).pointer == tar);
+	//	auto iv = tar->ownerIV;
+	//	tar->ownerIV = {};
+	//	auto r = items.Remove(iv);
+	//	assert(r);
+	//}
+		//XX_FORCE_INLINE void RemoveFromOwner() {
+		//	im->RemoveChild(this);
+		//}
