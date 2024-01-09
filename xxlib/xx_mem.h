@@ -34,7 +34,7 @@ namespace xx {
 
 
     /************************************************************************************/
-    // helper structs
+    // helpers
 
     template<typename T>
     struct FromTo {
@@ -45,6 +45,12 @@ namespace xx {
     struct CurrentMax {
         T current{}, max{};
     };
+
+    template<typename T, class = std::enable_if_t<std::is_enum_v<T>>>
+    inline bool FlagContains(T const& a, T const& b) {
+        using U = std::underlying_type_t<T>;
+        return ((U)a & (U)b) != U{};
+    }
 
 
     /************************************************************************************/

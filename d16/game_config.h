@@ -3,173 +3,219 @@
 
 namespace Config {
 
+	// 2^n flag
+	enum class ItemTypes : uint32_t {
+		Instance = 1,
+		Trigger = 2,
+		Emitter = 4,
+		//...
+	};
+
+	inline ItemTypes operator|(ItemTypes const& a, ItemTypes const& b) {
+		return (ItemTypes)((uint32_t)a | (uint32_t)b);
+	}
+
+
+	/*******************************************************************************************/
+	/*******************************************************************************************/
+
+	struct Item;
+	struct ItemManager {
+		using Items = xx::ListDoubleLink<xx::Shared<Item>, int32_t, uint32_t>;
+		Items items;
+		bool Update();
+		void AddChild(xx::Shared<Item> tar);
+	};
+
 	struct Item {
-		xx::Task<> task;
+		virtual ~Item() {};
 
-		// return true mean need dispose
-		bool Update() {
-			return task.Resume();
+		// fill by init / addchild
+		ItemManager* owner{};
+		ItemManager::Items::IndexAndVersion ownerIV{};
+		ItemTypes type{};
+
+		// for trigger
+		bool isOpen {};
+		xx::Shared<Item> emitResult;
+
+		int lineNumber{};
+		virtual int UpdateCore() {
+			COR_BEGIN
+				;// COR_YIELD
+			COR_END
+		};
+
+		// helpers
+
+		XX_FORCE_INLINE bool Update() {
+			lineNumber = UpdateCore();
+			// todo: auto remove from item manager
+			return lineNumber == 0;
 		}
-
-		// ...
 	};
 
-	// base class
+	inline bool ItemManager::Update() {
+		items.Foreach([&](xx::Shared<Item>& o)->bool {
+			return o->Update();
+		});
+		return items.Empty();
+	}
+
+	inline XX_FORCE_INLINE void ItemManager::AddChild(xx::Shared<Item> tar) {
+		auto p = &items.AddCore();
+		assert(tar->owner == this);
+		tar->ownerIV = items.Tail();
+		new (p) xx::Shared<Item>(std::move(tar));
+	}
+
+	/*******************************************************************************************/
+	/*******************************************************************************************/
+
 	struct Trigger : Item {
-		bool IsOpen() {
-			return task.YieldValue().v != 0;
-		}
-	};
+		float delaySeconds{}, openSeconds{}, closeSeconds{};
+		int repeatTimes{};
+		float secs{};
 
-	// handle by player control
-	struct Trigger_Player : Trigger {
-		void Init() {
-			task = MainTask();
+		void Init(ItemManager* owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
+			assert(!lineNumber);
+			owner = owner_;
+			type = ItemTypes::Trigger;
+			delaySeconds = delaySeconds_;
+			openSeconds = openSeconds_;
+			closeSeconds = closeSeconds_;
+			repeatTimes = repeatTimes_;
+			isOpen = false;
 		}
-		xx::Task<> MainTask() {
-			while (true) {
-				co_yield gLooper.KeyDown(KeyboardKeys::Space) ? 1 : 0;
-			}
-		}
-	};
-	
-	// handle by after delay, always true
-	struct Trigger_Delay : Trigger {
-		void Init(float delaySeconds) {
-			task = MainTask(delaySeconds);
-		}
-		xx::Task<> MainTask(float delaySeconds) {
-			for (float secs = 0; secs < delaySeconds; secs += gLooper.frameDelay) {
-				co_yield 0;
-			}
-			while (true) {
-				co_yield 1;
-			}
-		}
-	};
 
-	// handle by repeater
-	struct Trigger_Repeater : Trigger {
-		void Init(float delaySeconds, float openSeconds, float closeSeconds, int repeatTimes = std::numeric_limits<int>::max()) {
-			task = MainTask(delaySeconds, openSeconds, closeSeconds, repeatTimes);
-		}
-		xx::Task<> MainTask(float delaySeconds, float openSeconds, float closeSeconds, int repeatTimes = std::numeric_limits<int>::max()) {
-			while (delaySeconds > 0) {
-				co_yield 0;
-				delaySeconds -= gLooper.frameDelay;
+		virtual int UpdateCore() override {
+			COR_BEGIN
+			for (secs = 0; secs < delaySeconds; secs += gLooper.frameDelay) {
+				COR_YIELD
 			}
 			do {
-				for (float secs = 0; secs < openSeconds; secs += gLooper.frameDelay) {
-					co_yield 1;
+				isOpen = true;
+				for (secs = 0; secs < openSeconds; secs += gLooper.frameDelay) {
+					COR_YIELD
 				}
-				for (float secs = 0; secs < closeSeconds; secs += gLooper.frameDelay) {
-					co_yield 0;
+				isOpen = false;
+				for (secs = 0; secs < closeSeconds; secs += gLooper.frameDelay) {
+					COR_YIELD
 				}
 			} while (--repeatTimes);
+			COR_END
 		}
 	};
 
+	/*******************************************************************************************/
+	/*******************************************************************************************/
 
-	// base class
-	struct Emitter : Item {
-
-		// cond: Update() == false
-		xx::Shared<Emitter> GetValue() {
-			xx::Shared<Emitter> r;
-			r.pointer = (Emitter*)std::exchange(task.YieldValue().p, nullptr);
-			return r;
-		}
-	};
-
-	struct Emitter_Bullet1 : Emitter {
+	struct Bullet1 : Item {
 		static constexpr float cDamage{ 10 };
 		static constexpr float cRadius{ 5 };
 		static constexpr float cSpeed{ 30.f / gDesign.fps };
-		static constexpr float cLifeCycle{ 2.f * gDesign.fps };
+		static constexpr float cLifeCycle{ 0.5f * gDesign.fps };
 
-		void Init(XY const& bornPos = {}, float radians = 0.f) {
-			task = MainTask(bornPos, radians);
+		XY bornPos{}, pos{};
+		float radians{};
+		float lifeCycle{};
+
+		// todo: args
+		void Init(ItemManager* owner_) {
+			assert(!lineNumber);
+			owner = owner_;
+			type = ItemTypes::Instance;
+			xx::CoutN("Bullet1.Init()");
 		}
 
-		xx::Task<> MainTask(XY bornPos, float radians) {
+		virtual int UpdateCore() override {
+			COR_BEGIN
 			// todo: assign pos, calc inc
-			for (float lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
+			for (lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
 				// todo: pos += inc;
-				co_yield 0;
+				xx::CoutN("Bullet1.UpdateCore()");
+				COR_YIELD
 			}
+			COR_END
 		}
 	};
 
-	struct Emitter_Clip : Emitter {
+	/*******************************************************************************************/
+	/*******************************************************************************************/
+
+	struct Clip1 : Item {
 		static constexpr int cQuanitity{ 10 };
+		int quanitity{};
 
-		void Init() {
-			task = MainTask();
+		// todo: args
+		void Init(ItemManager* owner_) {
+			assert(!lineNumber);
+			owner = owner_;
+			type = ItemTypes::Instance | ItemTypes::Emitter;
 		}
 
-		xx::Task<> MainTask() {
-			for (int quanitity = cQuanitity; quanitity > 0; --quanitity) {
-				xx::Shared<Emitter_Bullet1> b;
-				b.Emplace()->Init();
-				xx::CoutN("make bullet");
-				co_yield { 0, b.pointer };
+		virtual int UpdateCore() override {
+			COR_BEGIN
+			for (quanitity = cQuanitity; quanitity > 0; --quanitity) {
+				emitResult.Emplace<Bullet1>()->Init(owner);
+				COR_YIELD
 			}
+			COR_END
 		}
 	};
 
-	//struct Emitter_Emitter_ : Emitter {
-	//	// todo
-	//};
-
-	// Emitter_Emitter_Clip ?
-
-	// Transmitter ?
+	/*******************************************************************************************/
+	/*******************************************************************************************/
 
 	struct Gun1 : Item {
-		xx::Shared<Trigger> trigger;
-		xx::Shared<Emitter> emitter;
+		xx::Shared<Item> trigger, emitter;
 
-		void Init() {
-			task = MainTask();
-			trigger.Emplace<Trigger_Delay>()->Init(0);
-			emitter.Emplace<Emitter_Clip>()->Init();
+		void Init(ItemManager* owner_) {
+			assert(!lineNumber);
+			owner = owner_;
+			type = ItemTypes::Instance;
+			trigger.Emplace<Trigger>()->Init(owner_);
+			emitter.Emplace<Clip1>()->Init(owner_);
 		}
 
-		xx::Task<> MainTask() {
-			xx::Listi32<xx::Shared<Emitter>> subEmitters;	// todo: change container to DoubleLink?
+		virtual int UpdateCore() override {
+			COR_BEGIN
 			while (true) {
-				trigger->Update();
-				if (trigger->IsOpen()) {
-					if (emitter->Update()) co_return;	// todo: dispose callback?
-					if (auto e = emitter->GetValue()) {
-						subEmitters.Emplace(std::move(e));
+				{
+					assert(trigger);
+					assert(xx::FlagContains(trigger->type, ItemTypes::Trigger));
+					auto r = trigger->Update();
+					assert(!r);
+				}
+				if (trigger->isOpen) {
+					if (emitter->Update()) return 0;
+					if (emitter->emitResult) {
+						owner->items.Emplace(std::move(emitter->emitResult));
 					}
 				}
-				for (int i = subEmitters.len - 1; i >= 0; --i) {
-					if (subEmitters[i]->Update()) {
-						subEmitters.SwapRemoveAt(i);
-					}
-				}
-				co_yield 0;
+				COR_YIELD
 			}
+			COR_END
 		}
 	};
 
+	/*******************************************************************************************/
+	/*******************************************************************************************/
+
 	inline void TestGun1() {
+		ItemManager im;
 		auto o = xx::MakeShared<Gun1>();
-		o->Init();
-		for (int i = 0; i < 20; i++) {
+		o->Init(&im);
+		im.AddChild(o);
+
+		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
-			if (o->Update()) 
+			if (im.Update()) 
 				break;
 		}
 		xx::CoutN("after for");
 	}
-
 }
-
-
-
 
 //enum class WeaponTypes {
 //	Unknown,
@@ -189,3 +235,172 @@ namespace Config {
 ////	float cDamage{};
 ////	float cCastDelaySeconds{};
 ////};
+
+
+
+//namespace Config {
+//
+//	struct Item {
+//		xx::Task<> task;
+//
+//		// return true mean need dispose
+//		bool Update() {
+//			return task.Resume();
+//		}
+//
+//		// ...
+//	};
+//
+//	// base class
+//	struct Trigger : Item {
+//		bool IsOpen() {
+//			return task.YieldValue().v != 0;
+//		}
+//	};
+//
+//	// handle by player control
+//	struct Trigger_Player : Trigger {
+//		void Init() {
+//			task = MainTask();
+//		}
+//		xx::Task<> MainTask() {
+//			while (true) {
+//				co_yield gLooper.KeyDown(KeyboardKeys::Space) ? 1 : 0;
+//			}
+//		}
+//	};
+//	
+//	// handle by after delay, always true
+//	struct Trigger_Delay : Trigger {
+//		void Init(float delaySeconds) {
+//			task = MainTask(delaySeconds);
+//		}
+//		xx::Task<> MainTask(float delaySeconds) {
+//			for (float secs = 0; secs < delaySeconds; secs += gLooper.frameDelay) {
+//				co_yield 0;
+//			}
+//			while (true) {
+//				co_yield 1;
+//			}
+//		}
+//	};
+//
+//	// handle by repeater
+//	struct Trigger_Repeater : Trigger {
+//		void Init(float delaySeconds, float openSeconds, float closeSeconds, int repeatTimes = std::numeric_limits<int>::max()) {
+//			task = MainTask(delaySeconds, openSeconds, closeSeconds, repeatTimes);
+//		}
+//		xx::Task<> MainTask(float delaySeconds, float openSeconds, float closeSeconds, int repeatTimes = std::numeric_limits<int>::max()) {
+//			while (delaySeconds > 0) {
+//				co_yield 0;
+//				delaySeconds -= gLooper.frameDelay;
+//			}
+//			do {
+//				for (float secs = 0; secs < openSeconds; secs += gLooper.frameDelay) {
+//					co_yield 1;
+//				}
+//				for (float secs = 0; secs < closeSeconds; secs += gLooper.frameDelay) {
+//					co_yield 0;
+//				}
+//			} while (--repeatTimes);
+//		}
+//	};
+//
+//
+//	// base class
+//	struct Emitter : Item {
+//
+//		// cond: Update() == false
+//		xx::Shared<Emitter> GetValue() {
+//			xx::Shared<Emitter> r;
+//			r.pointer = (Emitter*)std::exchange(task.YieldValue().p, nullptr);
+//			return r;
+//		}
+//	};
+//
+//	struct Emitter_Bullet1 : Emitter {
+//		static constexpr float cDamage{ 10 };
+//		static constexpr float cRadius{ 5 };
+//		static constexpr float cSpeed{ 30.f / gDesign.fps };
+//		static constexpr float cLifeCycle{ 2.f * gDesign.fps };
+//
+//		void Init(XY const& bornPos = {}, float radians = 0.f) {
+//			task = MainTask(bornPos, radians);
+//		}
+//
+//		xx::Task<> MainTask(XY bornPos, float radians) {
+//			// todo: assign pos, calc inc
+//			for (float lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
+//				// todo: pos += inc;
+//				co_yield 0;
+//			}
+//		}
+//	};
+//
+//	struct Emitter_Clip : Emitter {
+//		static constexpr int cQuanitity{ 10 };
+//
+//		void Init() {
+//			task = MainTask();
+//		}
+//
+//		xx::Task<> MainTask() {
+//			for (int quanitity = cQuanitity; quanitity > 0; --quanitity) {
+//				xx::Shared<Emitter_Bullet1> b;
+//				b.Emplace()->Init();
+//				xx::CoutN("make bullet");
+//				co_yield { 0, b.pointer };
+//			}
+//		}
+//	};
+//
+//	//struct Emitter_Emitter_ : Emitter {
+//	//	// todo
+//	//};
+//
+//	// Emitter_Emitter_Clip ?
+//
+//	// Transmitter ?
+//
+//	struct Gun1 : Item {
+//		xx::Shared<Trigger> trigger;
+//		xx::Shared<Emitter> emitter;
+//
+//		void Init() {
+//			task = MainTask();
+//			trigger.Emplace<Trigger_Delay>()->Init(0);
+//			emitter.Emplace<Emitter_Clip>()->Init();
+//		}
+//
+//		xx::Task<> MainTask() {
+//			xx::Listi32<xx::Shared<Emitter>> subEmitters;	// todo: change container to DoubleLink?
+//			while (true) {
+//				trigger->Update();
+//				if (trigger->IsOpen()) {
+//					if (emitter->Update()) co_return;	// todo: dispose callback?
+//					if (auto e = emitter->GetValue()) {
+//						subEmitters.Emplace(std::move(e));
+//					}
+//				}
+//				for (int i = subEmitters.len - 1; i >= 0; --i) {
+//					if (subEmitters[i]->Update()) {
+//						subEmitters.SwapRemoveAt(i);
+//					}
+//				}
+//				co_yield 0;
+//			}
+//		}
+//	};
+//
+//	inline void TestGun1() {
+//		auto o = xx::MakeShared<Gun1>();
+//		o->Init();
+//		for (int i = 0; i < 20; i++) {
+//			xx::CoutN("i = ", i);
+//			if (o->Update()) 
+//				break;
+//		}
+//		xx::CoutN("after for");
+//	}
+//
+//}
