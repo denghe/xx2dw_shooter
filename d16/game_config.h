@@ -24,7 +24,8 @@ namespace Config {
 		using Items = xx::ListDoubleLink<xx::Shared<Item>, int32_t, uint32_t>;
 		Items items;
 		bool Update();
-		void AddChild(xx::Shared<Item> tar);
+		void AddChild(Item* tar);
+		void RemoveChild(Item* tar);
 	};
 
 	struct Item {
@@ -37,7 +38,7 @@ namespace Config {
 
 		// for trigger
 		bool isOpen {};
-		xx::Shared<Item> emitResult;
+		//xx::Shared<Item> emitResult;
 
 		int lineNumber{};
 		virtual int UpdateCore() {
@@ -53,6 +54,10 @@ namespace Config {
 			// todo: auto remove from item manager
 			return lineNumber == 0;
 		}
+
+		XX_FORCE_INLINE void RemoveFromOwner() {
+			owner->RemoveChild(this);
+		}
 	};
 
 	inline bool ItemManager::Update() {
@@ -62,11 +67,20 @@ namespace Config {
 		return items.Empty();
 	}
 
-	inline XX_FORCE_INLINE void ItemManager::AddChild(xx::Shared<Item> tar) {
+	inline XX_FORCE_INLINE void ItemManager::AddChild(Item* tar) {
 		auto p = &items.AddCore();
 		assert(tar->owner == this);
 		tar->ownerIV = items.Tail();
-		new (p) xx::Shared<Item>(std::move(tar));
+		new (p) xx::Shared<Item>(xx::SharedFromThis(tar));
+	}
+
+	inline XX_FORCE_INLINE void ItemManager::RemoveChild(Item* tar) {
+		assert(tar->owner == this);
+		assert(items.At(tar->ownerIV).pointer == tar);
+		auto iv = tar->ownerIV;
+		tar->ownerIV = {};
+		auto r = items.Remove(iv);
+		assert(r);
 	}
 
 	/*******************************************************************************************/
@@ -81,6 +95,7 @@ namespace Config {
 			assert(!lineNumber);
 			owner = owner_;
 			type = ItemTypes::Trigger;
+			owner->AddChild(this);
 			delaySeconds = delaySeconds_;
 			openSeconds = openSeconds_;
 			closeSeconds = closeSeconds_;
@@ -113,8 +128,8 @@ namespace Config {
 	struct Bullet1 : Item {
 		static constexpr float cDamage{ 10 };
 		static constexpr float cRadius{ 5 };
-		static constexpr float cSpeed{ 30.f / gDesign.fps };
-		static constexpr float cLifeCycle{ 0.5f * gDesign.fps };
+		static constexpr float cFrameSpeed{ 30.f / gDesign.fps };
+		static constexpr float cLifeCycle{ 0.5f };
 
 		XY bornPos{}, pos{};
 		float radians{};
@@ -125,6 +140,7 @@ namespace Config {
 			assert(!lineNumber);
 			owner = owner_;
 			type = ItemTypes::Instance;
+			owner->AddChild(this);
 			xx::CoutN("Bullet1.Init()");
 		}
 
@@ -133,33 +149,10 @@ namespace Config {
 			// todo: assign pos, calc inc
 			for (lifeCycle = 0; lifeCycle < cLifeCycle; lifeCycle += gDesign.frameDelay) {
 				// todo: pos += inc;
-				xx::CoutN("Bullet1.UpdateCore()");
+				xx::CoutN("Bullet1.UpdateCore() lifeCycle = ", lifeCycle);
 				COR_YIELD
 			}
-			COR_END
-		}
-	};
-
-	/*******************************************************************************************/
-	/*******************************************************************************************/
-
-	struct Clip1 : Item {
-		static constexpr int cQuanitity{ 10 };
-		int quanitity{};
-
-		// todo: args
-		void Init(ItemManager* owner_) {
-			assert(!lineNumber);
-			owner = owner_;
-			type = ItemTypes::Instance | ItemTypes::Emitter;
-		}
-
-		virtual int UpdateCore() override {
-			COR_BEGIN
-			for (quanitity = cQuanitity; quanitity > 0; --quanitity) {
-				emitResult.Emplace<Bullet1>()->Init(owner);
-				COR_YIELD
-			}
+			xx::CoutN("Bullet1.UpdateCore() end");
 			COR_END
 		}
 	};
@@ -168,29 +161,39 @@ namespace Config {
 	/*******************************************************************************************/
 
 	struct Gun1 : Item {
-		xx::Shared<Item> trigger, emitter;
+		xx::Weak<Item> trigger;
+		static constexpr int cQuanitity{ 5 };
+		static constexpr float cCastDelay{ 0.1f };
+		int quanitity{};
+		float secs{};
 
 		void Init(ItemManager* owner_) {
 			assert(!lineNumber);
 			owner = owner_;
-			type = ItemTypes::Instance;
-			trigger.Emplace<Trigger>()->Init(owner_);
-			emitter.Emplace<Clip1>()->Init(owner_);
+			type = ItemTypes::Instance | ItemTypes::Emitter;
+			owner->AddChild(this);
+			{
+				auto t = xx::MakeShared<Trigger>();
+				t->Init(owner);
+				trigger = t;
+			}
+			quanitity = cQuanitity;
 		}
 
 		virtual int UpdateCore() override {
 			COR_BEGIN
 			while (true) {
-				{
-					assert(trigger);
-					assert(xx::FlagContains(trigger->type, ItemTypes::Trigger));
-					auto r = trigger->Update();
-					assert(!r);
-				}
+				assert(trigger);
 				if (trigger->isOpen) {
-					if (emitter->Update()) return 0;
-					if (emitter->emitResult) {
-						owner->items.Emplace(std::move(emitter->emitResult));
+					if (quanitity > 0) {
+						--quanitity;
+						{
+							auto e = xx::MakeShared<Bullet1>();
+							e->Init(owner);
+						}
+						for (secs = 0; secs < cCastDelay; secs += gDesign.frameDelay) {
+							COR_YIELD
+						}
 					}
 				}
 				COR_YIELD
@@ -206,7 +209,6 @@ namespace Config {
 		ItemManager im;
 		auto o = xx::MakeShared<Gun1>();
 		o->Init(&im);
-		im.AddChild(o);
 
 		for (int i = 0; i < gDesign.fps * 2; i++) {
 			xx::CoutN("i = ", i);
