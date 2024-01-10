@@ -7,24 +7,19 @@ void ScenePlay::Init() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
-	// todo: init hero
-	// 
-	//auto wh_2 = gLooper.windowSize_2;
-	//for (size_t i = 0; i < 1000; i++) {
-	//	auto&& h = heroes.Emplace().Emplace();
-	//	h->pos = { gLooper.rnd.Next<float>(-wh_2.x + 50, wh_2.x - 50)
-	//		, gLooper.rnd.Next<float>(-wh_2.y + 10, wh_2.y - 100) };
-	//	h->Init(gLooper.rnd.Next<float>(1,3), gLooper.rnd.Next<int>(0, 100), 100);
-	//}
+	xx::MakeShared<Gun1<Bullet1>>()->Init(&im);
+}
 
-	Config::TestGun1();
+void ScenePlay::Update() {
+	im.Update();
 }
 
 void ScenePlay::Draw() {
-	auto& eb = EngineBase1::Instance();
-
-	//hero->Draw();
-	//hero->DrawHP();
+	im.items.Foreach([&](xx::Shared<Item>& o) {
+		if (o->drawable) {	// todo: sort by y ?
+			o->Draw(camera);
+		}
+	});
 
 	gLooper.DrawNode(rootNode);
 };
