@@ -14,7 +14,7 @@ struct ItemManager {
 struct Item {
 	int typeId{};			// static constexpr int cTypeId{ __LINE__ };
 	virtual ~Item() {
-		xx::CoutN("~Item() typeId == ", typeId);
+		//xx::CoutN("~Item() typeId == ", typeId);
 	};
 
 	ItemManager* im{};
@@ -27,7 +27,7 @@ struct Item {
 		im->items.Emplace(xx::SharedFromThis(this));
 		drawable = drawable_;
 
-		xx::CoutN("ItemInit() typeId == ", typeId);
+		//xx::CoutN("ItemInit() typeId == ", typeId);
 	}
 
 	int lineNumber{};
@@ -146,7 +146,7 @@ struct Linker : Item {
 		if (!linkFrom || !linkTo) return 0;
 		life += gLooper.frameDelay;
 		if (life > cLifeSpan) return 0;
-		// todo: sync pos & hit monsters
+		// todo: sync pos & hit monsters( 1 seconds hit 10 times ? )
 		return 1;
 	}
 };
@@ -165,7 +165,7 @@ struct RangeBullet : Item {
 	virtual int UpdateCore() override {
 		life += gLooper.frameDelay;
 		if (life > cLifeSpan) return 0;
-		// todo: hit monsters
+		// todo: hit monsters( 1 seconds hit 10 times ? )
 		return 1;
 	}
 };
