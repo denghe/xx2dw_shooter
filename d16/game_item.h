@@ -49,7 +49,8 @@ struct Item {
 		assert(drawable);
 	}
 
-	// todo: more base properties like pos size / radius radians ...
+	XY pos{};
+	float radius{}, radians{};
 };
 
 inline bool ItemManager::Update() {
@@ -79,8 +80,8 @@ void ItemManager::Foreatch(F&& func) {
 
 struct Timer : Item {
 	static constexpr int cTypeId{ __LINE__ };
-	xx::Weak<Item> owner;
 
+	xx::Weak<Item> owner;
 	float cDelaySeconds{};
 	float secs{};
 	typedef bool (*Callback)(ItemManager* im_, xx::Weak<Item> owner_);
@@ -108,10 +109,11 @@ struct Timer : Item {
 
 struct Child : Item {
 	static constexpr int cTypeId{ __LINE__ };
-	xx::Weak<Item> owner;
 
+	xx::Weak<Item> owner;
 	float cLifeSpan{};
 	float life{};
+	// todo: pos, tex
 
 	void Init(ItemManager* im_, xx::Weak<Item> owner_, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
@@ -131,9 +133,11 @@ struct Child : Item {
 
 struct Linker : Item {
 	static constexpr int cTypeId{ __LINE__ };
+
 	xx::Weak<Item> linkFrom, linkTo;
 	float cLifeSpan{};
 	float life{};
+	// todo: pos, tex
 
 	void Init(ItemManager* im_, xx::Weak<Item> linkFrom_, xx::Weak<Item> linkTo_, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
@@ -153,8 +157,10 @@ struct Linker : Item {
 
 struct RangeBullet : Item {
 	static constexpr int cTypeId{ __LINE__ };
+
 	float cLifeSpan{};
 	float life{};
+	// todo: pos, tex
 
 	void Init(ItemManager* im_, xx::Weak<Item> releaser, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
@@ -173,9 +179,13 @@ struct RangeBullet : Item {
 struct Player : Item {
 	static constexpr int cTypeId{ __LINE__ };
 
+	// todo: pos, tex
+
 	// simulate read player config & create timers
 	void Init(ItemManager* im_) {
 		ItemInit(cTypeId, im_);
+
+		// todo: pos, tex
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
 		xx::MakeShared<Timer>()->Init(im_, xx::WeakFromThis(this), 1.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
@@ -201,18 +211,22 @@ struct Player : Item {
 	}
 
 	virtual int UpdateCore() override {
+		// todo: handle player move input ? frame anim ?
 		return 1;
 	}
 };
 
 struct Monster : Item {
 	static constexpr int cTypeId{ __LINE__ };
+	// todo: pos, tex
 
 	void Init(ItemManager* im_) {
 		ItemInit(cTypeId, im_);
+		// todo: pos, tex
 	}
 
 	virtual int UpdateCore() override {
+		// todo: move to player pos ? hit player ?
 		return 1;
 	}
 };
