@@ -7,19 +7,20 @@ void ScenePlay::Init() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
-	xx::MakeShared<Gun1<Bullet1>>()->Init(&im);
+	env.Init();
 }
 
 void ScenePlay::Update() {
-	im.Update();
+	env.Update();
 }
 
 void ScenePlay::Draw() {
-	im.items.Foreach([&](xx::Shared<Item>& o) {
-		if (o->drawable) {	// todo: sort by y ?
-			o->Draw(camera);
-		}
-	});
+	//im.items.Foreach([&](xx::Shared<Item>& o) {
+	//	if (o->drawable) {	// todo: sort by y ?
+	//		o->Draw(camera);
+	//	}
+	//});
+	env.Draw();
 
 	gLooper.DrawNode(rootNode);
 };

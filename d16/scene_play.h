@@ -6,7 +6,7 @@
 struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
 
-	ItemManager im;
+	Env env;
 
 	Camera camera;
 
