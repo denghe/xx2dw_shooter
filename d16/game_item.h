@@ -1,22 +1,24 @@
 ﻿#pragma once
 #include <game_looper.h>
 
-struct Item;
-struct ItemManager {
 
-	// todo: items need group store for fast search?
-	xx::ListLink<xx::Shared<Item>, int32_t> items;
-	bool Update();
-
-	// F: void (*)( xx::Shared<T>& o )
-	template<std::derived_from<Item> T, typename F>
-	void Foreatch(F&& func);
-
-	// make shared + call Init( args )
-	template<std::derived_from<Item> T, typename...Args>
-	xx::Shared<T> Create(Args&&...args);
-
+template<typename T, typename... Args>
+struct MaxTypeId {
+	static const int value = T::cTypeId > MaxTypeId<Args...>::value
+		? T::cTypeId
+		: MaxTypeId<Args...>::value;
 };
+
+template<typename T>
+struct MaxTypeId<T> {
+	static const size_t value = T::cTypeId;
+};
+
+template<typename T, typename... Args>
+constexpr size_t MaxTypeId_v = MaxTypeId<T, Args...>::value;
+
+
+struct ItemManagerBase;
 
 struct Item {
 	int typeId{};			// static constexpr int cTypeId{ __LINE__ };
@@ -24,20 +26,8 @@ struct Item {
 		//xx::CoutN("~Item() typeId == ", typeId);
 	};
 
-	ItemManager* im{};
-	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManager* im_, bool drawable_ = false) {
-		assert(!typeId);
-		assert(typeId_);
-		typeId = typeId_;
-		assert(!im);
-		assert(im_);
-		im = im_;
-		im->items.Emplace(xx::SharedFromThis(this));
-		assert(!lineNumber);
-		drawable = drawable_;
-
-		//xx::CoutN("ItemInit() typeId == ", typeId);
-	}
+	ItemManagerBase* im{};
+	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManagerBase* im_, bool drawable_ = false);
 
 	int lineNumber{};
 	virtual int UpdateCore() {
@@ -62,30 +52,89 @@ struct Item {
 	float radius{}, radians{};
 };
 
-inline bool ItemManager::Update() {
-	items.Foreach([&](xx::Shared<Item>& o)->bool {
-		return o->Update();
-	});
-	return items.Empty();
-}
+struct ItemManagerBase {
 
-// F: void (*)( xx::Shared<T>& o )
-template<std::derived_from<Item> T, typename F>
-void ItemManager::Foreatch(F&& func) {
-	items.Foreach([&](xx::Shared<Item>& o) {
-		if (o->typeId == T::cTypeId) {
-			func((xx::Shared<T>&)o);
+	// index == typeId
+	xx::Listi32<xx::Listi32<xx::Shared<Item>>> itemss;
+
+	template<std::derived_from<Item> T>
+	xx::Listi32<xx::Shared<T>>& GetItems() const {
+		return (xx::Listi32<xx::Shared<T>>&)itemss[T::cTypeId];
+	}
+
+	// make shared + call Init( args )
+	template<std::derived_from<Item> T, typename...Args>
+	xx::Shared<T> Create(Args&&...args) {
+		xx::Shared<T> o;
+		o = xx::MakeShared<T>();
+		o->Init(this, std::forward<Args>(args)...);
+		return o;
+	}
+
+	template<std::derived_from<Item> T, typename F>
+	void Foreatch(F&& func) {
+		auto& os = GetItems<T>();
+		for (auto& o : os) {
+			func(o);
 		}
-	});
+	}
+
+	void Clear() {
+		for (auto& items : itemss) {
+			items.Clear();
+		}
+	}
+};
+
+inline void Item::ItemInit(int typeId_, ItemManagerBase* im_, bool drawable_) {
+	assert(!typeId);
+	assert(typeId_);
+	typeId = typeId_;
+	assert(!im);
+	assert(im_);
+	im = im_;
+	im->itemss[typeId_].Emplace(xx::SharedFromThis(this));	
+	assert(!lineNumber);
+	drawable = drawable_;
+	//xx::CoutN("ItemInit() typeId == ", typeId);
 }
 
-template<std::derived_from<Item> T, typename...Args>
-xx::Shared<T> ItemManager::Create(Args&&...args) {
-	xx::Shared<T> o;
-	o = xx::MakeShared<T>();
-	o->Init(this, std::forward<Args>(args)...);
-	return o;
-}
+
+template<std::derived_from<Item>...TS>
+struct ItemManager : ItemManagerBase {
+	void Init() {
+		constexpr int maxId = MaxTypeId_v<TS...>;
+		itemss.Resize(maxId + 1);
+		Clear();
+	}
+
+	bool Update() {
+		int i{};
+		i += (UpdateCore<TS>(), ...);
+		return i == 0;
+	}
+
+	template<std::derived_from<Item> T>
+	int UpdateCore() {
+		auto& os = GetItems<T>();
+		for (int i = os.len - 1; i >= 0; --i) {
+			if (os[i]->Update()) {
+				os.SwapRemoveAt(i);	// known issue: crash
+			}
+		}
+		return os.len;
+	}
+
+	template<typename F>
+	void ForeatchAll(F&& func) {
+		for (auto& os : itemss) {
+			for (auto& o : os) {
+				func(o);
+			}
+		}
+	}
+};
+
 
 /*******************************************************************************************/
 /*******************************************************************************************/
@@ -100,10 +149,10 @@ struct Timer : Item {
 	xx::Weak<Item> owner;
 	float cDelaySeconds{};
 	float secs{};
-	typedef bool (*Callback)(ItemManager* im_, xx::Weak<Item> owner_);
+	typedef bool (*Callback)(ItemManagerBase* im_, xx::Weak<Item> owner_);
 	Callback callback;
 	
-	void Init(ItemManager* im_, xx::Weak<Item> owner_, float cDelaySeconds_, Callback callback_) {
+	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cDelaySeconds_, Callback callback_) {
 		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cDelaySeconds = cDelaySeconds_;
@@ -131,7 +180,7 @@ struct Child : Item {
 	float life{};
 	// todo: pos, tex
 
-	void Init(ItemManager* im_, xx::Weak<Item> owner_, float cLifeSpan_) {
+	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cLifeSpan = cLifeSpan_;
@@ -155,7 +204,7 @@ struct Linker : Item {
 	float life{};
 	// todo: pos, tex
 
-	void Init(ItemManager* im_, xx::Weak<Item> linkFrom_, xx::Weak<Item> linkTo_, float cLifeSpan_) {
+	void Init(ItemManagerBase* im_, xx::Weak<Item> linkFrom_, xx::Weak<Item> linkTo_, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
 		linkFrom = std::move(linkFrom_);
 		linkTo = std::move(linkTo_);
@@ -178,7 +227,7 @@ struct RangeBullet : Item {
 	float life{};
 	// todo: pos, tex
 
-	void Init(ItemManager* im_, xx::Weak<Item> releaser, float cLifeSpan_) {
+	void Init(ItemManagerBase* im_, xx::Weak<Item> releaser, float cLifeSpan_) {
 		ItemInit(cTypeId, im_);
 		// todo: copy props from releaser
 		cLifeSpan = cLifeSpan_;
@@ -196,24 +245,24 @@ struct Player : Item {
 	static constexpr int cTypeId{ 5 };
 
 	// simulate read player config & create timers
-	void Init(ItemManager* im_) {
+	void Init(ItemManagerBase* im_) {
 		ItemInit(cTypeId, im_);
 		pos = {500, 500};
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
-		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
 			assert(owner_ && owner_->typeId == Player::cTypeId);
 			im_->Create<Child>(owner_, 11.f);
 			return true;	// todo: total count limit
 		});
 
 		// timer + link to children( every 3s link to all child, lifecycle 5s )
-		im_->Create<Timer>(xx::WeakFromThis(this), 3.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+		im_->Create<Timer>(xx::WeakFromThis(this), 3.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
 			assert(owner_ && owner_->typeId == Player::cTypeId);
 			im_->Foreatch<Child>([&](xx::Shared<Child>& c) {
 				auto&& l = im_->Create<Linker>(owner_, c.ToWeak(), 5.f);
 				// linker + timer + range attack( every 2s fire bullet, lifecycle 3s )
-				im_->Create<Timer>(l.ToWeak(), 2.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+				im_->Create<Timer>(l.ToWeak(), 2.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
 					im_->Create<RangeBullet>(owner_, 3.f);
 					return true;	// todo: total count limit
 				});
@@ -231,7 +280,7 @@ struct Player : Item {
 struct Monster : Item {
 	static constexpr int cTypeId{ 6 };
 
-	void Init(ItemManager* im_) {
+	void Init(ItemManagerBase* im_) {
 		ItemInit(cTypeId, im_, true);
 		pos.x = gLooper.rnd.Next<float>(0, 1000);
 		pos.y = gLooper.rnd.Next<float>(0, 1000);
@@ -255,11 +304,11 @@ struct Monster : Item {
 
 
 struct Env {
-	ItemManager im;
+	ItemManager<Timer, Child, Linker, RangeBullet, Player, Monster> im;
 
 	// spawm some player & monsters
 	void Init() {
-		im.items.Clear();
+		im.Init();
 
 		for (size_t i = 0; i < 1; i++) {
 			im.Create<Player>();
@@ -283,7 +332,7 @@ struct Env {
 	xx::Listi32<ItemY> iys;
 
 	void Draw(Camera const& camera) {
-		im.items.Foreach([&](xx::Shared<Item>& o) {
+		im.ForeatchAll([&](xx::Shared<Item>& o) {
 			if (o->drawable) {
 				if (auto y = o->GetY(camera); !std::isnan(y)) {
 					iys.Emplace(o.pointer, y);
@@ -296,6 +345,14 @@ struct Env {
 			iy.item->Draw(camera);
 		}
 		iys.Clear();
+
+		//im.items.Foreach([&](xx::Shared<Item>& o) {
+		//	if (o->drawable) {
+		//		if (auto y = o->GetY(camera); !std::isnan(y)) {
+		//			o->Draw(camera);
+		//		}
+		//	}
+		//});
 	}
 
 	void DumpInfo() {
@@ -309,7 +366,7 @@ struct Env {
 		// ...
 
 		std::map<int, int> counters;
-		im.items.Foreach([&](xx::Shared<Item>& o) {
+		im.ForeatchAll([&](xx::Shared<Item>& o) {
 			++counters[o->typeId];
 		});
 
