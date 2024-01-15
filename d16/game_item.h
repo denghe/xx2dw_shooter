@@ -3,12 +3,19 @@
 
 struct Item;
 struct ItemManager {
+
+	// todo: items need group store for fast search?
 	xx::ListLink<xx::Shared<Item>, int32_t> items;
 	bool Update();
 
 	// F: void (*)( xx::Shared<T>& o )
 	template<std::derived_from<Item> T, typename F>
 	void Foreatch(F&& func);
+
+	// make shared + call Init( args )
+	template<std::derived_from<Item> T, typename...Args>
+	xx::Shared<T> Create(Args&&...args);
+
 };
 
 struct Item {
@@ -19,12 +26,14 @@ struct Item {
 
 	ItemManager* im{};
 	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManager* im_, bool drawable_ = false) {
+		assert(!typeId);
+		assert(typeId_);
+		typeId = typeId_;
 		assert(!im);
 		assert(im_);
-		assert(!lineNumber);
-		typeId = typeId_;
 		im = im_;
 		im->items.Emplace(xx::SharedFromThis(this));
+		assert(!lineNumber);
 		drawable = drawable_;
 
 		//xx::CoutN("ItemInit() typeId == ", typeId);
@@ -42,8 +51,8 @@ struct Item {
 	bool drawable{};
 	virtual float GetY(Camera const& camera) const {
 		assert(drawable);
-		//if (camera.InArea(pos)) return pos.y; else
-		return std::numeric_limits<float>::quiet_NaN();
+		if (camera.InArea(pos)) return pos.y;
+		else return std::numeric_limits<float>::quiet_NaN();
 	}
 	virtual void Draw(Camera const& camera) {
 		assert(drawable);
@@ -70,6 +79,13 @@ void ItemManager::Foreatch(F&& func) {
 	});
 }
 
+template<std::derived_from<Item> T, typename...Args>
+xx::Shared<T> ItemManager::Create(Args&&...args) {
+	xx::Shared<T> o;
+	o = xx::MakeShared<T>();
+	o->Init(this, std::forward<Args>(args)...);
+	return o;
+}
 
 /*******************************************************************************************/
 /*******************************************************************************************/
@@ -79,7 +95,7 @@ void ItemManager::Foreatch(F&& func) {
 // timer + link to children + timer + range attack
 
 struct Timer : Item {
-	static constexpr int cTypeId{ __LINE__ };
+	static constexpr int cTypeId{ 1 };
 
 	xx::Weak<Item> owner;
 	float cDelaySeconds{};
@@ -108,7 +124,7 @@ struct Timer : Item {
 };
 
 struct Child : Item {
-	static constexpr int cTypeId{ __LINE__ };
+	static constexpr int cTypeId{ 2 };
 
 	xx::Weak<Item> owner;
 	float cLifeSpan{};
@@ -132,7 +148,7 @@ struct Child : Item {
 };
 
 struct Linker : Item {
-	static constexpr int cTypeId{ __LINE__ };
+	static constexpr int cTypeId{ 3 };
 
 	xx::Weak<Item> linkFrom, linkTo;
 	float cLifeSpan{};
@@ -156,7 +172,7 @@ struct Linker : Item {
 };
 
 struct RangeBullet : Item {
-	static constexpr int cTypeId{ __LINE__ };
+	static constexpr int cTypeId{ 4 };
 
 	float cLifeSpan{};
 	float life{};
@@ -177,32 +193,28 @@ struct RangeBullet : Item {
 };
 
 struct Player : Item {
-	static constexpr int cTypeId{ __LINE__ };
-
-	// todo: pos, tex
+	static constexpr int cTypeId{ 5 };
 
 	// simulate read player config & create timers
 	void Init(ItemManager* im_) {
 		ItemInit(cTypeId, im_);
-
-		// todo: pos, tex
+		pos = {500, 500};
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
-		xx::MakeShared<Timer>()->Init(im_, xx::WeakFromThis(this), 1.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
 			assert(owner_ && owner_->typeId == Player::cTypeId);
-			xx::MakeShared<Child>()->Init(im_, owner_, 11.f);
+			im_->Create<Child>(owner_, 11.f);
 			return true;	// todo: total count limit
 		});
 
 		// timer + link to children( every 3s link to all child, lifecycle 5s )
-		xx::MakeShared<Timer>()->Init(im_, xx::WeakFromThis(this), 3.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+		im_->Create<Timer>(xx::WeakFromThis(this), 3.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
 			assert(owner_ && owner_->typeId == Player::cTypeId);
 			im_->Foreatch<Child>([&](xx::Shared<Child>& c) {
-				auto l = xx::MakeShared<Linker>();
-				l->Init(im_, owner_, c.ToWeak(), 5.f);
+				auto&& l = im_->Create<Linker>(owner_, c.ToWeak(), 5.f);
 				// linker + timer + range attack( every 2s fire bullet, lifecycle 3s )
-				xx::MakeShared<Timer>()->Init(im_, l.ToWeak(), 2.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
-					xx::MakeShared<RangeBullet>()->Init(im_, owner_, 3.f);
+				im_->Create<Timer>(l.ToWeak(), 2.f, [](ItemManager* im_, xx::Weak<Item> owner_)->bool {
+					im_->Create<RangeBullet>(owner_, 3.f);
 					return true;	// todo: total count limit
 				});
 			});
@@ -217,215 +229,98 @@ struct Player : Item {
 };
 
 struct Monster : Item {
-	static constexpr int cTypeId{ __LINE__ };
-	// todo: pos, tex
+	static constexpr int cTypeId{ 6 };
 
 	void Init(ItemManager* im_) {
-		ItemInit(cTypeId, im_);
-		// todo: pos, tex
+		ItemInit(cTypeId, im_, true);
+		pos.x = gLooper.rnd.Next<float>(0, 1000);
+		pos.y = gLooper.rnd.Next<float>(0, 1000);
+		radians = {};
+		radius = 5.f;
 	}
 
 	virtual int UpdateCore() override {
 		// todo: move to player pos ? hit player ?
 		return 1;
 	}
+
+	virtual void Draw(Camera const& camera) override {
+		Quad()
+			.SetFrame(gLooper.frame_no)
+			.SetPosition(camera.ToGLPos(pos))
+			.SetRotate(radians)
+			.Draw();
+	}
 };
+
 
 struct Env {
 	ItemManager im;
 
 	// spawm some player & monsters
 	void Init() {
+		im.items.Clear();
+
 		for (size_t i = 0; i < 1; i++) {
-			xx::MakeShared<Player>()->Init(&im);
-		}
-		for (size_t i = 0; i < 100; i++) {
-			xx::MakeShared<Monster>()->Init(&im);
+			im.Create<Player>();
 		}
 	}
 
 	// return true mean im is empty
 	bool Update() {
-		im.Update();
-
-		// dump im info
-		if (gLooper.frameNumber % (int)gDesign.fps == 0) {
-			std::map<int, int> counters;
-			im.items.Foreach([&](xx::Shared<Item>& o) {
-				++counters[o->typeId];
-				});
-			xx::CoutN("counters = ", counters);
+		for (size_t i = 0; i < 10; i++) {
+			im.Create<Monster>();
 		}
 
-		return !im.items.Empty();
+		return im.Update();
 	}
 
-	void Draw() {
-		// todo
+	// for draw order by y
+	struct ItemY {
+		Item* item;
+		float y;
+	};
+	xx::Listi32<ItemY> iys;
+
+	void Draw(Camera const& camera) {
+		im.items.Foreach([&](xx::Shared<Item>& o) {
+			if (o->drawable) {
+				if (auto y = o->GetY(camera); !std::isnan(y)) {
+					iys.Emplace(o.pointer, y);
+				}
+			}
+		});
+
+		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
+		for (auto& iy : iys) {
+			iy.item->Draw(camera);
+		}
+		iys.Clear();
+	}
+
+	void DumpInfo() {
+		std::unordered_map<int, std::string> keys;
+		keys[Timer::cTypeId] = "Timer";
+		keys[Child::cTypeId] = "Child";
+		keys[Linker::cTypeId] = "Linker";
+		keys[RangeBullet::cTypeId] = "RangeBullet";
+		keys[Player::cTypeId] = "Player";
+		keys[Monster::cTypeId] = "Monster";
+		// ...
+
+		std::map<int, int> counters;
+		im.items.Foreach([&](xx::Shared<Item>& o) {
+			++counters[o->typeId];
+		});
+
+		xx::CoutN("vvvvvvvvvvvvvvvv Env DumpInfo Begin");
+		for (auto&[k,v] : counters) {
+			xx::CoutN(keys[k], " num = ", v);
+		}
+		xx::CoutN("^^^^^^^^^^^^^^^^ Env DumpInfo End");
 	}
 };
 
-
-
-
-
-
-
-
-
-//struct Trigger : Item {
-//	xx::Weak<Item> owner;	// Conditions for existence
-//
-//	float delaySeconds{}, openSeconds{}, closeSeconds{};
-//	int repeatTimes{};
-//	float secs{};
-//	bool isOpen{};
-//
-//	xx::Weak<Trigger> Init(ItemManager* im_, xx::Weak<Item> owner_, float delaySeconds_ = 0, float openSeconds_ = 9999999, float closeSeconds_ = 0, int repeatTimes_ = std::numeric_limits<int>::max()) {
-//		ItemInit(im_);
-//
-//		owner = std::move(owner_);
-//		delaySeconds = delaySeconds_;
-//		openSeconds = openSeconds_;
-//		closeSeconds = closeSeconds_;
-//		repeatTimes = repeatTimes_;
-//		xx::CoutN("Trigger.Init()");
-//
-//		return xx::WeakFromThis(this);
-//	}
-//
-//	virtual int UpdateCore() override {
-//		if (!owner) {
-//			xx::CoutN("Trigger.UpdateCore() end");
-//			return 0;
-//		} else {
-//			xx::CoutN("Trigger.UpdateCore()");
-//		}
-//		COR_BEGIN
-//		for (secs = 0; secs < delaySeconds; secs += gLooper.frameDelay) {
-//			COR_YIELD
-//		}
-//		do {
-//			isOpen = true;
-//			for (secs = 0; secs < openSeconds; secs += gLooper.frameDelay) {
-//				COR_YIELD
-//			}
-//			isOpen = false;
-//			for (secs = 0; secs < closeSeconds; secs += gLooper.frameDelay) {
-//				COR_YIELD
-//			}
-//		} while (--repeatTimes);
-//		COR_END
-//	}
-//};
-//
-///*******************************************************************************************/
-///*******************************************************************************************/
-//
-//struct Bullet1 : Item {
-//	// gLooper.frames_fireball_white
-//	constexpr static XY cAnchor{ 0.75f, 0.5f };
-//	constexpr static float cRadius{ 5.f };
-//	constexpr static xx::FromTo<float> cFrameIndexRange = { 0.f, 8.f };	// 0 ~ 7
-//	constexpr static float cFrameInc{ 12.f / gDesign.fps };
-//	constexpr static float cLifeCycle{ 0.5f };
-//
-//	XY pos{};
-//	float radians{};
-//	float damage{};
-//	float lifeCycle{};
-//	float frameIndex{};
-//	// todo: speed? inc?
-//
-//	void Init(ItemManager* im_, XY const& pos_, float radians_, float damage_) {
-//		ItemInit(im_, true);
-//		pos = pos_;
-//		radians = radians_;
-//		damage = damage_;
-//		frameIndex = cFrameIndexRange.from;
-//		xx::CoutN("Bullet1.Init()");
-//	}
-//
-//	virtual int UpdateCore() override {
-//		lifeCycle += gDesign.frameDelay;
-//		if (lifeCycle > cLifeCycle) return 0;
-//		frameIndex += cFrameInc;
-//		if (frameIndex >= cFrameIndexRange.to) {
-//			frameIndex -= cFrameIndexRange.to - cFrameIndexRange.from;
-//		}
-//		// todo: move pos ?
-//		// todo: hit check ?
-//		return 1;
-//	}
-//
-//	virtual void Draw(Camera const& camera) override{
-//		// todo
-//		//Quad().SetFrame(gLooper.frames_staff[60]).Draw();
-//		// todo: camera
-//		Quad().SetFrame(gLooper.frames_fireball_white[(int)frameIndex]).SetPosition(pos).Draw();
-//	}
-//};
-//
-///*******************************************************************************************/
-///*******************************************************************************************/
-//
-//template<typename BT = Bullet1>
-//struct Gun1 : Item {
-//	static constexpr int cQuanitity{ 5 };
-//	static constexpr float cMinCastDelay{ 0.1f };
-//
-//	// todo: pos, radians, shot pos ...
-//	xx::Weak<Trigger> trigger;	// emit condition
-//	int quanitity{};
-//	float secs{};
-//
-//	void Init(ItemManager* im_) {
-//		ItemInit(im_);
-//
-//		trigger = xx::MakeShared<Trigger>()->Init(im, xx::WeakFromThis(this), 0.2f, 0.01f, 0.15f);
-//		quanitity = cQuanitity;
-//		xx::CoutN("Gun1.Init()");
-//	}
-//
-//	virtual int UpdateCore() override {
-//		COR_BEGIN
-//		while (true) {
-//			assert(trigger);
-//			if (trigger->isOpen) {
-//				if (quanitity > 0) {
-//					--quanitity;
-//					{
-//						auto e = xx::MakeShared<BT>();
-//						e->Init(im);
-//					}
-//					for (secs = 0; secs < cMinCastDelay; secs += gDesign.frameDelay) {
-//						COR_YIELD
-//					}
-//				} else {
-//					xx::CoutN("Gun1.UpdateCore() end");
-//					COR_EXIT;
-//				}
-//			}
-//			COR_YIELD
-//		}
-//		COR_END
-//	}
-//};
-
-///*******************************************************************************************/
-///*******************************************************************************************/
-//
-//inline void TestGun1() {
-//	ItemManager im;
-//	xx::MakeShared<Gun1<Bullet1>>()->Init(&im);
-//
-//	for (int i = 0; i < gDesign.fps * 2; i++) {
-//		xx::CoutN("i = ", i);
-//		if (im.Update()) 
-//			break;
-//	}
-//	xx::CoutN("after for");
-//}
 
 //enum class WeaponTypes {
 //	Unknown,
