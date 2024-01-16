@@ -23,10 +23,7 @@ struct Item {
 		return lineNumber == 0;		// will remove by caller
 	}
 
-	virtual float GetY(Camera const& camera) const {
-		if (camera.InArea(pos)) return pos.y;
-		else return std::numeric_limits<float>::quiet_NaN();
-	}
+	// if (camera.InArea(o->pos)) {
 	virtual void Draw(Camera const& camera) {}
 
 	XY pos{};
@@ -292,8 +289,7 @@ struct Monster : Item {
 	}
 
 	virtual void Draw(Camera const& camera) override {
-		Quad()
-			.SetFrame(gLooper.frame_no)
+		Quad().SetFrame<true>(gLooper.frame_no)				// faster than member visit
 			.SetPosition(camera.ToGLPos(pos))
 			.SetRotate(radians)
 			.Draw();
@@ -311,14 +307,17 @@ struct Env {
 		for (size_t i = 0; i < 1; i++) {
 			im.Create<Player>();
 		}
+
+		for (size_t i = 0; i < 1000000; i++) {
+			im.Create<Monster>();
+		}
+
+		//auto& c = (xx::Listi32<Monster*>&)im.GetItems<Monster>();
+		//std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
 	}
 
 	// return true mean im is empty
 	bool Update() {
-		for (size_t i = 0; i < 10; i++) {
-			im.Create<Monster>();
-		}
-
 		return im.Update();
 	}
 
@@ -352,8 +351,8 @@ struct Env {
 		std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
 
 		im.ForeachEx<Child, Monster>([&]<typename T>(xx::Shared<T>&o){
-			if (auto y = o->GetY(camera); !std::isnan(y)) {
-				o->Draw(camera);
+			if (camera.InArea(o->pos)) {
+				o->Draw(camera);	// o->T::Draw maybe faster
 			}
 		});
 	}
