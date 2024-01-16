@@ -102,7 +102,14 @@ inline void Item::ItemInit(int typeId_, ItemManagerBase* im_, bool drawable_) {
 
 template<std::derived_from<Item>...TS>
 struct ItemManager : ItemManagerBase {
+	std::unordered_map<int, std::string> typeNames;	// for dump / log
+	template<typename T>
+	void StoreTypeName() {
+		typeNames[T::cTypeId] = xx::TypeName<T>();
+	}
+
 	void Init() {
+		(StoreTypeName<TS>(), ...);
 		constexpr int maxId = MaxTypeId_v<TS...>;
 		itemss.Resize(maxId + 1);
 		Clear();
@@ -356,23 +363,12 @@ struct Env {
 	}
 
 	void DumpInfo() {
-		std::unordered_map<int, std::string> keys;
-		keys[Timer::cTypeId] = "Timer";
-		keys[Child::cTypeId] = "Child";
-		keys[Linker::cTypeId] = "Linker";
-		keys[RangeBullet::cTypeId] = "RangeBullet";
-		keys[Player::cTypeId] = "Player";
-		keys[Monster::cTypeId] = "Monster";
-		// ...
-
-		std::map<int, int> counters;
-		im.ForeatchAll([&](xx::Shared<Item>& o) {
-			++counters[o->typeId];
-		});
-
 		xx::CoutN("vvvvvvvvvvvvvvvv Env DumpInfo Begin");
-		for (auto&[k,v] : counters) {
-			xx::CoutN(keys[k], " num = ", v);
+		for (int i = 0, e = im.itemss.len; i < e; ++i) {
+			if (auto iter = im.typeNames.find(i); iter != im.typeNames.end()) {
+				auto& items = im.itemss[i];
+				xx::CoutN(iter->second, " num = ", im.itemss[i].len);
+			}
 		}
 		xx::CoutN("^^^^^^^^^^^^^^^^ Env DumpInfo End");
 	}

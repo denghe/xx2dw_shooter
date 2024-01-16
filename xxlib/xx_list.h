@@ -167,14 +167,16 @@ namespace xx {
 		}
 
         void SwapRemoveAt(SizeType idx) noexcept {
-            if (idx + 1 <= len) {
-                if constexpr (IsPod_v<T>) {
-                    ::memcpy(&buf[idx], &Back(), sizeof(T) );
-                } else {
-                    buf[idx] = std::move(Back());
-                }
-            }
-            PopBack();
+			assert(idx < len);
+			buf[idx].~T();
+			--len;
+			if (len != idx) {
+				if constexpr (IsPod_v<T>) {
+                    ::memcpy(&buf[idx], &buf[len], sizeof(T) );
+				} else {
+					new (&buf[idx]) T((T&&)buf[len]);
+				}
+			}
 		}
 
         XX_FORCE_INLINE void PopBack() {
