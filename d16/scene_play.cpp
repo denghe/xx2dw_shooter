@@ -9,7 +9,7 @@ void ScenePlay::Init() {
 	});
 
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg_btn, U"Dump Env Info", [&]() {
-		env.DumpInfo();
+		env.im.DumpInfo();
 	});
 
 	env.Init();

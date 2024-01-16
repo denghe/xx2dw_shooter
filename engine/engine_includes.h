@@ -5,6 +5,7 @@
 #include <xx_string.h>
 #include <xx_data.h>
 #include <xx_file.h>
+#include <nameof.hpp>
 
 /*
 // copy these code to pch.cpp

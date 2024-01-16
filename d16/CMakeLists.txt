@@ -21,6 +21,7 @@ include_directories(
 	../engine
 	../3rd
 	../xxlib
+	../nameof/include
 )
 
 file(GLOB sources
@@ -40,6 +41,7 @@ file(GLOB sources
 	../3rd/*.c
 	../3rd/*.hpp
 	../3rd/*.h
+	../nameof/include/nameof.hpp
 	*.cpp
 	*.c
 	*.h
