@@ -115,4 +115,20 @@ struct Quad : QuadInstanceData {
         EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(texId, *this);
         return (Quad&)*this;
     }
+
+    /*
+    auto& q = DrawOnce( frame );
+    q.pos = {};
+    q.anchor = {0.5f, 0.5f};
+    q.scale = {1, 1};
+    q.radians = 0;
+    q.colorplus = 1;
+    q.color = {255, 255, 255, 255};
+    */
+    inline XX_FORCE_INLINE static QuadInstanceData& DrawOnce(xx::Ref<Frame> const& f) {
+        auto& r = *EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(f->tex->GetValue(), 1);
+        r.texRect.data = f->textureRect.data;
+        return r;
+    }
+
 };

@@ -289,10 +289,17 @@ struct Monster : Item {
 	}
 
 	virtual void Draw(Camera const& camera) override {
-		Quad().SetFrame<true>(gLooper.frame_no)				// faster than member visit
-			.SetPosition(camera.ToGLPos(pos))
-			.SetRotate(radians)
-			.Draw();
+		//Quad().SetFrame<true>(gLooper.frame_no)					// faster than member visit
+		//	.SetPosition(camera.ToGLPos(pos))
+		//	.SetRotate(radians)
+		//	.Draw();
+		auto& q = Quad::DrawOnce(gLooper.frame_no);	// fastest
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = { 0.5f, 0.5f };
+		q.scale = { 1, 1 };
+		q.radians = radians;
+		q.colorplus = 1;
+		q.color = { 255, 255, 255, 255 };
 	}
 };
 
@@ -308,7 +315,7 @@ struct Env {
 			im.Create<Player>();
 		}
 
-		for (size_t i = 0; i < 1000000; i++) {
+		for (size_t i = 0; i < 100000; i++) {
 			im.Create<Monster>();
 		}
 
@@ -347,8 +354,8 @@ struct Env {
 		//}
 		//iys.Clear();
 
-		auto& c = (xx::Listi32<Monster*>&)im.GetItems<Monster>();
-		std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
+		//auto& c = (xx::Listi32<Monster*>&)im.GetItems<Monster>();
+		//std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
 
 		im.ForeachEx<Child, Monster>([&]<typename T>(xx::Shared<T>&o){
 			if (camera.InArea(o->pos)) {
@@ -366,7 +373,7 @@ struct Env {
 //	Lightning,		// teleport electronic explosion ( teleport range attack )
 //	Laser,			// energy / high brightness light ( line attack )
 //	Burn,			// fire dot attack
-//	Curse,			// debuff attack
+//	Curse,			/Draw/ debuff attack
 //	Summon			// summon friendly forces or resurrect corpses?
 //};
 
