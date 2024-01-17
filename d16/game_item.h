@@ -28,6 +28,7 @@ struct Item {
 
 	XY pos{};
 	float radius{}, radians{};
+	bool flipX{};
 };
 
 struct ItemManagerBase {
@@ -238,11 +239,14 @@ struct RangeBullet : Item {
 
 struct Player : Item {
 	static constexpr int cTypeId{ 5 };
+	static constexpr int cSpeed{ 5 };
+	float speed{};
 
 	// simulate read player config & create timers
 	void Init(ItemManagerBase* im_) {
 		ItemInit(cTypeId, im_);
-		pos = {500, 500};
+		pos = gLooper.windowSize_2;
+		speed = cSpeed;
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
 		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
@@ -267,8 +271,29 @@ struct Player : Item {
 	}
 
 	virtual int UpdateCore() override {
-		// todo: handle player move input ? frame anim ?
+		if (auto r = gLooper.GetKeyboardMoveInc(); r.has_value()) {
+			pos += r->second * speed;
+			if (flipX && ((int)r->first & (int)MoveDirections::Right)) {
+				flipX = false;
+			} else if ((int)r->first & (int)MoveDirections::Left) {
+				flipX = true;
+			}
+			//FrameControl::Forward(frameIndex, cFrameInc * (speed / cSpeed), cFrameMaxIndex);
+		} else {
+			//idle();
+		}
+
 		return 1;
+	}
+
+	virtual void Draw(Camera const& camera) override {
+		auto& q = Quad::DrawOnce(gLooper.frame_yes);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = { 0.5f, 0.5f };
+		q.scale = { flipX ? -2.f : 2.f, 2 };
+		q.radians = radians;
+		q.colorplus = 1;
+		q.color = { 255, 255, 255, 255 };
 	}
 };
 
@@ -277,8 +302,8 @@ struct Monster : Item {
 
 	void Init(ItemManagerBase* im_) {
 		ItemInit(cTypeId, im_);
-		pos.x = gLooper.rnd.Next<float>(0, 1000);
-		pos.y = gLooper.rnd.Next<float>(0, 1000);
+		pos.x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
+		pos.y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
 		radians = {};
 		radius = 5.f;
 	}
@@ -315,7 +340,7 @@ struct Env {
 			im.Create<Player>();
 		}
 
-		for (size_t i = 0; i < 100000; i++) {
+		for (size_t i = 0; i < 10000; i++) {
 			im.Create<Monster>();
 		}
 
@@ -337,31 +362,27 @@ struct Env {
 
 	void Draw(Camera const& camera) {
 
-		//im.Foreach<Monster>([&](xx::Shared<Monster>& o) {
-		//	if (auto y = o->GetY(camera); !std::isnan(y)) {
-		//		iys.Emplace(o.pointer, y);
-		//	}
-		//});
-		////im.ForeachAll([&](xx::Shared<Item>& o) {
-		////	if (auto y = o->GetY(camera); !std::isnan(y)) {
-		////		iys.Emplace(o.pointer, y);
-		////	}
-		////});
+		im.ForeachEx<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Shared<T>&o){
+			if (camera.InArea(o->pos)) {
+				iys.Emplace(o.pointer, o->pos.y);
+			}
+		});
+		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
+		for (auto& iy : iys) {
+			iy.item->Draw(camera);
+		}
+		iys.Clear();
 
-		//std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
-		//for (auto& iy : iys) {
-		//	iy.item->Draw(camera);
-		//}
-		//iys.Clear();
+		// todo: use boost multi index container sort by y ?
 
 		//auto& c = (xx::Listi32<Monster*>&)im.GetItems<Monster>();
 		//std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
 
-		im.ForeachEx<Child, Monster>([&]<typename T>(xx::Shared<T>&o){
-			if (camera.InArea(o->pos)) {
-				o->Draw(camera);	// o->T::Draw maybe faster
-			}
-		});
+		//im.ForeachEx<Child, Monster>([&]<typename T>(xx::Shared<T>&o){
+		//	if (camera.InArea(o->pos)) {
+		//		o->Draw(camera);	// o->T::Draw maybe faster
+		//	}
+		//});
 	}
 };
 

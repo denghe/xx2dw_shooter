@@ -15,7 +15,7 @@ void ScenePlay::Init() {
 	env.Init();
 
 	camera.SetMaxFrameSize({ 50, 50 });
-	camera.SetOriginal({ 500, 500 });
+	camera.SetOriginal(gLooper.windowSize_2);
 }
 
 void ScenePlay::Update() {
