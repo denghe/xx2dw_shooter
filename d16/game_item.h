@@ -1,20 +1,45 @@
 ﻿#pragma once
 #include <game_looper.h>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+using boost::multi_index_container;
+using namespace boost::multi_index;
 
 struct ItemManagerBase;
 
-struct Item {
+struct ItemBase {
+	ItemManagerBase* im{};
 	// static constexpr int cTypeId{ ??? };
 	int typeId{};
 
-	virtual ~Item() {
-		//xx::CoutN("~Item() typeId == ", typeId);
+	union {
+		XY pos{};
+		struct {
+			float posX, posY;
+		};
 	};
-
-	ItemManagerBase* im{};
-	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManagerBase* im_);
+	float radius{}, radians{};
+	bool flipX{};
 
 	int lineNumber{};
+};
+
+namespace tags {
+	struct posY {};
+}
+
+typedef multi_index_container<ItemBase*, indexed_by<
+	ordered_non_unique<tag<tags::posY>, BOOST_MULTI_INDEX_MEMBER(ItemBase, float, posY)>
+>> ItemPosYs;
+
+struct Item : ItemBase {
+	ItemPosYs::iterator sortIter;
+
+	virtual ~Item();
+
+	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManagerBase* im_);
+
 	virtual int UpdateCore() {
 		return 0;	// COR_BEGIN COR_YIELD COR_EXIT COR_END 
 	};
@@ -25,16 +50,15 @@ struct Item {
 
 	// if (camera.InArea(o->pos)) {
 	virtual void Draw(Camera const& camera) {}
-
-	XY pos{};
-	float radius{}, radians{};
-	bool flipX{};
 };
 
 struct ItemManagerBase {
 
 	// index == typeId
 	xx::Listi32<xx::Listi32<xx::Shared<Item>>> itemss;
+
+	// sort by y
+	ItemPosYs sortContainer;
 
 	template<std::derived_from<Item> T>
 	xx::Listi32<xx::Shared<T>>& GetItems() const {
@@ -78,10 +102,20 @@ inline void Item::ItemInit(int typeId_, ItemManagerBase* im_) {
 	assert(!im);
 	assert(im_);
 	im = im_;
-	im->itemss[typeId_].Emplace(xx::SharedFromThis(this));	
 	assert(!lineNumber);
 	//xx::CoutN("ItemInit() typeId == ", typeId);
+	im->itemss[typeId_].Emplace(xx::SharedFromThis(this));	
+	auto [iter, ok] = im->sortContainer.insert(this);
+	assert(ok);
+	sortIter = std::move(iter);
 }
+
+inline Item::~Item() {
+	//xx::CoutN("~Item() typeId == ", typeId);
+	assert(sortIter != decltype(sortIter){});
+	assert(im);
+	im->sortContainer.erase(sortIter);
+};
 
 
 template<std::derived_from<Item>...TS>
@@ -149,10 +183,10 @@ struct Timer : Item {
 	Callback callback;
 	
 	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cDelaySeconds_, Callback callback_) {
-		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cDelaySeconds = cDelaySeconds_;
 		callback = callback_;
+		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -177,9 +211,9 @@ struct Child : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cLifeSpan_) {
-		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cLifeSpan = cLifeSpan_;
+		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -201,10 +235,10 @@ struct Linker : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> linkFrom_, xx::Weak<Item> linkTo_, float cLifeSpan_) {
-		ItemInit(cTypeId, im_);
 		linkFrom = std::move(linkFrom_);
 		linkTo = std::move(linkTo_);
 		cLifeSpan = cLifeSpan_;
+		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -224,9 +258,9 @@ struct RangeBullet : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> releaser, float cLifeSpan_) {
-		ItemInit(cTypeId, im_);
 		// todo: copy props from releaser
 		cLifeSpan = cLifeSpan_;
+		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -244,9 +278,9 @@ struct Player : Item {
 
 	// simulate read player config & create timers
 	void Init(ItemManagerBase* im_) {
-		ItemInit(cTypeId, im_);
 		pos = gLooper.windowSize_2;
 		speed = cSpeed;
+		ItemInit(cTypeId, im_);
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
 		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
@@ -301,11 +335,11 @@ struct Monster : Item {
 	static constexpr int cTypeId{ 6 };
 
 	void Init(ItemManagerBase* im_) {
-		ItemInit(cTypeId, im_);
 		pos.x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
 		pos.y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
 		radians = {};
 		radius = 5.f;
+		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -344,6 +378,8 @@ struct Env {
 			im.Create<Monster>();
 		}
 
+		im.Clear();
+
 		//auto& c = (xx::Listi32<Monster*>&)im.GetItems<Monster>();
 		//std::sort(c.buf, c.buf + c.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
 	}
@@ -362,16 +398,24 @@ struct Env {
 
 	void Draw(Camera const& camera) {
 
-		im.ForeachEx<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Shared<T>&o){
-			if (camera.InArea(o->pos)) {
-				iys.Emplace(o.pointer, o->pos.y);
+		auto&& idxs = im.sortContainer.get<tags::posY>();
+		for (auto iter = idxs.begin(); iter != idxs.end(); ++iter) {
+			auto ptr = (Item*)*iter;
+			if (camera.InArea(ptr->pos)) {
+				ptr->Draw(camera);
 			}
-		});
-		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
-		for (auto& iy : iys) {
-			iy.item->Draw(camera);
 		}
-		iys.Clear();
+
+		//im.ForeachEx<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Shared<T>&o){
+		//	if (camera.InArea(o->pos)) {
+		//		iys.Emplace(o.pointer, o->pos.y);
+		//	}
+		//});
+		//std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
+		//for (auto& iy : iys) {
+		//	iy.item->Draw(camera);
+		//}
+		//iys.Clear();
 
 		// todo: use boost multi index container sort by y ?
 

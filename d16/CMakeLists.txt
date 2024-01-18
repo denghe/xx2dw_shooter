@@ -22,6 +22,7 @@ include_directories(
 	../3rd
 	../xxlib
 	../nameof/include
+	../../boost
 )
 
 file(GLOB sources

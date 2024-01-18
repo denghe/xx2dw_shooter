@@ -1,9 +1,8 @@
 # intro
-xx2d web version game engine ( also support desktop development )
+xx2d web + desktop game engine
 
 # language
 c++20 with coroutine
-
 
 # projects
 web: ( all in ./CMakeLists.txt )
@@ -14,6 +13,11 @@ desktop: ( single project )
 
 d*
 
+# 3rd project require
+
+https://www.boost.org/users/download/
+
+unzip & rename to "boost", put it in the same level directory
 
 # env
 https://emscripten.org/index.html
