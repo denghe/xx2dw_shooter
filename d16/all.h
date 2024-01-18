@@ -5,4 +5,5 @@
 #include <scene_play.h>
 #include <game_hero.h>
 #include <game_item.h>
+#include <game_logic.h>
 //...

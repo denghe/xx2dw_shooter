@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <game_looper.h>
 #include <game_hero.h>
-#include <game_item.h>
+#include <game_logic.h>
 
 struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
