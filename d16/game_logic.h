@@ -15,10 +15,10 @@ struct Timer : Item {
 	Callback callback;
 	
 	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cDelaySeconds_, Callback callback_) {
+		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cDelaySeconds = cDelaySeconds_;
 		callback = callback_;
-		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -43,9 +43,9 @@ struct Child : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> owner_, float cLifeSpan_) {
+		ItemInit(cTypeId, im_);
 		owner = std::move(owner_);
 		cLifeSpan = cLifeSpan_;
-		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -67,10 +67,10 @@ struct Linker : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> linkFrom_, xx::Weak<Item> linkTo_, float cLifeSpan_) {
+		ItemInit(cTypeId, im_);
 		linkFrom = std::move(linkFrom_);
 		linkTo = std::move(linkTo_);
 		cLifeSpan = cLifeSpan_;
-		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -90,9 +90,9 @@ struct RangeBullet : Item {
 	// todo: pos, tex
 
 	void Init(ItemManagerBase* im_, xx::Weak<Item> releaser, float cLifeSpan_) {
+		ItemInit(cTypeId, im_);
 		// todo: copy props from releaser
 		cLifeSpan = cLifeSpan_;
-		ItemInit(cTypeId, im_);
 	}
 
 	virtual int UpdateCore() override {
@@ -110,9 +110,9 @@ struct Player : Item {
 
 	// simulate read player config & create timers
 	void Init(ItemManagerBase* im_) {
-		pos = gLooper.windowSize_2;
-		speed = cSpeed;
 		ItemInit(cTypeId, im_);
+		GetDrawInfo().pos = gLooper.windowSize_2;
+		speed = cSpeed;
 
 		// timer + spawm children ( every 1s spawn 1 child, lifecycle 11s )
 		im_->Create<Timer>(xx::WeakFromThis(this), 1.f, [](ItemManagerBase* im_, xx::Weak<Item> owner_)->bool {
@@ -137,12 +137,13 @@ struct Player : Item {
 	}
 
 	virtual int UpdateCore() override {
+		auto& di = GetDrawInfo();
 		if (auto r = gLooper.GetKeyboardMoveInc(); r.has_value()) {
-			pos += r->second * speed;
-			if (flipX && ((int)r->first & (int)MoveDirections::Right)) {
-				flipX = false;
+			di.pos += r->second * speed;
+			if (di.flipX && ((int)r->first & (int)MoveDirections::Right)) {
+				di.flipX = false;
 			} else if ((int)r->first & (int)MoveDirections::Left) {
-				flipX = true;
+				di.flipX = true;
 			}
 			//FrameControl::Forward(frameIndex, cFrameInc * (speed / cSpeed), cFrameMaxIndex);
 		} else {
@@ -153,11 +154,12 @@ struct Player : Item {
 	}
 
 	virtual void Draw(Camera const& camera) override {
+		auto& di = GetDrawInfo();
 		auto& q = Quad::DrawOnce(gLooper.frame_yes);
-		q.pos = camera.ToGLPos(pos);
+		q.pos = camera.ToGLPos(di.pos);
 		q.anchor = { 0.5f, 0.5f };
-		q.scale = { flipX ? -2.f : 2.f, 2 };
-		q.radians = radians;
+		q.scale = { di.flipX ? -2.f : 2.f, 2 };
+		q.radians = di.radians;
 		q.colorplus = 1;
 		q.color = { 255, 255, 255, 255 };
 	}
@@ -167,16 +169,18 @@ struct Monster : Item {
 	static constexpr int cTypeId{ 6 };
 
 	void Init(ItemManagerBase* im_) {
-		pos.x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
-		pos.y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
-		radians = {};
-		radius = 5.f;
 		ItemInit(cTypeId, im_);
+		auto& di = GetDrawInfo();
+		di.pos.x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
+		di.pos.y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
+		di.radians = {};
+		di.radius = 5.f;
 	}
 
 	virtual int UpdateCore() override {
 		// todo: move to player pos ? hit player ?
-		posY += 0.1f;
+		auto& di = GetDrawInfo();
+		di.posY += 0.1f;
 		return 1;
 	}
 
@@ -185,11 +189,12 @@ struct Monster : Item {
 		//	.SetPosition(camera.ToGLPos(pos))
 		//	.SetRotate(radians)
 		//	.Draw();
+		auto& di = GetDrawInfo();
 		auto& q = Quad::DrawOnce(gLooper.frame_no);	// fastest
-		q.pos = camera.ToGLPos(pos);
+		q.pos = camera.ToGLPos(di.pos);
 		q.anchor = { 0.5f, 0.5f };
 		q.scale = { 1, 1 };
-		q.radians = radians;
+		q.radians = di.radians;
 		q.colorplus = 1;
 		q.color = { 255, 255, 255, 255 };
 	}
@@ -235,6 +240,13 @@ struct Env {
 
 	void Draw(Camera const& camera) {
 
+#ifdef ENABLE_ECS
+		for (auto& di : im.ecsDrawInfo.nodes) {
+			if (camera.InArea(di.pos)) {
+				((Item*)di.ptr)->Draw(camera);
+			}
+		}
+#else
 		im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items){
 			Sort(items);
 			for (auto& o : items) {
@@ -249,7 +261,7 @@ struct Env {
 			iy.item->Draw(camera);
 		}
 		iys.Clear();
-
+#endif
 		//im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
 		//	for (auto& o : items) {
 		//		if (camera.InArea(o->pos)) {

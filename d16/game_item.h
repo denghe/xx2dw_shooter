@@ -1,12 +1,87 @@
 ﻿#pragma once
 #include <game_looper.h>
 
-struct ItemManagerBase;
 
-struct Item {
-	ItemManagerBase* im{};
-	int typeId{};		// static constexpr int cTypeId{ ??? };
+template<typename U, typename T, size_t offset>
+struct ECSIndex;
 
+template<typename U, typename T, size_t offset>
+struct ECSContainer {
+	using Index = ECSIndex<U, T, offset>;
+
+	struct Node : T {
+		U* ptr;
+		Index& GetIndex() const {
+			return *(Index*)((char*)ptr + offset);
+		}
+	};
+	xx::Listi32<Node> nodes;
+
+	void Attach(U* o, Index* ecsi) {
+#ifndef NDEBUG
+		auto p = (char*)ecsi - offset;
+		assert(p == (char*)o);
+#endif
+		assert(ecsi->ptr == nullptr);
+		assert(ecsi->idx == -1);
+		ecsi->ptr = this;
+		ecsi->idx = nodes.len;
+		auto& n = nodes.Emplace();
+		n.Node::ptr = o;
+	}
+
+	void Detach(int idx);
+
+	void SyncIndexs();
+};
+
+template<typename U, typename T, size_t offset>
+struct ECSIndex {
+	using Container = ECSContainer<U, T, offset>;
+	Container* ptr{};
+	int idx{ -1 };
+
+	T& Get() const {
+		return ptr->nodes[idx];
+	}
+
+	void Init(Container& c, U* o) {
+		c.Attach(o, this);
+	}
+
+	ECSIndex() = default;
+	ECSIndex(ECSIndex const&) = delete;
+	ECSIndex(ECSIndex&& o)
+		: ptr(std::exchange(o.ptr, nullptr))
+		, idx(std::exchange(o.idx, -1)) {}
+	~ECSIndex() {
+		if (ptr) {
+			ptr->Detach(idx);
+		}
+		ptr = {};
+		idx = -1;
+	}
+};
+
+template<typename U, typename T, size_t offset>
+void ECSContainer<U, T, offset>::Detach(int idx) {
+	nodes.SwapRemoveAt(idx);
+	if (idx < nodes.len) {
+		nodes[idx].GetIndex().idx = idx;
+	}
+}
+
+template<typename U, typename T, size_t offset>
+void ECSContainer<U, T, offset>::SyncIndexs() {
+	for (int i = 0, e = nodes.len; i < e; i++) {
+		nodes[i].GetIndex().idx = i;
+	}
+}
+
+#define ENABLE_ECS
+
+#ifdef ENABLE_ECS
+struct DrawInfo {
 	union {
 		XY pos{};
 		struct {
@@ -15,6 +90,42 @@ struct Item {
 	};
 	float radius{}, radians{};
 	bool flipX{};
+};
+#endif
+
+struct ItemManagerBase;
+
+struct ItemBase {
+#ifdef ENABLE_ECS
+	ECSIndex<ItemBase, DrawInfo, 0> drawInfo;
+#endif
+};
+
+struct Item : ItemBase {
+	ItemManagerBase* im{};
+	int typeId{};		// static constexpr int cTypeId{ ??? };
+
+#ifndef ENABLE_ECS
+	union {
+		XY pos{};
+		struct {
+			float posX, posY;
+		};
+	};
+	float radius{}, radians{};
+	bool flipX{};
+#endif
+
+#ifdef ENABLE_ECS
+	DrawInfo& GetDrawInfo() const {
+		return drawInfo.Get();
+	}
+#else
+	Item& GetDrawInfo() const {
+		return *this;
+	}
+#endif
+
 
 	int lineNumber{};
 
@@ -35,6 +146,10 @@ struct Item {
 };
 
 struct ItemManagerBase {
+#ifdef ENABLE_ECS
+	decltype(ItemBase::drawInfo)::Container ecsDrawInfo;
+#endif
+
 	xx::Listi32<xx::Listi32<xx::Shared<Item>>> itemss;	// index == typeId
 
 	template<std::derived_from<Item> T>
@@ -82,6 +197,10 @@ inline void Item::ItemInit(int typeId_, ItemManagerBase* im_) {
 	assert(!lineNumber);
 	//xx::CoutN("ItemInit() typeId == ", typeId);
 	im->itemss[typeId_].Emplace(xx::SharedFromThis(this));	
+
+#ifdef ENABLE_ECS
+	drawInfo.Init(im->ecsDrawInfo, this);
+#endif
 }
 
 inline Item::~Item() {
@@ -109,6 +228,9 @@ struct ItemManager : ItemManagerBase {
 	bool Update() {
 		int i{};
 		i += (UpdateCore<TS>(), ...);
+#ifdef ENABLE_ECS
+		// todo: sort ecsDrawInfo.nodes
+#endif
 		return i == 0;
 	}
 
