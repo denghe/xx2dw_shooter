@@ -10,8 +10,9 @@ struct ECSContainer {
 	using Index = ECSIndex<U, T, offset>;
 
 	struct Node : T {
-		U* ptr;
+		U* ptr{};
 		Index& GetIndex() const {
+			assert(ptr);
 			return *(Index*)((char*)ptr + offset);
 		}
 	};
@@ -22,6 +23,7 @@ struct ECSContainer {
 		auto p = (char*)ecsi - offset;
 		assert(p == (char*)o);
 #endif
+		assert(o);
 		assert(ecsi->ptr == nullptr);
 		assert(ecsi->idx == -1);
 		ecsi->ptr = this;
@@ -122,7 +124,7 @@ struct Item : ItemBase {
 	}
 #else
 	Item& GetDrawInfo() const {
-		return *this;
+		return (Item&)*this;
 	}
 #endif
 
@@ -229,7 +231,9 @@ struct ItemManager : ItemManagerBase {
 		int i{};
 		i += (UpdateCore<TS>(), ...);
 #ifdef ENABLE_ECS
-		// todo: sort ecsDrawInfo.nodes
+		auto& ns = ecsDrawInfo.nodes;
+		std::sort(ns.buf, ns.buf + ns.len, [](auto& a, auto& b) { return a.pos.y < b.pos.y; });
+		ecsDrawInfo.SyncIndexs();
 #endif
 		return i == 0;
 	}

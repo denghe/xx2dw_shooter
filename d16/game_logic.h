@@ -227,13 +227,17 @@ struct Env {
 		for (size_t i = 0; i < 1; i++) {
 			im.Create<Player>();
 		}
+
+		for (size_t i = 0; i < 10000; i++) {
+			im.Create<Monster>();
+		}
 	}
 
 	// return true mean im is empty
 	bool Update() {
-		for (size_t i = 0; i < 100; i++) {
-			im.Create<Monster>();
-		}
+		//for (size_t i = 0; i < 100; i++) {
+		//	im.Create<Monster>();
+		//}
 
 		return im.Update();
 	}
