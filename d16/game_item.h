@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <game_looper.h>
 
+#define ENABLE_ECS
 
+#ifdef ENABLE_ECS
 template<typename U, typename T, size_t offset>
 struct ECSIndex;
 
@@ -79,8 +81,7 @@ void ECSContainer<U, T, offset>::SyncIndexs() {
 		nodes[i].GetIndex().idx = i;
 	}
 }
-
-#define ENABLE_ECS
+#endif
 
 #ifdef ENABLE_ECS
 struct DrawInfo {
