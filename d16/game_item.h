@@ -1,83 +1,6 @@
 ﻿#pragma once
 #include <game_looper.h>
-
-
-template<typename U, typename T, size_t offset>
-struct ECSIndex;
-
-template<typename U, typename T, size_t offset>
-struct ECSContainer {
-	using Index = ECSIndex<U, T, offset>;
-
-	struct Node : T {
-		U* ptr;
-		Index& GetIndex() const {
-			return *(Index*)((char*)ptr + offset);
-		}
-	};
-	xx::Listi32<Node> nodes;
-
-	void Attach(U* o, Index* ecsi) {
-#ifndef NDEBUG
-		auto p = (char*)ecsi - offset;
-		assert(p == (char*)o);
-#endif
-		assert(ecsi->ptr == nullptr);
-		assert(ecsi->idx == -1);
-		ecsi->ptr = this;
-		ecsi->idx = nodes.len;
-		auto& n = nodes.Emplace();
-		n.Node::ptr = o;
-	}
-
-	void Detach(int idx);
-
-	void SyncIndexs();
-};
-
-template<typename U, typename T, size_t offset>
-struct ECSIndex {
-	using Container = ECSContainer<U, T, offset>;
-	Container* ptr{};
-	int idx{ -1 };
-
-	T& Get() const {
-		return ptr->nodes[idx];
-	}
-
-	void Init(Container& c, U* o) {
-		c.Attach(o, this);
-	}
-
-	ECSIndex() = default;
-	ECSIndex(ECSIndex const&) = delete;
-	ECSIndex(ECSIndex&& o)
-		: ptr(std::exchange(o.ptr, nullptr))
-		, idx(std::exchange(o.idx, -1)) {}
-	~ECSIndex() {
-		if (ptr) {
-			ptr->Detach(idx);
-		}
-		ptr = {};
-		idx = -1;
-	}
-};
-
-template<typename U, typename T, size_t offset>
-void ECSContainer<U, T, offset>::Detach(int idx) {
-	nodes.SwapRemoveAt(idx);
-	if (idx < nodes.len) {
-		nodes[idx].GetIndex().idx = idx;
-	}
-}
-
-template<typename U, typename T, size_t offset>
-void ECSContainer<U, T, offset>::SyncIndexs() {
-	for (int i = 0, e = nodes.len; i < e; i++) {
-		nodes[i].GetIndex().idx = i;
-	}
-}
-
+#include <xx_ecs.h>
 #define ENABLE_ECS
 
 #ifdef ENABLE_ECS
@@ -97,7 +20,7 @@ struct ItemManagerBase;
 
 struct ItemBase {
 #ifdef ENABLE_ECS
-	ECSIndex<ItemBase, DrawInfo, 0> drawInfo;
+	xx::ECSIndex<ItemBase, DrawInfo, 0> drawInfo;
 #endif
 };
 
@@ -122,7 +45,7 @@ struct Item : ItemBase {
 	}
 #else
 	Item& GetDrawInfo() const {
-		return *this;
+		return (Item&)*this;
 	}
 #endif
 
@@ -229,7 +152,9 @@ struct ItemManager : ItemManagerBase {
 		int i{};
 		i += (UpdateCore<TS>(), ...);
 #ifdef ENABLE_ECS
-		// todo: sort ecsDrawInfo.nodes
+		auto& ns = ecsDrawInfo.nodes;
+		std::sort(ns.buf, ns.buf + ns.len, [](auto& a, auto& b) { return a.pos.y < b.pos.y; });
+		ecsDrawInfo.UpdateIndexs();
 #endif
 		return i == 0;
 	}

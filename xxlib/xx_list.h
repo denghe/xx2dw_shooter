@@ -275,5 +275,5 @@ namespace xx {
 	using Listi32 = List<T, int32_t>;
 
 	template<typename T>
-	using Listi64 = List<T, ptrdiff_t>;
+	using Listi = List<T, ptrdiff_t>;
 }

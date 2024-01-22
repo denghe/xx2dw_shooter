@@ -227,13 +227,17 @@ struct Env {
 		for (size_t i = 0; i < 1; i++) {
 			im.Create<Player>();
 		}
+
+		for (size_t i = 0; i < 100000; i++) {
+			im.Create<Monster>();
+		}
 	}
 
 	// return true mean im is empty
 	bool Update() {
-		for (size_t i = 0; i < 100; i++) {
-			im.Create<Monster>();
-		}
+		//for (size_t i = 0; i < 100; i++) {
+		//	im.Create<Monster>();
+		//}
 
 		return im.Update();
 	}
@@ -241,12 +245,16 @@ struct Env {
 	void Draw(Camera const& camera) {
 
 #ifdef ENABLE_ECS
+		// ecs sort		fps 5xx
 		for (auto& di : im.ecsDrawInfo.nodes) {
 			if (camera.InArea(di.pos)) {
 				((Item*)di.ptr)->Draw(camera);
 			}
 		}
 #else
+
+#if 1
+		// double sort		fps 28x
 		im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items){
 			Sort(items);
 			for (auto& o : items) {
@@ -255,20 +263,23 @@ struct Env {
 				}
 			}
 		});
-
 		Sort(iys);
 		for (auto& iy : iys) {
 			iy.item->Draw(camera);
 		}
 		iys.Clear();
+#else
+		// no sort		fps 5xx
+		im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
+			for (auto& o : items) {
+				if (camera.InArea(o->pos)) {
+					o->Draw(camera);	// o->T::Draw maybe faster
+				}
+			}
+		});
 #endif
-		//im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
-		//	for (auto& o : items) {
-		//		if (camera.InArea(o->pos)) {
-		//			o->Draw(camera);	// o->T::Draw maybe faster
-		//		}
-		//	}
-		//});
+
+#endif
 	}
 };
 
