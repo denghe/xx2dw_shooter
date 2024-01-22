@@ -338,18 +338,23 @@ namespace xx {
                 std::array<char, 40> buf;
                 std::string_view sv;
 #ifndef _MSC_VER
-                snprintf(buf.data(), buf.size(), "%.16lf", (double)in);
+                if constexpr (sizeof(T) == 4) {
+                    snprintf(buf.data(), buf.size(), "%.7f", in);
+                } else {
+                    static_assert(sizeof(T) == 8);
+                    snprintf(buf.data(), buf.size(), "%.16lf", in);
+                }
                 sv = buf.data();
-#else
-                auto [ptr, _] = std::to_chars(buf.data(), buf.data() + buf.size(), in, std::chars_format::general, 16);
-                sv = std::string_view(buf.data(), ptr - buf.data());
-#endif
                 if (sv.find('.') != sv.npos) {
                     if (auto siz = sv.find_last_not_of('0'); siz != sv.npos) {
                         if (sv[siz] == '.') --siz;
                         sv = std::string_view(sv.data(), siz + 1);
                     }
                 }
+#else
+                auto [ptr, _] = std::to_chars(buf.data(), buf.data() + buf.size(), in, std::chars_format::general, sizeof(T) == 4 ? 7 : 16);
+                sv = std::string_view(buf.data(), ptr - buf.data());
+#endif
                 s.append(sv);
             }
             else {
