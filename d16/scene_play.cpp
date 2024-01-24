@@ -13,30 +13,30 @@ void ScenePlay::Init() {
 		xx::CoutN("effect number's count = ", enm.ens.Count());
 	});
 
-	//env.Init();
-	enm.Init(100000);
+	env.Init();
+	//enm.Init(100000);
 
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
 }
 
 void ScenePlay::Update() {
-	for (size_t i = 0; i < 1000; i++) {
-		auto x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
-		auto y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
-		auto dx = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
-		auto dy = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
-		enm.Add({ x, y }, { dx - x, dy - y }, { 255,0,0,255 }, gLooper.rnd.Next<int>(1, 99999));
-	}
+	//for (size_t i = 0; i < 1000; i++) {
+	//	auto x = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
+	//	auto y = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
+	//	auto dx = gLooper.rnd.Next<float>(0, gLooper.windowSize.x);
+	//	auto dy = gLooper.rnd.Next<float>(0, gLooper.windowSize.y);
+	//	enm.Add({ x, y }, { dx - x, dy - y }, { 255,0,0,255 }, gLooper.rnd.Next<int>(1, 99999));
+	//}
 
-	//env.Update();
-	enm.Update();
+	env.Update();
+	//enm.Update();
 }
 
 void ScenePlay::Draw() {
 	camera.Calc();
-	//env.Draw(camera);
-	enm.Draw(camera);
+	env.Draw(camera);
+	//enm.Draw(camera);
 
 	gLooper.DrawNode(rootNode);
 };

@@ -130,6 +130,7 @@ if(MSVC)
 endif()
 
 include_directories(
+	../nameof/include
 	../stb
 	../engine
 	../3rd

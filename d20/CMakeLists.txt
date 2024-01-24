@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(
 	./
+	../nameof/include
 	../zstd/lib
 	../glad
 	../stb
