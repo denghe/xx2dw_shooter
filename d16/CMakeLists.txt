@@ -14,6 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories(
 	./
+	../miniaudio
 	../nameof/include
 	../zstd/lib
 	../glad
@@ -25,6 +26,7 @@ include_directories(
 )
 
 file(GLOB sources
+	../miniaudio/*.h
 	../glad/*.h
 	../stb/*.h
 	../glfw/include/GLFW/*.h
