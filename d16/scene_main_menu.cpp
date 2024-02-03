@@ -1,21 +1,9 @@
 ﻿#include <pch.h>
 #include <all.h>
 
-#define STB_VORBIS_HEADER_ONLY
-#include "extras/stb_vorbis.c"	// +20k
-#define MA_NO_WAV				// -50k
-#define MA_NO_FLAC				// -100k
-#define MA_NO_MP3				// -50k
-#define MA_NO_RESOURCE_MANAGER	// -30k
-//#define MA_NO_NODE_GRAPH		// -40k	/ 1xxk
-#define MA_NO_GENERATION		// -12k
-#define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
-#undef STB_VORBIS_HEADER_ONLY
-#include "extras/stb_vorbis.c"
-#undef L
-#undef C
-#undef R
+void SceneMainMenu::Update() {
+	audio.Update();
+}
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
@@ -28,20 +16,18 @@ void SceneMainMenu::Init() {
 
 	auto btn = rootNode->MakeChildren<Button>();
 	btn->Init(3, { 0, 0 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"New Game", [&]() {
-		//gLooper.DelaySwitchTo<ScenePlay>();
-
-		tasks.Add([]()->xx::Task<> {
-
-			ma_engine e;
-			auto r  = ma_engine_init(NULL, &e);
-			if (r != MA_SUCCESS) {
-				xx::CoutN("ma_engine_init failed");
-			}
-			ma_engine_uninit(&e);
-
-			co_return;
-		});
+		gLooper.DelaySwitchTo<ScenePlay>();
 	});
+
+	auto fn = "res/1.ogg"sv;
+	fnData = std::move(gEngine->LoadFileData(fn).first);
+
+	rootNode->MakeChildren<Button>()->Init(3, { -100, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play 1.ogg 10000 times", [&]() {
+		for (size_t i = 0; i < 10000; i++) {
+			audio.Play(fnData);
+		}
+	});
+
 }
 
 void SceneMainMenu::Draw() {

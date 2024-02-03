@@ -158,6 +158,12 @@ namespace xx {
             }
         }
 
+        void RemoveOldest() {
+            if (tasks.head != -1) {
+                tasks.Remove(tasks.head);
+            }
+        }
+
         // resume once
         int32_t operator()() {
             tasks.Foreach([&](auto& o)->bool {
