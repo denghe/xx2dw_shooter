@@ -142,7 +142,7 @@ namespace xx {
 		void Clear() {
 
 			if (!cap) return;
-			if constexpr (!IsPod_v<T>) {
+			if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
 				while (head >= 0) {
 					buf[head].value.~T();
 					head = buf[head].next;
