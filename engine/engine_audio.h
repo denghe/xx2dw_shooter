@@ -2,6 +2,10 @@
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
+// todo: when __EMSCRIPTEN__, use openAL impl same interface
+// known issue: miniaudio in web, size +300k, some js error, can't enable --closure 1
+
+
 #define MA_NO_WAV				// -50k
 #define MA_NO_FLAC				// -100k
 #define MA_NO_MP3				// -50k
@@ -40,7 +44,6 @@ void AudioDeviceCallback(ma_device* pDevice, void* pOutput, const void* pInput, 
 			}
 			pDevice->pUserData = nullptr;	// task stop flag
 			ma_device_uninit(pDevice);
-			ma_decoder_uninit(&ctx->decoder);
 		}
 	}
 };

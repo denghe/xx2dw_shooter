@@ -21,6 +21,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#endif
 
 #define STB_VORBIS_HEADER_ONLY
 #include "extras/stb_vorbis.c"	// +20k
@@ -37,9 +38,6 @@
 #undef L
 #undef C
 #undef R
-
-#endif
-
 
 GameLooper gLooper;
 

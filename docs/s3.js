@@ -1,40 +1,1060 @@
-var g;g||(g=typeof Module !== 'undefined' ? Module : {});var aa=Object.assign({},g),ea=(a,b)=>{throw b;},l="";"undefined"!=typeof document&&document.currentScript&&(l=document.currentScript.src);l=0!==l.indexOf("blob:")?l.substr(0,l.replace(/[?#].*/,"").lastIndexOf("/")+1):"";var fa=g.print||console.log.bind(console),m=g.printErr||console.error.bind(console);Object.assign(g,aa);aa=null;g.quit&&(ea=g.quit);var q;g.wasmBinary&&(q=g.wasmBinary);var noExitRuntime=g.noExitRuntime||!0;
-"object"!=typeof WebAssembly&&v("no native wasm support detected");var ha,w,ia=!1,x,ja,y,ka,A,D,E,la,ma;function na(){var a=ha.buffer;g.HEAP8=ja=new Int8Array(a);g.HEAP16=ka=new Int16Array(a);g.HEAP32=D=new Int32Array(a);g.HEAPU8=y=new Uint8Array(a);g.HEAPU16=A=new Uint16Array(a);g.HEAPU32=E=new Uint32Array(a);g.HEAPF32=la=new Float32Array(a);g.HEAPF64=ma=new Float64Array(a)}var F,oa=[],pa=[],qa=[],ra=[],sa=[];function ta(){var a=g.preRun.shift();oa.unshift(a)}var G=0,ua=null,K=null;
-function va(){G++;g.monitorRunDependencies&&g.monitorRunDependencies(G)}function wa(){G--;g.monitorRunDependencies&&g.monitorRunDependencies(G);if(0==G&&(null!==ua&&(clearInterval(ua),ua=null),K)){var a=K;K=null;a()}}function v(a){if(g.onAbort)g.onAbort(a);a="Aborted("+a+")";m(a);ia=!0;x=1;throw new WebAssembly.RuntimeError(a+". Build with -sASSERTIONS for more info.");}function xa(a){return a.startsWith("data:application/octet-stream;base64,")}var N;N="s3.wasm";
-if(!xa(N)){var ya=N;N=g.locateFile?g.locateFile(ya,l):l+ya}function za(a){if(a==N&&q)return new Uint8Array(q);throw"both async and sync fetching of the wasm failed";}function Aa(a){return q||"function"!=typeof fetch?Promise.resolve().then(()=>za(a)):fetch(a,{credentials:"same-origin"}).then(b=>{if(!b.ok)throw"failed to load wasm binary file at '"+a+"'";return b.arrayBuffer()}).catch(()=>za(a))}
-function Ba(a,b,c){return Aa(a).then(d=>WebAssembly.instantiate(d,b)).then(d=>d).then(c,d=>{m("failed to asynchronously prepare wasm: "+d);v(d)})}function Ca(a,b){var c=N;q||"function"!=typeof WebAssembly.instantiateStreaming||xa(c)||"function"!=typeof fetch?Ba(c,a,b):fetch(c,{credentials:"same-origin"}).then(d=>WebAssembly.instantiateStreaming(d,a).then(b,function(f){m("wasm streaming compile failed: "+f);m("falling back to ArrayBuffer instantiation");return Ba(c,a,b)}))}
-function Da(a){this.name="ExitStatus";this.message=`Program terminated with exit(${a})`;this.status=a}var Ea=a=>{for(;0<a.length;)a.shift()(g)},Fa=new TextDecoder("utf8"),O=(a,b)=>{if(!a)return"";b=a+b;for(var c=a;!(c>=b)&&y[c];)++c;return Fa.decode(y.subarray(a,c))};function Ga(a){this.wa=a-24;this.Na=function(b){E[this.wa+4>>2]=b};this.Xa=function(b){E[this.wa+8>>2]=b};this.Va=function(b,c){this.Wa();this.Na(b);this.Xa(c)};this.Wa=function(){E[this.wa+16>>2]=0}}var Ha=0,Ia=0,Ja=0;
-function Ka(){for(var a=P.length-1;0<=a;--a)La(a);P=[];Ma=[]}var Ma=[];function Na(){if(navigator.userActivation?navigator.userActivation.isActive:Ja&&Oa.Ga)for(var a=0;a<Ma.length;++a){var b=Ma[a];Ma.splice(a,1);--a;b.fb.apply(null,b.Za)}}var P=[];function La(a){var b=P[a];b.target.removeEventListener(b.ya,b.Ra,b.Fa);P.splice(a,1)}
-function Pa(a){function b(d){++Ja;Oa=a;Na();a.Ka(d);Na();--Ja}if(!a.target)return-4;if(a.Ha)a.Ra=b,a.target.addEventListener(a.ya,b,a.Fa),P.push(a),Qa||(ra.push(Ka),Qa=!0);else for(var c=0;c<P.length;++c)P[c].target==a.target&&P[c].ya==a.ya&&La(c--);return 0}var Qa,Oa,Ra,Sa,Ta=[0,document,window];function Ua(a){a=2<a?O(a):a;return Ta[a]||document.querySelector(a)}
-var R=(a,b,c)=>{var d=y;if(!(0<c))return 0;var f=b;c=b+c-1;for(var k=0;k<a.length;++k){var e=a.charCodeAt(k);if(55296<=e&&57343>=e){var n=a.charCodeAt(++k);e=65536+((e&1023)<<10)|n&1023}if(127>=e){if(b>=c)break;d[b++]=e}else{if(2047>=e){if(b+1>=c)break;d[b++]=192|e>>6}else{if(65535>=e){if(b+2>=c)break;d[b++]=224|e>>12}else{if(b+3>=c)break;d[b++]=240|e>>18;d[b++]=128|e>>12&63}d[b++]=128|e>>6&63}d[b++]=128|e&63}}d[b]=0;return b-f};
-function Va(a,b,c,d,f,k){Ra||(Ra=S(176));a={target:Ua(a),Ga:!0,ya:k,Ha:d,Ka:function(e){var n=Ra;ma[n>>3]=e.timeStamp;var h=n>>2;D[h+2]=e.location;D[h+3]=e.ctrlKey;D[h+4]=e.shiftKey;D[h+5]=e.altKey;D[h+6]=e.metaKey;D[h+7]=e.repeat;D[h+8]=e.charCode;D[h+9]=e.keyCode;D[h+10]=e.which;R(e.key||"",n+44,32);R(e.code||"",n+76,32);R(e.char||"",n+108,32);R(e.locale||"",n+140,32);F.get(d)(f,n,b)&&e.preventDefault()},Fa:c};return Pa(a)}
-function Wa(a,b,c,d,f,k){Sa||(Sa=S(72));a=Ua(a);return Pa({target:a,Ga:"mousemove"!=k&&"mouseenter"!=k&&"mouseleave"!=k,ya:k,Ha:d,Ka:function(e=event){var n=a,h=Sa;ma[h>>3]=e.timeStamp;h>>=2;D[h+2]=e.screenX;D[h+3]=e.screenY;D[h+4]=e.clientX;D[h+5]=e.clientY;D[h+6]=e.ctrlKey;D[h+7]=e.shiftKey;D[h+8]=e.altKey;D[h+9]=e.metaKey;ka[2*h+20]=e.button;ka[2*h+21]=e.buttons;D[h+11]=e.movementX;D[h+12]=e.movementY;n=0>Ta.indexOf(n)?n.getBoundingClientRect():{left:0,top:0};D[h+13]=e.clientX-n.left;D[h+14]=e.clientY-
-n.top;F.get(d)(f,Sa,b)&&e.preventDefault()},Fa:c})}function Xa(){this.xa=[void 0];this.Ja=[]}var T,Ya;
-function Za(a,b,c,d,f){function k(){var u=0,z=0;p.response&&L&&0===E[a+12>>2]&&(z=p.response.byteLength);0<z&&(u=S(z),y.set(new Uint8Array(p.response),u));E[a+12>>2]=u;V(a+16,z);V(a+24,0);(u=p.response?p.response.byteLength:0)&&V(a+32,u);A[a+40>>1]=p.readyState;A[a+42>>1]=p.status;p.statusText&&R(p.statusText,a+44,64)}var e=E[a+8>>2];if(e){var n=O(e),h=a+112,r=O(h+0);r||(r="GET");var C=E[h+56>>2],B=E[h+68>>2],U=E[h+72>>2];e=E[h+76>>2];var M=E[h+80>>2],Q=E[h+84>>2],I=E[h+88>>2],H=E[h+52>>2],L=!!(H&
-1),ba=!!(H&2);H=!!(H&64);B=B?O(B):void 0;U=U?O(U):void 0;var p=new XMLHttpRequest;p.withCredentials=!!y[h+60>>0];p.open(r,n,!H,B,U);H||(p.timeout=C);p.wa=n;p.responseType="arraybuffer";M&&(n=O(M),p.overrideMimeType(n));if(e)for(;;){h=E[e>>2];if(!h)break;n=E[e+4>>2];if(!n)break;e+=8;h=O(h);n=O(n);p.setRequestHeader(h,n)}var J=T.Pa(p);E[a>>2]=J;e=Q&&I?y.slice(Q,Q+I):null;p.onload=u=>{T.has(J)&&(k(),200<=p.status&&300>p.status?b&&b(a,p,u):c&&c(a,p,u))};p.onerror=u=>{T.has(J)&&(k(),c&&c(a,p,u))};p.ontimeout=
-u=>{T.has(J)&&c&&c(a,p,u)};p.onprogress=u=>{if(T.has(J)){var z=L&&ba&&p.response?p.response.byteLength:0,t=0;0<z&&L&&ba&&(t=S(z),y.set(new Uint8Array(p.response),t));E[a+12>>2]=t;V(a+16,z);V(a+24,u.loaded-z);V(a+32,u.total);A[a+40>>1]=p.readyState;3<=p.readyState&&0===p.status&&0<u.loaded&&(p.status=200);A[a+42>>1]=p.status;p.statusText&&R(p.statusText,a+44,64);d&&d(a,p,u);t&&$a(t)}};p.onreadystatechange=u=>{T.has(J)&&(A[a+40>>1]=p.readyState,2<=p.readyState&&(A[a+42>>1]=p.status),f&&f(a,p,u))};try{p.send(e)}catch(u){c&&
-c(a,p,u)}}else c(a,0,"no url specified!")}var ab=a=>{a instanceof Da||"unwind"==a||ea(1,a)},bb=a=>{x=a;if(!noExitRuntime){if(g.onExit)g.onExit(a);ia=!0}ea(a,new Da(a))};function V(a,b){E[a>>2]=b;E[a+4>>2]=(b-E[a>>2])/4294967296}
-function cb(a,b,c,d){var f=Ya;if(f){var k=E[a+112+64>>2];k||(k=E[a+8>>2]);var e=O(k);try{var n=f.transaction(["FILES"],"readwrite").objectStore("FILES").put(b,e);n.onsuccess=()=>{A[a+40>>1]=4;A[a+42>>1]=200;R("OK",a+44,64);c(a,0,e)};n.onerror=h=>{A[a+40>>1]=4;A[a+42>>1]=413;R("Payload Too Large",a+44,64);d(a,0,h)}}catch(h){d(a,0,h)}}else d(a,0,"IndexedDB not available!")}
-function db(a,b,c){var d=Ya;if(d){var f=E[a+112+64>>2];f||(f=E[a+8>>2]);f=O(f);try{var k=d.transaction(["FILES"],"readonly").objectStore("FILES").get(f);k.onsuccess=e=>{if(e.target.result){e=e.target.result;var n=e.byteLength||e.length,h=S(n);y.set(new Uint8Array(e),h);E[a+12>>2]=h;V(a+16,n);V(a+24,0);V(a+32,n);A[a+40>>1]=4;A[a+42>>1]=200;R("OK",a+44,64);b(a,0,e)}else A[a+40>>1]=4,A[a+42>>1]=404,R("Not Found",a+44,64),c(a,0,"no data")};k.onerror=e=>{A[a+40>>1]=4;A[a+42>>1]=404;R("Not Found",a+44,
-64);c(a,0,e)}}catch(e){c(a,0,e)}}else c(a,0,"IndexedDB not available!")}function eb(a,b,c){var d=Ya;if(d){var f=E[a+112+64>>2];f||(f=E[a+8>>2]);f=O(f);try{var k=d.transaction(["FILES"],"readwrite").objectStore("FILES").delete(f);k.onsuccess=e=>{e=e.target.result;E[a+12>>2]=0;V(a+16,0);V(a+24,0);V(a+32,0);A[a+40>>1]=4;A[a+42>>1]=200;R("OK",a+44,64);b(a,0,e)};k.onerror=e=>{A[a+40>>1]=4;A[a+42>>1]=404;R("Not Found",a+44,64);c(a,0,e)}}catch(e){c(a,0,e)}}else c(a,0,"IndexedDB not available!")}
-var fb=1,gb=[],W=[],hb=[],X=[],Y=[],ib=[],jb=[];function kb(a){for(var b=fb++,c=a.length;c<b;c++)a[c]=null;return b}function lb(a,b){a.wa||(a.wa=a.getContext,a.getContext=function(d,f){f=a.wa(d,f);return"webgl"==d==f instanceof WebGLRenderingContext?f:null});var c=a.getContext("webgl2",b);return c?mb(c,b):0}function mb(a,b){var c=kb(jb);b={handle:c,attributes:b,version:b.Ua,Oa:a};a.canvas&&(a.canvas.Ya=b);jb[c]=b;return c}
-var nb,ob=["default","low-power","high-performance"],pb=[null,[],[]],qb=()=>{if("object"==typeof crypto&&"function"==typeof crypto.getRandomValues)return a=>crypto.getRandomValues(a);v("initRandomDevice")},rb=a=>(rb=qb())(a);function sb(a,b,c,d){for(var f=0;f<a;f++){var k=Z[c](),e=k&&kb(d);k&&(k.name=e,d[e]=k);D[b+4*f>>2]=e}}function tb(a){return"]"==a.slice(-1)&&a.lastIndexOf("[")}
-function ub(a){var b=Z.Qa,c=b.za[a];"number"==typeof c&&(b.za[a]=c=Z.getUniformLocation(b,b.La[a]+(0<c?"["+c+"]":"")));return c}T=new Xa;va();(function(a,b){try{var c=indexedDB.open("emscripten_filesystem",1)}catch(d){b(d);return}c.onupgradeneeded=d=>{d=d.target.result;d.objectStoreNames.contains("FILES")&&d.deleteObjectStore("FILES");d.createObjectStore("FILES")};c.onsuccess=d=>a(d.target.result);c.onerror=d=>b(d)})(a=>{Ya=a;wa()},()=>{Ya=!1;wa()});
-Object.assign(Xa.prototype,{get(a){return this.xa[a]},has(a){return void 0!==this.xa[a]},Pa(a){var b=this.Ja.pop()||this.xa.length;this.xa[b]=a;return b},Ta(a){this.xa[a]=void 0;this.Ja.push(a)}});
-var Z,vb={d:(a,b,c,d)=>{v(`Assertion failed: ${O(a)}, at: `+[b?O(b):"unknown filename",c,d?O(d):"unknown function"])},J:function(a,b,c){(new Ga(a)).Va(b,c);Ha=a;Ia++;throw Ha;},P:function(a){if(T.has(a)){var b=T.get(a);T.Ta(a);0<b.readyState&&4>b.readyState&&b.abort()}},M:()=>!0,r:()=>{v("")},O:()=>performance.now(),R:function(){return!0},pa:function(a,b){function c(d){F.get(a)(d,b)&&requestAnimationFrame(c)}return requestAnimationFrame(c)},N:a=>{var b=y.length;a>>>=0;if(2147483648<a)return!1;for(var c=
-1;4>=c;c*=2){var d=b*(1+.2/c);d=Math.min(d,a+100663296);var f=Math;d=Math.max(a,d);a:{f=f.min.call(f,2147483648,d+(65536-d%65536)%65536)-ha.buffer.byteLength+65535>>>16;try{ha.grow(f);na();var k=1;break a}catch(e){}k=void 0}if(k)return!0}return!1},ja:function(a,b,c){a=Ua(a);if(!a)return-4;a.width=b;a.height=c;return 0},oa:function(a,b,c,d){return Va(a,b,c,d,2,"keydown")},na:function(a,b,c,d){return Va(a,b,c,d,3,"keyup")},ma:function(a,b,c,d){return Wa(a,b,c,d,5,"mousedown")},ka:function(a,b,c,d){return Wa(a,
-b,c,d,8,"mousemove")},la:function(a,b,c,d){return Wa(a,b,c,d,6,"mouseup")},Q:function(a,b,c,d,f){function k(t){if(U)t();else if(!ia)try{if(t(),!noExitRuntime)try{x=t=x,bb(t)}catch(ca){ab(ca)}}catch(ca){ab(ca)}}var e=a+112,n=E[e+36>>2],h=E[e+40>>2],r=E[e+44>>2],C=E[e+48>>2],B=E[e+52>>2],U=!!(B&64),M=t=>{k(()=>{n?F.get(n)(t):b&&b(t)})},Q=t=>{k(()=>{r?F.get(r)(t):d&&d(t)})},I=t=>{k(()=>{h?F.get(h)(t):c&&c(t)})},H=t=>{k(()=>{C?F.get(C)(t):f&&f(t)})},L=t=>{Za(t,M,I,Q,H)},ba=(t,ca)=>{cb(t,ca.response,da=>
-{k(()=>{n?F.get(n)(da):b&&b(da)})},da=>{k(()=>{n?F.get(n)(da):b&&b(da)})})},p=t=>{Za(t,ba,I,Q,H)},J=O(e+0),u=!!(B&16),z=!!(B&4);B=!!(B&32);if("EM_IDB_STORE"===J)L=E[e+84>>2],cb(a,y.slice(L,L+E[e+88>>2]),M,I);else if("EM_IDB_DELETE"===J)eb(a,M,I);else if(u){if(B)return 0;Za(a,z?ba:M,I,Q,H)}else db(a,M,B?I:z?p:L);return a},ha:function(a,b){b>>=2;b={alpha:!!D[b],depth:!!D[b+1],stencil:!!D[b+2],antialias:!!D[b+3],premultipliedAlpha:!!D[b+4],preserveDrawingBuffer:!!D[b+5],powerPreference:ob[D[b+6]],failIfMajorPerformanceCaveat:!!D[b+
-7],Ua:D[b+8],bb:D[b+9],ab:D[b+10],Sa:D[b+11],cb:D[b+12],eb:D[b+13]};a=Ua(a);return!a||b.Sa?0:lb(a,b)},ia:function(a){a>>=2;for(var b=0;14>b;++b)D[a+b]=0;D[a]=D[a+1]=D[a+3]=D[a+4]=D[a+8]=D[a+10]=1},ga:function(a){nb=jb[a];g.$a=Z=nb&&nb.Oa;return!a||Z?0:-5},v:(a,b,c,d)=>{for(var f=0,k=0;k<c;k++){var e=E[b>>2],n=E[b+4>>2];b+=8;for(var h=0;h<n;h++){var r=y[e+h],C=pb[a];if(0===r||10===r){for(r=0;C[r]&&!(NaN<=r);)++r;r=Fa.decode(C.buffer?C.subarray(0,r):new Uint8Array(C.slice(0,r)));(1===a?fa:m)(r);C.length=
-0}else C.push(r)}f+=n}E[d>>2]=f;return 0},L:(a,b)=>{rb(y.subarray(a,a+b));return 0},ea:function(a){Z.activeTexture(a)},D:function(a,b){Z.attachShader(W[a],Y[b])},c:function(a,b){35051==a?Z.Ia=b:35052==a&&(Z.Da=b);Z.bindBuffer(a,gb[b])},y:function(a,b){Z.bindFramebuffer(a,hb[b])},b:function(a,b){Z.bindTexture(a,X[b])},i:function(a){Z.bindVertexArray(ib[a])},l:function(a){Z.blendEquation(a)},n:function(a,b){Z.blendFunc(a,b)},j:function(a,b,c,d){c&&b?Z.bufferData(a,y,d,c,b):Z.bufferData(a,b,d)},w:function(a){Z.clear(a)},
-x:function(a,b,c,d){Z.clearColor(a,b,c,d)},Y:function(a){Z.compileShader(Y[a])},ba:function(){var a=kb(W),b=Z.createProgram();b.name=a;b.Ca=b.Aa=b.Ba=0;b.Ea=1;W[a]=b;return a},_:function(a){var b=kb(Y);Y[b]=Z.createShader(a);return b},q:function(a,b){for(var c=0;c<a;c++){var d=D[b+4*c>>2],f=gb[d];f&&(Z.deleteBuffer(f),f.name=0,gb[d]=null,d==Z.Ia&&(Z.Ia=0),d==Z.Da&&(Z.Da=0))}},A:function(a,b){for(var c=0;c<a;++c){var d=D[b+4*c>>2],f=hb[d];f&&(Z.deleteFramebuffer(f),f.name=0,hb[d]=null)}},k:function(a){if(a){var b=
-W[a];b&&(Z.deleteProgram(b),b.name=0,W[a]=null)}},e:function(a){if(a){var b=Y[a];b&&(Z.deleteShader(b),Y[a]=null)}},V:function(a,b){for(var c=0;c<a;c++){var d=D[b+4*c>>2],f=X[d];f&&(Z.deleteTexture(f),f.name=0,X[d]=null)}},H:function(a,b){for(var c=0;c<a;c++){var d=D[b+4*c>>2];Z.deleteVertexArray(ib[d]);ib[d]=null}},I:function(a){Z.disable(a)},t:function(a,b,c,d){Z.drawArraysInstanced(a,b,c,d)},ca:function(a,b,c,d){Z.drawElements(a,b,c,d)},fa:function(a){Z.enable(a)},f:function(a){Z.enableVertexAttribArray(a)},
-S:function(a,b,c,d,f){Z.framebufferTexture2D(a,b,c,X[d],f)},p:function(a,b){sb(a,b,"createBuffer",gb)},W:function(a,b){sb(a,b,"createFramebuffer",hb)},m:function(a,b){sb(a,b,"createTexture",X)},E:function(a,b){sb(a,b,"createVertexArray",ib)},h:function(a,b){return Z.getAttribLocation(W[a],O(b))},$:function(a,b,c,d){a=Z.getProgramInfoLog(W[a]);b=0<b&&d?R(a,d,b):0;c&&(D[c>>2]=b)},C:function(a,b,c){if(c&&!(a>=fb))if(a=W[a],35716==b)D[c>>2]=Z.getProgramInfoLog(a).length+1;else if(35719==b){if(!a.Ca)for(b=
-0;b<Z.getProgramParameter(a,35718);++b)a.Ca=Math.max(a.Ca,Z.getActiveUniform(a,b).name.length+1);D[c>>2]=a.Ca}else if(35722==b){if(!a.Aa)for(b=0;b<Z.getProgramParameter(a,35721);++b)a.Aa=Math.max(a.Aa,Z.getActiveAttrib(a,b).name.length+1);D[c>>2]=a.Aa}else if(35381==b){if(!a.Ba)for(b=0;b<Z.getProgramParameter(a,35382);++b)a.Ba=Math.max(a.Ba,Z.getActiveUniformBlockName(a,b).length+1);D[c>>2]=a.Ba}else D[c>>2]=Z.getProgramParameter(a,b)},X:function(a,b,c,d){a=Z.getShaderInfoLog(Y[a]);b=0<b&&d?R(a,d,
-b):0;c&&(D[c>>2]=b)},B:function(a,b,c){c&&(35716==b?(a=Z.getShaderInfoLog(Y[a]),D[c>>2]=a?a.length+1:0):35720==b?(a=Z.getShaderSource(Y[a]),D[c>>2]=a?a.length+1:0):D[c>>2]=Z.getShaderParameter(Y[a],b))},u:function(a,b){b=O(b);if(a=W[a]){var c=a,d=c.za,f=c.Ma,k;if(!d)for(c.za=d={},c.La={},k=0;k<Z.getProgramParameter(c,35718);++k){var e=Z.getActiveUniform(c,k);var n=e.name;e=e.size;var h=tb(n);h=0<h?n.slice(0,h):n;var r=c.Ea;c.Ea+=e;f[h]=[e,r];for(n=0;n<e;++n)d[r]=n,c.La[r++]=h}c=a.za;d=0;f=b;k=tb(b);
-0<k&&(d=parseInt(b.slice(k+1))>>>0,f=b.slice(0,k));if((f=a.Ma[f])&&d<f[0]&&(d+=f[1],c[d]=c[d]||Z.getUniformLocation(a,b)))return d}return-1},aa:function(a){a=W[a];Z.linkProgram(a);a.za=0;a.Ma={}},Z:function(a,b,c,d){for(var f="",k=0;k<b;++k){var e=d?D[d+4*k>>2]:-1;f+=O(D[c+4*k>>2],0>e?void 0:e)}Z.shaderSource(Y[a],f)},z:function(a,b,c,d,f,k,e,n,h){if(Z.Da)Z.texImage2D(a,b,c,d,f,k,e,n,h);else if(h){var r=n-5120;r=0==r?ja:1==r?y:2==r?ka:4==r?D:6==r?la:5==r||28922==r||28520==r||30779==r||30782==r?E:
-A;Z.texImage2D(a,b,c,d,f,k,e,n,r,h>>31-Math.clz32(r.BYTES_PER_ELEMENT))}else Z.texImage2D(a,b,c,d,f,k,e,n,null)},a:function(a,b,c){Z.texParameteri(a,b,c)},da:function(a,b){Z.uniform1i(ub(a),b)},F:function(a,b,c){Z.uniform2f(ub(a),b,c)},G:function(a){a=W[a];Z.useProgram(a);Z.Qa=a},o:function(a,b){Z.vertexAttribDivisor(a,b)},g:function(a,b,c,d,f,k){Z.vertexAttribPointer(a,b,c,!!d,f,k)},s:function(a,b,c,d){Z.viewport(a,b,c,d)},U:function(a,b,c,d){var f=document.createElement("canvas");f.width=b;f.height=
-c;b=f.getContext("2d");b.font=a+"px "+O(d);b.textBaseline="middle";b.globalAlpha=1;b.fillStyle="white";window["gCanvas"+a]=f;window["gCanvasCtx"+a]=b},K:function(a,b,c,d){var f=new Image;f.onload=()=>{E[c>>2]=f.width;E[d>>2]=f.height;Z.bindTexture(Z.TEXTURE_2D,X[a]);Z.texImage2D(Z.TEXTURE_2D,0,Z.RGBA,Z.RGBA,Z.UNSIGNED_BYTE,f)};f.src=O(b)},T:function(a,b){var c=window["gCanvas"+a];a=window["gCanvasCtx"+a];a.clearRect(0,0,c.width,c.height);b=O(b);var d=a.measureText(b).width;a.fillText(b,0,c.height/
-2);Z.texImage2D(Z.TEXTURE_2D,0,Z.RGBA,Z.RGBA,Z.UNSIGNED_BYTE,c);return d}};(function(){function a(c){w=c=c.exports;ha=w.qa;na();F=w.ua;pa.unshift(w.ra);wa();return c}var b={a:vb};va();if(g.instantiateWasm)try{return g.instantiateWasm(b,a)}catch(c){return m("Module.instantiateWasm callback failed with error: "+c),!1}Ca(b,function(c){a(c.instance)});return{}})();var $a=a=>($a=w.sa)(a),S=a=>(S=w.ta)(a),wb=g._main=(a,b)=>(wb=g._main=w.va)(a,b),xb;K=function yb(){xb||zb();xb||(K=yb)};
-function zb(){function a(){if(!xb&&(xb=!0,g.calledRun=!0,!ia)){Ea(pa);Ea(qa);if(g.onRuntimeInitialized)g.onRuntimeInitialized();if(Ab){var b=wb;try{var c=b(0,0);x=c;bb(c)}catch(d){ab(d)}}if(g.postRun)for("function"==typeof g.postRun&&(g.postRun=[g.postRun]);g.postRun.length;)b=g.postRun.shift(),sa.unshift(b);Ea(sa)}}if(!(0<G)){if(g.preRun)for("function"==typeof g.preRun&&(g.preRun=[g.preRun]);g.preRun.length;)ta();Ea(oa);0<G||(g.setStatus?(g.setStatus("Running..."),setTimeout(function(){setTimeout(function(){g.setStatus("")},
-1);a()},1)):a())}}if(g.preInit)for("function"==typeof g.preInit&&(g.preInit=[g.preInit]);0<g.preInit.length;)g.preInit.pop()();var Ab=!0;g.noInitialRun&&(Ab=!1);zb();
+var g;
+g || (g = typeof Module !== 'undefined' ? Module : {});
+var aa = Object.assign({}, g),
+  ea = (a, b) => {
+    throw b;
+  },
+  l = "";
+"undefined" != typeof document && document.currentScript && (l = document.currentScript.src);
+l = l.startsWith("blob:") ? "" : l.substr(0, l.replace(/[?#].*/, "").lastIndexOf("/") + 1);
+var fa = g.print || console.log.bind(console),
+  n = g.printErr || console.error.bind(console);
+Object.assign(g, aa);
+aa = null;
+g.quit && (ea = g.quit);
+var q;
+g.wasmBinary && (q = g.wasmBinary);
+"object" != typeof WebAssembly && v("no native wasm support detected");
+var ha,
+  ia = !1,
+  w,
+  ja,
+  x,
+  ka,
+  y,
+  A,
+  D,
+  la,
+  ma;
+function na() {
+  var a = ha.buffer;
+  g.HEAP8 = ja = new Int8Array(a);
+  g.HEAP16 = ka = new Int16Array(a);
+  g.HEAPU8 = x = new Uint8Array(a);
+  g.HEAPU16 = y = new Uint16Array(a);
+  g.HEAP32 = A = new Int32Array(a);
+  g.HEAPU32 = D = new Uint32Array(a);
+  g.HEAPF32 = la = new Float32Array(a);
+  g.HEAPF64 = ma = new Float64Array(a);
+}
+var oa = [],
+  pa = [],
+  qa = [],
+  ra = [];
+function sa() {
+  var a = g.preRun.shift();
+  oa.unshift(a);
+}
+var E = 0,
+  ta = null,
+  F = null;
+function ua() {
+  var _g$monitorRunDependen, _g;
+  E++;
+  (_g$monitorRunDependen = (_g = g).monitorRunDependencies) === null || _g$monitorRunDependen === void 0 || _g$monitorRunDependen.call(_g, E);
+}
+function va() {
+  var _g$monitorRunDependen2, _g2;
+  E--;
+  (_g$monitorRunDependen2 = (_g2 = g).monitorRunDependencies) === null || _g$monitorRunDependen2 === void 0 || _g$monitorRunDependen2.call(_g2, E);
+  if (0 == E && (null !== ta && (clearInterval(ta), ta = null), F)) {
+    var a = F;
+    F = null;
+    a();
+  }
+}
+function v(a) {
+  var _g$onAbort, _g3;
+  (_g$onAbort = (_g3 = g).onAbort) === null || _g$onAbort === void 0 || _g$onAbort.call(_g3, a);
+  a = "Aborted(" + a + ")";
+  n(a);
+  ia = !0;
+  w = 1;
+  throw new WebAssembly.RuntimeError(a + ". Build with -sASSERTIONS for more info.");
+}
+var wa = a => a.startsWith("data:application/octet-stream;base64,"),
+  G;
+G = "s3.wasm";
+if (!wa(G)) {
+  var xa = G;
+  G = g.locateFile ? g.locateFile(xa, l) : l + xa;
+}
+function ya(a) {
+  if (a == G && q) return new Uint8Array(q);
+  throw "both async and sync fetching of the wasm failed";
+}
+function za(a) {
+  return q || "function" != typeof fetch ? Promise.resolve().then(() => ya(a)) : fetch(a, {
+    credentials: "same-origin"
+  }).then(b => {
+    if (!b.ok) throw `failed to load wasm binary file at '${a}'`;
+    return b.arrayBuffer();
+  }).catch(() => ya(a));
+}
+function Aa(a, b, c) {
+  return za(a).then(d => WebAssembly.instantiate(d, b)).then(d => d).then(c, d => {
+    n(`failed to asynchronously prepare wasm: ${d}`);
+    v(d);
+  });
+}
+function Ba(a, b) {
+  var c = G;
+  q || "function" != typeof WebAssembly.instantiateStreaming || wa(c) || "function" != typeof fetch ? Aa(c, a, b) : fetch(c, {
+    credentials: "same-origin"
+  }).then(d => WebAssembly.instantiateStreaming(d, a).then(b, function (f) {
+    n(`wasm streaming compile failed: ${f}`);
+    n("falling back to ArrayBuffer instantiation");
+    return Aa(c, a, b);
+  }));
+}
+function Ca(a) {
+  this.name = "ExitStatus";
+  this.message = `Program terminated with exit(${a})`;
+  this.status = a;
+}
+var Da = a => {
+    for (; 0 < a.length;) a.shift()(g);
+  },
+  Ea = g.noExitRuntime || !0,
+  Fa = new TextDecoder("utf8"),
+  M = (a, b) => {
+    if (!a) return "";
+    b = a + b;
+    for (var c = a; !(c >= b) && x[c];) ++c;
+    return Fa.decode(x.subarray(a, c));
+  };
+class Ga {
+  constructor(a) {
+    this.va = a - 24;
+  }
+}
+var Ha = 0,
+  Ia = 0,
+  N,
+  Ja = 0,
+  Ka = [];
+function La() {
+  if (navigator.userActivation ? navigator.userActivation.isActive : Ja && Ma.Ma) for (var a = 0; a < Ka.length; ++a) {
+    var b = Ka[a];
+    Ka.splice(a, 1);
+    --a;
+    b.Xa.apply(null, b.Ra);
+  }
+}
+var O = [];
+function Na(a) {
+  var b = O[a];
+  b.target.removeEventListener(b.wa, b.Ga, b.Da);
+  O.splice(a, 1);
+}
+function Oa(a) {
+  if (!a.target) return -4;
+  if (a.Ea) a.Ga = function (c) {
+    ++Ja;
+    Ma = a;
+    La();
+    a.Ha(c);
+    La();
+    --Ja;
+  }, a.target.addEventListener(a.wa, a.Ga, a.Da), O.push(a);else for (var b = 0; b < O.length; ++b) O[b].target == a.target && O[b].wa == a.wa && Na(b--);
+  return 0;
+}
+var Ma,
+  Pa,
+  Qa,
+  Ra = [0, document, window],
+  Sa = a => {
+    a = 2 < a ? M(a) : a;
+    return Ra[a] || document.querySelector(a);
+  },
+  Q = (a, b, c) => {
+    var d = x;
+    if (!(0 < c)) return 0;
+    var f = b;
+    c = b + c - 1;
+    for (var k = 0; k < a.length; ++k) {
+      var e = a.charCodeAt(k);
+      if (55296 <= e && 57343 >= e) {
+        var m = a.charCodeAt(++k);
+        e = 65536 + ((e & 1023) << 10) | m & 1023;
+      }
+      if (127 >= e) {
+        if (b >= c) break;
+        d[b++] = e;
+      } else {
+        if (2047 >= e) {
+          if (b + 1 >= c) break;
+          d[b++] = 192 | e >> 6;
+        } else {
+          if (65535 >= e) {
+            if (b + 2 >= c) break;
+            d[b++] = 224 | e >> 12;
+          } else {
+            if (b + 3 >= c) break;
+            d[b++] = 240 | e >> 18;
+            d[b++] = 128 | e >> 12 & 63;
+          }
+          d[b++] = 128 | e >> 6 & 63;
+        }
+        d[b++] = 128 | e & 63;
+      }
+    }
+    d[b] = 0;
+    return b - f;
+  },
+  Ta = (a, b, c, d, f, k) => {
+    Pa || (Pa = R(176));
+    a = {
+      target: Sa(a),
+      wa: k,
+      Ea: d,
+      Ha: e => {
+        var m = Pa;
+        ma[m >> 3] = e.timeStamp;
+        var h = m >> 2;
+        A[h + 2] = e.location;
+        A[h + 3] = e.ctrlKey;
+        A[h + 4] = e.shiftKey;
+        A[h + 5] = e.altKey;
+        A[h + 6] = e.metaKey;
+        A[h + 7] = e.repeat;
+        A[h + 8] = e.charCode;
+        A[h + 9] = e.keyCode;
+        A[h + 10] = e.which;
+        Q(e.key || "", m + 44, 32);
+        Q(e.code || "", m + 76, 32);
+        Q(e.char || "", m + 108, 32);
+        Q(e.locale || "", m + 140, 32);
+        N.get(d)(f, m, b) && e.preventDefault();
+      },
+      Da: c
+    };
+    return Oa(a);
+  },
+  Ua = (a, b, c, d, f, k) => {
+    Qa || (Qa = R(72));
+    a = Sa(a);
+    return Oa({
+      target: a,
+      Ma: "mousemove" != k && "mouseenter" != k && "mouseleave" != k,
+      wa: k,
+      Ea: d,
+      Ha: function () {
+        let e = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : event;
+        var m = a,
+          h = Qa;
+        ma[h >> 3] = e.timeStamp;
+        h >>= 2;
+        A[h + 2] = e.screenX;
+        A[h + 3] = e.screenY;
+        A[h + 4] = e.clientX;
+        A[h + 5] = e.clientY;
+        A[h + 6] = e.ctrlKey;
+        A[h + 7] = e.shiftKey;
+        A[h + 8] = e.altKey;
+        A[h + 9] = e.metaKey;
+        ka[2 * h + 20] = e.button;
+        ka[2 * h + 21] = e.buttons;
+        A[h + 11] = e.movementX;
+        A[h + 12] = e.movementY;
+        m = 0 > Ra.indexOf(m) ? m.getBoundingClientRect() : {
+          left: 0,
+          top: 0
+        };
+        A[h + 13] = e.clientX - m.left;
+        A[h + 14] = e.clientY - m.top;
+        N.get(d)(f, Qa, b) && e.preventDefault();
+      },
+      Da: c
+    });
+  };
+function Va(a) {
+  var b = S,
+    c = b.Ka.pop() || b.va.length;
+  b.va[c] = a;
+  return c;
+}
+class Wa {
+  constructor() {
+    this.va = [void 0];
+    this.Ka = [];
+  }
+  get(a) {
+    return this.va[a];
+  }
+  has(a) {
+    return void 0 !== this.va[a];
+  }
+}
+var S, Xa;
+function Ya(a, b, c, d, f) {
+  function k() {
+    var u = 0,
+      z = 0;
+    p.response && K && 0 === D[a + 12 >> 2] && (z = p.response.byteLength);
+    0 < z && (u = R(z), x.set(new Uint8Array(p.response), u));
+    D[a + 12 >> 2] = u;
+    T(a + 16, z);
+    T(a + 24, 0);
+    (u = p.response ? p.response.byteLength : 0) && T(a + 32, u);
+    y[a + 40 >> 1] = p.readyState;
+    y[a + 42 >> 1] = p.status;
+    p.statusText && Q(p.statusText, a + 44, 64);
+  }
+  var e = D[a + 8 >> 2];
+  if (e) {
+    var m = M(e),
+      h = a + 112,
+      r = M(h + 0);
+    r || (r = "GET");
+    var C = D[h + 56 >> 2],
+      B = D[h + 68 >> 2],
+      U = D[h + 72 >> 2];
+    e = D[h + 76 >> 2];
+    var L = D[h + 80 >> 2],
+      P = D[h + 84 >> 2],
+      I = D[h + 88 >> 2],
+      H = D[h + 52 >> 2],
+      K = !!(H & 1),
+      ba = !!(H & 2);
+    H = !!(H & 64);
+    B = B ? M(B) : void 0;
+    U = U ? M(U) : void 0;
+    var p = new XMLHttpRequest();
+    p.withCredentials = !!x[h + 60 >> 0];
+    p.open(r, m, !H, B, U);
+    H || (p.timeout = C);
+    p.va = m;
+    p.responseType = "arraybuffer";
+    L && (m = M(L), p.overrideMimeType(m));
+    if (e) for (;;) {
+      h = D[e >> 2];
+      if (!h) break;
+      m = D[e + 4 >> 2];
+      if (!m) break;
+      e += 8;
+      h = M(h);
+      m = M(m);
+      p.setRequestHeader(h, m);
+    }
+    var J = Va(p);
+    D[a >> 2] = J;
+    e = P && I ? x.slice(P, P + I) : null;
+    p.onload = u => {
+      S.has(J) && (k(), 200 <= p.status && 300 > p.status ? b === null || b === void 0 ? void 0 : b(a, p, u) : c === null || c === void 0 ? void 0 : c(a, p, u));
+    };
+    p.onerror = u => {
+      S.has(J) && (k(), c === null || c === void 0 ? void 0 : c(a, p, u));
+    };
+    p.ontimeout = u => {
+      S.has(J) && (c === null || c === void 0 ? void 0 : c(a, p, u));
+    };
+    p.onprogress = u => {
+      if (S.has(J)) {
+        var z = K && ba && p.response ? p.response.byteLength : 0,
+          t = 0;
+        0 < z && K && ba && (t = R(z), x.set(new Uint8Array(p.response), t));
+        D[a + 12 >> 2] = t;
+        T(a + 16, z);
+        T(a + 24, u.loaded - z);
+        T(a + 32, u.total);
+        y[a + 40 >> 1] = p.readyState;
+        3 <= p.readyState && 0 === p.status && 0 < u.loaded && (p.status = 200);
+        y[a + 42 >> 1] = p.status;
+        p.statusText && Q(p.statusText, a + 44, 64);
+        d === null || d === void 0 || d(a, p, u);
+        t && Za(t);
+      }
+    };
+    p.onreadystatechange = u => {
+      S.has(J) && (y[a + 40 >> 1] = p.readyState, 2 <= p.readyState && (y[a + 42 >> 1] = p.status), f === null || f === void 0 ? void 0 : f(a, p, u));
+    };
+    try {
+      p.send(e);
+    } catch (u) {
+      c === null || c === void 0 || c(a, p, u);
+    }
+  } else c(a, 0, "no url specified!");
+}
+var $a = a => {
+    a instanceof Ca || "unwind" == a || ea(1, a);
+  },
+  ab = a => {
+    var _g$onExit, _g4;
+    w = a;
+    Ea || ((_g$onExit = (_g4 = g).onExit) !== null && _g$onExit !== void 0 && _g$onExit.call(_g4, a), ia = !0);
+    ea(a, new Ca(a));
+  },
+  T = (a, b) => {
+    D[a >> 2] = b;
+    D[a + 4 >> 2] = (b - D[a >> 2]) / 4294967296;
+  };
+function bb(a, b, c, d) {
+  var f = Xa;
+  if (f) {
+    var k = D[a + 112 + 64 >> 2];
+    k || (k = D[a + 8 >> 2]);
+    var e = M(k);
+    try {
+      var m = f.transaction(["FILES"], "readwrite").objectStore("FILES").put(b, e);
+      m.onsuccess = () => {
+        y[a + 40 >> 1] = 4;
+        y[a + 42 >> 1] = 200;
+        Q("OK", a + 44, 64);
+        c(a, 0, e);
+      };
+      m.onerror = h => {
+        y[a + 40 >> 1] = 4;
+        y[a + 42 >> 1] = 413;
+        Q("Payload Too Large", a + 44, 64);
+        d(a, 0, h);
+      };
+    } catch (h) {
+      d(a, 0, h);
+    }
+  } else d(a, 0, "IndexedDB not available!");
+}
+function cb(a, b, c) {
+  var d = Xa;
+  if (d) {
+    var f = D[a + 112 + 64 >> 2];
+    f || (f = D[a + 8 >> 2]);
+    f = M(f);
+    try {
+      var k = d.transaction(["FILES"], "readonly").objectStore("FILES").get(f);
+      k.onsuccess = e => {
+        if (e.target.result) {
+          e = e.target.result;
+          var m = e.byteLength || e.length,
+            h = R(m);
+          x.set(new Uint8Array(e), h);
+          D[a + 12 >> 2] = h;
+          T(a + 16, m);
+          T(a + 24, 0);
+          T(a + 32, m);
+          y[a + 40 >> 1] = 4;
+          y[a + 42 >> 1] = 200;
+          Q("OK", a + 44, 64);
+          b(a, 0, e);
+        } else y[a + 40 >> 1] = 4, y[a + 42 >> 1] = 404, Q("Not Found", a + 44, 64), c(a, 0, "no data");
+      };
+      k.onerror = e => {
+        y[a + 40 >> 1] = 4;
+        y[a + 42 >> 1] = 404;
+        Q("Not Found", a + 44, 64);
+        c(a, 0, e);
+      };
+    } catch (e) {
+      c(a, 0, e);
+    }
+  } else c(a, 0, "IndexedDB not available!");
+}
+function db(a, b, c) {
+  var d = Xa;
+  if (d) {
+    var f = D[a + 112 + 64 >> 2];
+    f || (f = D[a + 8 >> 2]);
+    f = M(f);
+    try {
+      var k = d.transaction(["FILES"], "readwrite").objectStore("FILES").delete(f);
+      k.onsuccess = e => {
+        e = e.target.result;
+        D[a + 12 >> 2] = 0;
+        T(a + 16, 0);
+        T(a + 24, 0);
+        T(a + 32, 0);
+        y[a + 40 >> 1] = 4;
+        y[a + 42 >> 1] = 200;
+        Q("OK", a + 44, 64);
+        b(a, 0, e);
+      };
+      k.onerror = e => {
+        y[a + 40 >> 1] = 4;
+        y[a + 42 >> 1] = 404;
+        Q("Not Found", a + 44, 64);
+        c(a, 0, e);
+      };
+    } catch (e) {
+      c(a, 0, e);
+    }
+  } else c(a, 0, "IndexedDB not available!");
+}
+var eb = 1,
+  fb = [],
+  V = [],
+  gb = [],
+  W = [],
+  X = [],
+  hb = [],
+  ib = [],
+  jb = a => {
+    for (var b = eb++, c = a.length; c < b; c++) a[c] = null;
+    return b;
+  },
+  lb = (a, b) => {
+    a.va || (a.va = a.getContext, a.getContext = function (d, f) {
+      f = a.va(d, f);
+      return "webgl" == d == f instanceof WebGLRenderingContext ? f : null;
+    });
+    var c = a.getContext("webgl2", b);
+    return c ? kb(c, b) : 0;
+  },
+  kb = (a, b) => {
+    var c = jb(ib);
+    b = {
+      handle: c,
+      attributes: b,
+      version: b.Pa,
+      La: a
+    };
+    a.canvas && (a.canvas.Qa = b);
+    ib[c] = b;
+    return c;
+  },
+  mb,
+  nb = ["default", "low-power", "high-performance"],
+  ob = [null, [], []],
+  pb = () => {
+    if ("object" == typeof crypto && "function" == typeof crypto.getRandomValues) return a => crypto.getRandomValues(a);
+    v("initRandomDevice");
+  },
+  qb = a => (qb = pb())(a),
+  rb = (a, b, c, d) => {
+    for (var f = 0; f < a; f++) {
+      var k = Y[c](),
+        e = k && jb(d);
+      k && (k.name = e, d[e] = k);
+      A[b + 4 * f >> 2] = e;
+    }
+  },
+  sb = a => "]" == a.slice(-1) && a.lastIndexOf("["),
+  tb = a => {
+    var b = Y.Na,
+      c = b.xa[a];
+    "number" == typeof c && (b.xa[a] = c = Y.getUniformLocation(b, b.Ia[a] + (0 < c ? `[${c}]` : "")));
+    return c;
+  };
+S = new Wa();
+ua();
+(function (a, b) {
+  try {
+    var c = indexedDB.open("emscripten_filesystem", 1);
+  } catch (d) {
+    b(d);
+    return;
+  }
+  c.onupgradeneeded = d => {
+    d = d.target.result;
+    d.objectStoreNames.contains("FILES") && d.deleteObjectStore("FILES");
+    d.createObjectStore("FILES");
+  };
+  c.onsuccess = d => a(d.target.result);
+  c.onerror = b;
+})(a => {
+  Xa = a;
+  va();
+}, () => {
+  Xa = !1;
+  va();
+});
+var Y,
+  ub = {
+    d: (a, b, c, d) => {
+      v(`Assertion failed: ${M(a)}, at: ` + [b ? M(b) : "unknown filename", c, d ? M(d) : "unknown function"]);
+    },
+    J: (a, b, c) => {
+      var d = new Ga(a);
+      D[d.va + 16 >> 2] = 0;
+      D[d.va + 4 >> 2] = b;
+      D[d.va + 8 >> 2] = c;
+      Ha = a;
+      Ia++;
+      throw Ha;
+    },
+    P: function (a) {
+      if (S.has(a)) {
+        var b = S.get(a),
+          c = S;
+        c.va[a] = void 0;
+        c.Ka.push(a);
+        0 < b.readyState && 4 > b.readyState && b.abort();
+      }
+    },
+    M: () => 1,
+    r: () => {
+      v("");
+    },
+    O: () => performance.now(),
+    R: () => !0,
+    oa: (a, b) => {
+      function c(d) {
+        N.get(a)(d, b) && requestAnimationFrame(c);
+      }
+      return requestAnimationFrame(c);
+    },
+    N: a => {
+      var b = x.length;
+      a >>>= 0;
+      if (2147483648 < a) return !1;
+      for (var c = 1; 4 >= c; c *= 2) {
+        var d = b * (1 + .2 / c);
+        d = Math.min(d, a + 100663296);
+        var f = Math;
+        d = Math.max(a, d);
+        a: {
+          f = (f.min.call(f, 2147483648, d + (65536 - d % 65536) % 65536) - ha.buffer.byteLength + 65535) / 65536;
+          try {
+            ha.grow(f);
+            na();
+            var k = 1;
+            break a;
+          } catch (e) {}
+          k = void 0;
+        }
+        if (k) return !0;
+      }
+      return !1;
+    },
+    ia: (a, b, c) => {
+      a = Sa(a);
+      if (!a) return -4;
+      a.width = b;
+      a.height = c;
+      return 0;
+    },
+    na: (a, b, c, d) => Ta(a, b, c, d, 2, "keydown"),
+    ma: (a, b, c, d) => Ta(a, b, c, d, 3, "keyup"),
+    la: (a, b, c, d) => Ua(a, b, c, d, 5, "mousedown"),
+    ja: (a, b, c, d) => Ua(a, b, c, d, 8, "mousemove"),
+    ka: (a, b, c, d) => Ua(a, b, c, d, 6, "mouseup"),
+    Q: function (a, b, c, d, f) {
+      function k(t) {
+        if (U) t();else if (!ia) try {
+          if (t(), !Ea) try {
+            w = t = w, ab(t);
+          } catch (ca) {
+            $a(ca);
+          }
+        } catch (ca) {
+          $a(ca);
+        }
+      }
+      var e = a + 112,
+        m = D[e + 36 >> 2],
+        h = D[e + 40 >> 2],
+        r = D[e + 44 >> 2],
+        C = D[e + 48 >> 2],
+        B = D[e + 52 >> 2],
+        U = !!(B & 64),
+        L = t => {
+          k(() => {
+            m ? N.get(m)(t) : b === null || b === void 0 ? void 0 : b(t);
+          });
+        },
+        P = t => {
+          k(() => {
+            r ? N.get(r)(t) : d === null || d === void 0 ? void 0 : d(t);
+          });
+        },
+        I = t => {
+          k(() => {
+            h ? N.get(h)(t) : c === null || c === void 0 ? void 0 : c(t);
+          });
+        },
+        H = t => {
+          k(() => {
+            C ? N.get(C)(t) : f === null || f === void 0 ? void 0 : f(t);
+          });
+        },
+        K = t => {
+          Ya(t, L, I, P, H);
+        },
+        ba = (t, ca) => {
+          bb(t, ca.response, da => {
+            k(() => {
+              m ? N.get(m)(da) : b === null || b === void 0 ? void 0 : b(da);
+            });
+          }, da => {
+            k(() => {
+              m ? N.get(m)(da) : b === null || b === void 0 ? void 0 : b(da);
+            });
+          });
+        },
+        p = t => {
+          Ya(t, ba, I, P, H);
+        },
+        J = M(e + 0),
+        u = !!(B & 16),
+        z = !!(B & 4);
+      B = !!(B & 32);
+      if ("EM_IDB_STORE" === J) K = D[e + 84 >> 2], bb(a, x.slice(K, K + D[e + 88 >> 2]), L, I);else if ("EM_IDB_DELETE" === J) db(a, L, I);else if (u) {
+        if (B) return 0;
+        Ya(a, z ? ba : L, I, P, H);
+      } else cb(a, L, B ? I : z ? p : K);
+      return a;
+    },
+    ha: (a, b) => {
+      b >>= 2;
+      b = {
+        alpha: !!A[b],
+        depth: !!A[b + 1],
+        stencil: !!A[b + 2],
+        antialias: !!A[b + 3],
+        premultipliedAlpha: !!A[b + 4],
+        preserveDrawingBuffer: !!A[b + 5],
+        powerPreference: nb[A[b + 6]],
+        failIfMajorPerformanceCaveat: !!A[b + 7],
+        Pa: A[b + 8],
+        Ua: A[b + 9],
+        Ta: A[b + 10],
+        Oa: A[b + 11],
+        Va: A[b + 12],
+        Wa: A[b + 13]
+      };
+      a = Sa(a);
+      return !a || b.Oa ? 0 : lb(a, b);
+    },
+    ga: a => {
+      var _mb;
+      mb = ib[a];
+      g.Sa = Y = (_mb = mb) === null || _mb === void 0 ? void 0 : _mb.La;
+      return !a || Y ? 0 : -5;
+    },
+    v: (a, b, c, d) => {
+      for (var f = 0, k = 0; k < c; k++) {
+        var e = D[b >> 2],
+          m = D[b + 4 >> 2];
+        b += 8;
+        for (var h = 0; h < m; h++) {
+          var r = x[e + h],
+            C = ob[a];
+          if (0 === r || 10 === r) {
+            for (r = 0; C[r] && !(NaN <= r);) ++r;
+            r = Fa.decode(C.buffer ? C.subarray(0, r) : new Uint8Array(C.slice(0, r)));
+            (1 === a ? fa : n)(r);
+            C.length = 0;
+          } else C.push(r);
+        }
+        f += m;
+      }
+      D[d >> 2] = f;
+      return 0;
+    },
+    L: (a, b) => {
+      qb(x.subarray(a, a + b));
+      return 0;
+    },
+    ea: function (a) {
+      Y.activeTexture(a);
+    },
+    D: (a, b) => {
+      Y.attachShader(V[a], X[b]);
+    },
+    c: (a, b) => {
+      35051 == a ? Y.Fa = b : 35052 == a && (Y.Ba = b);
+      Y.bindBuffer(a, fb[b]);
+    },
+    y: (a, b) => {
+      Y.bindFramebuffer(a, gb[b]);
+    },
+    b: (a, b) => {
+      Y.bindTexture(a, W[b]);
+    },
+    i: a => {
+      Y.bindVertexArray(hb[a]);
+    },
+    m: function (a) {
+      Y.blendEquation(a);
+    },
+    n: function (a, b) {
+      Y.blendFunc(a, b);
+    },
+    j: (a, b, c, d) => {
+      c && b ? Y.bufferData(a, x, d, c, b) : Y.bufferData(a, b, d);
+    },
+    w: function (a) {
+      Y.clear(a);
+    },
+    x: function (a, b, c, d) {
+      Y.clearColor(a, b, c, d);
+    },
+    Y: a => {
+      Y.compileShader(X[a]);
+    },
+    ba: () => {
+      var a = jb(V),
+        b = Y.createProgram();
+      b.name = a;
+      b.Aa = b.ya = b.za = 0;
+      b.Ca = 1;
+      V[a] = b;
+      return a;
+    },
+    _: a => {
+      var b = jb(X);
+      X[b] = Y.createShader(a);
+      return b;
+    },
+    q: (a, b) => {
+      for (var c = 0; c < a; c++) {
+        var d = A[b + 4 * c >> 2],
+          f = fb[d];
+        f && (Y.deleteBuffer(f), f.name = 0, fb[d] = null, d == Y.Fa && (Y.Fa = 0), d == Y.Ba && (Y.Ba = 0));
+      }
+    },
+    A: (a, b) => {
+      for (var c = 0; c < a; ++c) {
+        var d = A[b + 4 * c >> 2],
+          f = gb[d];
+        f && (Y.deleteFramebuffer(f), f.name = 0, gb[d] = null);
+      }
+    },
+    k: a => {
+      if (a) {
+        var b = V[a];
+        b && (Y.deleteProgram(b), b.name = 0, V[a] = null);
+      }
+    },
+    e: a => {
+      if (a) {
+        var b = X[a];
+        b && (Y.deleteShader(b), X[a] = null);
+      }
+    },
+    V: (a, b) => {
+      for (var c = 0; c < a; c++) {
+        var d = A[b + 4 * c >> 2],
+          f = W[d];
+        f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
+      }
+    },
+    H: (a, b) => {
+      for (var c = 0; c < a; c++) {
+        var d = A[b + 4 * c >> 2];
+        Y.deleteVertexArray(hb[d]);
+        hb[d] = null;
+      }
+    },
+    I: function (a) {
+      Y.disable(a);
+    },
+    t: (a, b, c, d) => {
+      Y.drawArraysInstanced(a, b, c, d);
+    },
+    ca: (a, b, c, d) => {
+      Y.drawElements(a, b, c, d);
+    },
+    fa: function (a) {
+      Y.enable(a);
+    },
+    f: a => {
+      Y.enableVertexAttribArray(a);
+    },
+    S: (a, b, c, d, f) => {
+      Y.framebufferTexture2D(a, b, c, W[d], f);
+    },
+    p: (a, b) => {
+      rb(a, b, "createBuffer", fb);
+    },
+    W: (a, b) => {
+      rb(a, b, "createFramebuffer", gb);
+    },
+    l: (a, b) => {
+      rb(a, b, "createTexture", W);
+    },
+    E: function (a, b) {
+      rb(a, b, "createVertexArray", hb);
+    },
+    h: (a, b) => Y.getAttribLocation(V[a], M(b)),
+    $: (a, b, c, d) => {
+      a = Y.getProgramInfoLog(V[a]);
+      b = 0 < b && d ? Q(a, d, b) : 0;
+      c && (A[c >> 2] = b);
+    },
+    C: (a, b, c) => {
+      if (c && !(a >= eb)) if (a = V[a], 35716 == b) A[c >> 2] = Y.getProgramInfoLog(a).length + 1;else if (35719 == b) {
+        if (!a.Aa) for (b = 0; b < Y.getProgramParameter(a, 35718); ++b) a.Aa = Math.max(a.Aa, Y.getActiveUniform(a, b).name.length + 1);
+        A[c >> 2] = a.Aa;
+      } else if (35722 == b) {
+        if (!a.ya) for (b = 0; b < Y.getProgramParameter(a, 35721); ++b) a.ya = Math.max(a.ya, Y.getActiveAttrib(a, b).name.length + 1);
+        A[c >> 2] = a.ya;
+      } else if (35381 == b) {
+        if (!a.za) for (b = 0; b < Y.getProgramParameter(a, 35382); ++b) a.za = Math.max(a.za, Y.getActiveUniformBlockName(a, b).length + 1);
+        A[c >> 2] = a.za;
+      } else A[c >> 2] = Y.getProgramParameter(a, b);
+    },
+    X: (a, b, c, d) => {
+      a = Y.getShaderInfoLog(X[a]);
+      b = 0 < b && d ? Q(a, d, b) : 0;
+      c && (A[c >> 2] = b);
+    },
+    B: (a, b, c) => {
+      c && (35716 == b ? (a = Y.getShaderInfoLog(X[a]), A[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = Y.getShaderSource(X[a]), A[c >> 2] = a ? a.length + 1 : 0) : A[c >> 2] = Y.getShaderParameter(X[a], b));
+    },
+    u: (a, b) => {
+      b = M(b);
+      if (a = V[a]) {
+        var c = a,
+          d = c.xa,
+          f = c.Ja,
+          k;
+        if (!d) for (c.xa = d = {}, c.Ia = {}, k = 0; k < Y.getProgramParameter(c, 35718); ++k) {
+          var e = Y.getActiveUniform(c, k);
+          var m = e.name;
+          e = e.size;
+          var h = sb(m);
+          h = 0 < h ? m.slice(0, h) : m;
+          var r = c.Ca;
+          c.Ca += e;
+          f[h] = [e, r];
+          for (m = 0; m < e; ++m) d[r] = m, c.Ia[r++] = h;
+        }
+        c = a.xa;
+        d = 0;
+        f = b;
+        k = sb(b);
+        0 < k && (d = parseInt(b.slice(k + 1)) >>> 0, f = b.slice(0, k));
+        if ((f = a.Ja[f]) && d < f[0] && (d += f[1], c[d] = c[d] || Y.getUniformLocation(a, b))) return d;
+      }
+      return -1;
+    },
+    aa: a => {
+      a = V[a];
+      Y.linkProgram(a);
+      a.xa = 0;
+      a.Ja = {};
+    },
+    Z: (a, b, c, d) => {
+      for (var f = "", k = 0; k < b; ++k) f += M(D[c + 4 * k >> 2], d ? D[d + 4 * k >> 2] : void 0);
+      Y.shaderSource(X[a], f);
+    },
+    z: (a, b, c, d, f, k, e, m, h) => {
+      if (Y.Ba) Y.texImage2D(a, b, c, d, f, k, e, m, h);else if (h) {
+        var r = m - 5120;
+        r = 0 == r ? ja : 1 == r ? x : 2 == r ? ka : 4 == r ? A : 6 == r ? la : 5 == r || 28922 == r || 28520 == r || 30779 == r || 30782 == r ? D : y;
+        Y.texImage2D(a, b, c, d, f, k, e, m, r, h >> 31 - Math.clz32(r.BYTES_PER_ELEMENT));
+      } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
+    },
+    a: function (a, b, c) {
+      Y.texParameteri(a, b, c);
+    },
+    da: (a, b) => {
+      Y.uniform1i(tb(a), b);
+    },
+    F: (a, b, c) => {
+      Y.uniform2f(tb(a), b, c);
+    },
+    G: a => {
+      a = V[a];
+      Y.useProgram(a);
+      Y.Na = a;
+    },
+    o: (a, b) => {
+      Y.vertexAttribDivisor(a, b);
+    },
+    g: (a, b, c, d, f, k) => {
+      Y.vertexAttribPointer(a, b, c, !!d, f, k);
+    },
+    s: function (a, b, c, d) {
+      Y.viewport(a, b, c, d);
+    },
+    U: function (a, b, c, d) {
+      var f = document.createElement("canvas");
+      f.width = b;
+      f.height = c;
+      b = f.getContext("2d");
+      b.font = a + "px " + M(d);
+      b.textBaseline = "middle";
+      b.globalAlpha = 1;
+      b.fillStyle = "white";
+      window["gCanvas" + a] = f;
+      window["gCanvasCtx" + a] = b;
+    },
+    K: function (a, b, c, d) {
+      var f = new Image();
+      f.onload = () => {
+        D[c >> 2] = f.width;
+        D[d >> 2] = f.height;
+        Y.bindTexture(Y.TEXTURE_2D, W[a]);
+        Y.texImage2D(Y.TEXTURE_2D, 0, Y.RGBA, Y.RGBA, Y.UNSIGNED_BYTE, f);
+      };
+      f.src = M(b);
+    },
+    T: function (a, b) {
+      var c = window["gCanvas" + a];
+      a = window["gCanvasCtx" + a];
+      a.clearRect(0, 0, c.width, c.height);
+      b = M(b);
+      var d = a.measureText(b).width;
+      a.fillText(b, 0, c.height / 2);
+      Y.texImage2D(Y.TEXTURE_2D, 0, Y.RGBA, Y.RGBA, Y.UNSIGNED_BYTE, c);
+      return d;
+    }
+  },
+  Z = function () {
+    function a(c) {
+      Z = c.exports;
+      ha = Z.pa;
+      na();
+      N = Z.ta;
+      pa.unshift(Z.qa);
+      va();
+      return Z;
+    }
+    var b = {
+      a: ub
+    };
+    ua();
+    if (g.instantiateWasm) try {
+      return g.instantiateWasm(b, a);
+    } catch (c) {
+      return n(`Module.instantiateWasm callback failed with error: ${c}`), !1;
+    }
+    Ba(b, function (c) {
+      a(c.instance);
+    });
+    return {};
+  }(),
+  Za = a => (Za = Z.ra)(a),
+  R = a => (R = Z.sa)(a),
+  vb = g._main = (a, b) => (vb = g._main = Z.ua)(a, b),
+  wb;
+F = function xb() {
+  wb || yb();
+  wb || (F = xb);
+};
+function yb() {
+  function a() {
+    if (!wb && (wb = !0, g.calledRun = !0, !ia)) {
+      Da(pa);
+      Da(qa);
+      if (g.onRuntimeInitialized) g.onRuntimeInitialized();
+      if (zb) {
+        var b = vb;
+        try {
+          var c = b(0, 0);
+          w = c;
+          ab(c);
+        } catch (d) {
+          $a(d);
+        }
+      }
+      if (g.postRun) for ("function" == typeof g.postRun && (g.postRun = [g.postRun]); g.postRun.length;) b = g.postRun.shift(), ra.unshift(b);
+      Da(ra);
+    }
+  }
+  if (!(0 < E)) {
+    if (g.preRun) for ("function" == typeof g.preRun && (g.preRun = [g.preRun]); g.preRun.length;) sa();
+    Da(oa);
+    0 < E || (g.setStatus ? (g.setStatus("Running..."), setTimeout(function () {
+      setTimeout(function () {
+        g.setStatus("");
+      }, 1);
+      a();
+    }, 1)) : a());
+  }
+}
+if (g.preInit) for ("function" == typeof g.preInit && (g.preInit = [g.preInit]); 0 < g.preInit.length;) g.preInit.pop()();
+var zb = !0;
+g.noInitialRun && (zb = !1);
+yb();

@@ -5,7 +5,7 @@
 struct SceneMainMenu : Scene {
 	xx::Shared<Node> rootNode;
 
-	xx::DataShared fnData;
+	xx::DataShared data_1, data_pistol;
 	Audio audio;
 
 	virtual void Init() override;

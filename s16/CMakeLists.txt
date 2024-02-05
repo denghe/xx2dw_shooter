@@ -28,7 +28,7 @@ if (EMSCRIPTEN)
 	append_linker_flags("-lGL")
 
 #	# Enable Closure compiler for aggressive JS size minification
-	append_linker_flags("--closure 1")
+#	append_linker_flags("--closure 1")
 
 #	# Enable aggressive MINIMAL_RUNTIME mode. ( can disable --closure 1 enable this, then disable this enable closure gen minimal .html )
 #	append_linker_flags("-sMINIMAL_RUNTIME=2")
@@ -130,6 +130,7 @@ if(MSVC)
 endif()
 
 include_directories(
+	../miniaudio
 	../nameof/include
 	../stb
 	../engine

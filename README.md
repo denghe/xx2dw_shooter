@@ -60,7 +60,7 @@ click clion "hammer" icon
 # browse
 clion terminal window:
 cd cmake-build-????????
-emrun gemini.html
+emrun ?????.html
 
 # ide2 ( better for c++ because clion lag & keep use so many cpu )
 vs22 with llvm installed
@@ -75,7 +75,7 @@ mkdir ?????
 cd ?????
 emcmake cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo                      = Debug | Release | RelWithDebInfo
 emmake make -j24
-emrun gemini.html
+emrun ?????.html
 
 # online view:
 https://denghe.github.io/xx2dw_shooter/
