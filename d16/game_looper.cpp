@@ -10,7 +10,7 @@ xx::Task<> GameLooper::MainTask() {
 #endif
 		("res/d20.blist");
 
-		// following code is copy from d20.txt
+		// following code is copy from plist to blist tools gen .txt
 		tp->GetToByPrefix(frames_axe            , "axe_"            );
 		tp->GetToByPrefix(frames_blood_4        , "blood_4_"        );
 		tp->GetToByPrefix(frames_border_1       , "border_1_"       );
@@ -61,7 +61,9 @@ xx::Task<> GameLooper::MainTask() {
 		tp->GetToByPrefix(frames_symbol_2       , "symbol_2_"       );
 		tp->GetToByPrefix(frames_wall           , "wall_"           );
 		tp->GetToByPrefix(frames_yes            , "yes_"            );
+		// end
 
+		// custom fill
 		frame_border_1_2322 = frames_border_1[0];
 		frame_border_2_4522 = frames_border_2[0];
 		frame_border_3_2222 = frames_border_3[0];
@@ -69,6 +71,15 @@ xx::Task<> GameLooper::MainTask() {
 		frame_dot_1_22 = frames_dot_1[0];
 		frame_no = frames_no[0];
 		frame_yes = frames_yes[0];
+
+		auto FillCreature = [&]<typename T>(T& c, int from, int to) {
+			for (int i = from; i <= to; i++) {
+				c.Add(gLooper.frames_creature_1[i]);
+			}
+		};
+		// ...
+
+		FillCreature(frames_creature_slime, 320, 323);
 		// ...
 	}
 

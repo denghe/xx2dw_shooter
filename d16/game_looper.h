@@ -11,8 +11,8 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 
 	// res
 
-	// following code is copy from d20.txt
-	xx::List<xx::Ref<Frame>, int32_t>
+	// following code is copy from plist to blist tools gen .txt
+	xx::Listi32<xx::Ref<Frame>>
 		frames_axe,
 		frames_blood_4,
 		frames_border_1,
@@ -71,6 +71,8 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 		, frame_dot_1_22
 		, frame_no, frame_yes
 		;
+
+	xx::Listi32<xx::Ref<Frame>> frames_creature_slime;
 	// ...
 
 	// cfgs

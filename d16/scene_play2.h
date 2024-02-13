@@ -1,12 +1,10 @@
 ﻿#pragma once
 #include <game_looper.h>
-#include <engine_audio.h>
 
-struct SceneMainMenu : Scene {
+struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
 
-	xx::Listi<xx::DataShared> datas;
-	Audio audio;
+	xx::Listi32<xx::Ref<Frame>> frames_creature_slime;
 
 	virtual void Init() override;
 	virtual void Update() override;

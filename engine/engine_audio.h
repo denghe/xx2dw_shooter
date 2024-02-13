@@ -2,6 +2,8 @@
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
+// todo: limit mode, when play new sound but exists, seek old one
+
 // todo: when __EMSCRIPTEN__, use openAL impl same interface
 // known issue: miniaudio in web, size +300k, some js error, can't enable --closure 1
 
@@ -43,7 +45,7 @@ void AudioDeviceCallback(ma_device* pDevice, void* pOutput, const void* pInput, 
 				}
 			}
 			pDevice->pUserData = nullptr;	// task stop flag
-			ma_device_uninit(pDevice);
+			//ma_device_uninit(pDevice);
 		}
 	}
 };
@@ -132,7 +134,11 @@ struct Audio {
 					co_return;
 				}
 
+				auto e = gEngine->nowSecs + 0.1;		// void too short sound can't play
 				while (device.pUserData) {
+					co_yield 0;
+				}
+				while (gEngine->nowSecs < e) {				// void too short sound can't play
 					co_yield 0;
 				}
 
