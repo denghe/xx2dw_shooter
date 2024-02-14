@@ -310,6 +310,9 @@ namespace xx {
         [[maybe_unused]] [[nodiscard]] XX_INLINE T *pointer() const {
             return (T *) (h + 1);
         }
+        [[maybe_unused]] [[nodiscard]] XX_INLINE T *GetPointer() const {
+            return pointer();
+        }
 
         // unsafe
         [[maybe_unused]] XX_INLINE void SetH(void* h_) {

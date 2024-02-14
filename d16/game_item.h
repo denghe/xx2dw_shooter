@@ -5,7 +5,6 @@
 
 // tips: handle ecs props in coroutine is unsafe. need every time GetDrawInfo()
 
-#ifdef ENABLE_ECS
 struct DrawInfo {
 	union {
 		XY pos{};
@@ -17,7 +16,6 @@ struct DrawInfo {
 	float radius{}, radians{}, frameIndex{};
 	bool flipX{};
 };
-#endif
 
 struct ItemManagerBase;
 
@@ -27,7 +25,11 @@ struct ItemBase {
 #endif
 };
 
-struct Item : ItemBase {
+struct Item
+#ifdef ENABLE_ECS
+	: ItemBase
+#endif
+{
 	ItemManagerBase* im{};
 	int typeId{};		// static constexpr int cTypeId{ 1 ~ n inc };
 
@@ -79,6 +81,7 @@ struct ItemManagerBase {
 #endif
 
 	xx::Listi32<xx::Listi32<xx::Shared<Item>>> itemss;	// index == typeId
+	void* userData{};
 
 	template<std::derived_from<Item> T>
 	xx::Listi32<xx::Shared<T>>& GetItems() const {
@@ -148,9 +151,10 @@ struct ItemManager : ItemManagerBase {
 		(DumpInfoCore<TS>(), ...);
 	}
 
-	void Init() {
+	void Init(void* userData_ = nullptr) {
 		assert(itemss.Empty());
 		itemss.Resize(std::max({ TS::cTypeId... }) + 1);
+		userData = userData_;
 	}
 
 	bool Update() {

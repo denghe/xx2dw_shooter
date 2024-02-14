@@ -2,18 +2,70 @@
 #include <game_looper.h>
 #include <game_item.h>
 
-struct Human : Item {
+struct MapCfg {
+	constexpr static int physCellSize{ 32 };	// need >= max monster size
+	constexpr static int physNumRows{ 128 };
+	constexpr static int physNumCols{ 128 };
+	constexpr static XY mapSize{ float(physNumCols * physCellSize), float(physNumRows * physCellSize) };
+	constexpr static XY mapCenterPos{ mapSize.x / 2, mapSize.y / 2 };
+};
+inline MapCfg gMapCfg;
+
+
+
+struct ScenePlay2;
+
+struct SceneItem : Item {
+	ScenePlay2* scene{};			// Init(ItemManagerBase* im_, ...) { ... scene = (ScenePlay2*)im_->userData;
+	void SceneItemInit(int typeId_, ItemManagerBase* im_);
+};
+
+struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
+	// todo: anchor point pos fix
+	void PhysAdd();				// call after fill pos
+	void PhysUpdate();			// call after fill pos
+	void PhysRemove();
+	~ScenePhysItem();
+};
+
+
+struct BornMask {
+	constexpr static float cVisibleTimeSpan{ 0.2f };
+	constexpr static float cHideTimeSpan{ 0.1f };
+
+	XY pos{};
+	float scale{};
+	bool visible{};
+	int lineNumber{}, i{}, e{};
+	std::function<void()> onDispose;
+	void Init(std::function<void()> onDispose_, XY const& pos_, float scale_);
+	int UpdateCore();
+	bool Update();
+	void Draw(Camera const& camera);
+};
+
+struct BornMaskManager {
+	xx::ListLink<BornMask> os;
+	void Init(size_t cap);
+	void Add(std::function<void()> onDispose_, XY const& pos_, float scale_);
+	bool Update();
+	void Draw(Camera const& camera);
+};
+
+
+
+struct Human : SceneItem {
 	static constexpr int cTypeId{ 1 };
 
 	constexpr static float cIdleScaleYFrom{ 0.9f };
 	constexpr static float cIdleScaleYTo{ 1.f };
 	constexpr static float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
 
-	constexpr static XY cAnchor{ 0.5f, 0.15f };
+	constexpr static XY cAnchor{ 0.5f, 0 };
 	constexpr static float cRadius{ 6.f };
 	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
-	constexpr static float cSpeed{ 30.f / gDesign.fps };
+	constexpr static float cSpeed{ 60.f / gDesign.fps };
 
 	float speed{};
 	MoveDirections direction{};
@@ -30,14 +82,28 @@ struct Human : Item {
 	virtual void Draw(Camera const& camera) override;
 };
 
-struct Slime : Item {
+
+
+struct Slime : ScenePhysItem {
 	static constexpr int cTypeId{ 2 };
+
+	constexpr static XY cAnchor{ 0.5f, 0 };
+	constexpr static float cRadius{ 6.f };
+	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f };
+	constexpr static float cFrameInc{ 12.f / gDesign.fps };
+	constexpr static float cSpeed{ 30.f / gDesign.fps };
+
+	static constexpr float cLifeSpan{ 10 };
+	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
-	void Init(ItemManagerBase* im_);
+	void Init(ItemManagerBase* im_, XY const& pos_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
+
+
 
 // for draw order by y
 struct ItemY {
@@ -48,7 +114,10 @@ struct ItemY {
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
 
+	SpaceGridC<ScenePhysItem> sgcPhysItems;	// must at top
+	BornMaskManager bmm;
 	ItemManager<Human, Slime> im;
+	xx::Weak<Human> human;	// point to im human Item
 	Camera camera;
 	xx::Listi32<ItemY> iys;
 
@@ -60,6 +129,10 @@ struct ScenePlay2 : Scene {
 	inline XX_FORCE_INLINE static void Sort(xx::Listi32<ItemY>& iys) {
 		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
 	}
+
+	void MakeSlime();	// random position
+
+	// ... more create funcs
 
 	virtual void Init() override;
 	virtual void Update() override;
