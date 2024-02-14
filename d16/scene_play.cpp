@@ -8,9 +8,9 @@ void ScenePlay::Init() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg_btn, U"Dump Env Info", [&]() {
-		//env.im.DumpInfo();
-		xx::CoutN("effect number's count = ", enm.ens.Count());
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg_btn, U"Dump Info", [&]() {
+		env.im.DumpInfo();
+		//xx::CoutN("effect number's count = ", enm.ens.Count());
 	});
 
 	env.Init();

@@ -8,6 +8,7 @@
 // known issue: miniaudio in web, size +300k, some js error, can't enable --closure 1
 
 
+
 #define MA_NO_WAV				// -50k
 #define MA_NO_FLAC				// -100k
 #define MA_NO_MP3				// -50k
@@ -15,6 +16,9 @@
 #define MA_NO_NODE_GRAPH		// -40k	/ 1xxk
 #define MA_NO_GENERATION		// -12k
 #include "miniaudio.h"
+
+
+//#define AUDIO_SHOW_CONSOLE_LOG
 
 struct AudioItem {
 	xx::DataShared data;
@@ -95,11 +99,15 @@ struct Audio {
 				auto r = ma_decoder_init_memory(data.GetBuf(), data.GetLen(), nullptr, &decoder);
 				auto sgDecoder = xx::MakeScopeGuard([&] {
 					ma_decoder_uninit(&decoder);
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 					xx::CoutN("ma_decoder_uninit(&decoder);");
+#endif
 				});
 
 				if (r != MA_SUCCESS) {
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 					xx::CoutN("error init decoder");
+#endif
 					co_return;
 				}
 
@@ -117,11 +125,15 @@ struct Audio {
 				ma_device device;
 				auto sgDevice = xx::MakeScopeGuard([&] {
 					ma_device_uninit(&device);
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 					xx::CoutN("ma_device_uninit(&device);");
+#endif
 				});
 
 				if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS) {
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 					xx::CoutN("Failed to open playback device.");
+#endif
 					co_return;
 				}
 
@@ -130,7 +142,9 @@ struct Audio {
 				ma_device_set_master_volume(&device, vol);
 
 				if (ma_device_start(&device) != MA_SUCCESS) {
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 					xx::CoutN("Failed to start playback device.");
+#endif
 					co_return;
 				}
 
@@ -142,8 +156,9 @@ struct Audio {
 					co_yield 0;
 				}
 
+#ifdef AUDIO_SHOW_CONSOLE_LOG
 				xx::CoutN("Audio Task End.");
-
+#endif
 				co_return;
 			})(std::move(o)));
 

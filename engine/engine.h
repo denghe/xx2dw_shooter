@@ -68,6 +68,22 @@ extern GameLooper gLooper;
 
 #endif
 
+#define STB_VORBIS_HEADER_ONLY
+#include "extras/stb_vorbis.c"	// +20k
+#define MA_NO_WAV				// -50k
+#define MA_NO_FLAC				// -100k
+#define MA_NO_MP3				// -50k
+#define MA_NO_RESOURCE_MANAGER	// -30k
+#define MA_NO_NODE_GRAPH		// -40k	/ 1xxk
+#define MA_NO_GENERATION		// -12k
+#define MINIAUDIO_IMPLEMENTATION
+#include "miniaudio.h"
+#undef STB_VORBIS_HEADER_ONLY
+#include "extras/stb_vorbis.c"
+#undef L
+#undef C
+#undef R
+
 GameLooper gLooper;
 
 #ifdef __EMSCRIPTEN__

@@ -239,13 +239,22 @@ struct Env {
 		//	im.Create<Monster>();
 		//}
 
-		return im.Update();
+		auto r = im.Update();
+#ifdef ENABLE_ECS
+		im.SortEcsDrawInfo();			// sort here when update fps < draw fps ?
+#else
+		im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+			Sort(items);
+		});
+#endif
+		return r;
 	}
 
 	void Draw(Camera const& camera) {
 
 #ifdef ENABLE_ECS
-		// ecs sort		fps 5xx
+		// ecs sort		fps 500+
+		//im.SortEcsDrawInfo();
 		for (auto& di : im.ecsDrawInfo.nodes) {
 			if (camera.InArea(di.pos)) {
 				((Item*)di.ptr)->Draw(camera);
@@ -254,9 +263,8 @@ struct Env {
 #else
 
 #if 1
-		// double sort		fps 28x
+		// double sort		fps 400+
 		im.ForeachItems<Child, Linker, RangeBullet, Player, Monster>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items){
-			Sort(items);
 			for (auto& o : items) {
 				if (camera.InArea(o->pos)) {
 					iys.Emplace(o.pointer, o->pos.y);

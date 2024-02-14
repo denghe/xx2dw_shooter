@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <game_looper.h>
 #include <xx_ecs.h>
-#define ENABLE_ECS
+//#define ENABLE_ECS
+
+// tips: handle ecs props in coroutine is unsafe. need every time GetDrawInfo()
 
 #ifdef ENABLE_ECS
 struct DrawInfo {
@@ -11,7 +13,8 @@ struct DrawInfo {
 			float posX, posY;
 		};
 	};
-	float radius{}, radians{};
+	XY scale{ 1, 1 };
+	float radius{}, radians{}, frameIndex{};
 	bool flipX{};
 };
 #endif
@@ -26,7 +29,7 @@ struct ItemBase {
 
 struct Item : ItemBase {
 	ItemManagerBase* im{};
-	int typeId{};		// static constexpr int cTypeId{ ??? };
+	int typeId{};		// static constexpr int cTypeId{ 1 ~ n inc };
 
 #ifndef ENABLE_ECS
 	union {
@@ -35,7 +38,8 @@ struct Item : ItemBase {
 			float posX, posY;
 		};
 	};
-	float radius{}, radians{};
+	XY scale{ 1, 1 };
+	float radius{}, radians{}, frameIndex{};
 	bool flipX{};
 #endif
 
@@ -54,6 +58,7 @@ struct Item : ItemBase {
 
 	virtual ~Item();
 
+	// void Init(ItemManagerBase* im_) {  ItemInit(cTypeId, im_); ...
 	XX_FORCE_INLINE void ItemInit(int typeId_, ItemManagerBase* im_);
 
 	virtual int UpdateCore() {
@@ -151,11 +156,6 @@ struct ItemManager : ItemManagerBase {
 	bool Update() {
 		int i{};
 		i += (UpdateCore<TS>(), ...);
-#ifdef ENABLE_ECS
-		auto& ns = ecsDrawInfo.nodes;
-		std::sort(ns.buf, ns.buf + ns.len, [](auto& a, auto& b) { return a.pos.y < b.pos.y; });
-		ecsDrawInfo.UpdateIndexs();
-#endif
 		return i == 0;
 	}
 
@@ -170,6 +170,14 @@ struct ItemManager : ItemManagerBase {
 		return os.len;
 	}
 
+#ifdef ENABLE_ECS
+	void SortEcsDrawInfo() {
+		auto& ns = ecsDrawInfo.nodes;
+		std::sort(ns.buf, ns.buf + ns.len, [](auto& a, auto& b) { return a.pos.y < b.pos.y; });
+		ecsDrawInfo.UpdateIndexs();
+	}
+#endif
+
 	template<typename F>
 	void ForeachAll(F&& func) {
 		for (auto& os : itemss) {
@@ -179,4 +187,11 @@ struct ItemManager : ItemManagerBase {
 		}
 	}
 
+	// im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>& items){ ...... });
+	template<typename F>
+	void ForeachAllItems(F&& func) {
+		(func(GetItems<TS>()), ...);
+	}
+
+	// todo ForeachAllItemsExclude
 };

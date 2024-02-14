@@ -1,11 +1,18 @@
 ﻿#pragma once
 #include <engine_base3.h>
+#ifdef WIN32
+#include <mmsystem.h>
+#pragma comment( lib, "Winmm.lib" )
+#endif
 
 // Derived need inherit from gDesign
 template<typename Derived>
 struct Engine : EngineBase3 {
 
     void Init() {
+#ifdef WIN32
+        timeBeginPeriod(1);
+#endif
 
         auto u8s = std::filesystem::absolute("./").u8string();
         rootPath = ToSearchPath((std::string&)u8s);
@@ -49,6 +56,7 @@ struct Engine : EngineBase3 {
         }
     }
 
+    template<bool powerSaveMode = true>
     void Run() {
         xx_assert(framePerSeconds);
 
@@ -84,6 +92,14 @@ struct Engine : EngineBase3 {
             GLUpdateEnd();
 
             glfwSwapBuffers(wnd);
+
+            if constexpr (powerSaveMode && Derived::frameDelay > 0.005) {
+                auto d = Derived::frameDelay - xx::NowSteadyEpochSeconds(s);
+                while (d > 0.005) {
+                    Sleep(1);
+                    d -= 0.005;
+                }
+            }
         }
     }
 
