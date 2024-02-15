@@ -68,7 +68,8 @@ struct Camera {
 		safeMaxY = maxY + maxFrameSize.y;
 	}
 
-	// need calc
+	// following funcs Calc() is required
+
 	template<typename XY_t>
 	XX_FORCE_INLINE bool InArea(XY_t const& pos) const {
 		return pos.x >= safeMinX && pos.x <= safeMaxX
@@ -82,4 +83,44 @@ struct Camera {
 	XX_FORCE_INLINE XY ToGLPos(Vec2<> const& logicPos) const {
 		return (logicPos.As<float>() - original).MakeFlipY() * scale;
 	}
+
+
+	// calc row col index range for space grid circle
+	/*
+	 	int32_t rowFrom, rowTo, colFrom, colTo; 
+		camera.FillRowColIdxRange(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize,
+			rowFrom, rowTo, colFrom, colTo);
+		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+			for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+				auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
+				sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
+					iys.Emplace(o, o->posY);
+				});
+			}
+		}
+	*/
+	void FillRowColIdxRange(int32_t physNumRows, int32_t physNumCols, int32_t physCellSize, int32_t& rowFrom, int32_t& rowTo, int32_t& colFrom, int32_t& colTo) {
+		int32_t halfNumRows = int32_t(gEngine->windowSize.y / scale) / physCellSize / 2;
+		int32_t posRowIndex = (int32_t)original.y / physCellSize;
+		rowFrom = posRowIndex - halfNumRows;
+		rowTo = posRowIndex + halfNumRows + 2;
+		if (rowFrom < 0) {
+			rowFrom = 0;
+		}
+		if (rowTo > physNumRows) {
+			rowTo = physNumRows;
+		}
+
+		int32_t halfNumCols = int32_t(gEngine->windowSize.x / scale) / physCellSize / 2;
+		int32_t posColIndex = (int32_t)original.x / physCellSize;
+		colFrom = posColIndex - halfNumCols;
+		colTo = posColIndex + halfNumCols + 2;
+		if (colFrom < 0) {
+			colFrom = 0;
+		}
+		if (colTo > physNumCols) {
+			colTo = physNumCols;
+		}
+	}
+
 };

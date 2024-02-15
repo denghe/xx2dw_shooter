@@ -8,12 +8,16 @@ void SceneItem::SceneItemInit(int typeId_, ItemManagerBase* im_) {
 	scene = (ScenePlay2*)im_->userData;
 }
 
+XY ScenePhysItem::GetPhysPos() {
+	return pos + physOffset;
+}
+
 void ScenePhysItem::PhysAdd() {
-	SGCAdd(scene->sgcPhysItems, pos.As<int>());
+	SGCAdd(scene->sgcPhysItems, (pos + physOffset).As<int>());
 }
 
 void ScenePhysItem::PhysUpdate() {
-	SGCUpdate(pos.As<int>());
+	SGCUpdate((pos + physOffset).As<int>());
 }
 
 void ScenePhysItem::PhysRemove() {
@@ -22,132 +26,6 @@ void ScenePhysItem::PhysRemove() {
 
 ScenePhysItem::~ScenePhysItem() {
 	SGCRemove();
-}
-
-#pragma endregion
-
-#pragma region ScenePlay2
-
-void ScenePlay2::Init() {
-	// init gui
-	// todo: fix gui pos when window resize ?
-	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {
-		gLooper.DelaySwitchTo<SceneMainMenu>();
-	});
-
-	// init camera
-	camera.SetMaxFrameSize({ 50, 50 });
-	camera.SetOriginal(gLooper.windowSize_2);
-	//camera.SetScale(4);
-
-	// init objs
-	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);
-	im.Init(this);
-	im.Create<Human>();
-}
-
-//#define ENABLE_SORT1
-
-void ScenePlay2::Update() {
-	// zoom control
-	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
-		camera.DecreaseScale(0.02f, 0.02f);
-	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
-		camera.IncreaseScale(0.02f, 5);
-	}
-
-	// simulate room master logic
-	for (int i = 0; i < 30; i++) {
-		MakeSlime();
-	}
-
-	// update objs
-	bmm.Update();
-	im.Update();
-#ifdef ENABLE_SORT1
-	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-		Sort(items);
-	});
-#endif
-}
-
-void ScenePlay2::Draw() {
-	camera.Calc();
-
-	// ...
-	// born masks
-	bmm.Draw(camera);
-
-	// items
-#ifdef ENABLE_SORT1
-	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-		for (auto& o : items) {
-			if (camera.InArea(o->pos)) {
-				iys.Emplace(o.pointer, o->pos.y);
-			}
-		}
-	});
-#else
-	if (human) {
-		iys.Emplace(human.GetPointer(), human->posY);
-	}
-
-	// fill phys items to iys order by row & cut by cell pos
-	// calc row col index range by camera
-	int32_t halfNumRows = int32_t(gLooper.windowSize.y / camera.scale) / gMapCfg.physCellSize / 2;
-	int32_t posRowIndex = (int32_t)camera.original.y / gMapCfg.physCellSize;
-	int32_t rowFrom = posRowIndex - halfNumRows;
-	int32_t rowTo = posRowIndex + halfNumRows + 2;
-	if (rowFrom < 0) {
-		rowFrom = 0;
-	}
-	if (rowTo > gMapCfg.physNumRows) {
-		rowTo = gMapCfg.physNumRows;
-	}
-
-	int32_t halfNumCols = int32_t(gLooper.windowSize.x / camera.scale) / gMapCfg.physCellSize / 2;
-	int32_t posColIndex = (int32_t)camera.original.x / gMapCfg.physCellSize;
-	int32_t colFrom = posColIndex - halfNumCols;
-	int32_t colTo = posColIndex + halfNumCols + 2;
-	if (colFrom < 0) {
-		colFrom = 0;
-	}
-	if (colTo > gMapCfg.physNumCols) {
-		colTo = gMapCfg.physNumCols;
-	}
-	
-	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
-		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
-			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
-			sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
-				iys.Emplace(o, o->posY);
-			});
-		}
-	}
-#endif
-	Sort(iys);
-	for (auto& iy : iys) {
-		iy.item->Draw(camera);
-	}
-	iys.Clear();
-
-	// ...
-
-	// todo: draw map border for debug ?
-
-	// ui
-	gLooper.DrawNode(rootNode);
-};
-
-void ScenePlay2::MakeSlime() {
-	constexpr XY ws{ gMapCfg.mapSize.x - 64, gMapCfg.mapSize.y - 64 };
-	XY pos{
-		gLooper.rnd.Next<float>(0, ws.x), gLooper.rnd.Next<float>(0, ws.y)
-	};
-	bmm.Add([this, pos] {
-		this->im.Create<Slime>(pos);
-	}, pos, Slime::cBornMashAnchor, Slime::cBornMashScale);
 }
 
 #pragma endregion
@@ -298,6 +176,8 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	SceneItemInit(cTypeId, im_);
 	mainTask = MainTask();
 	pos = pos_;
+	radius = cRadius;
+	physOffset = { 0, -radius / 2 };
 	PhysAdd();
 }
 
@@ -322,6 +202,132 @@ void Slime::Draw(Camera const& camera) {
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
+}
+
+#pragma endregion
+
+#pragma region ScenePlay2
+
+void ScenePlay2::Init() {
+	// init gui					// todo: fix gui pos when window resize ?
+	rootNode.Emplace()->Init();
+
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", []() {
+		gLooper.DelaySwitchTo<SceneMainMenu>();
+	});
+
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg_btn, U"Show/Hide Physics Border", [this]() {
+		this->physBorderVisible = !this->physBorderVisible;
+	});
+
+	// init camera
+	camera.SetMaxFrameSize({ 50, 50 });
+	camera.SetOriginal(gLooper.windowSize_2);
+	//camera.SetScale(4);
+
+	// init objs
+	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);
+	im.Init(this);
+	im.Create<Human>();
+}
+
+//#define ENABLE_SORT1
+
+void ScenePlay2::Update() {
+	// zoom control
+	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
+		camera.DecreaseScale(0.02f, 0.02f);
+	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.IncreaseScale(0.02f, 5);
+	}
+
+	// simulate room master logic
+	for (int i = 0; i < 30; i++) {
+		MakeSlime();
+	}
+
+	// update objs
+	bmm.Update();
+	im.Update();
+#ifdef ENABLE_SORT1
+	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+		Sort(items);
+	});
+#endif
+}
+
+void ScenePlay2::Draw() {
+	camera.Calc();
+
+	// ...
+	// born masks
+	bmm.Draw(camera);
+
+	// items
+#ifdef ENABLE_SORT1
+	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+		for (auto& o : items) {
+			if (camera.InArea(o->pos)) {
+				iys.Emplace(o.pointer, o->pos.y);
+			}
+		}
+	});
+#else
+	if (human) {
+		iys.Emplace(human.GetPointer(), human->posY);
+	}
+
+	// fill phys items to iys order by row & cut by cell pos
+	int32_t rowFrom, rowTo, colFrom, colTo; 
+	camera.FillRowColIdxRange(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize,
+		rowFrom, rowTo, colFrom, colTo);
+	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
+			sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
+				iys.Emplace(o, o->posY);
+			});
+		}
+	}
+#endif
+	ItemY::Sort(iys);
+	for (auto& iy : iys) {
+		iy.item->Draw(camera);
+	}
+	iys.Clear();
+
+	// ...
+
+	// draw phys circle for debug
+	if (physBorderVisible) {
+		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+			for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+				auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
+				sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
+					LineStrip()
+						.FillCirclePoints({}, o->radius, o->radians, 20, XY::Make(camera.scale * o->scale.x))
+						.SetPosition(camera.ToGLPos(o->GetPhysPos()))
+						.Draw();
+					});
+			}
+		}
+	}
+
+	// todo: draw map border for debug ?
+
+	// ui
+	gLooper.DrawNode(rootNode);
+};
+
+void ScenePlay2::MakeSlime() {
+	constexpr XY ws{ gMapCfg.mapSize.x - 64, gMapCfg.mapSize.y - 64 };
+	XY pos{
+		gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.x - gMapCfg.physCellSize)
+		, gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.y - gMapCfg.physCellSize)
+	};
+	bmm.Add([this, pos] {
+		this->im.Create<Slime>(pos);
+	}, pos, Slime::cBornMashAnchor, Slime::cBornMashScale);
 }
 
 #pragma endregion

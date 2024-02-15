@@ -33,18 +33,18 @@ struct LineStrip {
 		return *this;
 	}
 
-	LineStrip& FillCirclePoints(XY const& center, float radius, std::optional<float> const& angle = {}, int segments = 100, XY const& scale = { 1,1 }) {
+	LineStrip& FillCirclePoints(XY const& center, float radius, std::optional<float> const& radians = {}, int segments = 100, XY const& scale = { 1,1 }) {
 		dirty = true;
 		points.reserve(segments + 2);
 		points.resize(segments + 1);
 		auto coef = 2.0f * (float)M_PI / segments;
-		auto a = angle.has_value() ? *angle : 0;
+		auto a = radians.has_value() ? *radians : 0;
 		for (int i = 0; i <= segments; ++i) {
 			auto rads = i * coef + a;
 			points[i].x = radius * cosf(rads) * scale.x + center.x;
 			points[i].y = radius * sinf(rads) * scale.y + center.y;
 		}
-		if (angle.has_value()) {
+		if (radians.has_value()) {
 			points.push_back(center);
 		}
 		return *this;

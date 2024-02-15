@@ -199,3 +199,18 @@ struct ItemManager : ItemManagerBase {
 
 	// todo ForeachAllItemsExclude
 };
+
+// for draw order by y
+struct ItemY {
+	Item* item;
+	float y;
+
+	template<std::derived_from<Item> T>
+	inline XX_FORCE_INLINE static void Sort(xx::Listi32<xx::Shared<T>>& items) {
+		std::sort((Item**)items.buf, (Item**)items.buf + items.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
+	}
+
+	inline XX_FORCE_INLINE static void Sort(xx::Listi32<ItemY>& iys) {
+		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
+	}
+};

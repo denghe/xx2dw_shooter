@@ -21,7 +21,8 @@ struct SceneItem : Item {
 };
 
 struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
-	// todo: anchor point pos fix
+	XY physOffset{};			// anchor point pos fix. need set value at init
+	XY GetPhysPos();
 	void PhysAdd();				// call after fill pos
 	void PhysUpdate();			// call after fill pos
 	void PhysRemove();
@@ -52,7 +53,16 @@ struct BornMaskManager {
 	void Draw(Camera const& camera);
 };
 
+struct Human;
+struct Weapon {
+	xx::Weak<Human> owner;
+	// todo
+};
 
+struct Bullet {
+	xx::Weak<Human> owner;
+	// todo
+};
 
 struct Human : SceneItem {
 	static constexpr int cTypeId{ 1 };
@@ -106,13 +116,6 @@ struct Slime : ScenePhysItem {
 };
 
 
-
-// for draw order by y
-struct ItemY {
-	Item* item;
-	float y;
-};
-
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
 
@@ -122,15 +125,9 @@ struct ScenePlay2 : Scene {
 	xx::Weak<Human> human;	// point to im human Item
 	Camera camera;
 	xx::Listi32<ItemY> iys;
+	bool physBorderVisible{};
+	// ...
 
-	template<std::derived_from<Item> T>
-	inline XX_FORCE_INLINE static void Sort(xx::Listi32<xx::Shared<T>>& items) {
-		std::sort((Item**)items.buf, (Item**)items.buf + items.len, [](auto& a, auto& b) { return a->pos.y < b->pos.y; });
-	}
-
-	inline XX_FORCE_INLINE static void Sort(xx::Listi32<ItemY>& iys) {
-		std::sort(iys.buf, iys.buf + iys.len, [](auto& a, auto& b) { return a.y < b.y; });
-	}
 
 	void MakeSlime();	// random position
 
