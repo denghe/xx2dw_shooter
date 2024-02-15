@@ -42,7 +42,7 @@ struct Item
 		};
 	};
 	XY scale{ 1, 1 };
-	float radius{}, radians{}, frameIndex{};
+	float radius{}, radians{}, frameIndex{}, yOffset{};
 	bool flipX{};
 #endif
 

@@ -3,11 +3,11 @@
 #include <game_item.h>
 
 struct MapCfg {
-	constexpr static int physCellSize{ 32 };	// need >= max monster size
-	constexpr static int physNumRows{ 128 };
-	constexpr static int physNumCols{ 128 };
-	constexpr static XY mapSize{ float(physNumCols * physCellSize), float(physNumRows * physCellSize) };
-	constexpr static XY mapCenterPos{ mapSize.x / 2, mapSize.y / 2 };
+	static constexpr int physCellSize{ 32 };	// need >= max monster size
+	static constexpr int physNumRows{ 128 };
+	static constexpr int physNumCols{ 128 };
+	static constexpr XY mapSize{ float(physNumCols * physCellSize), float(physNumRows * physCellSize) };
+	static constexpr XY mapCenterPos{ mapSize.x / 2, mapSize.y / 2 };
 };
 inline MapCfg gMapCfg;
 
@@ -18,6 +18,7 @@ struct ScenePlay2;
 struct SceneItem : Item {
 	ScenePlay2* scene{};			// Init(ItemManagerBase* im_, ...) { ... scene = (ScenePlay2*)im_->userData;
 	void SceneItemInit(int typeId_, ItemManagerBase* im_);
+	virtual XY GetWeaponPos();
 };
 
 struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
@@ -30,9 +31,10 @@ struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
 };
 
 
+
 struct BornMask {
-	constexpr static float cVisibleTimeSpan{ 0.2f };
-	constexpr static float cHideTimeSpan{ 0.1f };
+	static constexpr float cVisibleTimeSpan{ 0.2f };
+	static constexpr float cHideTimeSpan{ 0.1f };
 
 	XY pos{}, anchor{};
 	float scale{};
@@ -53,29 +55,54 @@ struct BornMaskManager {
 	void Draw(Camera const& camera);
 };
 
+// todo: blood effect, hp bar, number effect, shadow ...
+// exp? level? hp? damage?
+
+
 struct Human;
-struct Weapon {
-	xx::Weak<Human> owner;
-	// todo
+struct Weapon : SceneItem {
+	static constexpr int cTypeId{ 1 };
+	static constexpr XY cAnchor{ 0, 0.5f };
+
+	xx::Weak<SceneItem> owner;
+	float nextFireSecs{};
+
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+	xx::Task<> moveTask;
+	xx::Task<> MoveTask();
+
+	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_);
+	virtual int UpdateCore() override;
+	virtual void Draw(Camera const& camera) override;
 };
 
-struct Bullet {
-	xx::Weak<Human> owner;
-	// todo
+
+// todo: bullet shadow ?
+
+struct Bullet : SceneItem {
+	static constexpr int cTypeId{ 2 };
+
+	xx::Weak<SceneItem> owner;
+	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_);
+	virtual int UpdateCore() override;
+	virtual void Draw(Camera const& camera) override;
 };
+
+
 
 struct Human : SceneItem {
-	static constexpr int cTypeId{ 1 };
+	static constexpr int cTypeId{ 3 };
 
-	constexpr static float cIdleScaleYFrom{ 0.9f };
-	constexpr static float cIdleScaleYTo{ 1.f };
-	constexpr static float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
+	static constexpr float cIdleScaleYFrom{ 0.9f };
+	static constexpr float cIdleScaleYTo{ 1.f };
+	static constexpr float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
 
-	constexpr static XY cAnchor{ 0.5f, 0 };
-	constexpr static float cRadius{ 6.f };
-	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
-	constexpr static float cFrameInc{ 12.f / gDesign.fps };
-	constexpr static float cSpeed{ 60.f / gDesign.fps };
+	static constexpr XY cAnchor{ 0.5f, 0 };
+	static constexpr float cRadius{ 6.f };
+	static constexpr std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
+	static constexpr float cFrameInc{ 12.f / gDesign.fps };
+	static constexpr float cSpeed{ 60.f / gDesign.fps };
 
 	float speed{};
 	MoveDirections direction{};
@@ -91,30 +118,35 @@ struct Human : SceneItem {
 	void Init(ItemManagerBase* im_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
+	virtual XY GetWeaponPos() override;
 };
 
 
 
 struct Slime : ScenePhysItem {
-	static constexpr int cTypeId{ 2 };
+	static constexpr int cTypeId{ 4 };
 
-	constexpr static XY cBornMashAnchor{ 0.5f, 0.25 };
-	constexpr static float cBornMashScale{ 1.f };
-	constexpr static XY cAnchor{ 0.5f, 0 };
-	constexpr static float cRadius{ 6.f };
-	constexpr static xx::FromTo<float> cFrameIndexRange = { 0.f, 3.f };
-	constexpr static float cFrameInc{ 12.f / gDesign.fps };
-	constexpr static float cSpeed{ 30.f / gDesign.fps };
+	static constexpr XY cBornMashAnchor{ 0.5f, 0.25 };
+	static constexpr float cBornMashScale{ 1.f };
+	static constexpr XY cAnchor{ 0.5f, 0 };
+	static constexpr float cRadius{ 6.f };
+	static constexpr xx::FromTo<float> cFrameIndexRange = { 0.f, 3.f };
+	static constexpr float cFrameInc{ 12.f / gDesign.fps };
+	static constexpr float cSpeed{ 30.f / gDesign.fps };
+	static constexpr float cStepMoveDuration{ 0.5f };
 
 	static constexpr float cLifeSpan{ 10 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
 	float speed{};
+	bool freeze{};		// fozen, hert, ...
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
 	xx::Task<> animTask;
 	xx::Task<> AnimTask();
+	xx::Task<> moveTask;
+	xx::Task<> MoveTask();
 	void Init(ItemManagerBase* im_, XY const& pos_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
@@ -126,7 +158,7 @@ struct ScenePlay2 : Scene {
 
 	SpaceGridC<ScenePhysItem> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
-	ItemManager<Human, Slime> im;
+	ItemManager<Weapon, Bullet, Human, Slime> im;
 	xx::Weak<Human> human;	// point to im human Item
 	Camera camera;
 	xx::Listi32<ItemY> iys;

@@ -8,6 +8,10 @@ void SceneItem::SceneItemInit(int typeId_, ItemManagerBase* im_) {
 	scene = (ScenePlay2*)im_->userData;
 }
 
+XY SceneItem::GetWeaponPos() {
+	return pos;
+}
+
 XY ScenePhysItem::GetPhysPos() {
 	return pos + physOffset;
 }
@@ -95,6 +99,63 @@ void BornMaskManager::Draw(Camera const& camera) {
 
 #pragma endregion
 
+#pragma region Weapon
+
+xx::Task<> Weapon::MainTask() {
+	while (true) {
+		// todo: auto shoot logic
+		co_yield 0;
+	}
+}
+
+xx::Task<> Weapon::MoveTask() {
+	while (true) {
+		if (owner) {								// follow
+			yOffset = owner->radius / 2 + 0.1f;
+			pos = owner->GetWeaponPos();
+		}
+		// todo: finger to mouse
+		co_yield 0;
+	}
+}
+
+void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
+	assert(owner_);
+	SceneItemInit(cTypeId, im_);
+	owner = std::move(owner_);
+
+	// tasks init
+	mainTask = MainTask();
+	moveTask = MoveTask();
+	// ...
+
+	// born init
+	yOffset = owner->radius / 2 + 0.1f;
+	pos = owner->GetWeaponPos();
+	radians = (float)-M_PI_2;
+}
+
+int Weapon::UpdateCore() {
+	moveTask.Resume();
+	return !mainTask.Resume();
+}
+
+void Weapon::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_staff[1]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 255 };
+
+	//LineStrip().FillCirclePoints({}, 20, {}, 20)
+	//	.SetPosition(camera.ToGLPos(pos))
+	//	.Draw();
+}
+
+#pragma endregion
+
 #pragma region Human
 
 void Human::Init(ItemManagerBase* im_) {
@@ -111,6 +172,9 @@ void Human::Init(ItemManagerBase* im_) {
 	speed = cSpeed;
 	radius = cRadius;
 	SetDirection(MoveDirections::Down);
+
+	// weapon init
+	im->Create<Weapon>(xx::WeakFromThis(this));
 }
 
 int Human::UpdateCore() {
@@ -173,6 +237,10 @@ void Human::Draw(Camera const& camera) {
 	q.color = { 255, 255, 255, 255 };
 }
 
+XY Human::GetWeaponPos() {
+	return GetPhysPos();
+}
+
 #pragma endregion
 
 #pragma region Slime
@@ -181,6 +249,7 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	SceneItemInit(cTypeId, im_);
 	mainTask = MainTask();
 	animTask = AnimTask();
+	moveTask = MoveTask();
 	pos = pos_;
 	radius = cRadius;
 	speed = cSpeed;
@@ -189,7 +258,9 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 }
 
 int Slime::UpdateCore() {
-	animTask.Resume();			// todo: stop anim when freeze?
+	if (!freeze) {
+		animTask.Resume();
+	}
 	return !mainTask.Resume();
 }
 
@@ -200,10 +271,10 @@ xx::Task<> Slime::AnimTask() {
 	}
 }
 
-xx::Task<> Slime::MainTask() {
-	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
-		if (scene->human) {
-			auto hPos = scene->human->GetPhysPos();
+xx::Task<> Slime::MoveTask() {
+	while (true) {
+		auto hPos = scene->human->GetPhysPos();
+		for (int e = gLooper.frameNumber + int(cStepMoveDuration / gDesign.frameDelay); gLooper.frameNumber < e;) {
 			auto d = hPos - pos;
 			auto dd = d.x * d.x + d.y * d.y;
 			if (dd > cSpeed * cSpeed) {						// avoid NAN issue
@@ -213,6 +284,15 @@ xx::Task<> Slime::MainTask() {
 				pos = hPos;
 			}
 			PhysUpdate();
+			co_yield 0;
+		}
+	}
+}
+
+xx::Task<> Slime::MainTask() {
+	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
+		if (scene->human) {
+			moveTask.Resume();
 		}
 		co_yield 0;
 	}
@@ -258,7 +338,7 @@ void ScenePlay2::Init() {
 	// init camera
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
-	//camera.SetScale(4);
+	camera.SetScale(4);
 
 	// init objs
 	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);
@@ -309,8 +389,16 @@ void ScenePlay2::Draw() {
 	});
 #else
 	if (human) {
-		iys.Emplace(human.GetPointer(), human->posY);
+		iys.Emplace(human.GetPointer(), human->posY/* + human->yOffset*/);
 	}
+
+	im.ForeachItems<Weapon, Bullet>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
+		for (auto& o : items) {
+			if (camera.InArea(o->pos)) {
+				iys.Emplace(o, o->posY + o->yOffset);
+			}
+		}
+	});
 
 	// fill phys items to iys order by row & cut by cell pos
 	int32_t rowFrom, rowTo, colFrom, colTo; 
@@ -320,7 +408,7 @@ void ScenePlay2::Draw() {
 		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
 			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
 			sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
-				iys.Emplace(o, o->posY);
+				iys.Emplace(o, o->posY/* + o->yOffset*/);
 			});
 		}
 	}
@@ -345,6 +433,12 @@ void ScenePlay2::Draw() {
 						.Draw();
 					});
 			}
+		}
+		if (human) {
+			LineStrip()
+				.FillCirclePoints({}, human->radius, human->radians, 20, XY::Make(camera.scale* human->scale.x))
+				.SetPosition(camera.ToGLPos(human->GetPhysPos()))
+				.Draw();
 		}
 	}
 
