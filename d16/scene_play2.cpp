@@ -147,16 +147,17 @@ void ScenePlay2::MakeSlime() {
 	};
 	bmm.Add([this, pos] {
 		this->im.Create<Slime>(pos);
-	}, pos, 1);
+	}, pos, Slime::cBornMashAnchor, Slime::cBornMashScale);
 }
 
 #pragma endregion
 
 #pragma region BornMask
 
-void BornMask::Init(std::function<void()> onDispose_, XY const& pos_, float scale_) {
+void BornMask::Init(std::function<void()> onDispose_, XY const& pos_, XY const& anchor_, float scale_) {
 	onDispose = std::move(onDispose_);
 	pos = pos_;
+	anchor = anchor_;
 	scale = scale_;
 }
 
@@ -185,7 +186,7 @@ void BornMask::Draw(Camera const& camera) {
 	if (!visible || !camera.InArea(pos)) return;
 	auto& q = Quad::DrawOnce(gLooper.frame_no);
 	q.pos = camera.ToGLPos(pos);
-	q.anchor = { 0.5f, 0.5f };
+	q.anchor = anchor;
 	q.scale = XY::Make(camera.scale) * scale;
 	q.radians = 0;
 	q.colorplus = 1;
@@ -197,8 +198,8 @@ void BornMaskManager::Init(size_t cap) {
 	os.Reserve(cap);
 }
 
-void BornMaskManager::Add(std::function<void()> onDispose_, XY const& pos_, float scale_) {
-	os.Emplace().Init(std::move(onDispose_), pos_, scale_);
+void BornMaskManager::Add(std::function<void()> onDispose_, XY const& pos_, XY const& anchor_, float scale_) {
+	os.Emplace().Init(std::move(onDispose_), pos_, anchor_, scale_);
 }
 
 bool BornMaskManager::Update() {

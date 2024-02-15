@@ -33,12 +33,12 @@ struct BornMask {
 	constexpr static float cVisibleTimeSpan{ 0.2f };
 	constexpr static float cHideTimeSpan{ 0.1f };
 
-	XY pos{};
+	XY pos{}, anchor{};
 	float scale{};
 	bool visible{};
 	int lineNumber{}, i{}, e{};
 	std::function<void()> onDispose;
-	void Init(std::function<void()> onDispose_, XY const& pos_, float scale_);
+	void Init(std::function<void()> onDispose_, XY const& pos_, XY const& anchor_, float scale_);
 	int UpdateCore();
 	bool Update();
 	void Draw(Camera const& camera);
@@ -47,7 +47,7 @@ struct BornMask {
 struct BornMaskManager {
 	xx::ListLink<BornMask> os;
 	void Init(size_t cap);
-	void Add(std::function<void()> onDispose_, XY const& pos_, float scale_);
+	void Add(std::function<void()> onDispose_, XY const& pos_, XY const& anchor_, float scale_);
 	bool Update();
 	void Draw(Camera const& camera);
 };
@@ -87,6 +87,8 @@ struct Human : SceneItem {
 struct Slime : ScenePhysItem {
 	static constexpr int cTypeId{ 2 };
 
+	constexpr static XY cBornMashAnchor{ 0.5f, 0.25 };
+	constexpr static float cBornMashScale{ 1.f };
 	constexpr static XY cAnchor{ 0.5f, 0 };
 	constexpr static float cRadius{ 6.f };
 	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f };
