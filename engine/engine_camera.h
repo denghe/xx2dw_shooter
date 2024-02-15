@@ -102,7 +102,7 @@ struct Camera {
 	void FillRowColIdxRange(int32_t physNumRows, int32_t physNumCols, int32_t physCellSize, int32_t& rowFrom, int32_t& rowTo, int32_t& colFrom, int32_t& colTo) {
 		int32_t halfNumRows = int32_t(gEngine->windowSize.y / scale) / physCellSize / 2;
 		int32_t posRowIndex = (int32_t)original.y / physCellSize;
-		rowFrom = posRowIndex - halfNumRows;
+		rowFrom = posRowIndex - halfNumRows - 1;
 		rowTo = posRowIndex + halfNumRows + 2;
 		if (rowFrom < 0) {
 			rowFrom = 0;
@@ -113,7 +113,7 @@ struct Camera {
 
 		int32_t halfNumCols = int32_t(gEngine->windowSize.x / scale) / physCellSize / 2;
 		int32_t posColIndex = (int32_t)original.x / physCellSize;
-		colFrom = posColIndex - halfNumCols;
+		colFrom = posColIndex - halfNumCols - 1;
 		colTo = posColIndex + halfNumCols + 2;
 		if (colFrom < 0) {
 			colFrom = 0;

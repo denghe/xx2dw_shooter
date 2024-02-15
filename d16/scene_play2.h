@@ -81,6 +81,7 @@ struct Human : SceneItem {
 	MoveDirections direction{};
 	float frameIndexFrom{}, frameIndexTo{};
 	void SetDirection(MoveDirections d);
+	XY GetPhysPos();
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
@@ -101,15 +102,19 @@ struct Slime : ScenePhysItem {
 	constexpr static float cBornMashScale{ 1.f };
 	constexpr static XY cAnchor{ 0.5f, 0 };
 	constexpr static float cRadius{ 6.f };
-	constexpr static std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f };
+	constexpr static xx::FromTo<float> cFrameIndexRange = { 0.f, 3.f };
 	constexpr static float cFrameInc{ 12.f / gDesign.fps };
 	constexpr static float cSpeed{ 30.f / gDesign.fps };
 
 	static constexpr float cLifeSpan{ 10 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
+	float speed{};
+
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
+	xx::Task<> animTask;
+	xx::Task<> AnimTask();
 	void Init(ItemManagerBase* im_, XY const& pos_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;

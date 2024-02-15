@@ -32,6 +32,7 @@ struct Item
 {
 	ItemManagerBase* im{};
 	int typeId{};		// static constexpr int cTypeId{ 1 ~ n inc };
+	int lineNumber{};
 
 #ifndef ENABLE_ECS
 	union {
@@ -54,9 +55,6 @@ struct Item
 		return (Item&)*this;
 	}
 #endif
-
-
-	int lineNumber{};
 
 	virtual ~Item();
 

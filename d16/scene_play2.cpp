@@ -109,6 +109,7 @@ void Human::Init(ItemManagerBase* im_) {
 	// born init
 	pos = gMapCfg.mapCenterPos;
 	speed = cSpeed;
+	radius = cRadius;
 	SetDirection(MoveDirections::Down);
 }
 
@@ -121,6 +122,10 @@ xx::Task<> Human::IdleTask() {
 		for (scale.y = cIdleScaleYTo; scale.y > cIdleScaleYFrom; scale.y -= cIdleScaleYStep) co_yield 0;
 		for (scale.y = cIdleScaleYFrom; scale.y < cIdleScaleYTo; scale.y += cIdleScaleYStep) co_yield 0;
 	}
+}
+
+XY Human::GetPhysPos() {
+	return pos + XY{ 0, -radius / 2 };
 }
 
 void Human::SetDirection(MoveDirections d) {
@@ -175,23 +180,53 @@ void Human::Draw(Camera const& camera) {
 void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	SceneItemInit(cTypeId, im_);
 	mainTask = MainTask();
+	animTask = AnimTask();
 	pos = pos_;
 	radius = cRadius;
+	speed = cSpeed;
 	physOffset = { 0, -radius / 2 };
 	PhysAdd();
 }
 
 int Slime::UpdateCore() {
+	animTask.Resume();			// todo: stop anim when freeze?
 	return !mainTask.Resume();
+}
+
+xx::Task<> Slime::AnimTask() {
+	while (true) {
+		FrameControl::Forward(frameIndex, cFrameInc * speed, cFrameIndexRange.from, cFrameIndexRange.to);
+		co_yield 0;
+	}
 }
 
 xx::Task<> Slime::MainTask() {
 	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
-		// todo: move ?
-		// PhysUpdate();
+		if (scene->human) {
+			auto hPos = scene->human->GetPhysPos();
+			auto d = hPos - pos;
+			auto dd = d.x * d.x + d.y * d.y;
+			if (dd > cSpeed * cSpeed) {						// avoid NAN issue
+				auto inc = d / std::sqrt(dd);			// normalize
+				pos = pos + inc * cSpeed;
+			} else {
+				pos = hPos;
+			}
+			PhysUpdate();
+		}
 		co_yield 0;
 	}
-	// todo: fadeout ?
+
+	// fadeout
+	auto scaleBak = scale;
+	auto radiusBak = radius;
+	for (float s = 1; s > 0; s -= 1.f / gDesign.fps) {
+		scale = scaleBak * s;
+		radius = radiusBak * s;
+		co_yield 0;
+	}
+	scale = {};
+	radius = 0;
 }
 
 void Slime::Draw(Camera const& camera) {
