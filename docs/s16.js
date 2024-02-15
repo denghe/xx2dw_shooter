@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  21816: ($0, $1, $2, $3, $4) => {
+  22800: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  23974: () => {
+  24958: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  24138: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  24242: () => {
+  25122: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  25226: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  24413: ($0, $1, $2, $3, $4, $5) => {
+  25397: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  27241: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  27307: $0 => {
+  28225: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  28291: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  27700: $0 => {
+  28684: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  27743: $0 => {
+  28727: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  27868: $0 => {
+  28852: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -1827,79 +1827,79 @@ var wasmImports = {
   e: ___assert_fail,
   v: ___cxa_throw,
   C: ___syscall_fcntl64,
-  V: ___syscall_ioctl,
-  W: ___syscall_openat,
-  X: __emscripten_fetch_free,
-  R: __emscripten_get_now_is_monotonic,
+  W: ___syscall_ioctl,
+  X: ___syscall_openat,
+  Y: __emscripten_fetch_free,
+  S: __emscripten_get_now_is_monotonic,
   u: _abort,
-  c: _emscripten_asm_const_int,
-  T: _emscripten_get_now,
-  Z: _emscripten_is_main_browser_thread,
+  d: _emscripten_asm_const_int,
+  U: _emscripten_get_now,
+  _: _emscripten_is_main_browser_thread,
   ta: _emscripten_request_animation_frame_loop,
-  S: _emscripten_resize_heap,
+  T: _emscripten_resize_heap,
   na: _emscripten_set_canvas_element_size,
   sa: _emscripten_set_keydown_callback_on_thread,
   ra: _emscripten_set_keyup_callback_on_thread,
   qa: _emscripten_set_mousedown_callback_on_thread,
   oa: _emscripten_set_mousemove_callback_on_thread,
   pa: _emscripten_set_mouseup_callback_on_thread,
-  Y: _emscripten_start_fetch,
+  Z: _emscripten_start_fetch,
   ma: _emscripten_webgl_create_context,
   la: _emscripten_webgl_make_context_current,
   A: _fd_close,
-  U: _fd_read,
-  P: _fd_seek,
+  V: _fd_read,
+  Q: _fd_seek,
   B: _fd_write,
-  Q: _getentropy,
+  R: _getentropy,
   ja: _glActiveTexture,
   F: _glAttachShader,
-  d: _glBindBuffer,
+  c: _glBindBuffer,
   z: _glBindFramebuffer,
   b: _glBindTexture,
-  j: _glBindVertexArray,
+  k: _glBindVertexArray,
   s: _glBlendEquation,
   t: _glBlendFunc,
-  n: _glBufferData,
-  M: _glClear,
-  N: _glClearColor,
-  ba: _glCompileShader,
-  ga: _glCreateProgram,
-  da: _glCreateShader,
+  j: _glBufferData,
+  N: _glClear,
+  O: _glClearColor,
+  ca: _glCompileShader,
+  ha: _glCreateProgram,
+  ea: _glCreateShader,
   r: _glDeleteBuffers,
-  l: _glDeleteFramebuffers,
-  m: _glDeleteProgram,
+  m: _glDeleteFramebuffers,
+  n: _glDeleteProgram,
   f: _glDeleteShader,
-  O: _glDeleteTextures,
-  J: _glDeleteVertexArrays,
-  K: _glDisable,
-  L: _glDrawArraysInstanced,
-  ha: _glDrawElements,
+  P: _glDeleteTextures,
+  K: _glDeleteVertexArrays,
+  L: _glDisable,
+  M: _glDrawArraysInstanced,
+  H: _glDrawElements,
   ka: _glEnable,
   g: _glEnableVertexAttribArray,
   va: _glFramebufferTexture2D,
   p: _glGenBuffers,
   y: _glGenFramebuffers,
-  k: _glGenTextures,
+  l: _glGenTextures,
   G: _glGenVertexArrays,
   i: _glGetAttribLocation,
-  ea: _glGetProgramInfoLog,
+  fa: _glGetProgramInfoLog,
   E: _glGetProgramiv,
-  aa: _glGetShaderInfoLog,
+  ba: _glGetShaderInfoLog,
   D: _glGetShaderiv,
   w: _glGetUniformLocation,
-  fa: _glLinkProgram,
-  ca: _glShaderSource,
+  ga: _glLinkProgram,
+  da: _glShaderSource,
   q: _glTexImage2D,
   a: _glTexParameteri,
   ia: _glUniform1i,
-  H: _glUniform2f,
-  I: _glUseProgram,
+  I: _glUniform2f,
+  J: _glUseProgram,
   o: _glVertexAttribDivisor,
   h: _glVertexAttribPointer,
   x: _glViewport,
-  $: _init_gCanvas,
+  aa: _init_gCanvas,
   ua: _load_texture_from_url,
-  _: _upload_unicode_char_to_texture
+  $: _upload_unicode_char_to_texture
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["xa"])();
