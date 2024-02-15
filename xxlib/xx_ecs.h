@@ -2,16 +2,19 @@
 #include "xx_list.h"
 
 namespace xx {
-	template<typename U, typename T, size_t offset>
+	// B: base class
+	// C: child / sub class
+	// offset: index member memory address
+	template<typename B, typename C, size_t offset>
 	struct ECSIndex;
 
-	template<typename U, typename T, size_t offset>
+	template<typename B, typename C, size_t offset>
 	struct ECSContainer {
-		using Index = ECSIndex<U, T, offset>;
+		using Index = ECSIndex<B, C, offset>;
 
 		// data + pointer
-		struct Node : T {
-			U* ptr{};
+		struct Node : C {
+			B* ptr{};
 			Index& GetIndex() const {
 				assert(ptr);
 				return *(Index*)((char*)ptr + offset);
@@ -21,8 +24,8 @@ namespace xx {
 		// data + pointer array( can reserve, sort )
 		xx::Listi<Node> nodes;
 
-		// add 
-		void Attach(U* o, Index* ecsi);
+		// add
+		void Attach(B* o, Index* ecsi);
 
 		// remove
 		void Detach(ptrdiff_t idx);
@@ -31,21 +34,21 @@ namespace xx {
 		void UpdateIndexs();
 	};
 
-	template<typename U, typename T, size_t offset>
+	template<typename B, typename C, size_t offset>
 	struct ECSIndex {
-		using Container = ECSContainer<U, T, offset>;
+		using Container = ECSContainer<B, C, offset>;
 
 		// ref to container & data index
 		Container* ptr{};
 		ptrdiff_t idx{ -1 };
 
 		// ref to data
-		T& Get() const {
+		C& Get() const {
 			return ptr->nodes[idx];
 		}
 
 		// attach
-		void Init(Container& c, U* o) {
+		void Init(Container& c, B* o) {
 			c.Attach(o, this);
 		}
 
@@ -63,8 +66,8 @@ namespace xx {
 		}
 	};
 
-	template<typename U, typename T, size_t offset>
-	void ECSContainer<U, T, offset>::Attach(U* o, Index* ecsi) {
+	template<typename B, typename C, size_t offset>
+	void ECSContainer<B, C, offset>::Attach(B* o, Index* ecsi) {
 #ifndef NDEBUG
 		auto p = (char*)ecsi - offset;
 		assert(p == (char*)o);			// wrong offset value ?
@@ -78,16 +81,16 @@ namespace xx {
 		n.Node::ptr = o;
 	}
 
-	template<typename U, typename T, size_t offset>
-	void ECSContainer<U, T, offset>::Detach(ptrdiff_t idx) {
+	template<typename B, typename C, size_t offset>
+	void ECSContainer<B, C, offset>::Detach(ptrdiff_t idx) {
 		nodes.SwapRemoveAt(idx);
 		if (idx < nodes.len) {
 			nodes[idx].GetIndex().idx = idx;
 		}
 	}
 
-	template<typename U, typename T, size_t offset>
-	void ECSContainer<U, T, offset>::UpdateIndexs() {
+	template<typename B, typename C, size_t offset>
+	void ECSContainer<B, C, offset>::UpdateIndexs() {
 		for (ptrdiff_t i = 0, e = nodes.len; i < e; i++) {
 			nodes[i].GetIndex().idx = i;
 		}

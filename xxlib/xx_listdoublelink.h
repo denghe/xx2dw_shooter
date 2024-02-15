@@ -32,20 +32,7 @@ namespace xx {
 		ListDoubleLink(ListDoubleLink const&) = delete;
 		ListDoubleLink& operator=(ListDoubleLink const&) = delete;
 		ListDoubleLink(ListDoubleLink&& o) noexcept {
-			buf = o.buf;
-			cap = o.cap;
-			len = o.len;
-			head = o.head;
-			tail = o.tail;
-			freeHead = o.freeHead;
-			freeCount = o.freeCount;
-			o.buf = {};
-			o.cap = {};
-			o.len = {};
-			o.head = -1;
-			o.tail = -1;
-			o.freeHead = -1;
-			o.freeCount = {};
+			operator=(std::move(o));
 		}
 		ListDoubleLink& operator=(ListDoubleLink&& o) noexcept {
 			std::swap(buf, o.buf);

@@ -22,20 +22,7 @@ namespace xx {
 		ListLink(ListLink const&) = delete;
 		ListLink& operator=(ListLink const&) = delete;
 		ListLink(ListLink&& o) noexcept {
-			buf = o.buf;
-			cap = o.cap;
-			len = o.len;
-			head = o.head;
-			tail = o.tail;
-			freeHead = o.freeHead;
-			freeCount = o.freeCount;
-			o.buf = {};
-			o.cap = {};
-			o.len = {};
-			o.head = -1;
-			o.tail = -1;
-			o.freeHead = -1;
-			o.freeCount = {};
+			operator=(std::move(o));
 		}
 		ListLink& operator=(ListLink&& o) noexcept {
 			std::swap(buf, o.buf);
