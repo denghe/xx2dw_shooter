@@ -47,6 +47,8 @@ void ScenePlay2::Init() {
 	im.Create<Human>();
 }
 
+//#define ENABLE_SORT1
+
 void ScenePlay2::Update() {
 	// zoom control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
@@ -63,9 +65,11 @@ void ScenePlay2::Update() {
 	// update objs
 	bmm.Update();
 	im.Update();
-	//im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-	//	Sort(items);
-	//});
+#ifdef ENABLE_SORT1
+	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+		Sort(items);
+	});
+#endif
 }
 
 void ScenePlay2::Draw() {
@@ -76,23 +80,52 @@ void ScenePlay2::Draw() {
 	bmm.Draw(camera);
 
 	// items
-
-	//im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-	//	for (auto& o : items) {
-	//		if (camera.InArea(o->pos)) {
-	//			iys.Emplace(o.pointer, o->pos.y);
-	//		}
-	//	}
-	//});
-
+#ifdef ENABLE_SORT1
+	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+		for (auto& o : items) {
+			if (camera.InArea(o->pos)) {
+				iys.Emplace(o.pointer, o->pos.y);
+			}
+		}
+	});
+#else
 	if (human) {
 		iys.Emplace(human.GetPointer(), human->posY);
 	}
-	// todo: fill phys items to iys order by row & cut by cell pos
-	//sgcPhysItems.ForeachCells
-	// todo: calc row col index range by camera
-	
 
+	// fill phys items to iys order by row & cut by cell pos
+	// calc row col index range by camera
+	int32_t halfNumRows = int32_t(gLooper.windowSize.y / camera.scale) / gMapCfg.physCellSize / 2;
+	int32_t posRowIndex = (int32_t)camera.original.y / gMapCfg.physCellSize;
+	int32_t rowFrom = posRowIndex - halfNumRows;
+	int32_t rowTo = posRowIndex + halfNumRows + 2;
+	if (rowFrom < 0) {
+		rowFrom = 0;
+	}
+	if (rowTo > gMapCfg.physNumRows) {
+		rowTo = gMapCfg.physNumRows;
+	}
+
+	int32_t halfNumCols = int32_t(gLooper.windowSize.x / camera.scale) / gMapCfg.physCellSize / 2;
+	int32_t posColIndex = (int32_t)camera.original.x / gMapCfg.physCellSize;
+	int32_t colFrom = posColIndex - halfNumCols;
+	int32_t colTo = posColIndex + halfNumCols + 2;
+	if (colFrom < 0) {
+		colFrom = 0;
+	}
+	if (colTo > gMapCfg.physNumCols) {
+		colTo = gMapCfg.physNumCols;
+	}
+	
+	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
+			sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
+				iys.Emplace(o, o->posY);
+			});
+		}
+	}
+#endif
 	Sort(iys);
 	for (auto& iy : iys) {
 		iy.item->Draw(camera);

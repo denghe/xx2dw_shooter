@@ -189,6 +189,20 @@ struct SpaceGridC {
         return false;
     }
 
+    // F == [&](Item* o)->void { ... }
+    template<typename F>
+    void ForeachWithoutBreak(int32_t cellIndex, F&& f) {
+        auto c = cells[cellIndex];
+        while (c) {
+            assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
+            assert(c->_sgcNext != c);
+            assert(c->_sgcPrev != c);
+            auto next = c->_sgcNext;
+            f(c);
+            c = next;
+        }
+    }
+
     constexpr static std::array<Vec2<int32_t>, 9> offsets9 = {
         Vec2<int32_t>{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
     };
