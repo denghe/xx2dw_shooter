@@ -129,8 +129,11 @@ struct Human : SceneItem {
 struct Slime : ScenePhysItem {
 	static constexpr int cTypeId{ 4 };
 
-	static constexpr XY cBornMashAnchor{ 0.5f, 0.25 };
-	static constexpr float cBornMashScale{ 1.f };
+	static constexpr XY cBornMaskAnchor{ 0.5f, 0.25 };
+	static constexpr float cBornMaskScale{ 1.f };
+	static constexpr float cBornIdleDelay{ 0.5f };
+	static constexpr int cBornIdleDelayFrames{ int(cBornIdleDelay / gDesign.frameDelay) };
+
 	static constexpr XY cAnchor{ 0.5f, 0 };
 	static constexpr float cRadius{ 6.f };
 	static constexpr xx::FromTo<float> cFrameIndexRange = { 0.f, 3.f };

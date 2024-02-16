@@ -308,6 +308,12 @@ xx::Task<> Slime::MoveTask() {
 }
 
 xx::Task<> Slime::MainTask() {
+	// idle a while
+	for (int e = gLooper.frameNumber + cBornIdleDelayFrames; gLooper.frameNumber < e;) {
+		co_yield 0;
+	}
+
+	// track player
 	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
 		if (scene->human) {
 			moveTask.Resume();
@@ -488,7 +494,7 @@ void ScenePlay2::MakeSlime() {
 
 	bmm.Add([this, pos] {
 		this->im.Create<Slime>(pos);
-	}, pos, Slime::cBornMashAnchor, Slime::cBornMashScale);
+	}, pos, Slime::cBornMaskAnchor, Slime::cBornMaskScale);
 }
 
 #pragma endregion
