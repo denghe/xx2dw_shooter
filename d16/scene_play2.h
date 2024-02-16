@@ -20,7 +20,7 @@ struct SceneItem : Item {
 	void SceneItemInit(int typeId_, ItemManagerBase* im_);
 };
 
-struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
+struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem, XY> {
 	void PhysAdd();				// call after fill pos
 	void PhysUpdate();			// call after fill pos
 	void PhysRemove();
@@ -89,9 +89,9 @@ struct Bullet : SceneItem {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 4 };
-	static constexpr float cSpeed{ 240 };
+	static constexpr float cSpeed{ 500 };
 	static constexpr float cSpeedByFrame{ cSpeed / gDesign.fps };
-	static constexpr float cLifeSpan{ 0.5 };
+	static constexpr float cLifeSpan{ 0.25 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
 	xx::Weak<SceneItem> owner;
@@ -107,6 +107,14 @@ struct Bullet : SceneItem {
 	virtual void Draw(Camera const& camera) override;
 };
 
+
+struct BulletTail : Item {
+	static constexpr float cLifeSpan{ 0.1f };
+	int lifeEndFrameNumber{};
+	void Init(Bullet& bullet_);
+	virtual int UpdateCore() override;
+	virtual void Draw(Camera const& camera) override;
+};
 
 
 struct Human : SceneItem {
@@ -179,10 +187,11 @@ struct Slime : ScenePhysItem {
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
 
-	SpaceGridC<ScenePhysItem> sgcPhysItems;	// must at top
+	SpaceGridC<ScenePhysItem, XY> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
 	ItemManager<Weapon, Bullet, Human, Slime> im;
 	xx::Weak<Human> human;	// point to im human Item
+	xx::ListLink<BulletTail> bulletTails;
 	Camera camera;
 	xx::Listi32<ItemY> iys;
 	bool isBorderVisible{};

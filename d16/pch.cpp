@@ -16,6 +16,6 @@ int32_t main() {
 	gLooper.title = "xx2dw_d16";
 	gLooper.clearColor = {0x33,0x33,0x33,0xff};
 	gLooper.Init();
-	gLooper.Run<true>();
+	gLooper.Run<false>();
 }
 #endif

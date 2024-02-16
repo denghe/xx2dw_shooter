@@ -9,11 +9,11 @@ void SceneItem::SceneItemInit(int typeId_, ItemManagerBase* im_) {
 }
 
 void ScenePhysItem::PhysAdd() {
-	SGCAdd(scene->sgcPhysItems, pos.As<int>());
+	SGCAdd(scene->sgcPhysItems, pos);
 }
 
 void ScenePhysItem::PhysUpdate() {
-	SGCUpdate(pos.As<int>());
+	SGCUpdate(pos);
 }
 
 void ScenePhysItem::PhysRemove() {
@@ -100,26 +100,31 @@ xx::Task<> Weapon::MainTask() {
 			pos = owner->pos + XY{ 0, 0.1f };
 		}
 
-		// finger to mouse
+		// try to toward mouse
 		auto mPos = scene->camera.ToLogicPos(gEngine->mouse.pos);
 		auto d = mPos - pos;
 		auto r = std::atan2(d.y, d.x);
 		RotateControl::Step(radians, r, cFrameMaxChangeRadians);
 
-		// todo: optimize ? user normalize?
+		// calc fire pos by current radians
 		auto c = std::cos(radians);
 		auto s = std::sin(radians);
 		firePos = pos + XY{ c, s } * cFireDistance;	// * scale
 
-		// fire?
+		// fire
 		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
 			nextFireSecs = (float)gLooper.nowSecs + cFireDelaySecs;
-			//auto r = -radians;
-			//auto c = std::cos(r);
-			//auto s = -std::sin(r);
-			//xx::CoutN(c, "  ", s, "  ", firePos);
-			im->Create<Bullet>(xx::WeakFromThis(this));
+
 			gEngine->audio.Play(gLooper.soundDatas[0]);
+
+			// multi line fire
+			auto radiansBak = radians;
+			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 40;
+			for (float a = npi; a < pi; a += step) {
+				radians = a;
+				im->Create<Bullet>(xx::WeakFromThis(this));
+			}
+			radians = radiansBak;
 		}
 
 		co_yield 0;
@@ -170,8 +175,7 @@ void Weapon::Draw(Camera const& camera) {
 xx::Task<> Bullet::MainTask() {
 	// move. in life cycle
 	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
-		moveTask.Resume();
-		// todo: hit check
+		if (moveTask.Resume()) co_return;
 		co_yield 0;
 	}
 
@@ -181,8 +185,7 @@ xx::Task<> Bullet::MainTask() {
 	for (float s = 1; s > 0; s -= 1.f / gDesign.fps) {
 		scale = scaleBak * s;
 		radius = radiusBak * s;
-		moveTask.Resume();
-		// todo: hit check
+		if (moveTask.Resume()) co_return;
 		co_yield 0;
 	}
 	scale = {};
@@ -194,6 +197,13 @@ xx::Task<> Bullet::MoveTask() {
 	while (true) {
 		pos += inc;
 		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
+		scene->bulletTails.Emplace().Init(*this);
+		// hit check
+		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
+			//r->Hit(damage);		// r maybe deleted
+			//r->RemoveFromIM();	// todo
+			co_return;
+		}
 		co_yield 0;
 	}
 }
@@ -235,6 +245,34 @@ void Bullet::Draw(Camera const& camera) {
 	}
 }
 
+
+#pragma endregion
+
+#pragma region BulletTail
+
+void BulletTail::Init(Bullet& bullet_) {
+	lifeEndFrameNumber = gLooper.frameNumber + int(cLifeSpan / gDesign.frameDelay);
+	// copy args from bullet_
+	frameIndex = bullet_.frameIndex;
+	pos = bullet_.pos;
+	flipX = bullet_.flipX;
+	scale = bullet_.scale;
+	radians = bullet_.radians;
+}
+
+int BulletTail::UpdateCore() {
+	return gLooper.frameNumber > lifeEndFrameNumber;
+}
+
+void BulletTail::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = Bullet::cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 88 };
+}
 
 #pragma endregion
 
@@ -440,7 +478,7 @@ void ScenePlay2::Update() {
 	}
 
 	// simulate room master logic
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 10; i++) {
 		MakeSlime();
 	}
 
@@ -481,6 +519,12 @@ void ScenePlay2::Draw() {
 				iys.Emplace(o, o->posY);
 			}
 		}
+	});
+
+	bulletTails.Foreach([&](auto& o)->bool { 
+		if (o.UpdateCore()) return true;
+		iys.Emplace(&o, o.posY);
+		return false;
 	});
 
 	// fill phys items to iys order by row & cut by cell pos
@@ -538,7 +582,8 @@ void ScenePlay2::MakeSlime() {
 #if 1
 	static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 };
 	// circle gen , outside the human's safe range
-	static constexpr float radius = 400, safeRadius = 300, len = radius - safeRadius;
+	//static constexpr float radius = 400, safeRadius = 300, len = radius - safeRadius;
+	static constexpr float radius = 800, safeRadius = 500, len = radius - safeRadius;
 	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius ) * radius;
 	auto a = gLooper.rnd.Next<float>(npi, pi);
 	pos.x = std::cos(a) * r;

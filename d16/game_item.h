@@ -114,6 +114,8 @@ struct ItemManagerBase {
 			items.Clear();
 		}
 	}
+
+	// todo: remove item
 };
 
 inline void Item::ItemInit(int typeId_, ItemManagerBase* im_) {
