@@ -10,8 +10,8 @@
 // todo: seek old one when pool is empty ?
 
 // todo: when __EMSCRIPTEN__, use openAL impl same interface
-// known issue1: miniaudio in web, size +300k, some js error, can't enable --closure 1
-// known issue2: ios web browser no sound
+// known issue: miniaudio in web, size +300k, some js error, can't enable --closure 1
+
 
 #define MA_NO_WAV				// -50k
 #define MA_NO_FLAC				// -100k
