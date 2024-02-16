@@ -33,7 +33,7 @@ struct LineStrip {
 		return *this;
 	}
 
-	LineStrip& FillCirclePoints(XY const& center, float radius, std::optional<float> const& radians = {}, int segments = 100, XY const& scale = { 1,1 }) {
+	LineStrip& FillCirclePoints(XY const& center, float radius, std::optional<float> const& radians = {}, int segments = 20, XY const& scale = { 1,1 }) {
 		dirty = true;
 		points.reserve(segments + 2);
 		points.resize(segments + 1);
@@ -143,10 +143,11 @@ struct LineStrip {
 		}
 	}
 
-	void Draw() {
+	LineStrip& Draw() {
 		Update();
 		if (int ps = (int)pointsBuf.size()) {
 			EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderLineStrip).Draw(pointsBuf.data(), ps);
 		}
+		return *this;
 	}
 };

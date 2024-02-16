@@ -103,23 +103,22 @@ void BornMaskManager::Draw(Camera const& camera) {
 
 xx::Task<> Weapon::MainTask() {
 	while (true) {
-		// todo: auto shoot logic
-		co_yield 0;
-	}
-}
-
-xx::Task<> Weapon::MoveTask() {
-	while (true) {
-		if (owner) {								// follow
+		// follow owner( sync pos )
+		if (owner) {
 			yOffset = owner->radius / 2 + 0.1f;
 			pos = owner->GetWeaponPos();
 		}
 
-		// todo: finger to mouse
+		// finger to mouse
 		auto mPos = scene->camera.ToLogicPos(gEngine->mouse.pos);
 		auto d = mPos - pos;
 		auto r = std::atan2(d.y, d.x);
 		RotateControl::Step(radians, r, cFrameMaxChangeRadians);
+
+		// todo: optimize ? user normalize?
+		auto c = std::cos(radians);
+		auto s = std::sin(radians);
+		firePos = pos + XY{ c, s } * cFireDistance;	// * scale
 
 		// fire?
 		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
@@ -127,10 +126,8 @@ xx::Task<> Weapon::MoveTask() {
 			//auto r = -radians;
 			//auto c = std::cos(r);
 			//auto s = -std::sin(r);
-			auto c = std::cos(radians);
-			auto s = std::sin(radians);
-			auto firePos = pos + XY{ c, s } * cFireDistance;	// * scale
-			xx::CoutN(c, "  ", s, "  ", firePos);
+			//xx::CoutN(c, "  ", s, "  ", firePos);
+			im->Create<Bullet>(xx::WeakFromThis(this));
 		}
 
 		co_yield 0;
@@ -144,7 +141,6 @@ void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 
 	// tasks init
 	mainTask = MainTask();
-	moveTask = MoveTask();
 	// ...
 
 	// born init
@@ -154,12 +150,11 @@ void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 }
 
 int Weapon::UpdateCore() {
-	moveTask.Resume();
 	return !mainTask.Resume();
 }
 
 void Weapon::Draw(Camera const& camera) {
-	auto& q = Quad::DrawOnce(gLooper.frames_staff[1]);
+	auto& q = Quad::DrawOnce(gLooper.frames_staff[cFrameIndex]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
@@ -167,10 +162,87 @@ void Weapon::Draw(Camera const& camera) {
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
 
-	//LineStrip().FillCirclePoints({}, 20, {}, 20)
-	//	.SetPosition(camera.ToGLPos(pos))
-	//	.Draw();
+	if (scene->isBorderVisible) {
+		LineStrip().FillCirclePoints({}, 5, -radians, 20, scale * camera.scale)
+			.SetPosition(camera.ToGLPos(pos))
+			.Draw()
+			.SetPosition(camera.ToGLPos(firePos))
+			.Draw();
+	}
 }
+
+#pragma endregion
+
+#pragma region Bullet
+
+xx::Task<> Bullet::MainTask() {
+	// move. in life cycle
+	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
+		moveTask.Resume();
+		// todo: hit check
+		co_yield 0;
+	}
+
+	// move + fadeout
+	auto scaleBak = scale;
+	auto radiusBak = radius;
+	for (float s = 1; s > 0; s -= 1.f / gDesign.fps) {
+		scale = scaleBak * s;
+		radius = radiusBak * s;
+		moveTask.Resume();
+		// todo: hit check
+		co_yield 0;
+	}
+	scale = {};
+	radius = 0;
+}
+
+xx::Task<> Bullet::MoveTask() {
+	XY inc{ std::cos(radians) * cSpeedByFrame, std::sin(radians) * cSpeedByFrame };
+	while (true) {
+		pos += inc;
+		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
+		co_yield 0;
+	}
+}
+
+void Bullet::Init(ItemManagerBase* im_, xx::Weak<Weapon> weapon_) {
+	assert(weapon_);
+	SceneItemInit(cTypeId, im_);
+	owner = weapon_->owner;
+
+	// tasks init
+	mainTask = MainTask();
+	moveTask = MoveTask();
+	// ...
+
+	// get weapon args for born init
+	pos = weapon_->firePos;
+	radians = weapon_->radians;
+	// damage = weapon_->damage; ? cDamage ? buff calculate ?
+	radius = cRadius;
+}
+
+int Bullet::UpdateCore() {
+	return !mainTask.Resume();
+}
+
+void Bullet::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 255 };
+
+	if (scene->isBorderVisible) {
+		LineStrip().FillCirclePoints({}, radius, {}, 20, scale * camera.scale)
+			.SetPosition(camera.ToGLPos(pos))
+			.Draw();
+	}
+}
+
 
 #pragma endregion
 
@@ -284,7 +356,7 @@ int Slime::UpdateCore() {
 
 xx::Task<> Slime::AnimTask() {
 	while (true) {
-		FrameControl::Forward(frameIndex, cFrameInc * speed, cFrameIndexRange.from, cFrameIndexRange.to);
+		FrameControl::Forward(frameIndex, cFrameInc * speed, cFrameMaxIndex);
 		co_yield 0;
 	}
 }
@@ -313,7 +385,7 @@ xx::Task<> Slime::MainTask() {
 		co_yield 0;
 	}
 
-	// track player
+	// track player in life cycle
 	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
 		if (scene->human) {
 			moveTask.Resume();
@@ -356,7 +428,7 @@ void ScenePlay2::Init() {
 	});
 
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg_btn, U"Show/Hide Physics Border", [this]() {
-		this->physBorderVisible = !this->physBorderVisible;
+		this->isBorderVisible = !this->isBorderVisible;
 	});
 
 	// init camera
@@ -373,11 +445,11 @@ void ScenePlay2::Init() {
 //#define ENABLE_SORT1
 
 void ScenePlay2::Update() {
-	// zoom control
+	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
-		camera.DecreaseScale(0.02f, 0.02f);
+		camera.IncreaseScale(0.1f, 5);
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
-		camera.IncreaseScale(0.02f, 5);
+		camera.DecreaseScale(0.1f, 0.1f);
 	}
 
 	// simulate room master logic
@@ -446,7 +518,7 @@ void ScenePlay2::Draw() {
 	// ...
 
 	// draw phys circle for debug
-	if (physBorderVisible) {
+	if (isBorderVisible) {
 		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
 			for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
 				auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });

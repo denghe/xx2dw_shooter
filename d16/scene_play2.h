@@ -62,18 +62,19 @@ struct BornMaskManager {
 struct Human;
 struct Weapon : SceneItem {
 	static constexpr int cTypeId{ 1 };
-	static constexpr XY cAnchor{ 0, 0.5f };
+	static constexpr XY cAnchor{ 0.2f, 0.5f };
+	static constexpr int cFrameIndex{ 1 };
+
 	static constexpr float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
 	static constexpr float cFireDelaySecs{ 0.1f };
-	static constexpr float cFireDistance{ 5 };
+	static constexpr float cFireDistance{ 18 };
 
 	xx::Weak<SceneItem> owner;
 	float nextFireSecs{};
+	XY firePos{};
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
-	xx::Task<> moveTask;
-	xx::Task<> MoveTask();
 
 	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_);
 	virtual int UpdateCore() override;
@@ -81,13 +82,30 @@ struct Weapon : SceneItem {
 };
 
 
-// todo: bullet shadow ?
+// todo: bullet tail ?
 
 struct Bullet : SceneItem {
 	static constexpr int cTypeId{ 2 };
 
+	static constexpr float cFrameMaxIndex = 8.f;
+	static constexpr float cFrameInc{ 12.f / gDesign.fps };
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
+
+	static constexpr float cRadius{ 4 };
+	static constexpr float cSpeed{ 30 };
+	static constexpr float cSpeedByFrame{ cSpeed / gDesign.fps };
+	static constexpr float cLifeSpan{ 2 };
+	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
 	xx::Weak<SceneItem> owner;
-	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_);
+	// todo: damage
+
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+	xx::Task<> moveTask;
+	xx::Task<> MoveTask();
+
+	void Init(ItemManagerBase* im_, xx::Weak<Weapon> weapon_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
@@ -136,7 +154,7 @@ struct Slime : ScenePhysItem {
 
 	static constexpr XY cAnchor{ 0.5f, 0 };
 	static constexpr float cRadius{ 6.f };
-	static constexpr xx::FromTo<float> cFrameIndexRange = { 0.f, 3.f };
+	static constexpr float cFrameMaxIndex = 4.f;
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 30.f / gDesign.fps };
 	static constexpr float cStepMoveDuration{ 0.5f };
@@ -146,6 +164,7 @@ struct Slime : ScenePhysItem {
 
 	float speed{};
 	bool freeze{};		// fozen, hert, ...
+	// todo: hp? exp?
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
@@ -168,7 +187,7 @@ struct ScenePlay2 : Scene {
 	xx::Weak<Human> human;	// point to im human Item
 	Camera camera;
 	xx::Listi32<ItemY> iys;
-	bool physBorderVisible{};
+	bool isBorderVisible{};
 	// ...
 
 
