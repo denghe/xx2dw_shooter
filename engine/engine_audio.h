@@ -1,4 +1,5 @@
-﻿#include <xx_task.h>
+﻿#pragma once
+#include <xx_task.h>
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
@@ -18,6 +19,7 @@
 
 struct AudioItem {
 	xx::DataShared data;
+	float volume{};
 	bool isLoop{};
 	int32_t count{};
 };
@@ -113,14 +115,15 @@ struct Audio {
 		*pauseFlag = false;
 	}
 
-	void Play(xx::DataShared d, bool isLoop = false) {
+	// volume = 0 ~ 1
+	void Play(xx::DataShared d, float volume = 1, bool isLoop = false) {
 		for (auto& o : tmpItems) {
 			if (o.data.h == d.h) {
 				++o.count;
 				return;
 			}
 		}
-		tmpItems.Emplace(AudioItem{ std::move(d), isLoop, 1 });
+		tmpItems.Emplace(AudioItem{ std::move(d), volume, isLoop, 1 });
 	}
 
 	void Stop() {
@@ -172,7 +175,7 @@ struct Audio {
 
 				// play count map to volume
 				auto vol = 0.3f + (float)ctx.item.count / 5 * 0.7f;		// todo: get global volumen settings
-				ma_device_set_master_volume(&device, vol);
+				ma_device_set_master_volume(&device, vol * ctx.item.volume);
 
 				device.pUserData = &ctx;					// tell callback func start
 

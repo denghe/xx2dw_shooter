@@ -1,9 +1,7 @@
 ﻿#include <pch.h>
 #include <all.h>
 
-void SceneMainMenu::Update() {
-	audio.Update();
-}
+void SceneMainMenu::Update() {}
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
@@ -20,9 +18,6 @@ void SceneMainMenu::Init() {
 	rootNode->MakeChildren<Button>()->Init(3, { 0, 50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"New Game 2", [&]() {
 		gLooper.DelaySwitchTo<ScenePlay2>();
 	});
-
-	audio.Init();
-	audio.pauseFlag.Emplace();
 
 	if (gLooper.soundDatas.Empty()) {
 #ifdef __EMSCRIPTEN__
@@ -41,38 +36,38 @@ void SceneMainMenu::Init() {
 	}
 
 	rootNode->MakeChildren<Button>()->Init(3, { -200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Pause", [&]() {
-		audio.Pause();
+		gLooper.audio.Pause();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { -50, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Resume", [&]() {
-		audio.Resume();
+		gLooper.audio.Resume();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Stop", [&]() {
-		audio.Stop();
+		gLooper.audio.Stop();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Start", [&]() {
-		audio.Start();
+		gLooper.audio.Start();
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 1 times", [&]() {
-		audio.Play(gLooper.soundDatas[0]);
+		gLooper.audio.Play(gLooper.soundDatas[0]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 5 times", [&]() {
 		for (size_t i = 0; i < 5; i++) {
-			audio.Play(gLooper.soundDatas[0]);
+			gLooper.audio.Play(gLooper.soundDatas[0]);
 		}
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Loop Play button1.ogg", [&]() {
-		audio.Play(gLooper.soundDatas[0], true);
+		gLooper.audio.Play(gLooper.soundDatas[0], 1, true);
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun1.ogg", [&]() {
-		audio.Play(gLooper.soundDatas[1]);
+		gLooper.audio.Play(gLooper.soundDatas[1]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun2.ogg", [&]() {
-		audio.Play(gLooper.soundDatas[2]);
+		gLooper.audio.Play(gLooper.soundDatas[2]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun3.ogg", [&]() {
-		audio.Play(gLooper.soundDatas[3]);
+		gLooper.audio.Play(gLooper.soundDatas[3]);
 	});
 
 }

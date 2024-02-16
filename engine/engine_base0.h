@@ -8,6 +8,7 @@
 #include <engine_spacegrid_circle.h>
 #include <engine_spacegrid_ringdiffuse.h>
 #include <engine_zstd.h>
+#include <engine_audio.h>
 
 enum class MouseEvents : int {
     Unknown = 0, Down, Move, Up, Cancel
@@ -28,6 +29,7 @@ struct Shader;
 struct EngineBase0 {
     xx::Tasks tasks;
     Rnd rnd;
+    Audio audio;
 
     // fill after Init()
     float framePerSeconds{}, maxFrameDelay{ 1 };

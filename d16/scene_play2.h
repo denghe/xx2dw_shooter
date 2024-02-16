@@ -178,7 +178,6 @@ struct Slime : ScenePhysItem {
 
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
-	Audio audio;
 
 	SpaceGridC<ScenePhysItem> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
