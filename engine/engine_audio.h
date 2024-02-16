@@ -31,7 +31,7 @@ struct AudioItemWithDecoder {
 	AudioItem item;
 	ma_decoder decoder;
 	ma_uint64 frameCount{};
-	xx::Shared<bool> pauseFlag;
+	xx::Shared<bool> pauseFlag, stopFlag;
 };
 
 struct AudioDevice {
@@ -67,6 +67,10 @@ struct AudioDevice {
 
 	inline static void AudioDeviceCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
 		if (auto ctx = (AudioItemWithDecoder*)pDevice->pUserData) {
+			if (ctx->stopFlag && *ctx->stopFlag) {
+				pDevice->pUserData = nullptr;	// task stop flag
+				return;
+			}
 			if (ctx->pauseFlag && *ctx->pauseFlag) return;
 			if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) != MA_SUCCESS) {
 				if (ctx->item.isLoop) {
@@ -88,10 +92,12 @@ struct Audio {
 		for (int i = 0; i < deviceCap; ++i) {
 			devices.Emplace().Emplace();
 		}
+		pauseFlag.Emplace();
+		stopFlag.Emplace();
 	}
 
-	int32_t concurrentPlayLimit{ 8 };	// need init
 	xx::Shared<bool> pauseFlag;			// need init
+	xx::Shared<bool> stopFlag;			// need init
 
 	xx::Tasks maTasks;
 	xx::Listi<AudioItem> tmpItems;
@@ -119,7 +125,11 @@ struct Audio {
 
 	void Stop() {
 		tmpItems.Clear();
-		maTasks.Clear();
+		*stopFlag = true;
+	}
+
+	void Start() {
+		*stopFlag = false;
 	}
 
 	void Update() {
@@ -141,6 +151,7 @@ struct Audio {
 				// init device
 				ctx.item = std::move(o);
 				ctx.pauseFlag = pauseFlag;
+				ctx.stopFlag = stopFlag;
 				auto& decoder = ctx.decoder;
 				auto& data = ctx.item.data;
 
@@ -174,8 +185,6 @@ struct Audio {
 #endif
 				co_return;
 			})(std::move(o)));
-
-			if (maTasks.Count() >= concurrentPlayLimit) break;
 		}
 		tmpItems.Clear();
 		maTasks();

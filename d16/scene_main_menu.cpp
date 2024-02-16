@@ -40,14 +40,17 @@ void SceneMainMenu::Init() {
 #endif
 	}
 
-	rootNode->MakeChildren<Button>()->Init(3, { -100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Pause", [&]() {
+	rootNode->MakeChildren<Button>()->Init(3, { -200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Pause", [&]() {
 		audio.Pause();
 	});
-	rootNode->MakeChildren<Button>()->Init(3, { 0, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Stop", [&]() {
+	rootNode->MakeChildren<Button>()->Init(3, { -50, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Resume", [&]() {
+		audio.Resume();
+	});
+	rootNode->MakeChildren<Button>()->Init(3, { 100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Stop", [&]() {
 		audio.Stop();
 	});
-	rootNode->MakeChildren<Button>()->Init(3, { 100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Resume", [&]() {
-		audio.Resume();
+	rootNode->MakeChildren<Button>()->Init(3, { 200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Start", [&]() {
+		audio.Start();
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 1 times", [&]() {
