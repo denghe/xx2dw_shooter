@@ -3,6 +3,9 @@
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
+// todo: enhance stop func. do not need Start any more
+// todo: seek old one when pool is empty ?
+
 // todo: when __EMSCRIPTEN__, use openAL impl same interface
 // known issue1: miniaudio in web, size +300k, some js error, can't enable --closure 1
 // known issue2: ios web browser no sound
@@ -74,7 +77,8 @@ struct AudioDevice {
 				return;
 			}
 			if (ctx->pauseFlag && *ctx->pauseFlag) return;
-			if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) != MA_SUCCESS) {
+			if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) != MA_SUCCESS
+				|| frameCount > ctx->frameCount ) {
 				if (ctx->item.isLoop) {
 					if (ma_decoder_seek_to_pcm_frame(&ctx->decoder, 0) == MA_SUCCESS) {
 						ctx->frameCount = 0;

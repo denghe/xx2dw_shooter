@@ -89,9 +89,9 @@ struct Bullet : SceneItem {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 4 };
-	static constexpr float cSpeed{ 60 };
+	static constexpr float cSpeed{ 240 };
 	static constexpr float cSpeedByFrame{ cSpeed / gDesign.fps };
-	static constexpr float cLifeSpan{ 2 };
+	static constexpr float cLifeSpan{ 0.5 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
 	xx::Weak<SceneItem> owner;

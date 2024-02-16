@@ -29,6 +29,8 @@ struct Shader;
 struct EngineBase0 {
     xx::Tasks tasks;
     Rnd rnd;
+
+    // audio
     Audio audio;
 
     // fill after Init()

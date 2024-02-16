@@ -119,7 +119,7 @@ xx::Task<> Weapon::MainTask() {
 			//auto s = -std::sin(r);
 			//xx::CoutN(c, "  ", s, "  ", firePos);
 			im->Create<Bullet>(xx::WeakFromThis(this));
-			gLooper.audio.Play(gLooper.soundDatas[0]);
+			gEngine->audio.Play(gLooper.soundDatas[0]);
 		}
 
 		co_yield 0;

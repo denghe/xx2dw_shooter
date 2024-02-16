@@ -36,38 +36,38 @@ void SceneMainMenu::Init() {
 	}
 
 	rootNode->MakeChildren<Button>()->Init(3, { -200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Pause", [&]() {
-		gLooper.audio.Pause();
+		gEngine->audio.Pause();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { -50, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Resume", [&]() {
-		gLooper.audio.Resume();
+		gEngine->audio.Resume();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Stop", [&]() {
-		gLooper.audio.Stop();
+		gEngine->audio.Stop();
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 200, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Start", [&]() {
-		gLooper.audio.Start();
+		gEngine->audio.Start();
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 1 times", [&]() {
-		gLooper.audio.Play(gLooper.soundDatas[0]);
+		gEngine->audio.Play(gLooper.soundDatas[0]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 5 times", [&]() {
 		for (size_t i = 0; i < 5; i++) {
-			gLooper.audio.Play(gLooper.soundDatas[0]);
+			gEngine->audio.Play(gLooper.soundDatas[0]);
 		}
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Loop Play button1.ogg", [&]() {
-		gLooper.audio.Play(gLooper.soundDatas[0], 1, true);
+		gEngine->audio.Play(gLooper.soundDatas[0], 1, true);
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun1.ogg", [&]() {
-		gLooper.audio.Play(gLooper.soundDatas[1]);
+		gEngine->audio.Play(gLooper.soundDatas[1]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun2.ogg", [&]() {
-		gLooper.audio.Play(gLooper.soundDatas[2]);
+		gEngine->audio.Play(gLooper.soundDatas[2]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun3.ogg", [&]() {
-		gLooper.audio.Play(gLooper.soundDatas[3]);
+		gEngine->audio.Play(gLooper.soundDatas[3]);
 	});
 
 }
