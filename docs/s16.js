@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  22800: ($0, $1, $2, $3, $4) => {
+  22928: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  24958: () => {
+  25086: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  25122: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  25226: () => {
+  25250: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  25354: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  25397: ($0, $1, $2, $3, $4, $5) => {
+  25525: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  28225: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  28291: $0 => {
+  28353: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  28419: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  28684: $0 => {
+  28812: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  28727: $0 => {
+  28855: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  28852: $0 => {
+  28980: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -1826,7 +1826,7 @@ var GLctx;
 var wasmImports = {
   e: ___assert_fail,
   v: ___cxa_throw,
-  C: ___syscall_fcntl64,
+  D: ___syscall_fcntl64,
   W: ___syscall_ioctl,
   X: ___syscall_openat,
   Y: __emscripten_fetch_free,
@@ -1846,20 +1846,20 @@ var wasmImports = {
   Z: _emscripten_start_fetch,
   ma: _emscripten_webgl_create_context,
   la: _emscripten_webgl_make_context_current,
-  A: _fd_close,
+  B: _fd_close,
   V: _fd_read,
   Q: _fd_seek,
-  B: _fd_write,
+  C: _fd_write,
   R: _getentropy,
   ja: _glActiveTexture,
-  F: _glAttachShader,
+  G: _glAttachShader,
   c: _glBindBuffer,
-  z: _glBindFramebuffer,
+  A: _glBindFramebuffer,
   b: _glBindTexture,
   k: _glBindVertexArray,
   s: _glBlendEquation,
   t: _glBlendFunc,
-  j: _glBufferData,
+  g: _glBufferData,
   N: _glClear,
   O: _glClearColor,
   ca: _glCompileShader,
@@ -1873,19 +1873,19 @@ var wasmImports = {
   K: _glDeleteVertexArrays,
   L: _glDisable,
   M: _glDrawArraysInstanced,
-  H: _glDrawElements,
+  x: _glDrawElements,
   ka: _glEnable,
-  g: _glEnableVertexAttribArray,
+  h: _glEnableVertexAttribArray,
   va: _glFramebufferTexture2D,
   p: _glGenBuffers,
-  y: _glGenFramebuffers,
+  z: _glGenFramebuffers,
   l: _glGenTextures,
-  G: _glGenVertexArrays,
-  i: _glGetAttribLocation,
+  H: _glGenVertexArrays,
+  j: _glGetAttribLocation,
   fa: _glGetProgramInfoLog,
-  E: _glGetProgramiv,
+  F: _glGetProgramiv,
   ba: _glGetShaderInfoLog,
-  D: _glGetShaderiv,
+  E: _glGetShaderiv,
   w: _glGetUniformLocation,
   ga: _glLinkProgram,
   da: _glShaderSource,
@@ -1895,8 +1895,8 @@ var wasmImports = {
   I: _glUniform2f,
   J: _glUseProgram,
   o: _glVertexAttribDivisor,
-  h: _glVertexAttribPointer,
-  x: _glViewport,
+  i: _glVertexAttribPointer,
+  y: _glViewport,
   aa: _init_gCanvas,
   ua: _load_texture_from_url,
   $: _upload_unicode_char_to_texture
