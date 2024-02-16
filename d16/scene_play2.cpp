@@ -119,7 +119,7 @@ xx::Task<> Weapon::MainTask() {
 			//auto s = -std::sin(r);
 			//xx::CoutN(c, "  ", s, "  ", firePos);
 			im->Create<Bullet>(xx::WeakFromThis(this));
-			scene->audio.Play(gLooper.soundDatas[3]);
+			scene->audio.Play(gLooper.soundDatas[0]);
 		}
 
 		co_yield 0;
@@ -407,6 +407,9 @@ void Slime::Draw(Camera const& camera) {
 #pragma region ScenePlay2
 
 void ScenePlay2::Init() {
+	// init audio
+	audio.Init(16);
+
 	// init gui					// todo: fix gui pos when window resize ?
 	rootNode.Emplace()->Init();
 

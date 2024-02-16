@@ -21,6 +21,7 @@ void SceneMainMenu::Init() {
 		gLooper.DelaySwitchTo<ScenePlay2>();
 	});
 
+	audio.Init();
 	audio.pauseFlag.Emplace();
 
 	if (gLooper.soundDatas.Empty()) {

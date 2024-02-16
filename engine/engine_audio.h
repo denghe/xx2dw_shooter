@@ -2,15 +2,9 @@
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
-// todo: win32 use DirectSound ? web use OpenAL ?
-// todo: desktop mode multi thread for avoid stock?
-// todo: limit mode, when play new sound but exists, seek old one
-
 // todo: when __EMSCRIPTEN__, use openAL impl same interface
 // known issue1: miniaudio in web, size +300k, some js error, can't enable --closure 1
 // known issue2: ios web browser no sound
-
-
 
 #define MA_NO_WAV				// -50k
 #define MA_NO_FLAC				// -100k
@@ -20,7 +14,6 @@
 #define MA_NO_GENERATION		// -12k
 #include "miniaudio.h"
 
-
 //#define AUDIO_SHOW_CONSOLE_LOG
 
 struct AudioItem {
@@ -28,6 +21,7 @@ struct AudioItem {
 	bool isLoop{};
 	int32_t count{};
 };
+
 namespace xx {
 	template<>
 	struct IsPod<AudioItem, void> : std::true_type {};
@@ -40,24 +34,62 @@ struct AudioItemWithDecoder {
 	xx::Shared<bool> pauseFlag;
 };
 
-template<bool isLoop>
-void AudioDeviceCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
-	if (auto ctx = (AudioItemWithDecoder*)pDevice->pUserData) {
-		if (ctx->pauseFlag && *ctx->pauseFlag) return;
-		if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) != MA_SUCCESS) {
-			if constexpr (isLoop) {
-				if (ma_decoder_seek_to_pcm_frame(&ctx->decoder, 0) == MA_SUCCESS) {
-					ctx->frameCount = 0;
-					if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) == MA_SUCCESS) return;
-				}
-			}
-			pDevice->pUserData = nullptr;	// task stop flag
-			//ma_device_uninit(pDevice);
+struct AudioDevice {
+	ma_device device;
+	AudioItemWithDecoder ctx;
+
+	AudioDevice(AudioDevice const&) = delete;
+	AudioDevice& operator=(AudioDevice const&) = delete;
+	AudioDevice() {
+		auto deviceConfig = ma_device_config_init(ma_device_type_playback);
+		deviceConfig.playback.format = ma_format_f32;// decoder.outputFormat;
+		deviceConfig.playback.channels = 1;//decoder.outputChannels;
+		deviceConfig.sampleRate = 22050;//decoder.outputSampleRate;
+		deviceConfig.pUserData = nullptr;// &ctx;
+		deviceConfig.dataCallback = AudioDeviceCallback;
+		if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS) {
+#ifdef AUDIO_SHOW_CONSOLE_LOG
+			xx::CoutN("Failed to init ma device.");
+#endif
+			throw - 1;
+		}
+		if (ma_device_start(&device) != MA_SUCCESS) {
+#ifdef AUDIO_SHOW_CONSOLE_LOG
+			xx::CoutN("Failed to start ma device.");
+#endif
+			throw - 2;
 		}
 	}
+
+	~AudioDevice() {
+		ma_device_uninit(&device);
+	}
+
+	inline static void AudioDeviceCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+		if (auto ctx = (AudioItemWithDecoder*)pDevice->pUserData) {
+			if (ctx->pauseFlag && *ctx->pauseFlag) return;
+			if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) != MA_SUCCESS) {
+				if (ctx->item.isLoop) {
+					if (ma_decoder_seek_to_pcm_frame(&ctx->decoder, 0) == MA_SUCCESS) {
+						ctx->frameCount = 0;
+						if (ma_decoder_read_pcm_frames(&ctx->decoder, pOutput, frameCount, &ctx->frameCount) == MA_SUCCESS) return;
+					}
+				}
+				pDevice->pUserData = nullptr;	// task stop flag
+			}
+		}
+	};
 };
 
 struct Audio {
+	xx::Listi32<xx::Shared<AudioDevice>> devices;	// pool
+
+	void Init(int deviceCap = 8) {
+		for (int i = 0; i < deviceCap; ++i) {
+			devices.Emplace().Emplace();
+		}
+	}
+
 	int32_t concurrentPlayLimit{ 8 };	// need init
 	xx::Shared<bool> pauseFlag;			// need init
 
@@ -93,7 +125,20 @@ struct Audio {
 	void Update() {
 		for(auto& o : tmpItems) {
 			maTasks.Add(([&](AudioItem o)->xx::Task<> {
-				AudioItemWithDecoder ctx;
+				// alloc device
+				if (devices.Empty()) co_return;
+				auto d = std::move(devices.Back());
+				devices.PopBack();
+				auto sgDevice = xx::MakeScopeGuard([&] {
+					devices.Add(std::move(d));
+#ifdef AUDIO_SHOW_CONSOLE_LOG
+					xx::CoutN("devices.Add(std::move(d));");
+#endif
+				});
+				auto& device = d->device;
+				auto& ctx = d->ctx;
+
+				// init device
 				ctx.item = std::move(o);
 				ctx.pauseFlag = pauseFlag;
 				auto& decoder = ctx.decoder;
@@ -114,48 +159,13 @@ struct Audio {
 					co_return;
 				}
 
-				auto deviceConfig = ma_device_config_init(ma_device_type_playback);
-				deviceConfig.playback.format = decoder.outputFormat;
-				deviceConfig.playback.channels = decoder.outputChannels;
-				deviceConfig.sampleRate = decoder.outputSampleRate;
-				deviceConfig.pUserData = &ctx;
-				if (ctx.item.isLoop) {
-					deviceConfig.dataCallback = AudioDeviceCallback<true>;
-				} else {
-					deviceConfig.dataCallback = AudioDeviceCallback<false>;
-				}
-
-				ma_device device;
-				auto sgDevice = xx::MakeScopeGuard([&] {
-					ma_device_uninit(&device);
-#ifdef AUDIO_SHOW_CONSOLE_LOG
-					xx::CoutN("ma_device_uninit(&device);");
-#endif
-				});
-
-				if (ma_device_init(nullptr, &deviceConfig, &device) != MA_SUCCESS) {
-#ifdef AUDIO_SHOW_CONSOLE_LOG
-					xx::CoutN("Failed to open playback device.");
-#endif
-					co_return;
-				}
-
 				// play count map to volume
 				auto vol = 0.3f + (float)ctx.item.count / 5 * 0.7f;		// todo: get global volumen settings
 				ma_device_set_master_volume(&device, vol);
 
-				if (ma_device_start(&device) != MA_SUCCESS) {
-#ifdef AUDIO_SHOW_CONSOLE_LOG
-					xx::CoutN("Failed to start playback device.");
-#endif
-					co_return;
-				}
+				device.pUserData = &ctx;					// tell callback func start
 
-				auto e = gEngine->nowSecs + 0.1;		// void too short sound can't play
 				while (device.pUserData) {
-					co_yield 0;
-				}
-				while (gEngine->nowSecs < e) {				// void too short sound can't play
 					co_yield 0;
 				}
 
