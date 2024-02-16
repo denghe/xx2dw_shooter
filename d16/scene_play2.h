@@ -63,6 +63,9 @@ struct Human;
 struct Weapon : SceneItem {
 	static constexpr int cTypeId{ 1 };
 	static constexpr XY cAnchor{ 0, 0.5f };
+	static constexpr float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
+	static constexpr float cFireDelaySecs{ 0.1f };
+	static constexpr float cFireDistance{ 5 };
 
 	xx::Weak<SceneItem> owner;
 	float nextFireSecs{};

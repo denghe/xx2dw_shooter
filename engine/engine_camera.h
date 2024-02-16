@@ -84,6 +84,12 @@ struct Camera {
 		return (logicPos.As<float>() - original).MakeFlipY() * scale;
 	}
 
+	XX_FORCE_INLINE XY ToLogicPos(XY const& glPos) const {
+		return (glPos / scale).MakeFlipY() + original;
+	}
+
+
+
 
 	// calc row col index range for space grid circle
 	/*

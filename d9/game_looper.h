@@ -49,11 +49,11 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	xx::ListLink<xx::Shared<Blood>, int32_t> bloods;
 	xx::ListLink<xx::Shared<Experience>, int32_t> flyingExperiences;
 
-	xx::ListDoubleLink<xx::Shared<Experience>, int32_t, uint32_t> experiences;
 	SpaceGridC<Experience, XY> experiencesGrid;
+	xx::ListDoubleLink<xx::Shared<Experience>, int32_t, uint32_t> experiences;
 
-	xx::ListDoubleLink<xx::Shared<Monster>, int32_t, uint32_t> monsters;
 	SpaceGridC<Monster, XY> monstersGrid;
+	xx::ListDoubleLink<xx::Shared<Monster>, int32_t, uint32_t> monsters;
 
 	SpaceGridRingDiffuseData sgrdd;
 

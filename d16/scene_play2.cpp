@@ -114,7 +114,25 @@ xx::Task<> Weapon::MoveTask() {
 			yOffset = owner->radius / 2 + 0.1f;
 			pos = owner->GetWeaponPos();
 		}
+
 		// todo: finger to mouse
+		auto mPos = scene->camera.ToLogicPos(gEngine->mouse.pos);
+		auto d = mPos - pos;
+		auto r = std::atan2(d.y, d.x);
+		RotateControl::Step(radians, r, cFrameMaxChangeRadians);
+
+		// fire?
+		if (gLooper.mouse.btnStates[0] && nextFireSecs <= gLooper.nowSecs) {
+			nextFireSecs = (float)gLooper.nowSecs + cFireDelaySecs;
+			//auto r = -radians;
+			//auto c = std::cos(r);
+			//auto s = -std::sin(r);
+			auto c = std::cos(radians);
+			auto s = std::sin(radians);
+			auto firePos = pos + XY{ c, s } * cFireDistance;	// * scale
+			xx::CoutN(c, "  ", s, "  ", firePos);
+		}
+
 		co_yield 0;
 	}
 }
@@ -338,7 +356,7 @@ void ScenePlay2::Init() {
 	// init camera
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
-	camera.SetScale(4);
+	camera.SetScale(1);
 
 	// init objs
 	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);
@@ -449,11 +467,25 @@ void ScenePlay2::Draw() {
 };
 
 void ScenePlay2::MakeSlime() {
-	constexpr XY ws{ gMapCfg.mapSize.x - 64, gMapCfg.mapSize.y - 64 };
-	XY pos{
-		gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.x - gMapCfg.physCellSize)
-		, gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.y - gMapCfg.physCellSize)
-	};
+	if (!human) return;
+	XY pos;
+
+#if 1
+	static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 };
+	// circle gen , outside the human's safe range
+	static constexpr float radius = 400, safeRadius = 300, len = radius - safeRadius;
+	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius ) * radius;
+	auto a = gLooper.rnd.Next<float>(npi, pi);
+	pos.x = std::cos(a) * r;
+	pos.y = std::sin(a) * r;
+	pos += human->GetPhysPos();
+#else
+	// full map random gen
+	static constexpr XY ws{ gMapCfg.mapSize.x - 64, gMapCfg.mapSize.y - 64 };
+	pos.x = gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.x - gMapCfg.physCellSize);
+	pos.y = gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.y - gMapCfg.physCellSize);
+#endif
+
 	bmm.Add([this, pos] {
 		this->im.Create<Slime>(pos);
 	}, pos, Slime::cBornMashAnchor, Slime::cBornMashScale);
