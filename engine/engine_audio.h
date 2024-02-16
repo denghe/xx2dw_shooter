@@ -2,10 +2,13 @@
 #include <xx_data_shared.h>
 #include <xx_string.h>
 
+// todo: win32 use DirectSound ? web use OpenAL ?
+// todo: desktop mode multi thread for avoid stock?
 // todo: limit mode, when play new sound but exists, seek old one
 
 // todo: when __EMSCRIPTEN__, use openAL impl same interface
-// known issue: miniaudio in web, size +300k, some js error, can't enable --closure 1
+// known issue1: miniaudio in web, size +300k, some js error, can't enable --closure 1
+// known issue2: ios web browser no sound
 
 
 

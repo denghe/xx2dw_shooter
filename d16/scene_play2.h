@@ -18,12 +18,9 @@ struct ScenePlay2;
 struct SceneItem : Item {
 	ScenePlay2* scene{};			// Init(ItemManagerBase* im_, ...) { ... scene = (ScenePlay2*)im_->userData;
 	void SceneItemInit(int typeId_, ItemManagerBase* im_);
-	virtual XY GetWeaponPos();
 };
 
 struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem> {
-	XY physOffset{};			// anchor point pos fix. need set value at init
-	XY GetPhysPos();
 	void PhysAdd();				// call after fill pos
 	void PhysUpdate();			// call after fill pos
 	void PhysRemove();
@@ -63,6 +60,7 @@ struct Human;
 struct Weapon : SceneItem {
 	static constexpr int cTypeId{ 1 };
 	static constexpr XY cAnchor{ 0.2f, 0.5f };
+	//static constexpr XY cDrawOffset{ 0, -3 };
 	static constexpr int cFrameIndex{ 1 };
 
 	static constexpr float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
@@ -92,7 +90,7 @@ struct Bullet : SceneItem {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 4 };
-	static constexpr float cSpeed{ 30 };
+	static constexpr float cSpeed{ 60 };
 	static constexpr float cSpeedByFrame{ cSpeed / gDesign.fps };
 	static constexpr float cLifeSpan{ 2 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
@@ -120,7 +118,8 @@ struct Human : SceneItem {
 	static constexpr float cIdleScaleYStep{ (cIdleScaleYTo - cIdleScaleYFrom) * 2 / gDesign.fps };
 
 	static constexpr XY cAnchor{ 0.5f, 0 };
-	static constexpr float cRadius{ 6.f };
+	static constexpr XY cDrawOffset{ 0, 4.f };
+	static constexpr float cRadius{ 5.f };
 	static constexpr std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 60.f / gDesign.fps };
@@ -139,7 +138,6 @@ struct Human : SceneItem {
 	void Init(ItemManagerBase* im_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
-	virtual XY GetWeaponPos() override;
 };
 
 
@@ -147,12 +145,13 @@ struct Human : SceneItem {
 struct Slime : ScenePhysItem {
 	static constexpr int cTypeId{ 4 };
 
-	static constexpr XY cBornMaskAnchor{ 0.5f, 0.25 };
+	static constexpr XY cBornMaskAnchor{ 0.5f, 0.25f };
 	static constexpr float cBornMaskScale{ 1.f };
 	static constexpr float cBornIdleDelay{ 0.5f };
 	static constexpr int cBornIdleDelayFrames{ int(cBornIdleDelay / gDesign.frameDelay) };
 
 	static constexpr XY cAnchor{ 0.5f, 0 };
+	static constexpr XY cDrawOffset{ 0, 6.f };
 	static constexpr float cRadius{ 6.f };
 	static constexpr float cFrameMaxIndex = 4.f;
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
@@ -180,6 +179,7 @@ struct Slime : ScenePhysItem {
 
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
+	Audio audio;
 
 	SpaceGridC<ScenePhysItem> sgcPhysItems;	// must at top
 	BornMaskManager bmm;

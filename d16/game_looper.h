@@ -79,6 +79,9 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
 
 	xx::Ref<Cache_HpBar<>> hpBarCache;
+
+	// 
+	xx::Listi<xx::DataShared> soundDatas;
 };
 
 extern GameLooper gLooper;

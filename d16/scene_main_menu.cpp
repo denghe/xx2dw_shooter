@@ -23,21 +23,21 @@ void SceneMainMenu::Init() {
 
 	audio.pauseFlag.Emplace();
 
-	
+	if (gLooper.soundDatas.Empty()) {
 #ifdef __EMSCRIPTEN__
-	tasks.Add([&]()->xx::Task<> {
-		datas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/button1.ogg")));
-		datas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun1.ogg")));
-		datas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun2.ogg")));
-		datas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun3.ogg")));
-	});
+		tasks.Add([&]()->xx::Task<> {
+			gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/button1.ogg")));
+			gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun1.ogg")));
+			gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun2.ogg")));
+			gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun3.ogg")));
+			});
 #else
-	datas.Emplace(std::move(gEngine->LoadFileData("res/button1.ogg"sv).first));
-	datas.Emplace(std::move(gEngine->LoadFileData("res/gun1.ogg"sv).first));
-	datas.Emplace(std::move(gEngine->LoadFileData("res/gun2.ogg"sv).first));
-	datas.Emplace(std::move(gEngine->LoadFileData("res/gun3.ogg"sv).first));
+		gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/button1.ogg"sv).first));
+		gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun1.ogg"sv).first));
+		gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun2.ogg"sv).first));
+		gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun3.ogg"sv).first));
 #endif
-
+	}
 
 	rootNode->MakeChildren<Button>()->Init(3, { -100, -50 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Pause", [&]() {
 		audio.Pause();
@@ -50,25 +50,25 @@ void SceneMainMenu::Init() {
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 1 times", [&]() {
-		audio.Play(datas[0]);
+		audio.Play(gLooper.soundDatas[0]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Play button1.ogg 5 times", [&]() {
 		for (size_t i = 0; i < 5; i++) {
-			audio.Play(datas[0]);
+			audio.Play(gLooper.soundDatas[0]);
 		}
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"Loop Play button1.ogg", [&]() {
-		audio.Play(datas[0], true);
+		audio.Play(gLooper.soundDatas[0], true);
 	});
 
 	rootNode->MakeChildren<Button>()->Init(3, { -300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun1.ogg", [&]() {
-		audio.Play(datas[1]);
+		audio.Play(gLooper.soundDatas[1]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 0, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun2.ogg", [&]() {
-		audio.Play(datas[2]);
+		audio.Play(gLooper.soundDatas[2]);
 	});
 	rootNode->MakeChildren<Button>()->Init(3, { 300, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg_btn, U"gun3.ogg", [&]() {
-		audio.Play(datas[3]);
+		audio.Play(gLooper.soundDatas[3]);
 	});
 
 }

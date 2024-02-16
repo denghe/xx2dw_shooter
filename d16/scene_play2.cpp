@@ -8,20 +8,12 @@ void SceneItem::SceneItemInit(int typeId_, ItemManagerBase* im_) {
 	scene = (ScenePlay2*)im_->userData;
 }
 
-XY SceneItem::GetWeaponPos() {
-	return pos;
-}
-
-XY ScenePhysItem::GetPhysPos() {
-	return pos + physOffset;
-}
-
 void ScenePhysItem::PhysAdd() {
-	SGCAdd(scene->sgcPhysItems, (pos + physOffset).As<int>());
+	SGCAdd(scene->sgcPhysItems, pos.As<int>());
 }
 
 void ScenePhysItem::PhysUpdate() {
-	SGCUpdate((pos + physOffset).As<int>());
+	SGCUpdate(pos.As<int>());
 }
 
 void ScenePhysItem::PhysRemove() {
@@ -105,8 +97,7 @@ xx::Task<> Weapon::MainTask() {
 	while (true) {
 		// follow owner( sync pos )
 		if (owner) {
-			yOffset = owner->radius / 2 + 0.1f;
-			pos = owner->GetWeaponPos();
+			pos = owner->pos + XY{ 0, 0.1f };
 		}
 
 		// finger to mouse
@@ -128,6 +119,7 @@ xx::Task<> Weapon::MainTask() {
 			//auto s = -std::sin(r);
 			//xx::CoutN(c, "  ", s, "  ", firePos);
 			im->Create<Bullet>(xx::WeakFromThis(this));
+			scene->audio.Play(gLooper.soundDatas[3]);
 		}
 
 		co_yield 0;
@@ -144,8 +136,8 @@ void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 	// ...
 
 	// born init
-	yOffset = owner->radius / 2 + 0.1f;
-	pos = owner->GetWeaponPos();
+	//drawOffset = cDrawOffset;
+	pos = owner->pos + XY{ 0, 0.1f };
 	radians = (float)-M_PI_2;
 }
 
@@ -319,16 +311,12 @@ xx::Task<> Human::MainTask() {
 
 void Human::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_human_1[(int)frameIndex]);
-	q.pos = camera.ToGLPos(pos);
+	q.pos = camera.ToGLPos(pos + cDrawOffset);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } * scale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
-}
-
-XY Human::GetWeaponPos() {
-	return GetPhysPos();
 }
 
 #pragma endregion
@@ -343,7 +331,6 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	pos = pos_;
 	radius = cRadius;
 	speed = cSpeed;
-	physOffset = { 0, -radius / 2 };
 	PhysAdd();
 }
 
@@ -407,7 +394,7 @@ xx::Task<> Slime::MainTask() {
 
 void Slime::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_creature_slime[(int)frameIndex]);
-	q.pos = camera.ToGLPos(pos);
+	q.pos = camera.ToGLPos(pos + cDrawOffset);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } * scale;
 	q.radians = radians;
@@ -442,9 +429,11 @@ void ScenePlay2::Init() {
 	im.Create<Human>();
 }
 
-//#define ENABLE_SORT1
+//#define ENABLE_SORT_WHEN_UPDATE
 
 void ScenePlay2::Update() {
+	audio.Update();
+
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
@@ -453,14 +442,14 @@ void ScenePlay2::Update() {
 	}
 
 	// simulate room master logic
-	for (int i = 0; i < 30; i++) {
+	for (int i = 0; i < 1; i++) {
 		MakeSlime();
 	}
 
 	// update objs
 	bmm.Update();
 	im.Update();
-#ifdef ENABLE_SORT1
+#ifdef ENABLE_SORT_WHEN_UPDATE
 	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
 		Sort(items);
 	});
@@ -475,7 +464,7 @@ void ScenePlay2::Draw() {
 	bmm.Draw(camera);
 
 	// items
-#ifdef ENABLE_SORT1
+#ifdef ENABLE_SORT_WHEN_UPDATE
 	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
 		for (auto& o : items) {
 			if (camera.InArea(o->pos)) {
@@ -485,13 +474,13 @@ void ScenePlay2::Draw() {
 	});
 #else
 	if (human) {
-		iys.Emplace(human.GetPointer(), human->posY/* + human->yOffset*/);
+		iys.Emplace(human.GetPointer(), human->posY);
 	}
 
 	im.ForeachItems<Weapon, Bullet>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
 		for (auto& o : items) {
-			if (camera.InArea(o->pos)) {
-				iys.Emplace(o, o->posY + o->yOffset);
+			if (camera.InArea(o->pos/* + o->drawOffset*/)) {
+				iys.Emplace(o, o->posY);
 			}
 		}
 	});
@@ -504,7 +493,7 @@ void ScenePlay2::Draw() {
 		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
 			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
 			sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
-				iys.Emplace(o, o->posY/* + o->yOffset*/);
+				iys.Emplace(o, o->posY);
 			});
 		}
 	}
@@ -525,7 +514,7 @@ void ScenePlay2::Draw() {
 				sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
 					LineStrip()
 						.FillCirclePoints({}, o->radius, o->radians, 20, XY::Make(camera.scale * o->scale.x))
-						.SetPosition(camera.ToGLPos(o->GetPhysPos()))
+						.SetPosition(camera.ToGLPos(o->pos))
 						.Draw();
 					});
 			}
@@ -533,7 +522,7 @@ void ScenePlay2::Draw() {
 		if (human) {
 			LineStrip()
 				.FillCirclePoints({}, human->radius, human->radians, 20, XY::Make(camera.scale* human->scale.x))
-				.SetPosition(camera.ToGLPos(human->GetPhysPos()))
+				.SetPosition(camera.ToGLPos(human->pos))
 				.Draw();
 		}
 	}
