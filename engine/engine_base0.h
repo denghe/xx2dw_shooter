@@ -8,7 +8,9 @@
 #include <engine_spacegrid_circle.h>
 #include <engine_spacegrid_ringdiffuse.h>
 #include <engine_zstd.h>
+#ifndef DISABLE_ENGINE_AUDIO
 #include <engine_audio.h>
+#endif
 
 enum class MouseEvents : int {
     Unknown = 0, Down, Move, Up, Cancel
@@ -30,8 +32,10 @@ struct EngineBase0 {
     xx::Tasks tasks;
     Rnd rnd;
 
+#ifndef DISABLE_ENGINE_AUDIO
     // audio
     Audio audio;
+#endif
 
     // fill after Init()
     float framePerSeconds{}, maxFrameDelay{ 1 };

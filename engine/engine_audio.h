@@ -1,4 +1,7 @@
 ﻿#pragma once
+
+// use DISABLE_ENGINE_AUDIO macro disable
+
 #include <xx_task.h>
 #include <xx_data_shared.h>
 #include <xx_string.h>
@@ -16,7 +19,7 @@
 #define MA_NO_RESOURCE_MANAGER	// -30k
 #define MA_NO_NODE_GRAPH		// -40k	/ 1xxk
 #define MA_NO_GENERATION		// -12k
-#include "miniaudio.h"
+#include <miniaudio.h>
 
 //#define AUDIO_SHOW_CONSOLE_LOG
 

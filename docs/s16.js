@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  22928: ($0, $1, $2, $3, $4) => {
+  23224: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  25086: () => {
+  25382: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  25250: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  25354: () => {
+  25546: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  25650: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  25525: ($0, $1, $2, $3, $4, $5) => {
+  25821: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  28353: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  28419: $0 => {
+  28649: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  28715: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  28812: $0 => {
+  29108: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  28855: $0 => {
+  29151: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  28980: $0 => {
+  29276: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -1825,13 +1825,13 @@ Fetch.init();
 var GLctx;
 var wasmImports = {
   e: ___assert_fail,
-  v: ___cxa_throw,
+  m: ___cxa_throw,
   D: ___syscall_fcntl64,
   W: ___syscall_ioctl,
   X: ___syscall_openat,
   Y: __emscripten_fetch_free,
   S: __emscripten_get_now_is_monotonic,
-  u: _abort,
+  v: _abort,
   d: _emscripten_asm_const_int,
   U: _emscripten_get_now,
   _: _emscripten_is_main_browser_thread,
@@ -1857,17 +1857,17 @@ var wasmImports = {
   A: _glBindFramebuffer,
   b: _glBindTexture,
   k: _glBindVertexArray,
-  s: _glBlendEquation,
-  t: _glBlendFunc,
+  t: _glBlendEquation,
+  u: _glBlendFunc,
   g: _glBufferData,
   N: _glClear,
   O: _glClearColor,
   ca: _glCompileShader,
   ha: _glCreateProgram,
   ea: _glCreateShader,
-  r: _glDeleteBuffers,
-  m: _glDeleteFramebuffers,
-  n: _glDeleteProgram,
+  s: _glDeleteBuffers,
+  n: _glDeleteFramebuffers,
+  o: _glDeleteProgram,
   f: _glDeleteShader,
   P: _glDeleteTextures,
   K: _glDeleteVertexArrays,
@@ -1877,7 +1877,7 @@ var wasmImports = {
   ka: _glEnable,
   h: _glEnableVertexAttribArray,
   va: _glFramebufferTexture2D,
-  p: _glGenBuffers,
+  q: _glGenBuffers,
   z: _glGenFramebuffers,
   l: _glGenTextures,
   H: _glGenVertexArrays,
@@ -1889,12 +1889,12 @@ var wasmImports = {
   w: _glGetUniformLocation,
   ga: _glLinkProgram,
   da: _glShaderSource,
-  q: _glTexImage2D,
+  r: _glTexImage2D,
   a: _glTexParameteri,
   ia: _glUniform1i,
   I: _glUniform2f,
   J: _glUseProgram,
-  o: _glVertexAttribDivisor,
+  p: _glVertexAttribDivisor,
   i: _glVertexAttribPointer,
   y: _glViewport,
   aa: _init_gCanvas,

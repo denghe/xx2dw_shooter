@@ -55,7 +55,9 @@ struct Engine : EngineBase3 {
             tasks.Add(((Derived*)this)->MainTask());
         }
 
+#ifndef DISABLE_ENGINE_AUDIO
         audio.Init();
+#endif
     }
 
     template<bool powerSaveMode = true>
@@ -82,7 +84,9 @@ struct Engine : EngineBase3 {
                 if constexpr (Has_Update<Derived>) {
                     ((Derived*)this)->Update();
                 }
+#ifndef DISABLE_ENGINE_AUDIO
                 audio.Update();
+#endif
                 tasks();
             }
             if constexpr (Has_Draw<Derived>) {

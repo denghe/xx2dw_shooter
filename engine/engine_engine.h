@@ -141,7 +141,9 @@ struct Engine : EngineBase3 {
             tasks.Add(((Derived*)this)->MainTask());
         }
 
+#ifndef DISABLE_ENGINE_AUDIO
         audio.Init();
+#endif
     }
 
     /*
@@ -170,7 +172,9 @@ int main() {
             if constexpr(Has_Update<Derived>) {
                 ((Derived*)this)->Update();
             }
+#ifndef DISABLE_ENGINE_AUDIO
             audio.Update();
+#endif
             tasks();
         }
         if constexpr(Has_Draw<Derived>) {

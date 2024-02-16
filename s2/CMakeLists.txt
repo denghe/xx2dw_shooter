@@ -13,6 +13,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+add_definitions(-DDISABLE_ENGINE_AUDIO)
 
 macro(append_linker_flags FLAGS)
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${FLAGS}")
@@ -130,6 +131,7 @@ if(MSVC)
 endif()
 
 include_directories(
+	../miniaudio
 	../nameof/include
 	../stb
 	../engine
