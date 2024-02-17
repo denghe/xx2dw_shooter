@@ -129,7 +129,7 @@ xx::Task<> Weapon::MainTask() {
 #if 1
 			// multi line fire
 			auto radiansBak = radians;
-			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 10;
+			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 20;
 			for (float a = npi; a < pi; a += step) {
 				radians = radiansBak + a;
 				im->Create<Bullet>(xx::WeakFromThis(this));
@@ -314,17 +314,22 @@ xx::Task<> Bullet1::MainTask() {
 	radius = 0;
 }
 
+void Bullet1::MoveToTarget() {
+	auto d = target->pos - pos;
+	auto dd = d.x * d.x + d.y * d.y;
+	if (dd > cSpeed * cSpeed) {
+		inc = d / std::sqrt(dd) * cSpeed;
+		pos = pos + inc;
+	} else {
+		pos = target->pos;
+	}
+	radians = std::atan2(d.y, d.x);
+}
+
 xx::Task<> Bullet1::MoveTask() {
 	// follow
 	while (target) {
-		auto d = target->pos - pos;
-		auto dd = d.x * d.x + d.y * d.y;
-		if (dd > cSpeed * cSpeed) {
-			inc = d / std::sqrt(dd) * cSpeed;
-			pos = pos + inc;
-		} else {
-			pos = target->pos;
-		}
+		MoveToTarget();
 		// hit check
 		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
 			r->Hit(*this, damage);
@@ -336,7 +341,6 @@ xx::Task<> Bullet1::MoveTask() {
 			}
 			co_return;
 		}
-		radians = std::atan2(d.y, d.x);
 		co_yield 0;
 	}
 	// direct fly
@@ -369,6 +373,9 @@ void Bullet1::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, XY const& p
 	inc = {};
 	// damage = weapon_->damage; ? cDamage ? buff calculate ?
 	radius = cRadius;
+	if (target) {
+		MoveToTarget();
+	}
 }
 
 int Bullet1::UpdateCore() {
@@ -601,7 +608,7 @@ xx::Task<> ScenePlay2::MainTask() {
 
 	while (true) {
 #if 1
-		for (int i = 0; i < 15; i++) {
+		for (int i = 0; i < 30; i++) {
 			MakeSlime1(300, 100);
 		}
 #else

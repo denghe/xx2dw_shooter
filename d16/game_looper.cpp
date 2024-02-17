@@ -8,6 +8,18 @@ xx::Task<> GameLooper::MainTask() {
 
 	{
 #ifdef __EMSCRIPTEN__
+			gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/button1.ogg")));
+			//gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun1.ogg")));
+			//gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun2.ogg")));
+			//gLooper.soundDatas.Emplace(std::move(*co_await gLooper.AsyncDownloadFromUrl("res/gun3.ogg")));
+#else
+		gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/button1.ogg"sv).first));
+		//gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun1.ogg"sv).first));
+		//gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun2.ogg"sv).first));
+		//gLooper.soundDatas.Emplace(std::move(gEngine->LoadFileData("res/gun3.ogg"sv).first));
+#endif
+
+#ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl
 #else
 		auto tp = LoadTexturePacker

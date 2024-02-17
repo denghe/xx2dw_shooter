@@ -147,6 +147,7 @@ struct Bullet1 : SceneItem {
 	xx::Task<> MainTask();
 	xx::Task<> moveTask;
 	xx::Task<> MoveTask();
+	void MoveToTarget();
 
 	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, XY const& pos_, float radians_, xx::Weak<ScenePhysItem> target_, int life_);
 	virtual int UpdateCore() override;
