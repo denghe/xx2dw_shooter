@@ -344,6 +344,10 @@ xx::Task<> Bullet1::MoveTask() {
 		co_yield 0;
 	}
 	// direct fly
+	if (inc.x * inc.x + inc.y + inc.y < cSpeed * cSpeed) {
+		inc.x = std::cos(radians) * cSpeed;
+		inc.y = std::sin(radians) * cSpeed;
+	}
 	while (true) {
 		pos += inc;
 		// hit check
