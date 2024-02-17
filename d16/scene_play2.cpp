@@ -28,7 +28,7 @@ ScenePhysItem::~ScenePhysItem() {
 	SGCRemove();
 }
 
-bool ScenePhysItem::Hit(int damage) {
+bool ScenePhysItem::Hit(SceneItem& attacker, int damage) {
 	SGCRemove();
 	return true;
 }
@@ -126,14 +126,18 @@ xx::Task<> Weapon::MainTask() {
 
 			gEngine->audio.Play(gLooper.soundDatas[0]);
 
+#if 1
 			// multi line fire
 			auto radiansBak = radians;
-			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 40;
+			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 10;
 			for (float a = npi; a < pi; a += step) {
 				radians = a;
 				im->Create<Bullet>(xx::WeakFromThis(this));
 			}
 			radians = radiansBak;
+#else
+			im->Create<Bullet>(xx::WeakFromThis(this));
+#endif
 		}
 
 		co_yield 0;
@@ -202,14 +206,17 @@ xx::Task<> Bullet::MainTask() {
 }
 
 xx::Task<> Bullet::MoveTask() {
-	XY inc{ std::cos(radians) * cSpeedByFrame, std::sin(radians) * cSpeedByFrame };
+	XY inc{ std::cos(radians) * cSpeed, std::sin(radians) * cSpeed };
 	while (true) {
 		pos += inc;
-		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
 		scene->bulletTails.Emplace().Init(*this);
 		// hit check
 		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
-			r->Hit(damage);
+			r->Hit(*this, damage);
+			// find nearest xxx & shoot Bullet 1
+			if (auto t = FindNearest(scene->sgcPhysItems, gLooper.sgrdd, pos, cBullet1AttackRange)) {
+				im->Create<Bullet1>( *this, xx::WeakFromThis(t) );
+			}
 			co_return;
 		}
 		co_yield 0;
@@ -229,6 +236,7 @@ void Bullet::Init(ItemManagerBase* im_, xx::Weak<Weapon> weapon_) {
 	// get weapon args for born init
 	pos = weapon_->firePos;
 	radians = weapon_->radians;
+	scale = { cScale, cScale };
 	// damage = weapon_->damage; ? cDamage ? buff calculate ?
 	radius = cRadius;
 }
@@ -238,7 +246,7 @@ int Bullet::UpdateCore() {
 }
 
 void Bullet::Draw(Camera const& camera) {
-	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	auto& q = Quad::DrawOnce(gLooper.frames_bullet[0]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
@@ -259,7 +267,7 @@ void Bullet::Draw(Camera const& camera) {
 #pragma region BulletTail
 
 void BulletTail::Init(Bullet& bullet_) {
-	lifeEndFrameNumber = gLooper.frameNumber + int(cLifeSpan / gDesign.frameDelay);
+	lifeEndFrameNumber = gLooper.frameNumber + cLifeNumFrames;
 	// copy args from bullet_
 	frameIndex = bullet_.frameIndex;
 	pos = bullet_.pos;
@@ -273,7 +281,7 @@ int BulletTail::UpdateCore() {
 }
 
 void BulletTail::Draw(Camera const& camera) {
-	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	auto& q = Quad::DrawOnce(gLooper.frames_bullet[6]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = Bullet::cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
@@ -281,6 +289,101 @@ void BulletTail::Draw(Camera const& camera) {
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 88 };
 }
+
+#pragma endregion
+
+#pragma region Bullet1
+
+xx::Task<> Bullet1::MainTask() {
+	// move. in life cycle
+	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
+		if (moveTask.Resume()) co_return;
+		co_yield 0;
+	}
+
+	// move + fadeout
+	auto scaleBak = scale;
+	auto radiusBak = radius;
+	for (float s = 1; s > 0; s -= 1.f / gDesign.fps) {
+		scale = scaleBak * s;
+		radius = radiusBak * s;
+		if (moveTask.Resume()) co_return;
+		co_yield 0;
+	}
+	scale = {};
+	radius = 0;
+}
+
+xx::Task<> Bullet1::MoveTask() {
+	// follow
+	while (target) {
+		auto d = target->pos - pos;
+		auto dd = d.x * d.x + d.y * d.y;
+		if (dd > cSpeed * cSpeed) {
+			inc = d / std::sqrt(dd) * cSpeed;
+			pos = pos + inc;
+		} else {
+			pos = target->pos;
+		}
+		// hit check
+		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
+			r->Hit(*this, damage);
+			co_return;
+		}
+		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
+		co_yield 0;
+	}
+	// direct fly
+	while (true) {
+		pos += inc;
+		// hit check
+		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
+			r->Hit(*this, damage);
+			co_return;
+		}
+		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
+		co_yield 0;
+	}
+}
+
+void Bullet1::Init(ItemManagerBase* im_, Bullet& parent_, xx::Weak<ScenePhysItem> target_) {
+	SceneItemInit(cTypeId, im_);
+	owner = parent_.owner;
+
+	// tasks init
+	mainTask = MainTask();
+	moveTask = MoveTask();
+	// ...
+
+	// get weapon args for born init
+	pos = parent_.pos;
+	radians = parent_.radians;
+	target = std::move(target_);
+	inc = {};
+	// damage = weapon_->damage; ? cDamage ? buff calculate ?
+	radius = cRadius;
+}
+
+int Bullet1::UpdateCore() {
+	return !mainTask.Resume();
+}
+
+void Bullet1::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 255 };
+
+	if (scene->isBorderVisible) {
+		LineStrip().FillCirclePoints({}, radius, {}, 20, scale * camera.scale)
+			.SetPosition(camera.ToGLPos(pos))
+			.Draw();
+	}
+}
+
 
 #pragma endregion
 
@@ -369,11 +472,11 @@ void Human::Draw(Camera const& camera) {
 
 #pragma region Slime
 
-bool Slime::Hit(int damage) {
+bool Slime::Hit(SceneItem& attacker, int damage) {
 	// todo: hp check?
 	// todo: play effect? add exp to player? ....
-	ScenePhysItem::Hit(damage);
-	return true;
+	scene->enm.Add(pos, pos - attacker.pos, { 255,0,0,255 }, hp);
+	return ScenePhysItem::Hit(attacker, damage);
 }
 
 void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
@@ -381,9 +484,10 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	mainTask = MainTask();
 	animTask = AnimTask();
 	moveTask = MoveTask();
-	pos = pos_;
 	radius = cRadius;
 	speed = cSpeed;
+	hp = gLooper.rnd.Next<int>(200, 1000);
+	pos = pos_;
 	PhysAdd();
 }
 
@@ -481,7 +585,29 @@ void ScenePlay2::Init() {
 	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);
 	im.Init(this);
 	im.Create<Human>();
+
+	// init main logic
+	tasks.Add(MainTask());
 }
+
+xx::Task<> ScenePlay2::MainTask() {
+
+	while (true) {
+#if 1
+		for (int i = 0; i < 1; i++) {
+			MakeSlime1(300, 100);
+		}
+#else
+		co_await gLooper.AsyncSleep(1);
+		if (human) {
+			XY offset{ gLooper.rnd.Next<float>(50, 150), gLooper.rnd.Next<float>(-50, 50) };
+			MakeSlime3(human->pos + offset);
+		}
+#endif
+		co_yield 0;
+	}
+}
+
 
 //#define ENABLE_SORT_WHEN_UPDATE
 
@@ -493,13 +619,9 @@ void ScenePlay2::Update() {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 
-	// simulate room master logic
-	for (int i = 0; i < 10; i++) {
-		MakeSlime();
-	}
-
 	// update objs
 	bmm.Update();
+	enm.Update();
 	im.Update();
 #ifdef ENABLE_SORT_WHEN_UPDATE
 	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
@@ -515,6 +637,8 @@ void ScenePlay2::Draw() {
 	// born masks
 	bmm.Draw(camera);
 
+	// draw other effects?
+
 	// items
 #ifdef ENABLE_SORT_WHEN_UPDATE
 	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
@@ -529,7 +653,7 @@ void ScenePlay2::Draw() {
 		iys.Emplace(human.GetPointer(), human->posY);
 	}
 
-	im.ForeachItems<Weapon, Bullet>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
+	im.ForeachItems<Weapon, Bullet, Bullet1>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
 		for (auto& o : items) {
 			if (camera.InArea(o->pos/* + o->drawOffset*/)) {
 				iys.Emplace(o, o->posY);
@@ -585,33 +709,49 @@ void ScenePlay2::Draw() {
 		}
 	}
 
+	// draw other effects?
+	enm.Draw(camera);
+
 	// todo: draw map border for debug ?
 
 	// ui
 	gLooper.DrawNode(rootNode);
 };
 
-void ScenePlay2::MakeSlime() {
+void ScenePlay2::MakeSlime1(float radius, float safeRadius) {
 	if (!human) return;
 	XY pos;
 
-#if 1
 	static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 };
 	// circle gen , outside the human's safe range
 	//static constexpr float radius = 400, safeRadius = 300, len = radius - safeRadius;
-	static constexpr float radius = 800, safeRadius = 500, len = radius - safeRadius;
+	float len = radius - safeRadius;
 	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius ) * radius;
 	auto a = gLooper.rnd.Next<float>(npi, pi);
 	pos.x = std::cos(a) * r;
 	pos.y = std::sin(a) * r;
 	pos += human->GetPhysPos();
-#else
+
+	bmm.Add([this, pos] {
+		this->im.Create<Slime>(pos);
+	}, pos, Slime::cBornMaskAnchor, Slime::cBornMaskScale);
+}
+
+void ScenePlay2::MakeSlime2() {
+	if (!human) return;
+	XY pos;
+
 	// full map random gen
 	static constexpr XY ws{ gMapCfg.mapSize.x - 64, gMapCfg.mapSize.y - 64 };
 	pos.x = gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.x - gMapCfg.physCellSize);
 	pos.y = gLooper.rnd.Next<float>(gMapCfg.physCellSize, ws.y - gMapCfg.physCellSize);
-#endif
 
+	bmm.Add([this, pos] {
+		this->im.Create<Slime>(pos);
+	}, pos, Slime::cBornMaskAnchor, Slime::cBornMaskScale);
+}
+
+void ScenePlay2::MakeSlime3(XY const& pos) {
 	bmm.Add([this, pos] {
 		this->im.Create<Slime>(pos);
 	}, pos, Slime::cBornMaskAnchor, Slime::cBornMaskScale);

@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <game_looper.h>
 #include <game_item.h>
+#include <game_effect_number.h>
 
 struct MapCfg {
 	static constexpr int physCellSize{ 32 };	// need >= max monster size
@@ -27,7 +28,7 @@ struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem, XY> {
 	bool InPhys();
 	~ScenePhysItem();
 
-	virtual bool Hit(int damage);
+	virtual bool Hit(SceneItem& attacker, int damage);
 };
 
 
@@ -66,7 +67,7 @@ struct Weapon : SceneItem {
 	static constexpr int cFrameIndex{ 1 };
 
 	static constexpr float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
-	static constexpr float cFireDelaySecs{ 0.05f };
+	static constexpr float cFireDelaySecs{ 0.2f };
 	static constexpr float cFireDistance{ 18 };
 
 	xx::Weak<SceneItem> owner;
@@ -87,15 +88,16 @@ struct Weapon : SceneItem {
 struct Bullet : SceneItem {
 	static constexpr int cTypeId{ 2 };
 
-	static constexpr float cFrameMaxIndex = 8.f;
+	static constexpr float cScale{ 0.5f };
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 4 };
-	static constexpr float cSpeed{ 500 };
-	static constexpr float cSpeedByFrame{ cSpeed / gDesign.fps };
+	static constexpr float cSpeed{ 400.f / gDesign.fps };
 	static constexpr float cLifeSpan{ 0.25 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
+	static constexpr float cBullet1AttackRange{ 100 };
 
 	xx::Weak<SceneItem> owner;
 	int damage{};
@@ -114,15 +116,48 @@ struct Bullet : SceneItem {
 
 struct BulletTail : Item {
 	static constexpr float cLifeSpan{ 0.1f };
+	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
 	int lifeEndFrameNumber{};
+
 	void Init(Bullet& bullet_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
 
 
-struct Human : SceneItem {
+// when Bullet dispose, create some of this
+struct Bullet1 : SceneItem {
 	static constexpr int cTypeId{ 3 };
+
+	static constexpr float cFrameMaxIndex{ 8.f };
+	static constexpr float cFrameInc{ 12.f / gDesign.fps };
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
+
+	static constexpr float cRadius{ 4 };
+	static constexpr float cSpeed{ 200.f / gDesign.fps };
+	static constexpr float cLifeSpan{ 0.5f };
+	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
+	xx::Weak<SceneItem> owner;
+	xx::Weak<ScenePhysItem> target;
+	XY inc{};
+	int damage{};
+	// todo: damage
+
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+	xx::Task<> moveTask;
+	xx::Task<> MoveTask();
+
+	void Init(ItemManagerBase* im_, Bullet& parent_, xx::Weak<ScenePhysItem> target_);
+	virtual int UpdateCore() override;
+	virtual void Draw(Camera const& camera) override;
+};
+
+
+struct Human : SceneItem {
+	static constexpr int cTypeId{ 4 };
 
 	static constexpr float cIdleScaleYFrom{ 0.9f };
 	static constexpr float cIdleScaleYTo{ 1.f };
@@ -131,7 +166,7 @@ struct Human : SceneItem {
 	static constexpr XY cAnchor{ 0.5f, 0 };
 	static constexpr XY cDrawOffset{ 0, 4.f };
 	static constexpr float cRadius{ 5.f };
-	static constexpr std::array<float, 5> cFrameIndexRanges = { 0.f, 3.f, 6.f, 9.f, 12.f };
+	static constexpr std::array<float, 5> cFrameIndexRanges{ 0.f, 3.f, 6.f, 9.f, 12.f };
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 60.f / gDesign.fps };
 
@@ -154,7 +189,7 @@ struct Human : SceneItem {
 
 
 struct Slime : ScenePhysItem {
-	static constexpr int cTypeId{ 4 };
+	static constexpr int cTypeId{ 5 };
 
 	static constexpr XY cBornMaskAnchor{ 0.5f, 0.25f };
 	static constexpr float cBornMaskScale{ 1.f };
@@ -164,7 +199,7 @@ struct Slime : ScenePhysItem {
 	static constexpr XY cAnchor{ 0.5f, 0 };
 	static constexpr XY cDrawOffset{ 0, 6.f };
 	static constexpr float cRadius{ 6.f };
-	static constexpr float cFrameMaxIndex = 4.f;
+	static constexpr float cFrameMaxIndex{ 4.f };
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 30.f / gDesign.fps };
 	static constexpr float cStepMoveDuration{ 0.5f };
@@ -174,10 +209,11 @@ struct Slime : ScenePhysItem {
 
 	float speed{};
 	bool freeze{};		// fozen, hert, ...
+	int hp{};
 	// todo: hp? exp?
 
 	// return true mean slime is dead
-	virtual bool Hit(int damage) override;
+	virtual bool Hit(SceneItem& attacker, int damage) override;
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
@@ -196,18 +232,23 @@ struct ScenePlay2 : Scene {
 
 	SpaceGridC<ScenePhysItem, XY> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
-	ItemManager<Weapon, Bullet, Human, Slime> im;		// phys items must be place at the back
+	ItemManager<Weapon, Bullet, Bullet1, Human, Slime> im;		// phys items must be place at the back
 	xx::Weak<Human> human;	// point to im human Item
 	xx::ListLink<BulletTail> bulletTails;
 	Camera camera;
 	xx::Listi32<ItemY> iys;
+	EffectNumberManager1 enm;
 	bool isBorderVisible{};
 	// ...
 
 
-	void MakeSlime();	// random position
+	void MakeSlime1(float radius, float safeRadius);
+	void MakeSlime2();
+	void MakeSlime3(XY const& pos);
 
 	// ... more create funcs
+
+	xx::Task<> MainTask();
 
 	virtual void Init() override;
 	virtual void Update() override;

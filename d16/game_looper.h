@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <engine.h>
 
-constexpr GDesign<1280, 720, 120> gDesign;
+constexpr GDesign<1280, 720, 60> gDesign;
 
 template<uint32_t width_ = 64, uint32_t height_ = 7>
 struct Cache_HpBar;
@@ -82,6 +82,9 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 
 	// 
 	xx::Listi<xx::DataShared> soundDatas;
+
+	//
+	SpaceGridRingDiffuseData sgrdd;
 };
 
 extern GameLooper gLooper;

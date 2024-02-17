@@ -2,6 +2,10 @@
 #include <all.h>
 
 xx::Task<> GameLooper::MainTask() {
+
+	//
+	sgrdd.Init(256, 32);
+
 	{
 #ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl
