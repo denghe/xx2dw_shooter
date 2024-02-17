@@ -1,6 +1,37 @@
 ﻿#pragma once
 #include "xx_list.h"
 
+// some ref code here
+//template<typename T, typename T::FieldId ID>
+//struct Offseter {
+//	static constexpr size_t offset();
+//	std::string s;
+//};
+//
+//template<typename T, typename T::FieldId ID>
+//constexpr size_t Offseter<T, ID>::offset()
+//{
+//	return T::offset_of(std::integral_constant<decltype(ID), ID> {});
+//}
+//
+//struct Foo {
+//	enum FieldId { First, Second };
+//	static constexpr size_t offset_of(std::integral_constant<FieldId, FieldId::First>) { return offsetof(Foo, first); }
+//	static constexpr size_t offset_of(std::integral_constant<FieldId, FieldId::Second>) { return offsetof(Foo, second); }
+//
+//	int header;
+//	Offseter<Foo, FieldId::First> first;
+//	double interstitial;
+//	Offseter<Foo, FieldId::Second> second;
+//
+//	virtual ~Foo() {}
+//};
+// 
+//Foo o;
+//constexpr auto offset1 = o.first.offset();
+//constexpr auto offset2 = o.second.offset();
+
+
 namespace xx {
 	// B: base class
 	// C: child / sub class

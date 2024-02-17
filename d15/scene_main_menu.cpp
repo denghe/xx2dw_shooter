@@ -54,7 +54,40 @@ struct InfoPanel : Node {
 	}
 };
 
+
+
+
+struct Foo {
+	virtual ~Foo() {}
+	size_t idx;
+};
+
+template<typename T, size_t T::* ptr>
+struct Container {
+	std::vector<std::shared_ptr<T>> items;
+
+	template<typename U>
+	void EmplaceBack(U&& t) {
+		((T&)*t).*ptr = items.size();
+		items.emplace_back(std::forward<U>(t));
+	}
+};
+
+struct Bar : Foo {
+};
+
 void SceneMainMenu::Init() {
+	Container<Foo, &Foo::idx> c;
+	c.EmplaceBack(std::make_shared<Bar>());
+	c.EmplaceBack(std::make_shared<Bar>());
+	auto f = std::make_shared<Bar>();
+	c.EmplaceBack(f);
+	xx::CoutN(f->idx);
+
+
+
+
+
 	rootNode.Emplace()->Init();
 
 	auto&& ip = rootNode->MakeChildren<InfoPanel>();
