@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  23288: ($0, $1, $2, $3, $4) => {
+  23336: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  25446: () => {
+  25494: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  25610: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  25714: () => {
+  25658: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  25762: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  25885: ($0, $1, $2, $3, $4, $5) => {
+  25933: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  28713: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  28779: $0 => {
+  28761: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  28827: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  29172: $0 => {
+  29220: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  29215: $0 => {
+  29263: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  29340: $0 => {
+  29388: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -1903,8 +1903,8 @@ var wasmImports = {
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports["xa"])();
-var _free = a0 => (_free = wasmExports["ya"])(a0);
-var _malloc = a0 => (_malloc = wasmExports["za"])(a0);
+var _malloc = a0 => (_malloc = wasmExports["ya"])(a0);
+var _free = a0 => (_free = wasmExports["za"])(a0);
 var __Z35ma_device__on_notification_unlockedP9ma_device = Module["__Z35ma_device__on_notification_unlockedP9ma_device"] = a0 => (__Z35ma_device__on_notification_unlockedP9ma_device = Module["__Z35ma_device__on_notification_unlockedP9ma_device"] = wasmExports["Ba"])(a0);
 var _ma_malloc_emscripten = Module["_ma_malloc_emscripten"] = (a0, a1) => (_ma_malloc_emscripten = Module["_ma_malloc_emscripten"] = wasmExports["Ca"])(a0, a1);
 var _ma_free_emscripten = Module["_ma_free_emscripten"] = (a0, a1) => (_ma_free_emscripten = Module["_ma_free_emscripten"] = wasmExports["Da"])(a0, a1);

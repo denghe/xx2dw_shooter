@@ -131,7 +131,7 @@ xx::Task<> Weapon::MainTask() {
 			auto radiansBak = radians;
 			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 10;
 			for (float a = npi; a < pi; a += step) {
-				radians = a;
+				radians = radiansBak + a;
 				im->Create<Bullet>(xx::WeakFromThis(this));
 			}
 			radians = radiansBak;
@@ -214,8 +214,8 @@ xx::Task<> Bullet::MoveTask() {
 		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
 			r->Hit(*this, damage);
 			// find nearest xxx & shoot Bullet 1
-			if (auto t = FindNearest(scene->sgcPhysItems, gLooper.sgrdd, pos, cBullet1AttackRange)) {
-				im->Create<Bullet1>( *this, xx::WeakFromThis(t) );
+			if (auto t = FindNearest(scene->sgcPhysItems, gLooper.sgrdd, pos, Bullet1::cAttackRange)) {
+				im->Create<Bullet1>( owner, pos, radians, xx::WeakFromThis(t), 5);
 			}
 			co_return;
 		}
@@ -328,9 +328,15 @@ xx::Task<> Bullet1::MoveTask() {
 		// hit check
 		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
 			r->Hit(*this, damage);
+			if (life > 0) {
+				// find nearest xxx & shoot Bullet 1
+				if (auto t = FindNearest(scene->sgcPhysItems, gLooper.sgrdd, pos, cAttackRange)) {
+					im->Create<Bullet1>(owner, pos, radians, xx::WeakFromThis(t), life - 1);
+				}
+			}
 			co_return;
 		}
-		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
+		radians = std::atan2(d.y, d.x);
 		co_yield 0;
 	}
 	// direct fly
@@ -341,14 +347,13 @@ xx::Task<> Bullet1::MoveTask() {
 			r->Hit(*this, damage);
 			co_return;
 		}
-		FrameControl::Forward(frameIndex, cFrameInc, cFrameMaxIndex);
 		co_yield 0;
 	}
 }
 
-void Bullet1::Init(ItemManagerBase* im_, Bullet& parent_, xx::Weak<ScenePhysItem> target_) {
+void Bullet1::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, XY const& pos_, float radians_, xx::Weak<ScenePhysItem> target_, int life_) {
 	SceneItemInit(cTypeId, im_);
-	owner = parent_.owner;
+	owner = std::move(owner_);
 
 	// tasks init
 	mainTask = MainTask();
@@ -356,9 +361,11 @@ void Bullet1::Init(ItemManagerBase* im_, Bullet& parent_, xx::Weak<ScenePhysItem
 	// ...
 
 	// get weapon args for born init
-	pos = parent_.pos;
-	radians = parent_.radians;
+	pos = pos_;
+	radians = radians_;
+	scale = { cScale, cScale };
 	target = std::move(target_);
+	life = life_;
 	inc = {};
 	// damage = weapon_->damage; ? cDamage ? buff calculate ?
 	radius = cRadius;
@@ -369,7 +376,7 @@ int Bullet1::UpdateCore() {
 }
 
 void Bullet1::Draw(Camera const& camera) {
-	auto& q = Quad::DrawOnce(gLooper.frames_mine[(int)frameIndex]);
+	auto& q = Quad::DrawOnce(gLooper.frames_bullet[0]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
@@ -594,7 +601,7 @@ xx::Task<> ScenePlay2::MainTask() {
 
 	while (true) {
 #if 1
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 15; i++) {
 			MakeSlime1(300, 100);
 		}
 #else

@@ -67,7 +67,7 @@ struct Weapon : SceneItem {
 	static constexpr int cFrameIndex{ 1 };
 
 	static constexpr float cFrameMaxChangeRadians{ float(M_PI * 10 / gDesign.fps) };
-	static constexpr float cFireDelaySecs{ 0.2f };
+	static constexpr float cFireDelaySecs{ 0.05f };
 	static constexpr float cFireDistance{ 18 };
 
 	xx::Weak<SceneItem> owner;
@@ -89,15 +89,12 @@ struct Bullet : SceneItem {
 	static constexpr int cTypeId{ 2 };
 
 	static constexpr float cScale{ 0.5f };
-	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 4 };
 	static constexpr float cSpeed{ 400.f / gDesign.fps };
 	static constexpr float cLifeSpan{ 0.25 };
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
-
-	static constexpr float cBullet1AttackRange{ 100 };
 
 	xx::Weak<SceneItem> owner;
 	int damage{};
@@ -130,10 +127,10 @@ struct BulletTail : Item {
 struct Bullet1 : SceneItem {
 	static constexpr int cTypeId{ 3 };
 
-	static constexpr float cFrameMaxIndex{ 8.f };
-	static constexpr float cFrameInc{ 12.f / gDesign.fps };
+	static constexpr float cScale{ 0.5f };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
+	static constexpr float cAttackRange{ 100 };
 	static constexpr float cRadius{ 4 };
 	static constexpr float cSpeed{ 200.f / gDesign.fps };
 	static constexpr float cLifeSpan{ 0.5f };
@@ -141,6 +138,7 @@ struct Bullet1 : SceneItem {
 
 	xx::Weak<SceneItem> owner;
 	xx::Weak<ScenePhysItem> target;
+	int life{};
 	XY inc{};
 	int damage{};
 	// todo: damage
@@ -150,7 +148,7 @@ struct Bullet1 : SceneItem {
 	xx::Task<> moveTask;
 	xx::Task<> MoveTask();
 
-	void Init(ItemManagerBase* im_, Bullet& parent_, xx::Weak<ScenePhysItem> target_);
+	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, XY const& pos_, float radians_, xx::Weak<ScenePhysItem> target_, int life_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
