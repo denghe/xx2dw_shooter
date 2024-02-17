@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  23272: ($0, $1, $2, $3, $4) => {
+  23288: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  25430: () => {
+  25446: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  25594: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  25698: () => {
+  25610: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  25714: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  25869: ($0, $1, $2, $3, $4, $5) => {
+  25885: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  28697: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  28763: $0 => {
+  28713: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  28779: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  29156: $0 => {
+  29172: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  29199: $0 => {
+  29215: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  29324: $0 => {
+  29340: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;

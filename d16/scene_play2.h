@@ -24,7 +24,10 @@ struct ScenePhysItem : SceneItem, SpaceGridCItem<ScenePhysItem, XY> {
 	void PhysAdd();				// call after fill pos
 	void PhysUpdate();			// call after fill pos
 	void PhysRemove();
+	bool InPhys();
 	~ScenePhysItem();
+
+	virtual bool Hit(int damage);
 };
 
 
@@ -95,6 +98,7 @@ struct Bullet : SceneItem {
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
 	xx::Weak<SceneItem> owner;
+	int damage{};
 	// todo: damage
 
 	xx::Task<> mainTask;
@@ -172,6 +176,9 @@ struct Slime : ScenePhysItem {
 	bool freeze{};		// fozen, hert, ...
 	// todo: hp? exp?
 
+	// return true mean slime is dead
+	virtual bool Hit(int damage) override;
+
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
 	xx::Task<> animTask;
@@ -189,7 +196,7 @@ struct ScenePlay2 : Scene {
 
 	SpaceGridC<ScenePhysItem, XY> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
-	ItemManager<Weapon, Bullet, Human, Slime> im;
+	ItemManager<Weapon, Bullet, Human, Slime> im;		// phys items must be place at the back
 	xx::Weak<Human> human;	// point to im human Item
 	xx::ListLink<BulletTail> bulletTails;
 	Camera camera;

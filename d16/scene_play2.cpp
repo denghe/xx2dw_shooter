@@ -20,8 +20,17 @@ void ScenePhysItem::PhysRemove() {
 	SGCRemove();
 }
 
+bool ScenePhysItem::InPhys() {
+	return !!_sgc;
+}
+
 ScenePhysItem::~ScenePhysItem() {
 	SGCRemove();
+}
+
+bool ScenePhysItem::Hit(int damage) {
+	SGCRemove();
+	return true;
 }
 
 #pragma endregion
@@ -200,8 +209,7 @@ xx::Task<> Bullet::MoveTask() {
 		scene->bulletTails.Emplace().Init(*this);
 		// hit check
 		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
-			//r->Hit(damage);		// r maybe deleted
-			//r->RemoveFromIM();	// todo
+			r->Hit(damage);
 			co_return;
 		}
 		co_yield 0;
@@ -361,6 +369,13 @@ void Human::Draw(Camera const& camera) {
 
 #pragma region Slime
 
+bool Slime::Hit(int damage) {
+	// todo: hp check?
+	// todo: play effect? add exp to player? ....
+	ScenePhysItem::Hit(damage);
+	return true;
+}
+
 void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 	SceneItemInit(cTypeId, im_);
 	mainTask = MainTask();
@@ -373,6 +388,7 @@ void Slime::Init(ItemManagerBase* im_, XY const& pos_) {
 }
 
 int Slime::UpdateCore() {
+	if (!InPhys()) return 0;	// removed from phys: suside
 	if (!freeze) {
 		animTask.Resume();
 	}
