@@ -102,7 +102,7 @@ void BornMaskManager::Draw(Camera const& camera) {
 
 #pragma region Weapon
 
-xx::Task<> Weapon::MainTask() {
+xx::Task<> Staff::MainTask() {
 	while (true) {
 		// follow owner( sync pos )
 		if (owner) {
@@ -129,8 +129,8 @@ xx::Task<> Weapon::MainTask() {
 #if 1
 			// multi line fire
 			auto radiansBak = radians;
-			static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 }, step = pi2 / 20;
-			for (float a = npi; a < pi; a += step) {
+			static constexpr float step = g2PI / 20;
+			for (float a = gNPI; a < gPI; a += step) {
 				radians = radiansBak + a;
 				im->Create<Bullet>(xx::WeakFromThis(this));
 			}
@@ -144,7 +144,7 @@ xx::Task<> Weapon::MainTask() {
 	}
 }
 
-void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
+void Staff::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 	assert(owner_);
 	SceneItemInit(cTypeId, im_);
 	owner = std::move(owner_);
@@ -159,11 +159,11 @@ void Weapon::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 	radians = (float)-M_PI_2;
 }
 
-int Weapon::UpdateCore() {
+int Staff::UpdateCore() {
 	return !mainTask.Resume();
 }
 
-void Weapon::Draw(Camera const& camera) {
+void Staff::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_staff[cFrameIndex]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
@@ -223,7 +223,7 @@ xx::Task<> Bullet::MoveTask() {
 	}
 }
 
-void Bullet::Init(ItemManagerBase* im_, xx::Weak<Weapon> weapon_) {
+void Bullet::Init(ItemManagerBase* im_, xx::Weak<Staff> weapon_) {
 	assert(weapon_);
 	SceneItemInit(cTypeId, im_);
 	owner = weapon_->owner;
@@ -405,6 +405,66 @@ void Bullet1::Draw(Camera const& camera) {
 
 #pragma endregion
 
+#pragma region Book
+
+void Book::CalcPos() {
+	pos = owner->pos + XY{ std::cos(radians), std::sin(radians) } * cDistance;
+}
+
+xx::Task<> Book::MainTask() {
+	float radiansBak = radians;
+	while (owner) {
+		for (float a = gNPI; a < gPI; a += cRadiansStep) {
+			radians = radiansBak + a;
+			CalcPos();
+			// hit check
+			FindNeighborsCross(scene->sgcPhysItems, pos, radius, [&](auto p) {
+				p->Hit(*this, damage);
+			});
+			co_yield 0;
+		}
+	}
+}
+
+void Book::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, float radians_) {
+	assert(owner_);
+	SceneItemInit(cTypeId, im_);
+	owner = std::move(owner_);
+
+	// tasks init
+	mainTask = MainTask();
+	// ...
+
+	// born init
+	scale = { cScale, cScale };
+	radius = cRadius;
+	radians = radians_;
+	CalcPos();
+	// damage = weapon_->damage; ? cDamage ? buff calculate ?
+}
+
+int Book::UpdateCore() {
+	return !mainTask.Resume();
+}
+
+void Book::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_icon_book_1[14]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = 0;// radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 255 };
+
+	if (scene->isBorderVisible) {
+		LineStrip().FillCirclePoints({}, radius, {}, 20, scale * camera.scale)
+			.SetPosition(camera.ToGLPos(pos))
+			.Draw();
+	}
+}
+
+#pragma endregion
+
 #pragma region Human
 
 void Human::Init(ItemManagerBase* im_) {
@@ -423,7 +483,11 @@ void Human::Init(ItemManagerBase* im_) {
 	SetDirection(MoveDirections::Down);
 
 	// weapon init
-	im->Create<Weapon>(xx::WeakFromThis(this));
+	im->Create<Staff>(xx::WeakFromThis(this));
+	static constexpr float step = g2PI / 6;
+	for (float a = gNPI; a < gPI; a += step) {
+		im->Create<Book>(xx::WeakFromThis(this), a);
+	}
 }
 
 int Human::UpdateCore() {
@@ -626,9 +690,6 @@ xx::Task<> ScenePlay2::MainTask() {
 	}
 }
 
-
-//#define ENABLE_SORT_WHEN_UPDATE
-
 void ScenePlay2::Update() {
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
@@ -641,37 +702,23 @@ void ScenePlay2::Update() {
 	bmm.Update();
 	enm.Update();
 	im.Update();
-#ifdef ENABLE_SORT_WHEN_UPDATE
-	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-		Sort(items);
-	});
-#endif
 }
 
 void ScenePlay2::Draw() {
 	camera.Calc();
 
 	// ...
+	// draw other effects?
+
 	// born masks
 	bmm.Draw(camera);
 
-	// draw other effects?
-
 	// items
-#ifdef ENABLE_SORT_WHEN_UPDATE
-	im.ForeachAllItems([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-		for (auto& o : items) {
-			if (camera.InArea(o->pos)) {
-				iys.Emplace(o.pointer, o->pos.y);
-			}
-		}
-	});
-#else
 	if (human) {
 		iys.Emplace(human.GetPointer(), human->posY);
 	}
 
-	im.ForeachItems<Weapon, Bullet, Bullet1>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
+	im.ForeachItems<Staff, Bullet, Bullet1, Book>([&]<typename T>(xx::Listi32<xx::Shared<T>>& items) {
 		for (auto& o : items) {
 			if (camera.InArea(o->pos/* + o->drawOffset*/)) {
 				iys.Emplace(o, o->posY);
@@ -697,7 +744,6 @@ void ScenePlay2::Draw() {
 			});
 		}
 	}
-#endif
 	ItemY::Sort(iys);
 	for (auto& iy : iys) {
 		iy.item->Draw(camera);
@@ -740,12 +786,11 @@ void ScenePlay2::MakeSlime1(float radius, float safeRadius) {
 	if (!human) return;
 	XY pos;
 
-	static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{ pi * 2 };
 	// circle gen , outside the human's safe range
 	//static constexpr float radius = 400, safeRadius = 300, len = radius - safeRadius;
 	float len = radius - safeRadius;
 	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius ) * radius;
-	auto a = gLooper.rnd.Next<float>(npi, pi);
+	auto a = gLooper.rnd.Next<float>(gNPI, gPI);
 	pos.x = std::cos(a) * r;
 	pos.y = std::sin(a) * r;
 	pos += human->GetPhysPos();

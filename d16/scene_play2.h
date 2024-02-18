@@ -3,6 +3,7 @@
 #include <game_item.h>
 #include <game_effect_number.h>
 
+
 struct MapCfg {
 	static constexpr int physCellSize{ 32 };	// need >= max monster size
 	static constexpr int physNumRows{ 128 };
@@ -60,8 +61,9 @@ struct BornMaskManager {
 // exp? level? hp? damage?
 
 
+
 struct Human;
-struct Weapon : SceneItem {
+struct Staff : SceneItem {
 	static constexpr int cTypeId{ 1 };
 	static constexpr XY cAnchor{ 0.2f, 0.5f };
 	static constexpr int cFrameIndex{ 1 };
@@ -83,7 +85,6 @@ struct Weapon : SceneItem {
 };
 
 
-// todo: bullet tail ?
 
 struct Bullet : SceneItem {
 	static constexpr int cTypeId{ 2 };
@@ -105,10 +106,11 @@ struct Bullet : SceneItem {
 	xx::Task<> moveTask;
 	xx::Task<> MoveTask();
 
-	void Init(ItemManagerBase* im_, xx::Weak<Weapon> weapon_);
+	void Init(ItemManagerBase* im_, xx::Weak<Staff> weapon_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
+
 
 
 struct BulletTail : Item {
@@ -121,6 +123,7 @@ struct BulletTail : Item {
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };
+
 
 
 // when Bullet dispose, create some of this
@@ -155,8 +158,35 @@ struct Bullet1 : SceneItem {
 };
 
 
-struct Human : SceneItem {
+
+struct Book : SceneItem {
 	static constexpr int cTypeId{ 4 };
+
+	static constexpr float cScale{ 1.f };
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
+
+	static constexpr float cRadius{ 6 };
+	static constexpr float cDistance{ 30 };
+	static constexpr float cRadiansStep{ (float)(M_PI * 2) / 3.f / gDesign.fps };
+
+	xx::Weak<SceneItem> owner;
+	int damage{};
+	// todo: damage
+
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+
+	void CalcPos();
+
+	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, float radians_);
+	virtual int UpdateCore() override;
+	virtual void Draw(Camera const& camera) override;
+};
+
+
+
+struct Human : SceneItem {
+	static constexpr int cTypeId{ 5 };
 
 	static constexpr float cIdleScaleYFrom{ 0.9f };
 	static constexpr float cIdleScaleYTo{ 1.f };
@@ -188,7 +218,7 @@ struct Human : SceneItem {
 
 
 struct Slime : ScenePhysItem {
-	static constexpr int cTypeId{ 5 };
+	static constexpr int cTypeId{ 6 };
 
 	static constexpr XY cBornMaskAnchor{ 0.5f, 0.25f };
 	static constexpr float cBornMaskScale{ 1.f };
@@ -226,12 +256,15 @@ struct Slime : ScenePhysItem {
 };
 
 
+
 struct ScenePlay2 : Scene {
 	xx::Shared<Node> rootNode;
 
 	SpaceGridC<ScenePhysItem, XY> sgcPhysItems;	// must at top
 	BornMaskManager bmm;
-	ItemManager<Weapon, Bullet, Bullet1, Human, Slime> im;		// phys items must be place at the back
+	ItemManager<
+		Staff, Bullet, Bullet1, Book, Human
+		, Slime> im;		// phys items must be place at the back
 	xx::Weak<Human> human;	// point to im human Item
 	xx::ListLink<BulletTail> bulletTails;
 	Camera camera;

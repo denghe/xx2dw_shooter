@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include <engine_includes.h>
 
+inline static constexpr float gPI{ (float)M_PI }, gNPI{ -gPI }, g2PI{ gPI * 2 };
+
 template<typename T>
 concept HasFieldXY = requires { T::x; T::y; };
 
