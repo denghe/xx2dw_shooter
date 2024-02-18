@@ -75,7 +75,7 @@ function pa(a) {
   }).catch(() => oa(a));
 }
 function qa(a, b, c) {
-  return pa(a).then(d => WebAssembly.instantiate(d, b)).then(d => d).then(c, d => {
+  return pa(a).then(d => WebAssembly.instantiate(d, b)).then(c, d => {
     q(`failed to asynchronously prepare wasm: ${d}`);
     t(d);
   });
@@ -121,7 +121,7 @@ function ya() {
     var b = K[a];
     K.splice(a, 1);
     --a;
-    b.Ra.apply(null, b.La);
+    b.Ra(...b.La);
   }
 }
 var L = [];
@@ -263,6 +263,14 @@ var za,
     for (var b = Ha++, c = a.length; c < b; c++) a[c] = null;
     return b;
   },
+  X = (a, b, c, d) => {
+    for (var g = 0; g < a; g++) {
+      var l = W[c](),
+        f = l && V(d);
+      l && (l.name = f, d[f] = l);
+      y[b + 4 * g >> 2] = f;
+    }
+  },
   Ka = (a, b) => {
     a.qa || (a.qa = a.getContext, a.getContext = function (d, g) {
       g = a.qa(d, g);
@@ -291,14 +299,6 @@ var za,
     t("initRandomDevice");
   },
   Pa = a => (Pa = Oa())(a),
-  X = (a, b, c, d) => {
-    for (var g = 0; g < a; g++) {
-      var l = W[c](),
-        f = l && V(d);
-      l && (l.name = f, d[f] = l);
-      y[b + 4 * g >> 2] = f;
-    }
-  },
   Qa = a => "]" == a.slice(-1) && a.lastIndexOf("["),
   Ra = a => {
     var b = W.Ha,
@@ -417,9 +417,7 @@ var za,
       Pa(w.subarray(a, a + b));
       return 0;
     },
-    _: function (a) {
-      W.activeTexture(a);
-    },
+    _: a => W.activeTexture(a),
     z: (a, b) => {
       W.attachShader(Q[a], T[b]);
     },
@@ -436,21 +434,13 @@ var za,
     j: a => {
       W.bindVertexArray(U[a]);
     },
-    o: function (a) {
-      W.blendEquation(a);
-    },
-    p: function (a, b) {
-      W.blendFunc(a, b);
-    },
+    o: a => W.blendEquation(a),
+    p: (a, b) => W.blendFunc(a, b),
     i: (a, b, c, d) => {
       c && b ? W.bufferData(a, w, d, c, b) : W.bufferData(a, b, d);
     },
-    G: function (a) {
-      W.clear(a);
-    },
-    H: function (a, b, c, d) {
-      W.clearColor(a, b, c, d);
-    },
+    G: a => W.clear(a),
+    H: (a, b, c, d) => W.clearColor(a, b, c, d),
     T: a => {
       W.compileShader(T[a]);
     },
@@ -508,18 +498,14 @@ var za,
         U[d] = null;
       }
     },
-    F: function (a) {
-      W.disable(a);
-    },
+    F: a => W.disable(a),
     v: (a, b, c, d) => {
       W.drawArraysInstanced(a, b, c, d);
     },
     B: (a, b, c, d) => {
       W.drawElements(a, b, c, d);
     },
-    $: function (a) {
-      W.enable(a);
-    },
+    $: a => W.enable(a),
     f: a => {
       W.enableVertexAttribArray(a);
     },
@@ -535,7 +521,7 @@ var za,
     q: (a, b) => {
       X(a, b, "createTexture", S);
     },
-    A: function (a, b) {
+    A: (a, b) => {
       X(a, b, "createVertexArray", U);
     },
     h: (a, b) => W.getAttribLocation(Q[a], H(b)),
@@ -605,12 +591,10 @@ var za,
       if (W.wa) W.texImage2D(a, b, c, d, g, l, f, n, m);else if (m) {
         var p = n - 5120;
         p = 0 == p ? ca : 1 == p ? w : 2 == p ? x : 4 == p ? y : 6 == p ? ea : 5 == p || 28922 == p || 28520 == p || 30779 == p || 30782 == p ? z : da;
-        W.texImage2D(a, b, c, d, g, l, f, n, p, m >> 31 - Math.clz32(p.BYTES_PER_ELEMENT));
+        W.texImage2D(a, b, c, d, g, l, f, n, p, m >>> 31 - Math.clz32(p.BYTES_PER_ELEMENT));
       } else W.texImage2D(a, b, c, d, g, l, f, n, null);
     },
-    b: function (a, b, c) {
-      W.texParameteri(a, b, c);
-    },
+    b: (a, b, c) => W.texParameteri(a, b, c),
     Z: (a, b) => {
       W.uniform1i(Ra(a), b);
     },
@@ -628,9 +612,7 @@ var za,
     g: (a, b, c, d, g, l) => {
       W.vertexAttribPointer(a, b, c, !!d, g, l);
     },
-    t: function (a, b, c, d) {
-      W.viewport(a, b, c, d);
-    },
+    t: (a, b, c, d) => W.viewport(a, b, c, d),
     Q: function (a, b, c, d) {
       var g = document.createElement("canvas");
       g.width = b;

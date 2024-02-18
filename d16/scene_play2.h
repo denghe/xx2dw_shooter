@@ -166,10 +166,12 @@ struct Book : SceneItem {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
 	static constexpr float cRadius{ 6 };
-	static constexpr float cDistance{ 30 };
+	static constexpr float cDistance{ 40 };
 	static constexpr float cRadiansStep{ (float)(M_PI * 2) / 3.f / gDesign.fps };
 
 	xx::Weak<SceneItem> owner;
+	xx::Weak<SceneItem> center;
+	float distance{}, aMut{1};
 	int damage{};
 	// todo: damage
 
@@ -178,7 +180,7 @@ struct Book : SceneItem {
 
 	void CalcPos();
 
-	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, float radians_);
+	void Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, xx::Weak<SceneItem> center_, float radians_, float radius_, int frameIndex_, float aMut_);
 	virtual int UpdateCore() override;
 	virtual void Draw(Camera const& camera) override;
 };

@@ -408,14 +408,15 @@ void Bullet1::Draw(Camera const& camera) {
 #pragma region Book
 
 void Book::CalcPos() {
-	pos = owner->pos + XY{ std::cos(radians), std::sin(radians) } * cDistance;
+	assert(center);
+	pos = center->pos + XY{ std::cos(radians), std::sin(radians) } *distance;
 }
 
 xx::Task<> Book::MainTask() {
 	float radiansBak = radians;
-	while (owner) {
+	while (center) {
 		for (float a = gNPI; a < gPI; a += cRadiansStep) {
-			radians = radiansBak + a;
+			radians = radiansBak + a * aMut;
 			CalcPos();
 			// hit check
 			FindNeighborsCross(scene->sgcPhysItems, pos, radius, [&](auto p) {
@@ -426,18 +427,22 @@ xx::Task<> Book::MainTask() {
 	}
 }
 
-void Book::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, float radians_) {
+void Book::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_, xx::Weak<SceneItem> center_, float radians_, float radius_, int frameIndex_, float aMut_) {
 	assert(owner_);
 	SceneItemInit(cTypeId, im_);
 	owner = std::move(owner_);
+	center = std::move(center_);
+	frameIndex = (float)frameIndex_;
+	aMut = aMut_;
 
 	// tasks init
 	mainTask = MainTask();
 	// ...
 
 	// born init
-	scale = { cScale, cScale };
-	radius = cRadius;
+	radius = radius_;
+	scale = XY{ cScale, cScale } * (radius_ / cRadius);
+	distance = cDistance * (radius_ / cRadius);
 	radians = radians_;
 	CalcPos();
 	// damage = weapon_->damage; ? cDamage ? buff calculate ?
@@ -448,7 +453,7 @@ int Book::UpdateCore() {
 }
 
 void Book::Draw(Camera const& camera) {
-	auto& q = Quad::DrawOnce(gLooper.frames_icon_book_1[14]);
+	auto& q = Quad::DrawOnce(gLooper.frames_icon_book_1[(int)frameIndex]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
@@ -484,9 +489,13 @@ void Human::Init(ItemManagerBase* im_) {
 
 	// weapon init
 	im->Create<Staff>(xx::WeakFromThis(this));
-	static constexpr float step = g2PI / 6;
+
+	static constexpr float step = g2PI / 5;
 	for (float a = gNPI; a < gPI; a += step) {
-		im->Create<Book>(xx::WeakFromThis(this), a);
+		auto o = im->Create<Book>(xx::WeakFromThis(this), xx::WeakFromThis(this), a, Book::cRadius, 14, 1.f);
+		for (float b = gNPI; b < gPI; b += step) {
+			im->Create<Book>(xx::WeakFromThis(this), o.ToWeak(), b, Book::cRadius / 2, 21, -2.f);
+		}
 	}
 }
 
@@ -661,7 +670,7 @@ void ScenePlay2::Init() {
 	// init camera
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
-	camera.SetScale(1);
+	camera.SetScale(2.f);
 
 	// init objs
 	sgcPhysItems.Init(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize);

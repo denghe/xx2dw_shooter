@@ -191,7 +191,7 @@ function getBinaryPromise(binaryFile) {
   return Promise.resolve().then(() => getBinarySync(binaryFile));
 }
 function instantiateArrayBuffer(binaryFile, imports, receiver) {
-  return getBinaryPromise(binaryFile).then(binary => WebAssembly.instantiate(binary, imports)).then(instance => instance).then(receiver, reason => {
+  return getBinaryPromise(binaryFile).then(binary => WebAssembly.instantiate(binary, imports)).then(receiver, reason => {
     err(`failed to asynchronously prepare wasm: ${reason}`);
     abort(reason);
   });
@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  20072: ($0, $1, $2, $3, $4) => {
+  20264: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  22230: () => {
+  22422: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  22394: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  22498: () => {
+  22586: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  22690: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  22669: ($0, $1, $2, $3, $4, $5) => {
+  22861: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  25497: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  25563: $0 => {
+  25689: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  25755: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  25956: $0 => {
+  26148: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  25999: $0 => {
+  26191: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  26124: $0 => {
+  26316: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -471,17 +471,17 @@ class ExceptionInfo {
   }
   set_caught(caught) {
     caught = caught ? 1 : 0;
-    HEAP8[this.ptr + 12 >> 0] = caught;
+    HEAP8[this.ptr + 12] = caught;
   }
   get_caught() {
-    return HEAP8[this.ptr + 12 >> 0] != 0;
+    return HEAP8[this.ptr + 12] != 0;
   }
   set_rethrown(rethrown) {
     rethrown = rethrown ? 1 : 0;
-    HEAP8[this.ptr + 13 >> 0] = rethrown;
+    HEAP8[this.ptr + 13] = rethrown;
   }
   get_rethrown() {
-    return HEAP8[this.ptr + 13 >> 0] != 0;
+    return HEAP8[this.ptr + 13] != 0;
   }
   init(type, destructor) {
     this.set_adjusted_ptr(0);
@@ -568,7 +568,7 @@ var readEmAsmArgs = (sigPtr, buf) => {
 };
 var runEmAsmFunction = (code, sigPtr, argbuf) => {
   var args = readEmAsmArgs(sigPtr, argbuf);
-  return ASM_CONSTS[code].apply(null, args);
+  return ASM_CONSTS[code](...args);
 };
 var _emscripten_asm_const_int = (code, sigPtr, argbuf) => runEmAsmFunction(code, sigPtr, argbuf);
 var _emscripten_get_now;
@@ -665,7 +665,7 @@ var JSEvents = {
       var call = JSEvents.deferredCalls[i];
       JSEvents.deferredCalls.splice(i, 1);
       --i;
-      call.targetFunction.apply(null, call.argsList);
+      call.targetFunction(...call.argsList);
     }
   },
   eventHandlers: [],
@@ -916,7 +916,7 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
   var userNameStr = userName ? UTF8ToString(userName) : undefined;
   var passwordStr = password ? UTF8ToString(password) : undefined;
   var xhr = new XMLHttpRequest();
-  xhr.withCredentials = !!HEAPU8[fetch_attr + 60 >> 0];
+  xhr.withCredentials = !!HEAPU8[fetch_attr + 60];
   xhr.open(requestMethod, url_, !fetchAttrSynchronous, userNameStr, passwordStr);
   if (!fetchAttrSynchronous) xhr.timeout = timeoutMsecs;
   xhr.url_ = url_;
@@ -957,8 +957,8 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
     if (len) {
       writeI53ToI64(fetch + 32, len);
     }
-    HEAPU16[fetch + 40 >> 1] = xhr.readyState;
-    HEAPU16[fetch + 42 >> 1] = xhr.status;
+    HEAP16[fetch + 40 >> 1] = xhr.readyState;
+    HEAP16[fetch + 42 >> 1] = xhr.status;
     if (xhr.statusText) stringToUTF8(xhr.statusText, fetch + 44, 64);
   }
   xhr.onload = e => {
@@ -999,9 +999,9 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
     writeI53ToI64(fetch + 16, ptrLen);
     writeI53ToI64(fetch + 24, e.loaded - ptrLen);
     writeI53ToI64(fetch + 32, e.total);
-    HEAPU16[fetch + 40 >> 1] = xhr.readyState;
+    HEAP16[fetch + 40 >> 1] = xhr.readyState;
     if (xhr.readyState >= 3 && xhr.status === 0 && e.loaded > 0) xhr.status = 200;
-    HEAPU16[fetch + 42 >> 1] = xhr.status;
+    HEAP16[fetch + 42 >> 1] = xhr.status;
     if (xhr.statusText) stringToUTF8(xhr.statusText, fetch + 44, 64);
     onprogress === null || onprogress === void 0 || onprogress(fetch, xhr, e);
     if (ptr) {
@@ -1012,9 +1012,9 @@ function fetchXHR(fetch, onsuccess, onerror, onprogress, onreadystatechange) {
     if (!Fetch.xhrs.has(id)) {
       return;
     }
-    HEAPU16[fetch + 40 >> 1] = xhr.readyState;
+    HEAP16[fetch + 40 >> 1] = xhr.readyState;
     if (xhr.readyState >= 2) {
-      HEAPU16[fetch + 42 >> 1] = xhr.status;
+      HEAP16[fetch + 42 >> 1] = xhr.status;
     }
     onreadystatechange === null || onreadystatechange === void 0 || onreadystatechange(fetch, xhr, e);
   };
@@ -1085,14 +1085,14 @@ function fetchCacheData(db, fetch, data, onsuccess, onerror) {
     var packages = transaction.objectStore("FILES");
     var putRequest = packages.put(data, destinationPathStr);
     putRequest.onsuccess = event => {
-      HEAPU16[fetch + 40 >> 1] = 4;
-      HEAPU16[fetch + 42 >> 1] = 200;
+      HEAP16[fetch + 40 >> 1] = 4;
+      HEAP16[fetch + 42 >> 1] = 200;
       stringToUTF8("OK", fetch + 44, 64);
       onsuccess(fetch, 0, destinationPathStr);
     };
     putRequest.onerror = error => {
-      HEAPU16[fetch + 40 >> 1] = 4;
-      HEAPU16[fetch + 42 >> 1] = 413;
+      HEAP16[fetch + 40 >> 1] = 4;
+      HEAP16[fetch + 42 >> 1] = 413;
       stringToUTF8("Payload Too Large", fetch + 44, 64);
       onerror(fetch, 0, error);
     };
@@ -1123,20 +1123,20 @@ function fetchLoadCachedData(db, fetch, onsuccess, onerror) {
         writeI53ToI64(fetch + 16, len);
         writeI53ToI64(fetch + 24, 0);
         writeI53ToI64(fetch + 32, len);
-        HEAPU16[fetch + 40 >> 1] = 4;
-        HEAPU16[fetch + 42 >> 1] = 200;
+        HEAP16[fetch + 40 >> 1] = 4;
+        HEAP16[fetch + 42 >> 1] = 200;
         stringToUTF8("OK", fetch + 44, 64);
         onsuccess(fetch, 0, value);
       } else {
-        HEAPU16[fetch + 40 >> 1] = 4;
-        HEAPU16[fetch + 42 >> 1] = 404;
+        HEAP16[fetch + 40 >> 1] = 4;
+        HEAP16[fetch + 42 >> 1] = 404;
         stringToUTF8("Not Found", fetch + 44, 64);
         onerror(fetch, 0, "no data");
       }
     };
     getRequest.onerror = error => {
-      HEAPU16[fetch + 40 >> 1] = 4;
-      HEAPU16[fetch + 42 >> 1] = 404;
+      HEAP16[fetch + 40 >> 1] = 4;
+      HEAP16[fetch + 42 >> 1] = 404;
       stringToUTF8("Not Found", fetch + 44, 64);
       onerror(fetch, 0, error);
     };
@@ -1163,14 +1163,14 @@ function fetchDeleteCachedData(db, fetch, onsuccess, onerror) {
       writeI53ToI64(fetch + 16, 0);
       writeI53ToI64(fetch + 24, 0);
       writeI53ToI64(fetch + 32, 0);
-      HEAPU16[fetch + 40 >> 1] = 4;
-      HEAPU16[fetch + 42 >> 1] = 200;
+      HEAP16[fetch + 40 >> 1] = 4;
+      HEAP16[fetch + 42 >> 1] = 200;
       stringToUTF8("OK", fetch + 44, 64);
       onsuccess(fetch, 0, value);
     };
     request.onerror = error => {
-      HEAPU16[fetch + 40 >> 1] = 4;
-      HEAPU16[fetch + 42 >> 1] = 404;
+      HEAP16[fetch + 40 >> 1] = 4;
+      HEAP16[fetch + 42 >> 1] = 404;
       stringToUTF8("Not Found", fetch + 44, 64);
       onerror(fetch, 0, error);
     };
@@ -1269,13 +1269,26 @@ var GL = {
   stringCache: {},
   stringiCache: {},
   unpackAlignment: 4,
-  recordError: function recordError(errorCode) {},
+  recordError: errorCode => {},
   getNewId: table => {
     var ret = GL.counter++;
     for (var i = table.length; i < ret; i++) {
       table[i] = null;
     }
     return ret;
+  },
+  genObject: (n, buffers, createFunction, objectTable) => {
+    for (var i = 0; i < n; i++) {
+      var buffer = GLctx[createFunction]();
+      var id = buffer && GL.getNewId(objectTable);
+      if (buffer) {
+        buffer.name = id;
+        objectTable[id] = buffer;
+      } else {
+        GL.recordError(1282);
+      }
+      HEAP32[buffers + i * 4 >> 2] = id;
+    }
   },
   getSource: (shader, count, string, length) => {
     var source = "";
@@ -1331,7 +1344,7 @@ var GL = {
     GL.contexts[contextHandle] = null;
   }
 };
-var emscripten_webgl_power_preferences = ["default", "low-power", "high-performance"];
+var webglPowerPreferences = ["default", "low-power", "high-performance"];
 var _emscripten_webgl_do_create_context = (target, attributes) => {
   var a = attributes >> 2;
   var powerPreference = HEAP32[a + (24 >> 2)];
@@ -1342,7 +1355,7 @@ var _emscripten_webgl_do_create_context = (target, attributes) => {
     "antialias": !!HEAP32[a + (12 >> 2)],
     "premultipliedAlpha": !!HEAP32[a + (16 >> 2)],
     "preserveDrawingBuffer": !!HEAP32[a + (20 >> 2)],
-    "powerPreference": emscripten_webgl_power_preferences[powerPreference],
+    "powerPreference": webglPowerPreferences[powerPreference],
     "failIfMajorPerformanceCaveat": !!HEAP32[a + (28 >> 2)],
     majorVersion: HEAP32[a + (32 >> 2)],
     minorVersion: HEAP32[a + (36 >> 2)],
@@ -1413,9 +1426,7 @@ var _getentropy = (buffer, size) => {
   randomFill(HEAPU8.subarray(buffer, buffer + size));
   return 0;
 };
-function _glActiveTexture(x0) {
-  GLctx.activeTexture(x0);
-}
+var _glActiveTexture = x0 => GLctx.activeTexture(x0);
 var _glAttachShader = (program, shader) => {
   GLctx.attachShader(GL.programs[program], GL.shaders[shader]);
 };
@@ -1436,12 +1447,8 @@ var _glBindTexture = (target, texture) => {
 var _glBindVertexArray = vao => {
   GLctx.bindVertexArray(GL.vaos[vao]);
 };
-function _glBlendEquation(x0) {
-  GLctx.blendEquation(x0);
-}
-function _glBlendFunc(x0, x1) {
-  GLctx.blendFunc(x0, x1);
-}
+var _glBlendEquation = x0 => GLctx.blendEquation(x0);
+var _glBlendFunc = (x0, x1) => GLctx.blendFunc(x0, x1);
 var _glBufferData = (target, size, data, usage) => {
   if (true) {
     if (data && size) {
@@ -1453,12 +1460,8 @@ var _glBufferData = (target, size, data, usage) => {
     GLctx.bufferData(target, data ? HEAPU8.subarray(data, data + size) : size, usage);
   }
 };
-function _glClear(x0) {
-  GLctx.clear(x0);
-}
-function _glClearColor(x0, x1, x2, x3) {
-  GLctx.clearColor(x0, x1, x2, x3);
-}
+var _glClear = x0 => GLctx.clear(x0);
+var _glClearColor = (x0, x1, x2, x3) => GLctx.clearColor(x0, x1, x2, x3);
 var _glCompileShader = shader => {
   GLctx.compileShader(GL.shaders[shader]);
 };
@@ -1536,49 +1539,32 @@ var _glDeleteVertexArrays = (n, vaos) => {
     GL.vaos[id] = null;
   }
 };
-function _glDisable(x0) {
-  GLctx.disable(x0);
-}
+var _glDisable = x0 => GLctx.disable(x0);
 var _glDrawArraysInstanced = (mode, first, count, primcount) => {
   GLctx.drawArraysInstanced(mode, first, count, primcount);
 };
 var _glDrawElements = (mode, count, type, indices) => {
   GLctx.drawElements(mode, count, type, indices);
 };
-function _glEnable(x0) {
-  GLctx.enable(x0);
-}
+var _glEnable = x0 => GLctx.enable(x0);
 var _glEnableVertexAttribArray = index => {
   GLctx.enableVertexAttribArray(index);
 };
 var _glFramebufferTexture2D = (target, attachment, textarget, texture, level) => {
   GLctx.framebufferTexture2D(target, attachment, textarget, GL.textures[texture], level);
 };
-var __glGenObject = (n, buffers, createFunction, objectTable) => {
-  for (var i = 0; i < n; i++) {
-    var buffer = GLctx[createFunction]();
-    var id = buffer && GL.getNewId(objectTable);
-    if (buffer) {
-      buffer.name = id;
-      objectTable[id] = buffer;
-    } else {
-      GL.recordError(1282);
-    }
-    HEAP32[buffers + i * 4 >> 2] = id;
-  }
-};
 var _glGenBuffers = (n, buffers) => {
-  __glGenObject(n, buffers, "createBuffer", GL.buffers);
+  GL.genObject(n, buffers, "createBuffer", GL.buffers);
 };
 var _glGenFramebuffers = (n, ids) => {
-  __glGenObject(n, ids, "createFramebuffer", GL.framebuffers);
+  GL.genObject(n, ids, "createFramebuffer", GL.framebuffers);
 };
 var _glGenTextures = (n, textures) => {
-  __glGenObject(n, textures, "createTexture", GL.textures);
+  GL.genObject(n, textures, "createTexture", GL.textures);
 };
-function _glGenVertexArrays(n, arrays) {
-  __glGenObject(n, arrays, "createVertexArray", GL.vaos);
-}
+var _glGenVertexArrays = (n, arrays) => {
+  GL.genObject(n, arrays, "createVertexArray", GL.vaos);
+};
 var _glGetAttribLocation = (program, name) => GLctx.getAttribLocation(GL.programs[program], UTF8ToString(name));
 var _glGetProgramInfoLog = (program, maxLength, length, infoLog) => {
   var log = GLctx.getProgramInfoLog(GL.programs[program]);
@@ -1735,14 +1721,12 @@ var heapObjectForWebGLType = type => {
   if (type == 5 || type == 28922 || type == 28520 || type == 30779 || type == 30782) return HEAPU32;
   return HEAPU16;
 };
-var heapAccessShiftForWebGLHeap = heap => 31 - Math.clz32(heap.BYTES_PER_ELEMENT);
+var toTypedArrayIndex = (pointer, heap) => pointer >>> 31 - Math.clz32(heap.BYTES_PER_ELEMENT);
 var emscriptenWebGLGetTexPixelData = (type, format, width, height, pixels, internalFormat) => {
   var heap = heapObjectForWebGLType(type);
-  var shift = heapAccessShiftForWebGLHeap(heap);
-  var byteSize = 1 << shift;
-  var sizePerPixel = colorChannelsInGlTextureFormat(format) * byteSize;
+  var sizePerPixel = colorChannelsInGlTextureFormat(format) * heap.BYTES_PER_ELEMENT;
   var bytes = computeUnpackAlignedImageSize(width, height, sizePerPixel, GL.unpackAlignment);
-  return heap.subarray(pixels >> shift, pixels + bytes >> shift);
+  return heap.subarray(toTypedArrayIndex(pixels, heap), toTypedArrayIndex(pixels + bytes, heap));
 };
 var _glTexImage2D = (target, level, internalFormat, width, height, border, format, type, pixels) => {
   if (true) {
@@ -1750,7 +1734,7 @@ var _glTexImage2D = (target, level, internalFormat, width, height, border, forma
       GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, pixels);
     } else if (pixels) {
       var heap = heapObjectForWebGLType(type);
-      GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, heap, pixels >> heapAccessShiftForWebGLHeap(heap));
+      GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, heap, toTypedArrayIndex(pixels, heap));
     } else {
       GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, null);
     }
@@ -1758,9 +1742,7 @@ var _glTexImage2D = (target, level, internalFormat, width, height, border, forma
   }
   GLctx.texImage2D(target, level, internalFormat, width, height, border, format, type, pixels ? emscriptenWebGLGetTexPixelData(type, format, width, height, pixels, internalFormat) : null);
 };
-function _glTexParameteri(x0, x1, x2) {
-  GLctx.texParameteri(x0, x1, x2);
-}
+var _glTexParameteri = (x0, x1, x2) => GLctx.texParameteri(x0, x1, x2);
 var webglGetUniformLocation = location => {
   var p = GLctx.currentProgram;
   var webglLoc = p.uniformLocsById[location];
@@ -1786,9 +1768,7 @@ var _glVertexAttribDivisor = (index, divisor) => {
 var _glVertexAttribPointer = (index, size, type, normalized, stride, ptr) => {
   GLctx.vertexAttribPointer(index, size, type, !!normalized, stride, ptr);
 };
-function _glViewport(x0, x1, x2, x3) {
-  GLctx.viewport(x0, x1, x2, x3);
-}
+var _glViewport = (x0, x1, x2, x3) => GLctx.viewport(x0, x1, x2, x3);
 function _init_gCanvas(charSize, canvasWidth, canvasHeight, font) {
   var canvas = document.createElement("canvas");
   canvas.width = canvasWidth;
