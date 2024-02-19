@@ -107,6 +107,23 @@ void SceneTest1::Init() {
 	rootNode->MakeChildren<Label>()->Init(1, gDesign.xy8m, { 1,1 }, gDesign.xy8a, RGBA8_White
 		, "zoom: Z / X  create snake: mouse click");
 
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"clear", [&]() {
+		im.Clear();
+		});
+
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+100 snake", [&]() {
+		for (int i = 0; i < 100; i++) {
+			CreateSnake(camera.ToLogicPos({}), gLooper.rnd.Next<int>(10, 30));
+		}
+		});
+
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"zoom in", [&]() {
+		camera.IncreaseScale(0.1f, 5);
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"zoom out", [&]() {
+		camera.DecreaseScale(0.1f, 0.1f);
+		});
+
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
 	camera.SetScale(1.f);
