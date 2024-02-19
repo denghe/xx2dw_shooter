@@ -20,7 +20,7 @@ struct SnakeBody : BaseItem {
 
 	void Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> head_, xx::Weak<SnakeBody> prev_, bool isTail_ = false);
 	virtual bool Update() override;
-	virtual void Draw(Camera const& camera);
+	virtual void Draw(Camera const& camera) override;
 };
 
 struct SceneTest1 : Scene {
