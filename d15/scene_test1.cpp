@@ -14,21 +14,16 @@ void SnakeBody::Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> h
 }
 
 xx::Task<> SnakeBody::MainTask() {
-LabBegin:
-	for (int e = gLooper.frameNumber + int(cStepMoveDuration / gDesign.frameDelay); gLooper.frameNumber < e;) {
+	while (true) {
 		auto hPos = prev ? prev->pos : scene->camera.ToLogicPos(gEngine->mouse.pos);
-		auto d = hPos - pos;
-		auto dd = d.x * d.x + d.y * d.y;
-		// todo: do not overlap ( cDistance )
-		if (dd > cSpeed * cSpeed) {						// avoid NAN issue
-			auto inc = d / std::sqrt(dd);			// normalize
-			pos = pos + inc * cSpeed;
-		} else {
-			pos = hPos;
+		auto v = hPos - pos;
+		auto distance = std::sqrt(v.x * v.x + v.y * v.y);
+		if (auto d = distance - cDistance; d > 0) {
+			auto inc = v / distance * std::min(d, cSpeed);
+			pos = pos + inc;
 		}
 		co_yield 0;
 	}
-	goto LabBegin;
 }
 
 bool SnakeBody::Update() {
@@ -59,7 +54,7 @@ void SnakeBody::Draw(Camera const& camera) {
 void SceneTest1::Init() {
 	camera.SetMaxFrameSize({ 50, 50 });
 	camera.SetOriginal(gLooper.windowSize_2);
-	camera.SetScale(2.f);
+	camera.SetScale(4.f);
 
 	im.Init(this);
 

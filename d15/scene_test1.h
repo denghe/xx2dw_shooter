@@ -9,9 +9,8 @@ struct SnakeBody : BaseItem {
 
 	static constexpr float cScale{ 1 };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
-	static constexpr float cStepMoveDuration{ 0.5f };
-	static constexpr float cSpeed{ 200.f / gDesign.fps };
-	static constexpr float cDistance{ 10.f };
+	static constexpr float cSpeed{ 300.f / gDesign.fps };
+	static constexpr float cDistance{ 3.f };
 
 	xx::Weak<SnakeBody> head, prev;
 	bool isTail{};
