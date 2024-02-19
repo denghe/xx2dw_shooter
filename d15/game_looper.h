@@ -73,6 +73,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	// cfgs
 	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
 
+	xx::Listi32<xx::Ref<Frame>> frames_snake;
 };
 
 extern GameLooper gLooper;

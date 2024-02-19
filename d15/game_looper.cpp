@@ -87,8 +87,19 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg_hp.center = { 1, 1, 2, 2 };
 	s9cfg_hp.color = {90,90,90,255};
 
-	//co_await AsyncSleep(1);	// for record movie
+	std::vector<xx::Ref<Frame>> tmp;
+	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_head1.png")));
+	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_body.png")));
+	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_tail.png")));
 
+	DynamicTexturePacker<128> dtp;
+	auto ok = dtp.Fill(tmp);
+	assert(ok);
+	for (auto& o : tmp) {
+		frames_snake.Add(o);
+	}
+
+	//co_await AsyncSleep(1);	// for record movie
 	//co_await AsyncSwitchTo<SceneMainMenu>();
 	co_await AsyncSwitchTo<SceneTest1>();
 }

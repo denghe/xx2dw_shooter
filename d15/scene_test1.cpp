@@ -73,6 +73,7 @@ bool SnakeBody::Update() {
 }
 
 void SnakeBody::Draw(Camera const& camera) {
+#if 0
 	RGBA8 c;
 	if (prev) {
 		if (isTail) c = { 0, 0, 255, 255 };
@@ -87,6 +88,22 @@ void SnakeBody::Draw(Camera const& camera) {
 	q.radians = 0;	// fixed radians
 	q.colorplus = 1;
 	q.color = c;
+#else
+	int idx;
+	if (prev) {
+		if (isTail) idx = 2;
+		else idx = 1;
+	} else {
+		idx = 0;
+	}
+	auto& q = Quad::DrawOnce(gLooper.frames_snake[idx]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY::Make(camera.scale) * cScale;
+	q.radians = radians;//0;	// fixed radians
+	q.colorplus = 1;
+	q.color = RGBA8_White;
+#endif
 }
 
 #pragma endregion
@@ -95,6 +112,7 @@ void SnakeBody::Draw(Camera const& camera) {
 
 void SceneTest1::CreateSnake(XY const& headPos, int len) {
 	auto h = im.Create<SnakeBody>(headPos, xx::Weak<SnakeBody>{}, xx::Weak<SnakeBody>{}, false);
+	h->radians = -gPI / 2;
 	auto o = h;
 	for (int i = 0; i < len; i++) {
 		o = im.Create<SnakeBody>(o->pos + XY{ 0, o->cDistance }, h, o);
@@ -129,11 +147,6 @@ void SceneTest1::Init() {
 	camera.SetScale(1.f);
 
 	im.Init(this);
-
-	//// create snakes
-	//for (int i = 0; i < 1000; i++) {
-	//	CreateSnake(gLooper.windowSize_2, 30);
-	//}
 }
 
 void SceneTest1::Update() {
