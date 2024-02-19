@@ -3,9 +3,10 @@
 
 #pragma region SnakeBody
 
-void SnakeBody::Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> prev_, bool isTail_) {
+void SnakeBody::Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> head_, xx::Weak<SnakeBody> prev_, bool isTail_) {
 	SceneItemInit(cTypeId, im_);
 	mainTask = MainTask();
+	head = std::move(head);
 	prev = std::move(prev_);
 	isTail = isTail_;
 	// todo: more init
@@ -35,20 +36,20 @@ bool SnakeBody::Update() {
 }
 
 void SnakeBody::Draw(Camera const& camera) {
-	xx::Ref<Frame> f;
+	RGBA8 c;
 	if (prev) {
-		if (isTail) f = gLooper.frame_no;
-		else f = gLooper.frames_mine[0];
+		if (isTail) c = { 0, 0, 255, 255 };
+		else c = { 255, 255, 255, 255 };
 	} else {
-		f = gLooper.frame_yes;
+		c = { 255, 0, 0, 255 };
 	}
-	auto& q = Quad::DrawOnce(f);
+	auto& q = Quad::DrawOnce(gLooper.frames_creature_1[96]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY::Make(camera.scale) * cScale;
 	q.radians = radians;
 	q.colorplus = 1;
-	q.color = { 255, 255, 255, 255 };
+	q.color = c;
 }
 
 #pragma endregion
@@ -63,11 +64,12 @@ void SceneTest1::Init() {
 	im.Init(this);
 
 	// create snake
-	auto o = im.Create<SnakeBody>(gLooper.windowSize_2, xx::Weak<SnakeBody>{});
+	auto h = im.Create<SnakeBody>(gLooper.windowSize_2, xx::Weak<SnakeBody>{}, xx::Weak<SnakeBody>{}, false);
+	auto o = h;
 	for (size_t i = 0; i < 20; i++) {
-		o = im.Create<SnakeBody>(o->pos + XY{ 0, o->cDistance.from }, o);
+		o = im.Create<SnakeBody>(o->pos + XY{ 0, o->cDistance }, h, o);
 	}
-	im.Create<SnakeBody>(o->pos + XY{ 0, o->cDistance.from }, o, true);
+	im.Create<SnakeBody>(o->pos + XY{ 0, o->cDistance }, h, o, true);
 }
 
 void SceneTest1::Update() {

@@ -10,16 +10,16 @@ struct SnakeBody : BaseItem {
 	static constexpr float cScale{ 1 };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cStepMoveDuration{ 0.5f };
-	static constexpr float cSpeed{ 30.f / gDesign.fps };
-	static constexpr xx::FromTo cDistance{ 10.f, 20.f };
+	static constexpr float cSpeed{ 200.f / gDesign.fps };
+	static constexpr float cDistance{ 10.f };
 
-	xx::Weak<SnakeBody> prev;
+	xx::Weak<SnakeBody> head, prev;
 	bool isTail{};
 
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
 
-	void Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> prev_, bool isTail_ = false);
+	void Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> head_, xx::Weak<SnakeBody> prev_, bool isTail_ = false);
 	virtual bool Update() override;
 	virtual void Draw(Camera const& camera);
 };
