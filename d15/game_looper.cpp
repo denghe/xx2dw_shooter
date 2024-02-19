@@ -88,9 +88,15 @@ xx::Task<> GameLooper::MainTask() {
 	s9cfg_hp.color = {90,90,90,255};
 
 	std::vector<xx::Ref<Frame>> tmp;
+#ifdef __EMSCRIPTEN__
+	tmp.emplace_back(co_await AsyncLoadFrameFromUrl("res/bug_head1.png"));
+	tmp.emplace_back(co_await AsyncLoadFrameFromUrl("res/bug_body.png"));
+	tmp.emplace_back(co_await AsyncLoadFrameFromUrl("res/bug_tail.png"));
+#else
 	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_head1.png")));
 	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_body.png")));
 	tmp.emplace_back(Frame::Create(LoadTexture("res/bug_tail.png")));
+#endif
 
 	DynamicTexturePacker<128> dtp;
 	auto ok = dtp.Fill(tmp);
