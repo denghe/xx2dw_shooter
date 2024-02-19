@@ -15,6 +15,6 @@ int32_t main() {
 	gLooper.showFps = true;
 	gLooper.title = "xx2dw_d15";
 	gLooper.Init();
-	gLooper.Run();
+	gLooper.Run<false>();
 }
 #endif
