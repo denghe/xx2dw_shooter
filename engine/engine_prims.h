@@ -538,16 +538,15 @@ namespace RotateControl {
 
     // step change a to b by step. when a == b mean done
     inline XX_FORCE_INLINE bool Step(float& a, float b, float step) {
-        static constexpr float pi{ (float)M_PI }, npi{ -pi }, pi2{pi * 2};
-        assert(a >= npi && a <= pi);
-        assert(b >= npi && b <= pi);
-        assert(step >= 0 && step <= pi);
+        assert(a >= gNPI && a <= gPI);
+        assert(b >= gNPI && b <= gPI);
+        assert(step >= 0 && step <= gPI);
         auto bak = b;
-        if ((b - a) * (b - a) > pi * pi) {
+        if ((b - a) * (b - a) > gPI * gPI) {
             if (b < a) {
-                b += pi2;
+                b += g2PI;
             } else {
-                b -= pi2;
+                b -= g2PI;
             }
         }
         if (b > a) {
@@ -556,8 +555,8 @@ namespace RotateControl {
                 return true;
             } else {
                 a += step;
-                if (a >= pi) {
-                    a -= pi2;
+                if (a >= gPI) {
+                    a -= g2PI;
                 }
             }
         } else {
@@ -566,8 +565,8 @@ namespace RotateControl {
                 return true;
             } else {
                 a -= step;
-                if (a <= npi) {
-                    a += pi2;
+                if (a <= gNPI) {
+                    a += g2PI;
                 }
             }
         }
