@@ -62,7 +62,19 @@ XY SnakeBody::GenRndPos(float radius, float safeRadius) {
 	float len = radius - safeRadius;
 	auto r = std::sqrt(gLooper.rnd.Next<float>() * (len / radius) + safeRadius / radius) * radius;
 	auto a = gLooper.rnd.Next<float>(gNPI, gPI);
-	return pos + XY{ std::cos(a) * r, std::sin(a) * r };
+	auto p = pos + XY{ std::cos(a) * r, std::sin(a) * r };
+	// map edge limit
+	if (p.x < gCfg.mapSafeMinPos.x) {
+		p.x = gCfg.mapSafeMinPos.x - (p.x - gCfg.mapSafeMinPos.x);
+	} else if (p.x >= gCfg.mapSafeMaxPos.x) {
+		p.x = gCfg.mapSafeMaxPos.x - (p.x - gCfg.mapSafeMaxPos.x);
+	}
+	if (p.y < gCfg.mapSafeMinPos.y) {
+		p.y = gCfg.mapSafeMinPos.y - (p.y - gCfg.mapSafeMinPos.y);
+	} else if (p.y >= gCfg.mapSafeMaxPos.y) {
+		p.y = gCfg.mapSafeMaxPos.y - (p.y - gCfg.mapSafeMaxPos.y);
+	}
+	return p;
 }
 
 xx::Task<> SnakeBody::MainTask2() {
@@ -82,7 +94,7 @@ xx::Task<> SnakeBody::MainTask2() {
 	}
 	// head logic: select random pos & gogogo
 	while (true) {
-		auto hPos = GenRndPos(300, 50);	// todo: map edge limit ?
+		auto hPos = GenRndPos(300, 50);
 		while (true) {
 			// todo: simple calc num steps avoid death loop?
 			auto v = hPos - pos;
@@ -164,8 +176,6 @@ void SceneTest1::CreateSnake(XY const& headPos, int len) {
 void SceneTest1::Init() {
 
 	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Label>()->Init(1, gDesign.xy8m, { 1,1 }, gDesign.xy8a, RGBA8_White
-		, "zoom: Z / X   hit: mouse click");
 
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"clear", [&]() {
 		im.Clear();
@@ -251,6 +261,12 @@ void SceneTest1::Draw() {
 	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, XY::Make(camera.scale))
 		.SetPosition(gLooper.mouse.pos)
 		.Draw();
+
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   hit: mouse click", RGBA8_Green, {0.5f, 1});
+
+	
+	auto str = xx::ToString("total item count = ", im.GetSize());
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, {0.5f, 1});
 
 	gLooper.DrawNode(rootNode);
 };

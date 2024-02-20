@@ -138,6 +138,10 @@ struct ItemManager : ItemManagerBase {
 		(DumpInfoCore<TS>(), ...);
 	}
 
+	int GetSize() {
+		return (Get<TS>().len + ...);
+	}
+
 	// Draw helpers
 	xx::Listi32<ItemY> iys;
 

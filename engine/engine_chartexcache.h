@@ -109,6 +109,7 @@ struct CharTexCache {
         auto e = txt.size();
         for (size_t i = 0; i < e; ++i) {
             fs[i] = &Find(txt[i]);
+            size.x += fs[i]->texRect.w;
         }
         auto pos = position - size * anchor;
         auto& shader = EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance);
