@@ -144,19 +144,22 @@ struct ItemManager : ItemManagerBase {
 	// default impl
 	template<std::derived_from<Item>...US>
 	void Draw(Camera const& camera) {
-		Foreach<US...>([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
-			for (auto& o : items) {
-				if (camera.InArea(o->pos)) {
-					iys.Emplace(o, o->posY);
+		if constexpr (sizeof...(US) > 0) {
+			Foreach<US...>([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+				for (auto& o : items) {
+					if (camera.InArea(o->pos)) {
+						iys.Emplace(o, o->posY);
+					}
 				}
-			}
-		});
+			});
+		}
 		ItemY::Sort(iys);
 		for (auto& iy : iys) {
 			iy.item->Draw(camera);
 		}
 		iys.Clear();
 	}
+
 	void DrawAll(Camera const& camera) {
 		Draw<TS...>(camera);
 	}
@@ -169,7 +172,7 @@ using BaseItem = SceneItem<SceneTest1>;
 
 */
 template<typename SceneType>
-struct SceneItem : Item {
+struct SceneItemBase : Item {
 	SceneType* scene{};
 	void SceneItemInit(int typeId_, ItemManagerBase* im_) {
 		ItemInit(typeId_, im_);

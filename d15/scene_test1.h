@@ -1,16 +1,39 @@
 ﻿#pragma once
 #include <game_looper.h>
 
-struct SceneTest1;
-using BaseItem = SceneItem<SceneTest1>;
+struct Cfg {
+	static constexpr int physCellSize{ 64 };	// need >= max monster size
+	static constexpr int physNumRows{ 512 };
+	static constexpr int physNumCols{ 512 };
 
-struct SnakeBody : BaseItem {
+	static constexpr XY mapSize{ float(physNumCols * physCellSize), float(physNumRows * physCellSize) };
+	static constexpr XY mapCenterPos{ mapSize.x / 2, mapSize.y / 2 };
+
+	static constexpr float mouseHitRange{ 50.f };
+};
+inline Cfg gCfg;
+
+struct SceneTest1;
+using SceneItem = SceneItemBase<SceneTest1>;
+
+struct PhysSceneItem : SceneItem, SpaceGridCItem<PhysSceneItem, XY> {
+	void PhysAdd();				// call after fill pos
+	void PhysUpdate();			// call after fill pos
+	void PhysRemove();
+	bool PhysExists();
+	~PhysSceneItem();
+
+	//virtual bool Hit(SceneItem& attacker, int damage);
+};
+
+struct SnakeBody : PhysSceneItem {
 	static constexpr int cTypeId{ 1 };
 
 	static constexpr float cScale{ 1 };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cSpeed{ 300.f / gDesign.fps };
-	static constexpr float cDistance{ 3.f };
+	//static constexpr float cDistance{ 3.f };	// for slime
+	static constexpr float cDistance{ 10.f };
 	static constexpr float cMinRadians{ g2PI / 32.f };
 
 	xx::Weak<SnakeBody> head, prev;
@@ -28,6 +51,7 @@ struct SnakeBody : BaseItem {
 };
 
 struct SceneTest1 : Scene {
+	SpaceGridC<PhysSceneItem, XY> sgcPhysItems;	// must at top
 	xx::Shared<Node> rootNode;
 	Camera camera;
 	ItemManager<SnakeBody> im;

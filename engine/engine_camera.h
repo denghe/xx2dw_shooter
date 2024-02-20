@@ -94,7 +94,7 @@ struct Camera {
 	// calc row col index range for space grid circle
 	/*
 	 	int32_t rowFrom, rowTo, colFrom, colTo; 
-		camera.FillRowColIdxRange(gMapCfg.physNumRows, gMapCfg.physNumCols, gMapCfg.physCellSize,
+		camera.FillRowColIdxRange(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize,
 			rowFrom, rowTo, colFrom, colTo);
 		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
 			for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {

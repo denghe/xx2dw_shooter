@@ -1,6 +1,35 @@
 ﻿#include <pch.h>
 #include <all.h>
 
+#pragma region Scene[Phys]Item
+
+void PhysSceneItem::PhysAdd() {
+	SGCAdd(scene->sgcPhysItems, pos);
+}
+
+void PhysSceneItem::PhysUpdate() {
+	SGCUpdate(pos);
+}
+
+void PhysSceneItem::PhysRemove() {
+	SGCRemove();
+}
+
+bool PhysSceneItem::PhysExists() {
+	return !!_sgc;
+}
+
+PhysSceneItem::~PhysSceneItem() {
+	SGCRemove();
+}
+
+//bool ScenePhysItem::Hit(SceneItem& attacker, int damage) {
+//	SGCRemove();
+//	return true;
+//}
+
+#pragma endregion
+
 #pragma region SnakeBody
 
 void SnakeBody::Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> head_, xx::Weak<SnakeBody> prev_, bool isTail_) {
@@ -11,6 +40,7 @@ void SnakeBody::Init(ItemManagerBase* im_, XY const& pos_, xx::Weak<SnakeBody> h
 	isTail = isTail_;
 	// todo: more init
 	pos = pos_;
+	PhysAdd();
 }
 
 xx::Task<> SnakeBody::MainTask() {
@@ -22,6 +52,7 @@ xx::Task<> SnakeBody::MainTask() {
 		if (auto d = distance - cDistance; d > 0) {
 			auto inc = v / distance * std::min(d, cSpeed);
 			pos = pos + inc;
+			PhysUpdate();
 		}
 		co_yield 0;
 	}
@@ -44,13 +75,14 @@ xx::Task<> SnakeBody::MainTask2() {
 			if (auto d = distance - cDistance; d > 0) {
 				auto inc = v / distance * std::min(d, cSpeed);
 				pos = pos + inc;
+				PhysUpdate();
 			}
 			co_yield 0;
 		} while (prev);
 	}
 	// head logic: select random pos & gogogo
 	while (true) {
-		auto hPos = GenRndPos(300, 50);	// todo: screen range limit ?
+		auto hPos = GenRndPos(300, 50);	// todo: map edge limit ?
 		while (true) {
 			// todo: simple calc num steps avoid death loop?
 			auto v = hPos - pos;
@@ -59,8 +91,10 @@ xx::Task<> SnakeBody::MainTask2() {
 			XY inc{ std::cos(radians), std::sin(radians) };
 			if (v.x * v.x + v.y * v.y > cSpeed * cSpeed) {
 				pos = pos + inc * cSpeed;
+				PhysUpdate();
 			} else {
 				pos = hPos;
+				PhysUpdate();
 				break;
 			}
 			co_yield 0;
@@ -121,17 +155,28 @@ void SceneTest1::CreateSnake(XY const& headPos, int len) {
 }
 
 void SceneTest1::Init() {
+
 	rootNode.Emplace()->Init();
 	rootNode->MakeChildren<Label>()->Init(1, gDesign.xy8m, { 1,1 }, gDesign.xy8a, RGBA8_White
-		, "zoom: Z / X  create snake: mouse click");
+		, "zoom: Z / X   hit: mouse click");
 
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"clear", [&]() {
 		im.Clear();
 		});
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+100 snake", [&]() {
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{0, 100}, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
 		for (int i = 0; i < 100; i++) {
-			CreateSnake(camera.ToLogicPos({}), gLooper.rnd.Next<int>(10, 30));
+			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
+		}
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
+		for (int i = 0; i < 1000; i++) {
+			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
+		}
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10000", [&]() {
+		for (int i = 0; i < 10000; i++) {
+			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
 		}
 		});
 
@@ -142,10 +187,13 @@ void SceneTest1::Init() {
 		camera.DecreaseScale(0.1f, 0.1f);
 		});
 
+
 	camera.SetMaxFrameSize({ 50, 50 });
-	camera.SetOriginal(gLooper.windowSize_2);
+	camera.SetOriginal(gCfg.mapCenterPos);
 	camera.SetScale(1.f);
 
+
+	sgcPhysItems.Init(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize);
 	im.Init(this);
 }
 
@@ -159,10 +207,11 @@ void SceneTest1::Update() {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 
-	// snake gen control
+	// hit control
 	auto& m = gLooper.mouse;
-	if (m.btnStates[0]) {
-		CreateSnake(camera.ToLogicPos(m.pos), gLooper.rnd.Next<int>(10, 30));
+	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
+		//CreateSnake(camera.ToLogicPos(m.pos), gLooper.rnd.Next<int>(10, 20));
+		// todo
 	}
 
 	im.Update();
@@ -171,7 +220,28 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
+#if 0
 	im.DrawAll(camera);
+#else
+	// fill phys items to iys order by row & cut by cell pos
+	int32_t rowFrom, rowTo, colFrom, colTo;
+	camera.FillRowColIdxRange(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize,
+		rowFrom, rowTo, colFrom, colTo);
+	auto& iys = im.iys;
+	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
+			sgcPhysItems.ForeachWithoutBreak(idx, [&](PhysSceneItem* o) {
+				iys.Emplace(o, o->posY);
+			});
+		}
+	}
+	im.Draw(camera);
+#endif
+
+	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, XY::Make(camera.scale))
+		.SetPosition(gLooper.mouse.pos)
+		.Draw();
 
 	gLooper.DrawNode(rootNode);
 };
