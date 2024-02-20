@@ -3,6 +3,8 @@
 
 xx::Task<> GameLooper::MainTask() {
 	{
+		sgrdd.Init(128, 32);
+
 #ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl
 #else

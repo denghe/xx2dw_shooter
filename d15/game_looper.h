@@ -74,6 +74,9 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
 
 	xx::Listi32<xx::Ref<Frame>> frames_snake;
+
+	// for space grid  FindNearest  ForeachByRange
+	SpaceGridRingDiffuseData sgrdd;
 };
 
 extern GameLooper gLooper;

@@ -103,6 +103,13 @@ xx::Task<> SnakeBody::MainTask2() {
 }
 
 bool SnakeBody::Update() {
+	// mouse hit death check
+	if (!PhysExists()) {
+		if (prev) {
+			prev->isTail = true;
+		}
+		return true;
+	}
 	return mainTask.Resume();
 }
 
@@ -164,18 +171,18 @@ void SceneTest1::Init() {
 		im.Clear();
 		});
 
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{0, 100}, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{0, 100}, gDesign.xy4a, gLooper.s9cfg_btn, U"+10", [&]() {
+		for (int i = 0; i < 10; i++) {
+			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
+		}
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
 		for (int i = 0; i < 100; i++) {
 			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
 		}
 		});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
 		for (int i = 0; i < 1000; i++) {
-			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
-		}
-		});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 100 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10000", [&]() {
-		for (int i = 0; i < 10000; i++) {
 			CreateSnake(gCfg.mapCenterPos, gLooper.rnd.Next<int>(10, 30));
 		}
 		});
@@ -210,8 +217,10 @@ void SceneTest1::Update() {
 	// hit control
 	auto& m = gLooper.mouse;
 	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
-		//CreateSnake(camera.ToLogicPos(m.pos), gLooper.rnd.Next<int>(10, 20));
-		// todo
+		auto p = camera.ToLogicPos(m.pos);
+		ForeachByRange(sgcPhysItems, gLooper.sgrdd, p, gCfg.mouseHitRange, [](PhysSceneItem* o) {
+			o->PhysRemove();
+		});
 	}
 
 	im.Update();

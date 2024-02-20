@@ -2,7 +2,7 @@
 #include <game_looper.h>
 
 struct Cfg {
-	static constexpr int physCellSize{ 64 };	// need >= max monster size
+	static constexpr int physCellSize{ 32 };	// need >= max monster size
 	static constexpr int physNumRows{ 512 };
 	static constexpr int physNumCols{ 512 };
 
