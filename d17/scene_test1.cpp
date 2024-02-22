@@ -1,6 +1,44 @@
 ﻿#include <pch.h>
 #include <all.h>
 
+#pragma region BagCell
+
+void BagCell::Update(Bag* owner) {
+
+}
+
+void BagCell::Draw(Camera const& camera) {
+
+}
+
+#pragma endregion
+
+#pragma region Bag
+
+XY Bag::GetGridSize() {
+	return {
+		gridPadding.x * 2 + BagCell::cellMargin.x * (numCols - 1),
+		gridPadding.y * 2 + BagCell::cellMargin.y * (numRows - 1)
+	};
+}
+
+void Bag::Init(int numRows_, int numCols_) {
+	numRows = numRows_;
+	numCols = numCols_;
+}
+
+void Bag::Update() {
+	// todo: mouse drag item
+
+}
+
+void Bag::Draw(Camera const& camera) {
+	// todo: draw background grid lines ?
+
+}
+
+#pragma endregion
+
 #pragma region SceneTest1
 
 void SceneTest1::Init() {
@@ -8,7 +46,7 @@ void SceneTest1::Init() {
 	camera.SetOriginal(gCfg.gridCenterPos);
 	camera.SetScale(1.f);
 
-	// todo
+	bag.Init(20, 30);
 }
 
 void SceneTest1::Update() {
@@ -21,15 +59,11 @@ void SceneTest1::Update() {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 
-	// todo: mouse drag item
 }
 
 void SceneTest1::Draw() {
 	camera.Calc();
-
-	// todo: draw background grid lines ?
-
-	// todo
+	bag.Draw(camera);
 };
 
 #pragma endregion

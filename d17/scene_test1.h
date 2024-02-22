@@ -17,10 +17,31 @@ struct Cfg {
 };
 inline Cfg gCfg;
 
+struct Bag;
+struct BagCell {
+	static constexpr XY cellMargin{ 5, 5 };
 
+	void Update(Bag* owner);
+	void Draw(Camera const& camera);
+};
+
+struct Bag {
+	static constexpr XY gridPadding{ 10, 10 };
+
+	XY GetGridSize();
+
+	// todo: grid line & margin cfg
+	xx::Listi32<xx::Shared<BagCell>> cells;
+	int numRows{}, numCols{};
+
+	void Init(int numRows_, int numCols_);
+	void Update();
+	void Draw(Camera const& camera);
+};
 
 struct SceneTest1 : Scene {
 	Camera camera;
+	Bag bag;
 
 	virtual void Init() override;
 	virtual void Update() override;
