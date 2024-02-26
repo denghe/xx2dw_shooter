@@ -6,7 +6,8 @@
 XY Bag::GetDrawSize() const {
 	return cellSize * XY{ (float)numCols, (float)numRows };
 }
-xx::Weak<BagItem>& Bag::GetItem(int rowIdx_, int colIdx_) const {
+
+xx::Weak<BagItem>& Bag::RefItem(int rowIdx_, int colIdx_) const {
 	assert(rowIdx_ >= 0 && rowIdx_ < numRows);
 	assert(colIdx_ >= 0 && colIdx_ < numCols);
 	return (xx::Weak<BagItem>&)cells[rowIdx_ * numCols + colIdx_];
@@ -24,11 +25,14 @@ void Bag::Init(int numRows_, int numCols_, XY const& pos_, XY const& cellSize_, 
 }
 
 void Bag::Update() {
-	// todo: handle mouse drag  
+	// todo: handle mouse drag?
+	for (auto& o : items) {
+		o->Update();
+	}
 }
 
 void Bag::Draw(Camera const& camera) {
-	auto basePos = pos - anchor * GetDrawSize();
+	basePos = pos - anchor * GetDrawSize();
 
 	// ready to draw background grid lines
 	Quad q;
@@ -53,11 +57,31 @@ void Bag::Draw(Camera const& camera) {
 	// todo: in area check ? in scroll view ? cut ?
 	for (int y = 0; y < numRows; y++) {
 		for (int x = 0; x < numCols; x++) {
-			if (auto& c = GetItem(y, x)) {
+			if (auto& c = RefItem(y, x)) {
 				c->Draw(camera);
 			}
 		}
 	}
+}
+
+#pragma endregion
+
+#pragma region BagItem
+
+void BagItem::BagItemInit(Bag* bag_, int rowIdx_, int colIdx_) {
+	assert(bag_);
+	bag = bag_;
+	assert(!bag->RefItem(rowIdx_, colIdx_));
+	bagItemsIndex = bag->items.len;
+	bagRowIdx = rowIdx_;
+	bagColIdx = colIdx_;
+	auto&& self = xx::SharedFromThis(this);
+	bag->RefItem(rowIdx_, colIdx_) = self;
+	bag->items.Emplace(std::move(self));
+}
+
+XY BagItem::GetDrawBasePos() {
+	return bag->basePos + bag->cellSize * bag->scale * XY{ (float)bagColIdx, (float)bagRowIdx };
 }
 
 #pragma endregion
@@ -69,8 +93,9 @@ void SceneTest1::Init() {
 	camera.SetOriginal(gCfg.gridCenterPos);
 	camera.SetScale(1.f);
 
-	bag.Init(20, 30, { gCfg.gridCenterPos }, { 32, 32 }, {0.5f, 0.5f});
-	// todo: fill some item
+	bag.Init(20, 30, { gCfg.gridCenterPos }, { 32, 32 }, { 0.5f, 0.5f });
+	// fill some item
+	bag.items.Emplace().Emplace<Potion>()->BagItemInit(&bag, 1, 2);
 }
 
 void SceneTest1::Update() {
@@ -101,8 +126,8 @@ void Potion::Update() {
 
 void Potion::Draw(Camera const& camera) {
 	Quad().SetFrame(gLooper.frames_potion_4[0])
-		.SetScale(camera.scale)	// * scale?
-		//.SetPosition(  )
+		.SetScale(camera.scale * bag->scale)
+		.SetPosition(camera.ToGLPos(GetDrawBasePos()))
 		.Draw();
 }
 
