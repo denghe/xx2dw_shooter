@@ -3,20 +3,6 @@
 
 // todo: simulate bag -> equip item drag
 
-struct Cfg {
-	static constexpr float cellSize{ 32 };
-
-	static constexpr int numRows{ 512 };
-	static constexpr int numCols{ 512 };
-
-	static constexpr XY gridSize{ numCols * cellSize, numRows * cellSize };
-	static constexpr XY gridSize_2{ gridSize.x / 2, gridSize.y / 2 };
-	static constexpr XY gridCenterPos{ gridSize_2 };
-
-	static constexpr float mouseHitRange{ 50.f };
-};
-inline Cfg gCfg;
-
 struct Item {
 	XY pos{}, anchor{ 0.5f, 0.5f };
 	float scale{ 1 };
@@ -56,7 +42,8 @@ struct SceneTest1 : Scene {
 };
 
 struct Potion : BagItem {
-	// todo: Init()
+	int frameIndex{};
+	void Init(Bag* bag_, int rowIdx_, int colIdx_);
 	virtual void Update() override;
 	virtual void Draw(Camera const& camera) override;
 };

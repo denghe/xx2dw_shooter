@@ -32,26 +32,47 @@ void Bag::Update() {
 }
 
 void Bag::Draw(Camera const& camera) {
-	basePos = pos - anchor * GetDrawSize();
+	auto siz = GetDrawSize();
+	basePos = pos - anchor * siz;
 
 	// ready to draw background grid lines
+#if 1
 	Quad q;
 	q.SetFrame(gLooper.frame_dot_1_22)
 		.SetColor(RGBA8_White)
 		.SetAnchor({ 0, 1 });
 
 	// draw all horizontal lines
-	q.SetScale({ camera.scale * 0.5f * cellSize.x * numCols, 0.5f });
+	q.SetScale({ camera.scale * 0.5f * siz.x, 0.5f });
 	for (int i = 0; i <= numRows; i++) {
-		q.SetPosition(camera.ToGLPos(basePos + XY{ 0, cellSize.y * i } *camera.scale))
+		q.SetPosition(camera.ToGLPos(basePos + XY{ 0, cellSize.y * i }))
 			.Draw();
 	}
 	// draw all vertical lines
-	q.SetScale({ 0.5f, camera.scale * 0.5f * cellSize.y * numRows });
+	q.SetScale({ 0.5f, camera.scale * 0.5f * siz.y });
 	for (int i = 0; i <= numCols; i++) {
-		q.SetPosition(camera.ToGLPos(basePos + XY{ cellSize.x * i, 0 } *camera.scale))
+		q.SetPosition(camera.ToGLPos(basePos + XY{ cellSize.x * i, 0 }))
 			.Draw();
 	}
+#else
+	// draw all horizontal lines
+	LineStrip ls;
+	auto& ps = ls.SetPoints();
+	ps.push_back({ 0, 0 });
+	ps.push_back({ camera.scale * siz.x });
+	for (int i = 0; i <= numRows; i++) {
+		ls.SetPosition(camera.ToGLPos(basePos + XY{ 0, cellSize.y * i }))
+			.Draw();
+	}
+
+	// draw all vertical lines
+	ls.dirty = true;
+	ps[1] = { 0, -camera.scale * siz.y };
+	for (int i = 0; i <= numCols; i++) {
+		ls.SetPosition(camera.ToGLPos(basePos + XY{ cellSize.x * i, 0 }))
+			.Draw();
+	}
+#endif
 
 	// draw items
 	// todo: in area check ? in scroll view ? cut ?
@@ -81,7 +102,7 @@ void BagItem::BagItemInit(Bag* bag_, int rowIdx_, int colIdx_) {
 }
 
 XY BagItem::GetDrawBasePos() {
-	return bag->basePos + bag->cellSize * bag->scale * XY{ (float)bagColIdx, (float)bagRowIdx };
+	return bag->basePos + bag->cellSize * XY{ bagColIdx + 0.5f, bagRowIdx + 0.5f };
 }
 
 #pragma endregion
@@ -89,13 +110,22 @@ XY BagItem::GetDrawBasePos() {
 #pragma region SceneTest1
 
 void SceneTest1::Init() {
-	camera.SetMaxFrameSize({ gCfg.cellSize, gCfg.cellSize });
-	camera.SetOriginal(gCfg.gridCenterPos);
-	camera.SetScale(1.f);
 
-	bag.Init(20, 30, { gCfg.gridCenterPos }, { 32, 32 }, { 0.5f, 0.5f });
+	//camera.SetScale(0.5f);
+	//bag.Init(42, 78, {}, { 32, 32 }, { 0.5f, 0.5f });
+
+	//camera.SetScale(1.f);
+	//bag.Init(21, 39, {}, { 32, 32 }, { 0.5f, 0.5f });
+
+	camera.SetScale(2.f);
+	bag.Init(10, 19, {}, { 32, 32 }, { 0.5f, 0.5f });
+
 	// fill some item
-	bag.items.Emplace().Emplace<Potion>()->BagItemInit(&bag, 1, 2);
+	for (int y = 0; y < bag.numRows; y++) {
+		for (int x = 0; x < bag.numCols; x++) {
+			bag.items.Emplace().Emplace<Potion>()->Init(&bag, y, x);
+		}
+	}
 }
 
 void SceneTest1::Update() {
@@ -120,13 +150,18 @@ void SceneTest1::Draw() {
 
 #pragma region Potion
 
+void Potion::Init(Bag* bag_, int rowIdx_, int colIdx_) {
+	frameIndex = gLooper.rnd.Next(3);
+	BagItemInit(bag_, rowIdx_, colIdx_);
+}
+
 void Potion::Update() {
 	// ??
 }
 
 void Potion::Draw(Camera const& camera) {
-	Quad().SetFrame(gLooper.frames_potion_4[0])
-		.SetScale(camera.scale * bag->scale)
+	Quad().SetFrame(gLooper.frames_potion_4[frameIndex])
+		.SetScale(camera.scale)
 		.SetPosition(camera.ToGLPos(GetDrawBasePos()))
 		.Draw();
 }
