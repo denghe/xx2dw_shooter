@@ -17,26 +17,29 @@ struct Cfg {
 };
 inline Cfg gCfg;
 
-struct Bag;
-struct BagCell {
-	static constexpr XY cellMargin{ 5, 5 };
-
-	void Update(Bag* owner);
-	void Draw(Camera const& camera);
+struct Item {
+	XY pos{}, anchor{};
+	virtual void Update() {};
+	virtual void Draw(Camera const& camera) {};
 };
 
-struct Bag {
-	static constexpr XY gridPadding{ 10, 10 };
+struct Bag;
+struct BagItem : Item {
+	Bag* bag{};
+	int bagItemsIndex{}, bagRowIdx{}, bagColIdx{};
+};
 
-	XY GetGridSize();
-
-	// todo: grid line & margin cfg
-	xx::Listi32<xx::Shared<BagCell>> cells;
+struct Bag : Item {
+	xx::Listi32<xx::Shared<BagItem>> items;
+	xx::Listi32<xx::Weak<BagItem>> cells;
 	int numRows{}, numCols{};
+	XY cellSize{};
 
-	void Init(int numRows_, int numCols_);
-	void Update();
-	void Draw(Camera const& camera);
+	xx::Weak<BagItem>& GetItem(int rowIdx_, int colIdx_) const;
+	XY GetDrawSize() const;
+	void Init(int numRows_, int numCols_, XY const& cellSize_, XY const& pos_, XY const& anchor_);
+	virtual void Update() override;
+	virtual void Draw(Camera const& camera) override;
 };
 
 struct SceneTest1 : Scene {
@@ -46,4 +49,10 @@ struct SceneTest1 : Scene {
 	virtual void Init() override;
 	virtual void Update() override;
 	virtual void Draw() override;
+};
+
+struct Potion : BagItem {
+	// todo: Init()
+	virtual void Update() override;
+	virtual void Draw(Camera const& camera) override;
 };
