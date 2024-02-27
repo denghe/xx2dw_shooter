@@ -35,6 +35,31 @@ xx::Weak<BagItem>& Bag::RefCell(int rowIdx_, int colIdx_) const {
 	return (xx::Weak<BagItem>&)o;
 }
 
+void Bag::Sort() {
+	// sort items memory		// unsafe for avoid + - counter
+	std::sort((Potion**)items.buf, (Potion**)items.buf + items.len, [](Potion* const& a, Potion* const& b) {
+		return a->frameIndex < b->frameIndex;
+		});
+
+	// fill cells
+	int i{};
+	for (int y = 0; y < numRows; y++) {
+		for (int x = 0; x < numCols; x++) {
+			auto& o = (void*&)cells[y * numCols + x];
+			if (i < items.len) {
+				auto& item = items[i];
+				o = item.GetHeader();	// unsafe for avoid + - counter
+				item->bagColIdx = x;
+				item->bagRowIdx = y;
+				++i;
+			} else {
+				memset(&o, 0, sizeof(void*) * (cells.len - i));		// unsafe for avoid + - counter
+				return;
+			}
+		}
+	}
+}
+
 void Bag::Init(int numRows_, int numCols_, XY const& pos_, XY const& cellSize_, XY const& anchor_) {
 	numRows = numRows_;
 	numCols = numCols_;
@@ -74,30 +99,9 @@ void Bag::Update(Camera const& camera) {
 		dragItem.Reset();
 	}
 
-	// sort items
+	// handle keyboard "S" for sort
 	if (!dragItem && gLooper.KeyDownDelay(KeyboardKeys::S, 0.1f)) {
-
-		// sort items memory		// unsafe for avoid + - counter
-		std::sort((Potion**)items.buf, (Potion**)items.buf + items.len, [](Potion* const& a, Potion* const& b) {
-			return a->frameIndex < b->frameIndex;
-		});
-
-		// fill cells
-		int i{};
-		for (int y = 0; y < numRows; y++) {
-			for (int x = 0; x < numCols; x++) {
-				auto& o = (void*&)cells[y * numCols + x];
-				if (i < items.len) {
-					auto& item = items[i];
-					o = item.GetHeader();	// unsafe for avoid + - counter
-					item->bagColIdx = x;
-					item->bagRowIdx = y;
-					++i;
-				} else {
-					o = nullptr;	// unsafe for avoid + - counter
-				}
-			}
-		}
+		Sort();
 	}
 
 	for (auto& o : items) {

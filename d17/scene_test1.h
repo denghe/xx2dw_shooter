@@ -36,6 +36,7 @@ struct Bag : Item {
 	XY GetDrawSize() const;
 	Vec2<> PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
 	xx::Weak<BagItem> GetItemByPos(XY const& pos_) const;
+	void Sort();
 
 	void Init(int numRows_, int numCols_, XY const& cellSize_, XY const& pos_, XY const& anchor_);
 	virtual void Update(Camera const& camera) override;
