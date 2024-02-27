@@ -46,6 +46,9 @@ xcopy /S/Y web\s15\res docs\res
 xcopy /S/Y web\s16\s16.* docs
 xcopy /S/Y web\s16\res docs\res
 
+xcopy /S/Y web\s17\s17.* docs
+xcopy /S/Y web\s17\res docs\res
+
 
 
 

@@ -162,7 +162,7 @@ function abort(what) {
 var dataURIPrefix = "data:application/octet-stream;base64,";
 var isDataURI = filename => filename.startsWith(dataURIPrefix);
 var wasmBinaryFile;
-wasmBinaryFile = "s16.wasm";
+wasmBinaryFile = "s17.wasm";
 if (!isDataURI(wasmBinaryFile)) {
   wasmBinaryFile = locateFile(wasmBinaryFile);
 }
@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  20200: ($0, $1, $2, $3, $4) => {
+  17688: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  22358: () => {
+  19846: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  22522: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  22626: () => {
+  20010: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  20114: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  22797: ($0, $1, $2, $3, $4, $5) => {
+  20285: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  25625: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  25691: $0 => {
+  23113: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  23179: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  26084: $0 => {
+  23572: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  26127: $0 => {
+  23615: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  26252: $0 => {
+  23740: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -1804,81 +1804,81 @@ function _upload_unicode_char_to_texture(charSize, utf8Char) {
 Fetch.init();
 var GLctx;
 var wasmImports = {
-  e: ___assert_fail,
-  m: ___cxa_throw,
-  D: ___syscall_fcntl64,
+  f: ___assert_fail,
+  n: ___cxa_throw,
+  B: ___syscall_fcntl64,
   W: ___syscall_ioctl,
   X: ___syscall_openat,
   Y: __emscripten_fetch_free,
-  S: __emscripten_get_now_is_monotonic,
-  v: _abort,
-  d: _emscripten_asm_const_int,
-  U: _emscripten_get_now,
+  R: __emscripten_get_now_is_monotonic,
+  u: _abort,
+  c: _emscripten_asm_const_int,
+  T: _emscripten_get_now,
   _: _emscripten_is_main_browser_thread,
-  ta: _emscripten_request_animation_frame_loop,
-  T: _emscripten_resize_heap,
-  na: _emscripten_set_canvas_element_size,
-  sa: _emscripten_set_keydown_callback_on_thread,
-  ra: _emscripten_set_keyup_callback_on_thread,
-  qa: _emscripten_set_mousedown_callback_on_thread,
-  oa: _emscripten_set_mousemove_callback_on_thread,
-  pa: _emscripten_set_mouseup_callback_on_thread,
+  ua: _emscripten_request_animation_frame_loop,
+  S: _emscripten_resize_heap,
+  oa: _emscripten_set_canvas_element_size,
+  ta: _emscripten_set_keydown_callback_on_thread,
+  sa: _emscripten_set_keyup_callback_on_thread,
+  ra: _emscripten_set_mousedown_callback_on_thread,
+  pa: _emscripten_set_mousemove_callback_on_thread,
+  qa: _emscripten_set_mouseup_callback_on_thread,
   Z: _emscripten_start_fetch,
-  ma: _emscripten_webgl_create_context,
-  la: _emscripten_webgl_make_context_current,
-  B: _fd_close,
+  na: _emscripten_webgl_create_context,
+  ma: _emscripten_webgl_make_context_current,
+  z: _fd_close,
   V: _fd_read,
-  Q: _fd_seek,
-  C: _fd_write,
-  R: _getentropy,
-  ja: _glActiveTexture,
-  G: _glAttachShader,
-  c: _glBindBuffer,
-  A: _glBindFramebuffer,
+  P: _fd_seek,
+  A: _fd_write,
+  Q: _getentropy,
+  ka: _glActiveTexture,
+  E: _glAttachShader,
+  d: _glBindBuffer,
+  y: _glBindFramebuffer,
   b: _glBindTexture,
-  k: _glBindVertexArray,
-  t: _glBlendEquation,
-  u: _glBlendFunc,
-  g: _glBufferData,
-  N: _glClear,
-  O: _glClearColor,
+  j: _glBindVertexArray,
+  r: _glBlendEquation,
+  s: _glBlendFunc,
+  m: _glBufferData,
+  L: _glClear,
+  M: _glClearColor,
   ca: _glCompileShader,
   ha: _glCreateProgram,
   ea: _glCreateShader,
-  s: _glDeleteBuffers,
-  n: _glDeleteFramebuffers,
-  o: _glDeleteProgram,
-  f: _glDeleteShader,
-  P: _glDeleteTextures,
-  K: _glDeleteVertexArrays,
-  L: _glDisable,
-  M: _glDrawArraysInstanced,
-  x: _glDrawElements,
-  ka: _glEnable,
-  h: _glEnableVertexAttribArray,
-  va: _glFramebufferTexture2D,
-  q: _glGenBuffers,
-  z: _glGenFramebuffers,
+  q: _glDeleteBuffers,
+  t: _glDeleteFramebuffers,
+  k: _glDeleteProgram,
+  e: _glDeleteShader,
+  U: _glDeleteTextures,
+  I: _glDeleteVertexArrays,
+  J: _glDisable,
+  K: _glDrawArraysInstanced,
+  ia: _glDrawElements,
+  la: _glEnable,
+  g: _glEnableVertexAttribArray,
+  O: _glFramebufferTexture2D,
+  p: _glGenBuffers,
+  N: _glGenFramebuffers,
   l: _glGenTextures,
-  H: _glGenVertexArrays,
-  j: _glGetAttribLocation,
+  F: _glGenVertexArrays,
+  i: _glGetAttribLocation,
   fa: _glGetProgramInfoLog,
-  F: _glGetProgramiv,
+  D: _glGetProgramiv,
   ba: _glGetShaderInfoLog,
-  E: _glGetShaderiv,
+  C: _glGetShaderiv,
   w: _glGetUniformLocation,
   ga: _glLinkProgram,
   da: _glShaderSource,
-  r: _glTexImage2D,
+  v: _glTexImage2D,
   a: _glTexParameteri,
-  ia: _glUniform1i,
-  I: _glUniform2f,
-  J: _glUseProgram,
-  p: _glVertexAttribDivisor,
-  i: _glVertexAttribPointer,
-  y: _glViewport,
+  ja: _glUniform1i,
+  G: _glUniform2f,
+  H: _glUseProgram,
+  o: _glVertexAttribDivisor,
+  h: _glVertexAttribPointer,
+  x: _glViewport,
   aa: _init_gCanvas,
-  ua: _load_texture_from_url,
+  va: _load_texture_from_url,
   $: _upload_unicode_char_to_texture
 };
 var wasmExports = createWasm();
