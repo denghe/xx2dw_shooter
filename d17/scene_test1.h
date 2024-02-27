@@ -4,7 +4,7 @@
 // todo: simulate bag -> equip item drag
 
 struct Item {
-	// typeId?
+	int typeId{};	// need fill by Init
 	XY pos{}, anchor{ 0.5f, 0.5f };
 	float scale{ 1 };
 	bool dragging{};

@@ -38,6 +38,19 @@ namespace xx {
             return len;
         }
 
+		List Clone() const {
+			List rtv;
+			rtv.Reserve(len);
+			rtv.AddRange(*this);
+			return rtv;
+		}
+
+		// func == [](auto& a, auto& b) { return a->xxx < b->xxx; }
+		template<typename F>
+		XX_FORCE_INLINE void StdSort(F&& func) {
+			std::sort(buf, buf + len, std::forward<F>(func));
+		}
+
 		void Reserve(SizeType cap_) noexcept {
 			if (auto newBuf = ReserveBegin(cap_)) {
 				ReserveEnd(newBuf);
@@ -214,20 +227,20 @@ namespace xx {
 
 		void AddRange(T const* items, SizeType count) noexcept {
 			if (auto newBuf = ReserveBegin(len + count)) {
-				if constexpr (IsPod_v<T>) {
+				if constexpr (std::is_standard_layout_v<T> && std::is_trivial_v<T>) {
 					::memcpy(newBuf + len, items, count * sizeof(T));
 				} else {
 					for (SizeType i = 0; i < count; ++i) {
-						new (&newBuf[len + i]) T((T&&)items[i]);
+						new (&newBuf[len + i]) T(items[i]);
 					}
 				}
 				ReserveEnd(newBuf);
 			} else {
-				if constexpr (IsPod_v<T>) {
+				if constexpr (std::is_standard_layout_v<T> && std::is_trivial_v<T>) {
 					::memcpy(buf + len, items, count * sizeof(T));
 				} else {
 					for (SizeType i = 0; i < count; ++i) {
-						new (&buf[len + i]) T((T&&)items[i]);
+						new (&buf[len + i]) T(items[i]);
 					}
 				}
 			}

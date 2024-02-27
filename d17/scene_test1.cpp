@@ -31,15 +31,15 @@ xx::Weak<BagItem>& Bag::RefCell(int rowIdx_, int colIdx_) const {
 	assert(rowIdx_ >= 0 && rowIdx_ < numRows);
 	assert(colIdx_ >= 0 && colIdx_ < numCols);
 	auto& o = cells[rowIdx_ * numCols + colIdx_];
-	//assert(!o || o->bagRowIdx == rowIdx_ && o->bagColIdx == colIdx_);
+	assert(!o || o->bagRowIdx == rowIdx_ && o->bagColIdx == colIdx_);
 	return (xx::Weak<BagItem>&)o;
 }
 
 void Bag::Sort() {
-	// sort items memory		// unsafe for avoid + - counter
-	std::sort((Potion**)items.buf, (Potion**)items.buf + items.len, [](Potion* const& a, Potion* const& b) {
-		return a->frameIndex < b->frameIndex;
-		});
+	// sort items
+	items.StdSort([](auto& a, auto& b) {
+		return a->typeId < b->typeId;
+	});
 
 	// fill cells
 	int i{};
@@ -48,7 +48,7 @@ void Bag::Sort() {
 			auto& o = (void*&)cells[y * numCols + x];
 			if (i < items.len) {
 				auto& item = items[i];
-				o = item.GetHeader();	// unsafe for avoid + - counter
+				o = item.GetHeader();												// unsafe for avoid + - counter
 				item->bagColIdx = x;
 				item->bagRowIdx = y;
 				++i;
@@ -199,14 +199,14 @@ XY BagItem::GetDrawBasePos() {
 
 void SceneTest1::Init() {
 
-	camera.SetScale(0.5f);
-	bag.Emplace()->Init(42, 78, {}, { 32, 32 }, { 0.5f, 0.5f });
+	//camera.SetScale(0.5f);
+	//bag.Emplace()->Init(42, 78, {}, { 32, 32 }, { 0.5f, 0.5f });
 
 	//camera.SetScale(1.f);
 	//bag.Emplace()->Init(21, 39, {}, { 32, 32 }, { 0.5f, 0.5f });
 
-	//camera.SetScale(2.f);
-	//bag.Emplace()->Init(10, 19, {}, {32, 32}, {0.5f, 0.5f});
+	camera.SetScale(2.f);
+	bag.Emplace()->Init(10, 19, {}, {32, 32}, {0.5f, 0.5f});
 
 	// fill some item
 	for (int y = 0; y < bag->numRows; y++) {
@@ -242,6 +242,7 @@ void SceneTest1::Draw() {
 
 void Potion::Init(xx::Weak<Bag> bag_, int rowIdx_, int colIdx_) {
 	frameIndex = gLooper.rnd.Next(3);
+	typeId = frameIndex;
 	BagItemInit(std::move(bag_), rowIdx_, colIdx_);
 }
 
