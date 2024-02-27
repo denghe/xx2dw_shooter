@@ -4,6 +4,7 @@
 // todo: simulate bag -> equip item drag
 
 struct Item {
+	// typeId?
 	XY pos{}, anchor{ 0.5f, 0.5f };
 	float scale{ 1 };
 	bool dragging{};
@@ -31,10 +32,10 @@ struct Bag : Item {
 	XY dragPos;		// last mouse pos
 	xx::Weak<BagItem> dragItem;
 
-	xx::Weak<BagItem>& RefItem(int rowIdx_, int colIdx_) const;
+	xx::Weak<BagItem>& RefCell(int rowIdx_, int colIdx_) const;
 	XY GetDrawSize() const;
 	Vec2<> PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
-	xx::Weak<BagItem> GetItem(XY const& pos_) const;
+	xx::Weak<BagItem> GetItemByPos(XY const& pos_) const;
 
 	void Init(int numRows_, int numCols_, XY const& cellSize_, XY const& pos_, XY const& anchor_);
 	virtual void Update(Camera const& camera) override;

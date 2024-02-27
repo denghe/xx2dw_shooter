@@ -20,17 +20,19 @@ Vec2<> Bag::PosToCellIndex(XY const& pos_) const {
 	return r;
 }
 
-xx::Weak<BagItem> Bag::GetItem(XY const& pos_) const {
+xx::Weak<BagItem> Bag::GetItemByPos(XY const& pos_) const {
 	if (auto [colIdx, rowIdx] = PosToCellIndex(pos_); colIdx != -1) {
-		return RefItem(rowIdx, colIdx);
+		return RefCell(rowIdx, colIdx);
 	}
 	return {};
 }
 
-xx::Weak<BagItem>& Bag::RefItem(int rowIdx_, int colIdx_) const {
+xx::Weak<BagItem>& Bag::RefCell(int rowIdx_, int colIdx_) const {
 	assert(rowIdx_ >= 0 && rowIdx_ < numRows);
 	assert(colIdx_ >= 0 && colIdx_ < numCols);
-	return (xx::Weak<BagItem>&)cells[rowIdx_ * numCols + colIdx_];
+	auto& o = cells[rowIdx_ * numCols + colIdx_];
+	//assert(!o || o->bagRowIdx == rowIdx_ && o->bagColIdx == colIdx_);
+	return (xx::Weak<BagItem>&)o;
 }
 
 void Bag::Init(int numRows_, int numCols_, XY const& pos_, XY const& cellSize_, XY const& anchor_) {
@@ -44,30 +46,58 @@ void Bag::Init(int numRows_, int numCols_, XY const& pos_, XY const& cellSize_, 
 	cells.Resize(total);
 }
 
-// todo: bug fix
 void Bag::Update(Camera const& camera) {
+
 	// handle mouse drag cell item
 	dragPos = camera.ToLogicPos(gEngine->mouse.pos);
 	if (gEngine->mouse.btnStates[0]) {
 		if (!dragItem) {
-			dragItem = GetItem(dragPos);
+			dragItem = GetItemByPos(dragPos);
 			if (dragItem) {
 				dragItem->dragging = true;
-				xx::CoutN("begin drag ", dragItem->bagRowIdx, " ", dragItem->bagColIdx);
 			}
 		}
 	} else if (dragItem) {
 		if (auto [colIdx, rowIdx] = PosToCellIndex(dragPos); colIdx != -1) {
-			if (!RefItem(rowIdx, colIdx)) {
+			auto& p = RefCell(dragItem->bagRowIdx, dragItem->bagColIdx);
+			if (auto& o = RefCell(rowIdx, colIdx); !o) {
+				(void*&)o = std::exchange((void*&)p, nullptr);	// unsafe for avoid + - counter
 				dragItem->bagRowIdx = rowIdx;
 				dragItem->bagColIdx = colIdx;
-				xx::CoutN("end drag ", dragItem->bagRowIdx, " ", dragItem->bagColIdx);
-			} else {
-				xx::CoutN("cancel drag");
+			} else if (o != dragItem) {
+				std::swap(o->bagRowIdx, p->bagRowIdx);
+				std::swap(o->bagColIdx, p->bagColIdx);
+				std::swap((void*&)o, (void*&)p);	// unsafe for avoid + - counter
 			}
 		}
 		dragItem->dragging = {};
 		dragItem.Reset();
+	}
+
+	// sort items
+	if (!dragItem && gLooper.KeyDownDelay(KeyboardKeys::S, 0.1f)) {
+
+		// sort items memory		// unsafe for avoid + - counter
+		std::sort((Potion**)items.buf, (Potion**)items.buf + items.len, [](Potion* const& a, Potion* const& b) {
+			return a->frameIndex < b->frameIndex;
+		});
+
+		// fill cells
+		int i{};
+		for (int y = 0; y < numRows; y++) {
+			for (int x = 0; x < numCols; x++) {
+				auto& o = (void*&)cells[y * numCols + x];
+				if (i < items.len) {
+					auto& item = items[i];
+					o = item.GetHeader();	// unsafe for avoid + - counter
+					item->bagColIdx = x;
+					item->bagRowIdx = y;
+					++i;
+				} else {
+					o = nullptr;	// unsafe for avoid + - counter
+				}
+			}
+		}
 	}
 
 	for (auto& o : items) {
@@ -122,7 +152,7 @@ void Bag::Draw(Camera const& camera) {
 	// todo: in area check ? in scroll view ? cut ?
 	for (int y = 0; y < numRows; y++) {
 		for (int x = 0; x < numCols; x++) {
-			if (auto& c = RefItem(y, x)) {
+			if (auto& c = RefCell(y, x)) {
 				c->Draw(camera);
 			}
 		}
@@ -144,12 +174,12 @@ void Bag::Draw(Camera const& camera) {
 void BagItem::BagItemInit(xx::Weak<Bag> bag_, int rowIdx_, int colIdx_) {
 	assert(bag_);
 	bag = std::move(bag_);
-	assert(!bag->RefItem(rowIdx_, colIdx_));
+	assert(!bag->RefCell(rowIdx_, colIdx_));
 	bagItemsIndex = bag->items.len;
 	bagRowIdx = rowIdx_;
 	bagColIdx = colIdx_;
 	auto&& self = xx::SharedFromThis(this);
-	bag->RefItem(rowIdx_, colIdx_) = self;
+	bag->RefCell(rowIdx_, colIdx_) = self;
 	bag->items.Emplace(std::move(self));
 }
 
@@ -165,20 +195,20 @@ XY BagItem::GetDrawBasePos() {
 
 void SceneTest1::Init() {
 
-	//camera.SetScale(0.5f);
-	//bag.Init(42, 78, {}, { 32, 32 }, { 0.5f, 0.5f });
+	camera.SetScale(0.5f);
+	bag.Emplace()->Init(42, 78, {}, { 32, 32 }, { 0.5f, 0.5f });
 
 	//camera.SetScale(1.f);
-	//bag.Init(21, 39, {}, { 32, 32 }, { 0.5f, 0.5f });
+	//bag.Emplace()->Init(21, 39, {}, { 32, 32 }, { 0.5f, 0.5f });
 
-	camera.SetScale(2.f);
-	bag.Emplace()->Init(10, 19, {}, {32, 32}, {0.5f, 0.5f});
+	//camera.SetScale(2.f);
+	//bag.Emplace()->Init(10, 19, {}, {32, 32}, {0.5f, 0.5f});
 
 	// fill some item
 	for (int y = 0; y < bag->numRows; y++) {
 		for (int x = 0; x < bag->numCols; x++) {
 			if (gLooper.rnd.Next<bool>()) {
-				bag->items.Emplace().Emplace<Potion>()->Init(bag, y, x);
+				xx::MakeShared<Potion>()->Init(bag, y, x);
 			}
 		}
 	}
