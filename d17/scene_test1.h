@@ -6,35 +6,44 @@
 struct Item {
 	XY pos{}, anchor{ 0.5f, 0.5f };
 	float scale{ 1 };
-	virtual void Update() {};
+	bool dragging{};
+	virtual void Update(Camera const& camera) {};
 	virtual void Draw(Camera const& camera) {};
 };
 
 struct Bag;
 struct BagItem : Item {
-	Bag* bag{};
+	xx::Weak<Bag> bag;
 	int bagItemsIndex{}, bagRowIdx{}, bagColIdx{};
-	void BagItemInit(Bag* bag_, int rowIdx_, int colIdx_);	// add item to items & cells
+	void BagItemInit(xx::Weak<Bag> bag_, int rowIdx_, int colIdx_);	// add item to items & cells
 	XY GetDrawBasePos();
 };
 
 struct Bag : Item {
 	xx::Listi32<xx::Shared<BagItem>> items;
 	xx::Listi32<xx::Weak<BagItem>> cells;
+
 	int numRows{}, numCols{};
 	XY cellSize{};
+
 	XY basePos{};	// fill when Draw begin
+
+	XY dragPos;		// last mouse pos
+	xx::Weak<BagItem> dragItem;
 
 	xx::Weak<BagItem>& RefItem(int rowIdx_, int colIdx_) const;
 	XY GetDrawSize() const;
+	Vec2<> PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
+	xx::Weak<BagItem> GetItem(XY const& pos_) const;
+
 	void Init(int numRows_, int numCols_, XY const& cellSize_, XY const& pos_, XY const& anchor_);
-	virtual void Update() override;
+	virtual void Update(Camera const& camera) override;
 	virtual void Draw(Camera const& camera) override;
 };
 
 struct SceneTest1 : Scene {
 	Camera camera;
-	Bag bag;
+	xx::Shared<Bag> bag;
 
 	virtual void Init() override;
 	virtual void Update() override;
@@ -43,7 +52,7 @@ struct SceneTest1 : Scene {
 
 struct Potion : BagItem {
 	int frameIndex{};
-	void Init(Bag* bag_, int rowIdx_, int colIdx_);
-	virtual void Update() override;
+	void Init(xx::Weak<Bag> bag_, int rowIdx_, int colIdx_);
+	virtual void Update(Camera const& camera) override;
 	virtual void Draw(Camera const& camera) override;
 };
