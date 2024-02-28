@@ -1,7 +1,12 @@
 ﻿#pragma once
 #include <game_looper.h>
 
-// todo: simulate bag -> equip item drag
+// simulate bag -> item drag for move & swap, sort
+
+// todo:
+// number ? star ? new ?
+// mouse down a little while begin drag ? or mouse down + move begin drag ? mouse down + up = click ? set focus ? context menu ? hover info panel ? 
+// event sound effect ?
 
 struct Item {
 	int typeId{};	// need fill by Init
@@ -21,7 +26,7 @@ struct BagItem : Item {
 };
 
 struct Bag : Item {
-	xx::Listi32<xx::Shared<BagItem>> items;
+	xx::Listi32<xx::Shared<BagItem>> items;		// todo: group? quantity combine?
 	xx::Listi32<xx::Weak<BagItem>> cells;
 
 	int numRows{}, numCols{};
