@@ -573,6 +573,76 @@ namespace RotateControl {
         return false;
     }
 
+
+    // limit a by from ~ to
+    // no change: return false
+    inline XX_FORCE_INLINE bool Limit(float& a, float from, float to) {
+        // -PI ~~~~~~~~~~~~~~~~~~~~~~~~~ a ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PI
+        assert(a >= gNPI && a <= gPI);
+        // from ~~~~~~~~~~~~~~ a ~~~~~~~~~~~~~~~~ to
+        if (a >= from && a <= to) return false;
+        // from ~~~~~~~~~~~~~~~ -PI ~~~~~~~~~~~~~~~~~~ to ~~~~~~~~~~~~~~~ PI
+        if (from < gNPI) {
+            // ~~~~~~ from ~~~~~~~ -PI ~~~~~~ to ~~~~ a ~~~~ 0 ~~~~~~~~~~~~~ PI
+            if (a < 0) {
+                if (a - to < from + g2PI - a) {
+                    a = to;
+                } else {
+                    a = from + g2PI;
+                }
+                // ~~~~~ d ~~~~~~ from ~~~~~~~ -PI ~~~~~~~~ to ~~~~~~~~ 0 ~~~~~~~ a ~~~~ PI
+            } else {
+                auto d = a - g2PI;
+                if (d >= from && d <= to) return false;
+                else {
+                    if (from - d < a - to) {
+                        a = from + g2PI;
+                    } else {
+                        a = to;
+                    }
+                }
+            }
+            // -PI ~~~~~~~~~~~~~~~ from ~~~~~~~~~~~~~~~~~~ PI ~~~~~~~~~~~~~~~ to
+        } else if (to > gPI) {
+            // -PI ~~~~~~~~~~~~~~~ 0 ~~~~~ a ~~~~~ from ~~~~~~ PI ~~~~~~~ to
+            if (a > 0) {
+                if (from - a < a - (to - g2PI)) {
+                    a = from;
+                } else {
+                    a = to - g2PI;
+                }
+                // -PI ~~~~~~~ a ~~~~~~~~ 0 ~~~~~~~ from ~~~~~~ PI ~~~~~~~ to ~~~~~ d ~~~~~
+            } else {
+                auto d = a + g2PI;
+                if (d >= from && d <= to) return false;
+                else {
+                    if (from - a < d - to) {
+                        a = from;
+                    } else {
+                        a = to - g2PI;
+                    }
+                }
+            }
+        } else {
+            // -PI ~~~~~ a ~~~~ from ~~~~~~~~~~~~~~~~~~ to ~~~~~~~~~~~ PI
+            if (a < from) {
+                if (to <= 0 || from - a < a - (to - g2PI)) {
+                    a = from;
+                } else {
+                    a = to;
+                }
+                // -PI ~~~~~~~~~ from ~~~~~~~~~~~~~~~~~~ to ~~~~~ a ~~~~~~ PI
+            } else {
+                if (from > 0 || a - to < from + g2PI - a) {
+                    a = to;
+                } else {
+                    a = from;
+                }
+            }
+        }
+        return true;
+    }
+
 }
 
 /*******************************************************************************************************************************************/

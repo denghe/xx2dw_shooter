@@ -49,10 +49,11 @@ xcopy /S/Y web\s16\res docs\res
 xcopy /S/Y web\s17\s17.* docs
 xcopy /S/Y web\s17\res docs\res
 
+xcopy /S/Y web\s18\s18.* docs
+xcopy /S/Y web\s18\res docs\res
 
-
-
-
+xcopy /S/Y web\s19\s19.* docs
+xcopy /S/Y web\s19\res docs\res
 
 xcopy /S/Y web\s20\s20.* docs
 xcopy /S/Y web\s20\res docs\res

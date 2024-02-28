@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
+# for compile emscripten only
+
 if(MSVC)
 	# cmake when compiler choose: -T ClangCL
 	set(CMAKE_GENERATOR_TOOLSET "ClangCL")	
@@ -37,7 +39,6 @@ add_subdirectory(s14)
 add_subdirectory(s15)
 add_subdirectory(s16)
 add_subdirectory(s17)
-
-
-
+add_subdirectory(s18)
+add_subdirectory(s19)
 add_subdirectory(s20)

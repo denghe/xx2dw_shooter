@@ -12,73 +12,14 @@ void Eye::Init(EyeBase& prev_, xx::FromTo<float> const& cRadiansRange_, xx::From
 	radius = cRadius;
 	radians = prev->radians;
 	pos = prev->pos;
-	Update();
-}
 
-// limit a by from ~ to
-// no change: return false
-inline XX_FORCE_INLINE bool Limit(float& a, float from, float to) {
-	// -PI ~~~~~~~~~~~~~~~~~~~~~~~~~ a ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ PI
-    assert(a >= gNPI && a <= gPI);
-	// -PI ~~~~~~~~ from ~~~~~~~~~~~~~~ a ~~~~~~~~~~~~~~~~ to ~~~~~~~~~~~~ PI
-	if (a >= from && a <= to) return false;
-	// from ~~~~~~~~~~~~~~~ -PI ~~~~~~~~~~~~~~~~~~ to ~~~~~~~~~~~~~~~ PI
-	if (from < gNPI) {
-		// ~~~~~~ from ~~~~~~~ -PI ~~~~~~ to ~~~~ a ~~~~ 0 ~~~~~~~~~~~~~ PI
-		if (a < 0) {
-			if (a - to < from + g2PI - a) {
-				a = to;
-			} else {
-				a = from + g2PI;
-			}
-		// ~~~~~ d ~~~~~~ from ~~~~~~~ -PI ~~~~~~~~ to ~~~~~~~~ 0 ~~~~~~~ a ~~~~ PI
-		} else {
-			auto d = a - g2PI;
-			if (d >= from && d <= to) return false;
-			else {
-				if (from - d < a - to) {
-					a = from + g2PI;
-				} else {
-					a = to;
-				}
-			}
-		}
-	// -PI ~~~~~~~~~~ from ~~~~~~~~~~~~~ PI ~~~~~~~ to
-	} else if (to > gPI) {
-		// -PI ~~~~~~~~~~~~~~~ 0 ~~~~~ a ~~~~~ from ~~~~~~ PI ~~~~~~~ to
-		if (a > 0) {
-			if (from - a < a - (to - g2PI)) {
-				a = from;
-			} else {
-				a = to - g2PI;
-			}
-		// -PI ~~~~~~~ a ~~~~~~~~ 0 ~~~~~~~ from ~~~~~~ PI ~~~~~~~ to ~~~~~ d ~~~~~
-		} else {
-			auto d = a + g2PI;
-			if (d >= from && d <= to) return false;
-			else {
-				if (from - a < d - to) {
-					a = from;
-				} else {
-					a = to - g2PI;
-				}
-			}
-		}
-	} else {
-		// -PI ~~~~~ a ~~~~ from ~~~~~~~~~~~~~~~~~~ to ~~~~~~~~~~~ PI
-		if (a < from) {
-			a = from;
-		// -PI ~~~~~~~~~ from ~~~~~~~~~~~~~~~~~~ to ~~~~~ a ~~~~~~ PI
-		} else {
-			a = to;
-		}
-	}
-    return true;	// todo: bug fix. handle: to - from > PI?
+	// calc radians & pos
+	Update();
 }
 
 void Eye::Update() {
 	radians = std::atan2(pos.y - prev->pos.y, pos.x - prev->pos.x);
-	Limit(radians, prev->radians + cRadiansRange.from, prev->radians + cRadiansRange.to);
+	RotateControl::Limit(radians, prev->radians + cRadiansRange.from, prev->radians + cRadiansRange.to);
 	pos.x = prev->pos.x + std::cos(radians) * cDistanceRange.from;
 	pos.y = prev->pos.y + std::sin(radians) * cDistanceRange.from;
 }
@@ -105,16 +46,16 @@ void BigEye::Init(XY const& pos_) {
 	radians = {};
 
 	// init children
-	static constexpr int numEyess{ 20 }, numEyes{ 30 };
+	static constexpr int numEyess{ 30 }, numEyes{ 30 };
 	static constexpr float step{ g2PI / numEyess };
 	eyess.Resize(numEyess);
 	for (int i = 0; i < numEyess; i++) {
 		auto& eyes = eyess[i];
 		eyes.Resize(numEyes);
 		auto r = step * i;
-		eyes[0].Init(*this, {r, r}, { radius, radius });	// todo
+		eyes[0].Init(*this, {r, r}, { radius, radius });
 		for (int j = 1; j < numEyes; j++) {
-			eyes[j].Init(eyes[j - 1], {-0.2f, 0.2f}, { Eye::cRadius, Eye::cRadius });	// todo
+			eyes[j].Init(eyes[j - 1], {-0.3f, 0.3f}, { Eye::cRadius / 2, Eye::cRadius / 2 });
 		}
 	}
 }

@@ -18,7 +18,7 @@ struct Eye : EyeBase {
 
 	void Init(EyeBase& prev_, xx::FromTo<float> const& cRadiansRange_, xx::FromTo<float> const& cDistanceRange_);
 
-	void Update();	// todo: args total radians
+	void Update();
 
 	void Draw(Camera const& camera);
 };
