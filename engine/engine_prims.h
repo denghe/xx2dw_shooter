@@ -536,43 +536,42 @@ namespace FrameControl {
 
 namespace RotateControl {
 
-    // step change a to b by step. when a == b mean done
-    inline XX_FORCE_INLINE bool Step(float& a, float b, float step) {
-        assert(a >= gNPI && a <= gPI);
-        assert(b >= gNPI && b <= gPI);
-        assert(step >= 0 && step <= gPI);
-        auto bak = b;
-        if ((b - a) * (b - a) > gPI * gPI) {
-            if (b < a) {
-                b += g2PI;
-            } else {
-                b -= g2PI;
-            }
+    inline XX_FORCE_INLINE float Gap(float tar, float cur) {
+        auto gap = cur - tar;
+        if (gap > gPI) {
+            gap -= g2PI;
         }
-        if (b > a) {
-            if (b - a <= step) {
-                a = bak;
-                return true;
-            } else {
-                a += step;
-                if (a >= gPI) {
-                    a -= g2PI;
-                }
-            }
-        } else {
-            if (a - b <= step) {
-                a = bak;
-                return true;
-            } else {
-                a -= step;
-                if (a <= gNPI) {
-                    a += g2PI;
-                }
-            }
+        if (gap < gNPI) {
+            gap += g2PI;
         }
-        return false;
+        return gap;
     }
 
+    // calc cur to tar by rate
+    // return cur's new value
+    inline XX_FORCE_INLINE float LerpAngleByRate(float tar, float cur, float rate) {
+        auto gap = Gap(tar, cur);
+        return cur - gap * rate;
+    }
+
+    // calc cur to tar by fixed raidians
+    // return cur's new value
+    inline XX_FORCE_INLINE float LerpAngleByFixed(float tar, float cur, float a) {
+        auto gap = Gap(tar, cur);
+        if (gap < 0) {
+            if (gap >= -a) return tar;
+            else return cur + a;
+        } else {
+            if (gap <= a) return tar;
+            else return cur - a;
+        }
+    }
+
+    // change cur to tar by a( max value )
+    // return true: cur == tar
+    inline XX_FORCE_INLINE bool Step(float& cur, float tar, float a) {
+        return (cur = LerpAngleByFixed(tar, cur, a)) == tar;
+    }
 
     // limit a by from ~ to
     // no change: return false

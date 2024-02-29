@@ -5,23 +5,22 @@
 
 void Eye::Init(EyeBase& prev_, xx::FromTo<float> const& cRadiansRange_, xx::FromTo<float> const& cDistanceRange_) {
 	// init args
-	prev = &prev_;
 	cRadiansRange = cRadiansRange_;
 	cDistanceRange = cDistanceRange_;
 	scale = cScale;
 	radius = cRadius;
-	radians = prev->radians;
-	pos = prev->pos;
+	radians = prev_.radians;
+	pos = prev_.pos;
 
 	// calc radians & pos
-	Update();
+	Update(prev_);
 }
 
-void Eye::Update() {
-	radians = std::atan2(pos.y - prev->pos.y, pos.x - prev->pos.x);
-	RotateControl::Limit(radians, prev->radians + cRadiansRange.from, prev->radians + cRadiansRange.to);
-	pos.x = prev->pos.x + std::cos(radians) * cDistanceRange.from;
-	pos.y = prev->pos.y + std::sin(radians) * cDistanceRange.from;
+void Eye::Update(EyeBase& prev_) {
+	radians = std::atan2(pos.y - prev_.pos.y, pos.x - prev_.pos.x);
+	RotateControl::Limit(radians, prev_.radians + cRadiansRange.from, prev_.radians + cRadiansRange.to);
+	pos.x = prev_.pos.x + std::cos(radians) * cDistanceRange.from;
+	pos.y = prev_.pos.y + std::sin(radians) * cDistanceRange.from;
 }
 
 void Eye::Draw(Camera const& camera) {
@@ -55,17 +54,17 @@ void BigEye::Init(XY const& pos_) {
 		auto r = step * i;
 		eyes[0].Init(*this, {r, r}, { radius, radius });
 		for (int j = 1; j < numEyes; j++) {
-			eyes[j].Init(eyes[j - 1], {-0.3f, 0.3f}, { Eye::cRadius / 2, Eye::cRadius / 2 });
+			eyes[j].Init(eyes[j - 1], {-0.1f, 0.1f}, { Eye::cRadius / 2, Eye::cRadius / 2 });
 		}
 	}
 }
 
 void BigEye::Update(Camera const& camera) {
 	auto& m = gLooper.mouse;
+	auto p = camera.ToLogicPos(m.pos);
+	auto v = p - pos;
 	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
 		// follow mouse
-		auto p = camera.ToLogicPos(m.pos);
-		auto v = p - pos;
 		auto distance = std::sqrt(v.x * v.x + v.y * v.y);
 		if (auto d = distance - cSpeed; d > 0) {
 			auto inc = v / distance * cSpeed;
@@ -73,11 +72,16 @@ void BigEye::Update(Camera const& camera) {
 		} else {
 			pos = p;
 		}
+	} else {
+		// rotate to mouse
+		auto mr = std::atan2(v.y, v.x);
+		radians = RotateControl::LerpAngleByFixed(mr, radians, gPI / 10);
 	}
 
 	for (auto& eyes : eyess) {
-		for (auto& eye : eyes) {
-			eye.Update();
+		eyes[0].Update(*this);
+		for (int i = 1, e = eyes.len; i < e; ++i) {
+			eyes[i].Update(eyes[i - 1]);
 		}
 	}
 }
@@ -87,7 +91,7 @@ void BigEye::Draw(Camera const& camera) {
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY::Make(camera.scale) * scale;
-	q.radians = 0;	// fixed radians
+	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_White;
 
@@ -115,7 +119,9 @@ void SceneTest1::Init() {
 
 	camera.SetScale(1.f);
 
-	bigEye.Emplace()->Init({});
+	for (size_t i = 0; i < 100; i++) {
+		bigEyes.Emplace().Emplace()->Init({});
+	}
 }
 
 void SceneTest1::Update() {
@@ -127,13 +133,18 @@ void SceneTest1::Update() {
 	}
 	camera.Calc();
 
-	bigEye->Update(camera);
+	for (auto& o : bigEyes) {
+		o->Update(camera);
+	}
 }
 
 void SceneTest1::Draw() {
 	camera.Calc();
 
-	bigEye->Draw(camera);
+	// todo: sort by y?
+	for (auto& o : bigEyes) {
+		o->Draw(camera);
+	}
 
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, "zoom: Z / X   drag: mouse", RGBA8_Green, { 0.5f, 1 });
 	gLooper.DrawNode(rootNode);

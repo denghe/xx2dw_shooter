@@ -12,13 +12,12 @@ struct Eye : EyeBase {
 	static constexpr float cScale{ 1 };
 	static constexpr float cRadius{ cScale * 7 };
 
-	EyeBase* prev{};
 	xx::FromTo<float> cDistanceRange{};
 	xx::FromTo<float> cRadiansRange{};
 
 	void Init(EyeBase& prev_, xx::FromTo<float> const& cRadiansRange_, xx::FromTo<float> const& cDistanceRange_);
 
-	void Update();
+	void Update(EyeBase& prev_);
 
 	void Draw(Camera const& camera);
 };
@@ -26,7 +25,7 @@ struct Eye : EyeBase {
 struct BigEye : EyeBase {
 	static constexpr float cScale{ 30 };
 	static constexpr float cRadius{ cScale * 7 };
-	static constexpr float cSpeed{ 3000.f / gDesign.fps };
+	static constexpr float cSpeed{ 2000.f / gDesign.fps };
 
 	xx::Listi32<xx::Listi32<Eye>> eyess;
 
@@ -41,7 +40,7 @@ struct BigEye : EyeBase {
 struct SceneTest1 : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
-	xx::Shared<BigEye> bigEye;
+	xx::Listi32<xx::Shared<BigEye>> bigEyes;
 
 	virtual void Init() override;
 	virtual void Update() override;
