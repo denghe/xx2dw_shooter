@@ -19,8 +19,14 @@ void Eye::Init(EyeBase& prev_, xx::FromTo<float> const& cRadiansRange_, xx::From
 void Eye::Update(EyeBase& prev_) {
 	radians = std::atan2(pos.y - prev_.pos.y, pos.x - prev_.pos.x);
 	RotateControl::Limit(radians, prev_.radians + cRadiansRange.from, prev_.radians + cRadiansRange.to);
-	pos.x = prev_.pos.x + std::cos(radians) * cDistanceRange.from;
-	pos.y = prev_.pos.y + std::sin(radians) * cDistanceRange.from;
+	float d;
+	if (cDistanceRange.from != cDistanceRange.to) {
+		d = Calc::DistanceLimit(Calc::Distance(pos, prev_.pos), cDistanceRange.from, cDistanceRange.to);
+	} else {
+		d = cDistanceRange.from;
+	}
+	pos.x = prev_.pos.x + std::cos(radians) * d;
+	pos.y = prev_.pos.y + std::sin(radians) * d;
 }
 
 void Eye::Draw(Camera const& camera) {
@@ -54,7 +60,8 @@ void BigEye::Init(XY const& pos_) {
 		auto r = step * i;
 		eyes[0].Init(*this, {r, r}, { radius, radius });
 		for (int j = 1; j < numEyes; j++) {
-			eyes[j].Init(eyes[j - 1], {-0.1f, 0.1f}, { Eye::cRadius / 2, Eye::cRadius / 2 });
+			eyes[j].Init(eyes[j - 1], { -0.1f, 0.1f }
+			, { Eye::cRadius / 2, Eye::cRadius / 1.5f });
 		}
 	}
 }

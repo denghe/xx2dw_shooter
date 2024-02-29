@@ -728,6 +728,12 @@ namespace Calc {
         return Distance(p1.x, p1.y, p2.x, p2.y);
     }
 
+    inline XX_FORCE_INLINE float DistanceLimit(float d, float from, float to) {
+        if (d < from) return from;
+        else if (d > to) return to;
+        else return d;
+    }
+
     /*
         XY p, c;
         ...
