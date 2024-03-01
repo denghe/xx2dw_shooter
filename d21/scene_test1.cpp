@@ -501,7 +501,7 @@ void SceneTest1::Draw() {
 	im.DrawAll(camera);
 
 	ls.Clear();
-	ls.FillCirclePoints({}, human->cAttackRadius)
+	ls.FillCirclePoints({}, human->cAttackRadius, {}, 100, { camera.scale ,camera.scale })
 		.SetPosition(camera.ToGLPos(human->pos))
 		.Draw();
 
