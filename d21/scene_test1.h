@@ -125,7 +125,8 @@ struct Human : SceneItem {
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 60.f / gDesign.fps };
 
-	static constexpr float cAttackRadius{ 500.f };
+	static constexpr float cAttackRadius{ 300.f };
+	static constexpr float cAttackDelaySeconds{ 0.5f };
 
 	float speed{};
 	MoveDirections direction{};
@@ -182,6 +183,7 @@ struct SceneTest1 : Scene {
 	static constexpr float trackMargin{ trackWidth / trackCount };
 	static constexpr float trackBaseSpeed{ 5 };
 	MovePathCache mpc;
+	int trackPointCount{};	// cache: == scene->mpc.points.size()
 	xx::Listi32<xx::Listi32<XY>> tracks;
 
 	virtual void Init() override;

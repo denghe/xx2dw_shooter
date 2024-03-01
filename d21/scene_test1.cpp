@@ -277,15 +277,17 @@ xx::Task<> Human::AutoAttackTask() {
 		// auto filre?
 		if (tar) {
 			// calc target's pos ( after bomb fly time )
-			auto idx = tar->pointIndex + tar->speed * Bomb::cLifeNumFrames;
-			if (idx >= (int)scene->mpc.points.size()) continue;
-			auto& tarPos = scene->tracks[tar->tracksIndex][(int)idx];
+			auto idx = int(tar->pointIndex + tar->speed * Bomb::cLifeNumFrames);
+			if (idx >= scene->trackPointCount) {
+				idx = scene->trackPointCount - 1;
+			}
+			auto& tarPos = scene->tracks[tar->tracksIndex][idx];
 
 			// fire
 			im->Create<Bomb>(xx::WeakFromThis(this), tarPos);
 
 			// fire cd
-			co_await gLooper.AsyncSleep(1);
+			co_await gLooper.AsyncSleep(cAttackDelaySeconds);
 		}
 	}
 }
@@ -365,10 +367,9 @@ void Monster1::Init(ItemManagerBase* im_, int tracksIndex_, float pointIndex_, f
 bool Monster1::Update() {
 	if (!PhysExists()) return true;	// has been killed
 
-	auto siz = (int)scene->mpc.points.size();
 	pointIndex += speed;
-	if (pointIndex >= siz) {
-		pointIndex -= siz;
+	if (pointIndex >= scene->trackPointCount) {
+		pointIndex -= scene->trackPointCount;
 	}
 	pos = scene->tracks[tracksIndex][(int)pointIndex];
 	PhysUpdate();
@@ -425,14 +426,14 @@ void SceneTest1::Init() {
 
 	// path to cache
 	mpc.Init(mp, trackStep);
+	trackPointCount = (int)mpc.points.size();
 
 	// cache to tracks
 	tracks.Resize(trackCount);
-	auto numPoints = (int)mpc.points.size();
 	for (auto& track : tracks) {
-		track.Resize(numPoints);
+		track.Resize(trackPointCount);
 	}
-	for (int i = 0; i < numPoints; ++i) {
+	for (int i = 0; i < trackPointCount; ++i) {
 		auto& p = mpc.points[i];
 		XY step{
 			std::cos(p.radians - gPI / 2) * trackMargin,
@@ -453,7 +454,7 @@ void SceneTest1::Init() {
 					for (int j = 0; j < 10; j++) {
 						im.Create<Monster1>(i
 							, gLooper.rnd.Next<float>(0, 100)
-							, gLooper.rnd.Next<float>(trackBaseSpeed, trackBaseSpeed * 5));
+							, gLooper.rnd.Next<float>(trackBaseSpeed, trackBaseSpeed * 10));
 					}
 				}
 			}
@@ -488,8 +489,7 @@ void SceneTest1::Draw() {
 
 	// draw track
 	LineStrip ls;
-	auto siz = (int)mpc.points.size();
-	for (int i = 0; i < siz; i += trackDrawStep) {
+	for (int i = 0; i < trackPointCount; i += trackDrawStep) {
 		auto& p = mpc.points[i];
 		ls.Clear();
 		ls.points.emplace_back(camera.ToGLPos(tracks[0][i]));
@@ -499,6 +499,11 @@ void SceneTest1::Draw() {
 
 	// draw items ( order by y )
 	im.DrawAll(camera);
+
+	ls.Clear();
+	ls.FillCirclePoints({}, human->cAttackRadius)
+		.SetPosition(camera.ToGLPos(human->pos))
+		.Draw();
 
 	auto str = xx::ToString("zoom: Z / X. item count = ", im.GetSize());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
