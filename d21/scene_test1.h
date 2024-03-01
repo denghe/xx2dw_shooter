@@ -30,6 +30,7 @@ struct PhysSceneItem : SceneItem, SpaceGridCItem<PhysSceneItem, XY> {
 	void PhysRemove();
 	bool PhysExists();
 	~PhysSceneItem();
+	virtual bool Hit(SceneItem& attacker, int damage);
 };
 
 
@@ -126,6 +127,8 @@ struct Monster1 : PhysSceneItem {
 
 	int tracksIndex{};
 	float pointIndex{}, speed{};
+
+	virtual bool Hit(SceneItem& attacker, int damage) override;
 
 	void Init(ItemManagerBase* im_, int tracksIndex_, float pointIndex_, float speed_);
 	virtual bool Update() override;

@@ -23,6 +23,12 @@ PhysSceneItem::~PhysSceneItem() {
 	SGCRemove();
 }
 
+bool PhysSceneItem::Hit(SceneItem& attacker, int damage) {
+	assert(false);	// for copy
+	SGCRemove();
+	return true;
+}
+
 #pragma endregion
 
 #pragma region Staff
@@ -52,6 +58,8 @@ xx::Task<> Staff::MainTask() {
 			im->Create<Bullet>(xx::WeakFromThis(this));
 		}
 
+		// todo: auto filre logic ( by monster's track move ? )
+
 		co_yield 0;
 	}
 }
@@ -66,7 +74,6 @@ void Staff::Init(ItemManagerBase* im_, xx::Weak<SceneItem> owner_) {
 	// ...
 
 	// born init
-	//drawOffset = cDrawOffset;
 	pos = owner->pos + XY{ 0, 0.1f };
 	radians = (float)-M_PI_2;
 }
@@ -113,15 +120,11 @@ xx::Task<> Bullet::MoveTask() {
 	XY inc{ std::cos(radians) * cSpeed, std::sin(radians) * cSpeed };
 	while (true) {
 		pos += inc;
-		//// hit check
-		//if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
-		//	r->Hit(*this, damage);
-		//	// find nearest xxx & shoot Bullet 1
-		//	if (auto t = FindNearest(scene->sgcPhysItems, gLooper.sgrdd, pos, Bullet1::cAttackRange)) {
-		//		im->Create<Bullet1>(owner, pos, radians, xx::WeakFromThis(t), 5);
-		//	}
-		//	co_return;
-		//}
+		// hit check
+		if (auto r = FindNeighborCross(scene->sgcPhysItems, pos, radius)) {
+			r->Hit(*this, damage);
+			co_return;
+		}
 		co_yield 0;
 	}
 }
@@ -252,6 +255,13 @@ void Human::Draw(Camera const& camera) {
 
 #pragma region Monster1
 
+bool Monster1::Hit(SceneItem& attacker, int damage) {
+	// todo: hp check?
+	// todo: play effect? add exp to player? ....
+	SGCRemove();
+	return true;
+}
+
 void Monster1::Init(ItemManagerBase* im_, int tracksIndex_, float pointIndex_, float speed_) {
 	SceneItemInit(cTypeId, im_);
 	scale = { cScale, cScale };
@@ -265,6 +275,8 @@ void Monster1::Init(ItemManagerBase* im_, int tracksIndex_, float pointIndex_, f
 }
 
 bool Monster1::Update() {
+	if (!PhysExists()) return true;	// has been killed
+
 	auto siz = (int)scene->mpc.points.size();
 	pointIndex += speed;
 	if (pointIndex >= siz) {
