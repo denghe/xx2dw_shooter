@@ -58,8 +58,6 @@ xx::Task<> Staff::MainTask() {
 			im->Create<Bullet>(xx::WeakFromThis(this));
 		}
 
-		// todo: auto filre logic ( by monster's track move ? )
-
 		co_yield 0;
 	}
 }
@@ -91,6 +89,61 @@ void Staff::Draw(Camera const& camera) {
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
 }
+
+#pragma endregion
+
+#pragma region Bomb
+
+xx::Task<> Bomb::MainTask() {
+	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
+		pos += inc;
+		co_yield 0;
+	}
+	// explosion
+	ForeachByRange(scene->sgcPhysItems, gLooper.sgrdd, pos, cRadius, [&](PhysSceneItem* o) {
+		assert(o->typeId == Monster1::cTypeId);
+		auto m = (Monster1*)o;
+		m->Hit(*this, damage);
+	});
+}
+
+void Bomb::Init(ItemManagerBase* im_, xx::Weak<Human> owner_, XY const& tarPos_) {
+	assert(owner_);
+	SceneItemInit(cTypeId, im_);
+	owner = std::move(owner_);
+	tarPos = tarPos_;
+
+	// tasks init
+	mainTask = MainTask();
+	pos = owner->pos;
+	radius = cRadius;
+	if (tarPos != pos) {
+		auto v = tarPos - pos;
+		auto d = Calc::Distance(tarPos, pos);
+		inc = (tarPos - pos).MakeNormalize() * d / cLifeSpan / gDesign.fps;
+	}
+}
+
+bool Bomb::Update() {
+	return mainTask.Resume();
+}
+
+void Bomb::Draw(Camera const& camera) {
+	auto& q = Quad::DrawOnce(gLooper.frames_mine[0]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY{ flipX ? -camera.scale : camera.scale, camera.scale } *scale;
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { 255, 255, 255, 255 };
+
+	if (scene->isBorderVisible) {
+		LineStrip().FillCirclePoints({}, radius, {}, 20, scale * camera.scale)
+			.SetPosition(camera.ToGLPos(pos))
+			.Draw();
+	}
+}
+
 
 #pragma endregion
 
@@ -179,6 +232,7 @@ void Human::Init(ItemManagerBase* im_) {
 	// tasks init
 	mainTask = MainTask();
 	idleTask = IdleTask();
+	autoAttackTask = AutoAttackTask();
 	// ...
 
 	// born init
@@ -199,6 +253,40 @@ xx::Task<> Human::IdleTask() {
 	while (true) {
 		for (scale.y = cIdleScaleYTo; scale.y > cIdleScaleYFrom; scale.y -= cIdleScaleYStep) co_yield 0;
 		for (scale.y = cIdleScaleYFrom; scale.y < cIdleScaleYTo; scale.y += cIdleScaleYStep) co_yield 0;
+	}
+}
+
+xx::Task<> Human::AutoAttackTask() {
+	while (true) {
+		co_yield 0;
+
+		// find most dangerous monster in attack area
+		Monster1* tar{};
+		ForeachByRange(scene->sgcPhysItems, gLooper.sgrdd, pos, cAttackRadius, [&](PhysSceneItem* o) {
+			assert(o->typeId == Monster1::cTypeId);
+			auto m = (Monster1*)o;
+			if (!tar) {
+				tar = m;
+			} else {
+				if (m->pointIndex > tar->pointIndex) {
+					tar = m;
+				}
+			}
+		});
+
+		// auto filre?
+		if (tar) {
+			// calc target's pos ( after bomb fly time )
+			auto idx = tar->pointIndex + tar->speed * Bomb::cLifeNumFrames;
+			if (idx >= (int)scene->mpc.points.size()) continue;
+			auto& tarPos = scene->tracks[tar->tracksIndex][(int)idx];
+
+			// fire
+			im->Create<Bomb>(xx::WeakFromThis(this), tarPos);
+
+			// fire cd
+			co_await gLooper.AsyncSleep(1);
+		}
 	}
 }
 
@@ -236,7 +324,7 @@ xx::Task<> Human::MainTask() {
 			idleTask();
 		}
 		scene->camera.SetOriginal(pos);
-
+		autoAttackTask();
 		co_yield 0;
 	}
 }
@@ -357,6 +445,7 @@ void SceneTest1::Init() {
 
 	// init main task for create monsters
 	tasks.Add([this]()->xx::Task<> {
+#if 1
 		while (true) {
 			// create some monsters
 			if (im.Get<Monster1>().len < 100000) {
@@ -370,6 +459,15 @@ void SceneTest1::Init() {
 			}
 			co_yield 0;
 		}
+#else
+		while (true) {
+			// create 2 monster for bomb aim
+			im.Create<Monster1>(gLooper.rnd.Next<int>(trackCount - 1)
+				, gLooper.rnd.Next<float>(0, 100)
+				, gLooper.rnd.Next<float>(trackBaseSpeed, trackBaseSpeed * 5));
+			co_await gLooper.AsyncSleep(2);
+		}
+#endif
 	});
 }
 

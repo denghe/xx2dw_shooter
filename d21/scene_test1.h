@@ -59,8 +59,33 @@ struct Staff : SceneItem {
 
 
 
-struct Bullet : SceneItem {
+struct Bomb : SceneItem {
 	static constexpr int cTypeId{ 2 };
+
+	static constexpr float cScale{ 1.f };
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
+
+	static constexpr float cRadius{ 100 };
+	static constexpr float cLifeSpan{ 0.5 };
+	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
+
+	xx::Weak<SceneItem> owner;
+	XY tarPos{}, inc{};
+	int damage{};
+	// todo: damage
+
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+
+	void Init(ItemManagerBase* im_, xx::Weak<Human> owner_, XY const& tarPos_);
+	virtual bool Update() override;
+	virtual void Draw(Camera const& camera) override;
+};
+
+
+
+struct Bullet : SceneItem {
+	static constexpr int cTypeId{ 3 };
 
 	static constexpr float cScale{ 0.5f };
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
@@ -87,7 +112,7 @@ struct Bullet : SceneItem {
 
 
 struct Human : SceneItem {
-	static constexpr int cTypeId{ 3 };
+	static constexpr int cTypeId{ 4 };
 
 	static constexpr float cIdleScaleYFrom{ 0.9f };
 	static constexpr float cIdleScaleYTo{ 1.f };
@@ -100,6 +125,8 @@ struct Human : SceneItem {
 	static constexpr float cFrameInc{ 12.f / gDesign.fps };
 	static constexpr float cSpeed{ 60.f / gDesign.fps };
 
+	static constexpr float cAttackRadius{ 500.f };
+
 	float speed{};
 	MoveDirections direction{};
 	float frameIndexFrom{}, frameIndexTo{};
@@ -110,6 +137,8 @@ struct Human : SceneItem {
 	xx::Task<> MainTask();
 	xx::Task<> idleTask;
 	xx::Task<> IdleTask();
+	xx::Task<> autoAttackTask;
+	xx::Task<> AutoAttackTask();
 
 	void Init(ItemManagerBase* im_);
 	virtual bool Update() override;
@@ -119,7 +148,7 @@ struct Human : SceneItem {
 
 
 struct Monster1 : PhysSceneItem {
-	static constexpr int cTypeId{ 4 };
+	static constexpr int cTypeId{ 5 };
 
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cScale{ 1 };
@@ -142,7 +171,7 @@ struct SceneTest1 : Scene {
 	SpaceGridC<PhysSceneItem, XY> sgcPhysItems;	// must at top
 	xx::Shared<Node> rootNode;
 	Camera camera;
-	ItemManager<Staff, Bullet, Human, Monster1> im;
+	ItemManager<Staff, Bomb, Bullet, Human, Monster1> im;
 	xx::Weak<Human> human;	// point to im human Item
 	bool isBorderVisible{};
 
