@@ -95,11 +95,21 @@ void Staff::Draw(Camera const& camera) {
 #pragma region Bomb
 
 xx::Task<> Bomb::MainTask() {
-	for (int e = gLooper.frameNumber + cLifeNumFrames; gLooper.frameNumber < e;) {
-		pos += inc;
+
+	// fly with parabola path
+	for (int i = 0; i < cLifeNumFrames; ++i) {
+
+		auto timeScale = (1.f / cLifeSpan) * i;
+		auto elapsedTime = gDesign.frameDelay * timeScale;
+		pos.x = fromPos.x + Calc::Bezierat(0, controlPoint1.x, controlPoint2.x, toPos.x, elapsedTime);
+		pos.y = fromPos.y + Calc::Bezierat(0, controlPoint1.y, controlPoint2.y, toPos.y, elapsedTime);
+		radians = 0.1f * timeScale;
+
+		// todo: pos need == shadow's pos for order by z
 		co_yield 0;
 	}
-	// explosion
+
+	// explosion	// todo: create new explosion object do this
 	ForeachByRange(scene->sgcPhysItems, gLooper.sgrdd, pos, cRadius, [&](PhysSceneItem* o) {
 		assert(o->typeId == Monster1::cTypeId);
 		auto m = (Monster1*)o;
@@ -111,17 +121,17 @@ void Bomb::Init(ItemManagerBase* im_, xx::Weak<Human> owner_, XY const& tarPos_)
 	assert(owner_);
 	SceneItemInit(cTypeId, im_);
 	owner = std::move(owner_);
-	tarPos = tarPos_;
 
 	// tasks init
 	mainTask = MainTask();
-	pos = owner->pos;
 	radius = cRadius;
-	if (tarPos != pos) {
-		auto v = tarPos - pos;
-		auto d = Calc::Distance(tarPos, pos);
-		inc = (tarPos - pos).MakeNormalize() * d / cLifeSpan / gDesign.fps;
-	}
+	radians = {};
+	pos = owner->pos;
+
+	fromPos = pos;
+	toPos = tarPos_ - fromPos;		// offset
+	controlPoint1 = XY{ 0, -200 };
+	controlPoint2 = toPos + XY{ 0, -200 };
 }
 
 bool Bomb::Update() {
@@ -129,6 +139,10 @@ bool Bomb::Update() {
 }
 
 void Bomb::Draw(Camera const& camera) {
+
+	// todo: check fly or explosion
+	// shadow
+
 	auto& q = Quad::DrawOnce(gLooper.frames_mine[0]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;

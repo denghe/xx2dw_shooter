@@ -70,7 +70,7 @@ struct Bomb : SceneItem {
 	static constexpr int cLifeNumFrames{ int(cLifeSpan / gDesign.frameDelay) };
 
 	xx::Weak<SceneItem> owner;
-	XY tarPos{}, inc{};
+	XY fromPos{}, toPos{}, controlPoint1{}, controlPoint2{};	// bezier
 	int damage{};
 	// todo: damage
 
