@@ -56,13 +56,9 @@ out vec4 oColor;
 void main() {
     float r = vPosRadius.z;
     float d = distance(vPosRadius.xy, gl_FragCoord.xy);
-    //if (d > r) discard;
-    oColor = vColor;
-    if (d > r - 10.f) {
-        oColor.a = smoothstep(r - 15.f, r, d) * smoothstep(r, r - 5.f, d) * 0.8f;
-    } else {
-        oColor.a = smoothstep(r - 100.f, r, d) * 0.2f;
-    }
+    // if (d > r) discard;
+    oColor.xyz = vColor.xyz;
+    oColor.a = smoothstep(r - 100.f, r, d) * smoothstep(r, r - 1.f, d) * (step(r - 7.f, d) * 0.2f + 0.3f);
 })"sv });
 
         p = LinkGLProgram(v, f);

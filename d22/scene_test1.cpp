@@ -28,9 +28,7 @@ void SceneTest1::Update() {
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
-	camera.Calc();
-
-	// shader update?
+	//camera.Calc();
 }
 
 void SceneTest1::Draw() {
@@ -41,7 +39,7 @@ void SceneTest1::Draw() {
 	rid.pos = {};
 	rid.radius = 200;
 	rid.color = RGBA8_Green;
-	for (size_t i = 0; i < 1000; i++) {
+	for (size_t i = 0; i < 1; i++) {
 		shaderRingInstance.DrawOne(rid);
 	}
 #else	
