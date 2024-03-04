@@ -30,6 +30,7 @@ xx::Task<> Bullet::MainTask() {
 
 								// hit effect
 								scene->enm.Add(pos, XY{ 0, -1 }, RGBA8_Red, int(radius * 1000));
+								--maxHitCount;
 							}
 							goto LabContinue;
 						}
@@ -38,10 +39,11 @@ xx::Task<> Bullet::MainTask() {
 
 					// hit effect
 					scene->enm.Add(pos, XY{ 0, -1 }, RGBA8_Red, int(radius * 1000));
+					--maxHitCount;
 				}
 
 			LabContinue:
-				if (maxHitCount == 0) co_return;
+				if (maxHitCount == 0) co_return;	// todo: fade out ?
 
 			//}
 		}
@@ -62,7 +64,8 @@ void Bullet::Init(ItemManagerBase* im_, float radians_) {
 	radius = cRadius * (scale.x / cScale);
 	tailRatio = cRadius / radius;
 	speed = gLooper.rnd.Next<float>(cSpeed.from, cSpeed.to);
-	maxHitCount = cMaxHitCount;
+	maxHitCount = gLooper.rnd.Next<int>(cMaxHitCount.from, cMaxHitCount.to);
+	hitBlackList.Reserve(maxHitCount);
 	mainTask = MainTask();
 }
 
@@ -134,19 +137,35 @@ void SceneTest1::Init() {
 		camera.DecreaseScale(0.1f, 0.1f);
 		});
 
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
+			numBulletGenerateByEveryFrame = 1;
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10", [&]() {
+			numBulletGenerateByEveryFrame = 10;
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
+			numBulletGenerateByEveryFrame = 100;
+		});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
+			numBulletGenerateByEveryFrame = 1000;
+		});
+
+
 	camera.SetScale(1.f);
 
 	im.Init(this);
-	enm.Init(1000);
+	enm.Init(20000);
 
 	im.Create<BigMonster>();
 
 	tasks.Add([this]()->xx::Task<> {
 		while (true) {
-			im.Create<Bullet>(0.f);
-			im.Create<Bullet>(gPI / 8);
-			im.Create<Bullet>(-gPI / 8);
-			co_await gLooper.AsyncSleep(1);
+			for (size_t i = 0; i < numBulletGenerateByEveryFrame; i++) {
+				//im.Create<Bullet>(gLooper.rnd.Next<float>(-gPI / 8, gPI / 8));
+				im.Create<Bullet>(gLooper.rnd.Next<float>(-gPI, gPI));
+			}
+			//co_await gLooper.AsyncSleep(1);
+			co_yield 0;
 		}
 	});
 }
@@ -175,6 +194,9 @@ void SceneTest1::Draw() {
 	im.DirectDraw<BigMonster>(camera);
 	im.DirectDraw<Bullet>(camera);
 	enm.Draw(camera);
+
+	auto str = xx::ToString("total bullet count = ", im.GetSize(), "  total blood text count = ", enm.ens.Count());
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
 
 	gLooper.DrawNode(rootNode);
 };

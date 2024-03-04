@@ -13,7 +13,7 @@ struct Bullet : SceneItem {
 	static constexpr float cRadius{ 16.f * cScale };
 	static constexpr xx::FromTo cSpeed{ 5.f, 20.f };
 	static constexpr float cTimeSpan{ 2 };
-	static constexpr int cMaxHitCount{ 10 };
+	static constexpr xx::FromTo cMaxHitCount{ 1, 3 };
 
 	static constexpr int cHitDelayFrames{ int(gDesign.fps / 10) };
 	xx::Listi32<std::pair<xx::Weak<SceneItem>, int>> hitBlackList;
@@ -46,6 +46,7 @@ struct SceneTest1 : Scene {
 	Camera camera;
 	ItemManager<Bullet, BigMonster> im;
 	EffectNumberManager1 enm;
+	int numBulletGenerateByEveryFrame{1};
 
 	virtual void Init() override;
 	virtual void Update() override;

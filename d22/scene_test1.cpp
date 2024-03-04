@@ -16,7 +16,7 @@ void SceneTest1::Init() {
 
 	camera.SetScale(1.f);
 
-	frame_ring = gLooper.LoadFrame("res/ring.png");
+	//frame_ring = gLooper.LoadFrame("res/ring.png");
 
 	shaderRingInstance.Init(gEngine);
 }
