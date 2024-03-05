@@ -5,52 +5,50 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+
 set(name tool_plist2blist)
 project(${name})
+
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+
 add_definitions(-DDISABLE_ENGINE_AUDIO)
+
 
 include_directories(
 	./
-	../miniaudio
 	../nameof/include
+	../pugixml/src
 	../zstd/lib
-	../glad
 	../stb
-	../glfw/include
-	../engine
-	../3rd
 	../xxlib
 )
 
+
 file(GLOB sources
-	../glad/*.h
+	../nameof/include/*.hpp
+	../pugixml/src/*.hpp
 	../stb/*.h
-	../glfw/include/GLFW/*.h
-	../engine/*.cpp
-	../engine/*.c
-	../engine/*.hpp
-	../engine/*.h
 	../xxlib/*.cpp
 	../xxlib/*.c
 	../xxlib/*.hpp
 	../xxlib/*.h
-	../3rd/*.cpp
-	../3rd/*.c
-	../3rd/*.hpp
-	../3rd/*.h
 	*.cpp
 	*.c
 	*.h
 )
-add_executable(${name} ${sources})
+add_executable(${name} ${sources} pugixml)
+
 
 source_group("" FILES ${sources})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/../ FILES ${sources})
+
+
+add_subdirectory(../pugixml pugixml)
+
 
 SET(BUILD_TESTING OFF CACHE BOOL "BUILD_TESTING" FORCE)
 SET(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE BOOL "USE_MSVC_RUNTIME_LIBRARY_DLL" FORCE)
@@ -62,13 +60,9 @@ SET(ZSTD_MULTITHREAD_SUPPORT_DEFAULT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT_DE
 SET(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT" FORCE)
 add_subdirectory(../zstd/build/cmake zstd)
 
-SET(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW_BUILD_DOCS" FORCE)
-SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW_BUILD_EXAMPLES" FORCE)
-SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
-SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
-add_subdirectory(../glfw glfw)
 
-target_link_libraries(${name} glfw libzstd_static)
+target_link_libraries(${name} pugixml libzstd_static)
+
 
 if(MSVC)
 

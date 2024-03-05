@@ -19,11 +19,12 @@ struct TexturePacker : Frames {
         }
 
         size_t numFrames{};
-        if (int r = dr.Read(premultiplyAlpha, realTextureFileName, numFrames)) return r;
+        if (dr.len < 8 || memcmp(dr.buf, "blist_1 ", 8) != 0) return -1;                // file header verify
+        if (int r = dr.Read(realTextureFileName, premultiplyAlpha, numFrames)) return r;
         for (size_t i = 0; i < numFrames; ++i) {
             auto f = xx::MakeRef<Frame>();
             if (int r = dr.Read(f->key, f->anchor)) return r;
-            if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteOffset.x, (xx::RWFloatUInt16&)f->spriteOffset.y)) return r;
+            if (int r = dr.Read((xx::RWFloatInt16&)f->spriteOffset.x, (xx::RWFloatInt16&)f->spriteOffset.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSize.x, (xx::RWFloatUInt16&)f->spriteSize.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSourceSize.x, (xx::RWFloatUInt16&)f->spriteSourceSize.y)) return r;
             if (int r = dr.ReadFixed(f->textureRect.x)) return r;

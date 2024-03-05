@@ -5,7 +5,6 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-
 set(name tool_plist2png)
 project(${name})
 
@@ -20,10 +19,15 @@ add_definitions(-DDISABLE_ENGINE_AUDIO)
 
 include_directories(
 	./
+	../miniaudio
 	../nameof/include
 	../pugixml/src
 	../zstd/lib
+	../glad
 	../stb
+	../glfw/include
+	../engine
+	../3rd
 	../xxlib
 )
 
@@ -31,11 +35,21 @@ include_directories(
 file(GLOB sources
 	../nameof/include/*.hpp
 	../pugixml/src/*.hpp
+	../glad/*.h
 	../stb/*.h
+	../glfw/include/GLFW/*.h
+	../engine/*.cpp
+	../engine/*.c
+	../engine/*.hpp
+	../engine/*.h
 	../xxlib/*.cpp
 	../xxlib/*.c
 	../xxlib/*.hpp
 	../xxlib/*.h
+	../3rd/*.cpp
+	../3rd/*.c
+	../3rd/*.hpp
+	../3rd/*.h
 	*.cpp
 	*.c
 	*.h
@@ -60,9 +74,13 @@ SET(ZSTD_MULTITHREAD_SUPPORT_DEFAULT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT_DE
 SET(ZSTD_MULTITHREAD_SUPPORT OFF CACHE BOOL "ZSTD_MULTITHREAD_SUPPORT" FORCE)
 add_subdirectory(../zstd/build/cmake zstd)
 
+SET(GLFW_BUILD_DOCS OFF CACHE BOOL "GLFW_BUILD_DOCS" FORCE)
+SET(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "GLFW_BUILD_EXAMPLES" FORCE)
+SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
+SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
+add_subdirectory(../glfw glfw)
 
-target_link_libraries(${name} pugixml libzstd_static)
-
+target_link_libraries(${name} glfw pugixml libzstd_static)
 
 if(MSVC)
 

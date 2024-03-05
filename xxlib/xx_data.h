@@ -1130,4 +1130,20 @@ namespace xx {
         }
     };
 
+    struct RWFloatInt16 {
+        float v;
+    };
+    template<typename T>
+    struct DataFuncs<T, std::enable_if_t< std::is_base_of_v<RWFloatInt16, T> >> {
+        template<bool needReserve = true>
+        static inline void Write(Data& d, T const& in) {
+            d.WriteFixed((int16_t)in.v);
+        }
+        static inline int Read(Data_r& d, T& out) {
+            int16_t tmp;
+            auto r = d.ReadFixed(tmp);
+            out.v = tmp;
+            return r;
+        }
+    };
 }

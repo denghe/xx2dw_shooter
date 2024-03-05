@@ -5,7 +5,7 @@
 namespace TexturePackerReader {
 
 	struct Anchor { float x{}, y{}; };
-	struct Offset { float x{}, y{}; };
+	struct Offset { int16_t x{}, y{}; };
 	struct Size { uint16_t width{}, height{}; };
 	struct Rect { uint16_t x{}, y{}, width{}, height{}; };
 
@@ -32,6 +32,7 @@ namespace TexturePackerReader {
 		struct Metadata {
 			std::string version;					// old
 			int format{};
+			std::string pixelFormat;				// new version
 			bool premultiplyAlpha{};				// new version
 			std::string realTextureFileName;		// new version
 			Size size;
@@ -160,6 +161,10 @@ namespace TexturePackerReader {
 				metadata.format = ReadInteger(v = k.next_sibling());
 				kn = GetKey(k = v.next_sibling());
 			}
+			if (kn == "pixelFormat"sv) {
+				metadata.pixelFormat = ReadString(v = k.next_sibling());
+				kn = GetKey(k = v.next_sibling());
+			}
 			if (metadata.format == 2 && kn == "textureFileName"sv) {
 				metadata.textureFileName = ReadString(v = k.next_sibling());
 				kn = GetKey(k = v.next_sibling());
@@ -195,6 +200,10 @@ namespace TexturePackerReader {
 				metadata.premultipliedAlpha = ReadBoolean(v = k.next_sibling());
 				metadata.premultiplyAlpha = metadata.premultipliedAlpha;
 			}
+
+			std::sort(frames.begin(), frames.end(), [](auto const& a, auto const& b) {
+				return xx::InnerNumberToFixed(a.name) < xx::InnerNumberToFixed(b.name);
+			});
 
 			return 0;
 		}

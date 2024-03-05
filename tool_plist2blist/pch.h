@@ -1,7 +1,9 @@
 ﻿#pragma once
-#ifndef XX2DW_SHOOTER_TOOLS_PLIST2BLIST_PCH_H_
-#define XX2DW_SHOOTER_TOOLS_PLIST2BLIST_PCH_H_
+#ifndef XX2DW_SHOOTER_TOOLS_PLIST2PNG_PCH_H_
+#define XX2DW_SHOOTER_TOOLS_PLIST2PNG_PCH_H_
 
-#include <engine.h>
+#include <xx_file.h>
+#include <xx_string.h>
+#include <tpr.h>
 
 #endif
