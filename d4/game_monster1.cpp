@@ -1,9 +1,11 @@
 ﻿#include "pch.h"
 
 void Monster1::Draw() {
-	body.SetFrame(gLooper.frames_monster_1[(int32_t)frameIndex])
+	auto& f = gLooper.frames_monster_1[(int32_t)frameIndex];
+	body.SetFrame(f)
 		.SetScale(scale * gLooper.camera.scale)
 		.SetPosition(gLooper.camera.ToGLPos(pos))
+		.SetRotate(f->textureRotated ? gNPI / 2 : 0.f)
 		.Draw();
 }
 

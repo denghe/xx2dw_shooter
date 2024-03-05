@@ -32,6 +32,7 @@ struct TexturePacker : Frames {
             if (int r = dr.ReadFixed(f->textureRect.y)) return r;
             if (int r = dr.ReadFixed(f->textureRect.w)) return r;
             if (int r = dr.ReadFixed(f->textureRect.h)) return r;
+            if (int r = dr.ReadFixed(f->textureRotated)) return r;
             //printf("load frame key = %s\n", f->key.c_str());
             frames.emplace_back(std::move(f));
         }

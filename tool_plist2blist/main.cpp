@@ -52,6 +52,7 @@ int main() {
 			d.WriteFixed(f.textureRect.y);
 			d.WriteFixed(f.textureRect.width);
 			d.WriteFixed(f.textureRect.height);
+			d.WriteFixed(f.textureRotated);
 		}
 		xx::WriteAllBytes(newPath, d);
 		++n;

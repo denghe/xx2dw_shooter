@@ -13,7 +13,14 @@ struct Quad : QuadInstanceData {
         if constexpr (!forceOverrideTexRectId) {
             if (frame == f) return *this;
         }
-        texRect.data = f->textureRect.data;
+        if (f->textureRotated) {
+            texRect.x = f->textureRect.x;
+            texRect.y = f->textureRect.y;
+            texRect.w = f->textureRect.h;
+            texRect.h = f->textureRect.w;
+        } else {
+            texRect.data = f->textureRect.data;
+        }
         texId = f->tex->GetValue();
         frame = std::move(f);
         return *this;
@@ -121,13 +128,20 @@ struct Quad : QuadInstanceData {
     q.pos = {};
     q.anchor = {0.5f, 0.5f};
     q.scale = {1, 1};
-    q.radians = 0;
+    q.radians = frame->textureRotated ? gNPI / 2 : 0.f;
     q.colorplus = 1;
     q.color = {255, 255, 255, 255};
     */
     inline XX_FORCE_INLINE static QuadInstanceData& DrawOnce(xx::Ref<Frame> const& f) {
         auto& r = *EngineBase1::Instance().ShaderBegin(EngineBase1::Instance().shaderQuadInstance).Draw(f->tex->GetValue(), 1);
-        r.texRect.data = f->textureRect.data;
+        if (f->textureRotated) {
+            r.texRect.x = f->textureRect.x;
+            r.texRect.y = f->textureRect.y;
+            r.texRect.w = f->textureRect.h;
+            r.texRect.h = f->textureRect.w;
+        } else {
+            r.texRect.data = f->textureRect.data;
+        }
         return r;
     }
 
