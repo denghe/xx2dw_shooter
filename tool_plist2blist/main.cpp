@@ -36,6 +36,7 @@ int main() {
 		for (auto& f : tp.frames) {
 			std::cout << "handle frame: " << f.name << std::endl;
 			d.Write(f.name);
+			d.Write(f.aliases);
 			if (f.anchor.has_value()) {
 				d.WriteFixed((uint8_t)1);
 				d.Write(f.anchor->x, f.anchor->y);
@@ -84,7 +85,12 @@ int main() {
 		std::string s;
 		s.append("xx::List<xx::Ref<Frame>, int32_t>");
 		for (auto& k : keys) {
-			auto k2 = k.back() == '_' ? k.substr(0, k.size() - 1) : k;
+			std::string kk( k.back() == '_' ? k.substr(0, k.size() - 1) : k );
+			for (auto& c : kk) {
+				if (c == '.') c = '_';
+			}
+			std::string_view k2(kk);
+
 			xx::Append(s, "\n    frames_", k2, ",");
 			if (k2.size() > maxLen) {
 				maxLen = k2.size();
@@ -93,7 +99,12 @@ int main() {
 		s.resize(s.size() - 1);
 		s.append(";\n");
 		for (auto& k : keys) {
-			auto k2 = k.back() == '_' ? k.substr(0, k.size() - 1) : k;
+			std::string kk(k.back() == '_' ? k.substr(0, k.size() - 1) : k);
+			for (auto& c : kk) {
+				if (c == '.') c = '_';
+			}
+			std::string_view k2(kk);
+
 			xx::Append(s, "\n        tp->GetToByPrefix(frames_", k2, xx::CharRepeater{ ' ', maxLen - k2.size() }, ", \"", k, "\"", xx::CharRepeater{ ' ', maxLen - k2.size() }, ");");
 		}
 		xx::WriteAllBytes(newPath2, s.data(), s.size());

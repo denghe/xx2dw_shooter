@@ -22,9 +22,14 @@ struct TexturePacker : Frames {
         if (dr.len < 8 || memcmp(dr.buf, "blist_1 ", 8) != 0) return -1;                // file header verify
         dr.offset += 8; // skip header
         if (int r = dr.Read(realTextureFileName, premultiplyAlpha, numFrames)) return r;
+
+        std::vector<std::string> aliases;
+        bool needSort{};
+
         for (size_t i = 0; i < numFrames; ++i) {
             auto f = xx::MakeRef<Frame>();
-            if (int r = dr.Read(f->key, f->anchor)) return r;
+            aliases.clear();
+            if (int r = dr.Read(f->key, aliases, f->anchor)) return r;
             if (int r = dr.Read((xx::RWFloatInt16&)f->spriteOffset.x, (xx::RWFloatInt16&)f->spriteOffset.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSize.x, (xx::RWFloatUInt16&)f->spriteSize.y)) return r;
             if (int r = dr.Read((xx::RWFloatUInt16&)f->spriteSourceSize.x, (xx::RWFloatUInt16&)f->spriteSourceSize.y)) return r;
@@ -34,9 +39,22 @@ struct TexturePacker : Frames {
             if (int r = dr.ReadFixed(f->textureRect.h)) return r;
             if (int r = dr.ReadFixed(f->textureRotated)) return r;
             //printf("load frame key = %s\n", f->key.c_str());
-            frames.emplace_back(std::move(f));
+            frames.emplace_back(f);
+
+            if (!aliases.empty()) {
+                needSort = true;
+                for (auto& a : aliases) {
+                    frames.emplace_back(xx::MakeRef<Frame>(*f))->key = a;
+                }
+            }
         }
         realTextureFileName = rootPath + realTextureFileName;
+
+        if (needSort) {
+            std::sort(frames.begin(), frames.end(), [](auto const& a, auto const& b) {
+                return xx::InnerNumberToFixed(a->key) < xx::InnerNumberToFixed(b->key);
+            });
+        }
 
         return 0;
     }
