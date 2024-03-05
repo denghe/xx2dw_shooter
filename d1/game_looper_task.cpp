@@ -3,9 +3,9 @@
 xx::Task<> GameLooper::MainTask() {
 	// preload texs
 #ifdef __EMSCRIPTEN__
-	auto tp = co_await AsyncLoadTexturePackerFromUrl("res/pics.blist");
+	auto tp = co_await AsyncLoadTexturePackerFromUrl("res/space_shooter.blist");
 #else
-	auto tp = LoadTexturePacker("res/pics.blist");
+	auto tp = LoadTexturePacker("res/space_shooter.blist");
 #endif
 	xx_assert(tp);
 

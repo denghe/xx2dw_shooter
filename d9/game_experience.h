@@ -3,7 +3,7 @@
 #include "game_hero.h"
 
 struct Experience : Sprite, Removeable<Experience>, SpaceGridCItem<Experience, XY> {
-	constexpr static char const* cResPrefix{ "icon_gem_" };
+	constexpr static char const* cResPrefix{ "gem_1_" };
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
 	constexpr static float cScale{ 0.5f };
 	constexpr static float cRadius{ 6.f * cScale };

@@ -4,14 +4,18 @@ xx::Task<> GameLooper::MainTask() {
 	// load wall texs
 	{
 #ifdef __EMSCRIPTEN__
-		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/d20.blist");
 #else
-		auto tp = LoadTexturePacker("res/dungeon.blist");
+		auto tp = LoadTexturePacker("res/d20.blist");
 #endif
 		xx_assert(tp);
 		tp->GetToByPrefix(frames_wall, "wall_");
 		frames_floor.push_back(tp->Get("wall_5"));
-		tp->GetToByPrefix(frames_pumpkin, "pumpkin_");
+
+		frames_pumpkin.push_back(tp->Get("creature_1_353"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_354"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_355"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_356"sv));
 	}
 	ready = true;
 

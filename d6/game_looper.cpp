@@ -3,16 +3,16 @@
 xx::Task<> GameLooper::MainTask() {
 	{
 #ifdef __EMSCRIPTEN__
-		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/d20.blist");
 #else
-		auto tp = LoadTexturePacker("res/dungeon.blist");
+		auto tp = LoadTexturePacker("res/d20.blist");
 #endif
 		xx_assert(tp);
-		tp->GetToByPrefix(frames_heros.emplace_back(), "boy_1_");
-		tp->GetToByPrefix(frames_heros.emplace_back(), "boy_2_");
-		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_1_");
-		tp->GetToByPrefix(frames_heros.emplace_back(), "girl_2_");
-		tp->GetToByPrefix(frames_magicWeapon, "weapon_");
+		tp->GetToByPrefix(frames_heros.emplace_back(), "human_1_");
+		tp->GetToByPrefix(frames_heros.emplace_back(), "human_2_");
+		tp->GetToByPrefix(frames_heros.emplace_back(), "human_3_");
+		tp->GetToByPrefix(frames_heros.emplace_back(), "human_4_");
+		tp->GetToByPrefix(frames_magicWeapon, "sword_");
 	}
 	ready = true;											// all tex ready
 

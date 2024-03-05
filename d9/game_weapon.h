@@ -2,7 +2,7 @@
 #include "game_drawable_sprite.h"
 
 struct Weapon : Sprite {
-	constexpr static char const* cResPrefix{ "weapon_" };
+	constexpr static char const* cResPrefix{ "sword_" };
 	xx::Weak<Player> player;
 	xx::Weak<Hero> hero;
 	float nextFireSecs{};

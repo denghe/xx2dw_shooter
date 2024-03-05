@@ -20,6 +20,7 @@ struct TexturePacker : Frames {
 
         size_t numFrames{};
         if (dr.len < 8 || memcmp(dr.buf, "blist_1 ", 8) != 0) return -1;                // file header verify
+        dr.offset += 8; // skip header
         if (int r = dr.Read(realTextureFileName, premultiplyAlpha, numFrames)) return r;
         for (size_t i = 0; i < numFrames; ++i) {
             auto f = xx::MakeRef<Frame>();

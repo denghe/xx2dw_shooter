@@ -3,9 +3,9 @@
 xx::Task<> GameLooper::MainTask() {
 	{
 #ifdef __EMSCRIPTEN__
-		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/d20.blist");
 #else
-		auto tp = LoadTexturePacker("res/dungeon.blist");
+		auto tp = LoadTexturePacker("res/d20.blist");
 #endif
 		xx_assert(tp);
 		size_t n{};
@@ -13,8 +13,12 @@ xx::Task<> GameLooper::MainTask() {
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_blood_4, Blood::cResPrefix);
 		xx_assert(n);
-		n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
-		xx_assert(n);
+		//n = tp->GetToByPrefix(frames_pumpkin, Hero_Pumpkin::cResPrefix);
+		//xx_assert(n);
+		frames_pumpkin.push_back(tp->Get("creature_1_353"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_354"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_355"sv));
+		frames_pumpkin.push_back(tp->Get("creature_1_356"sv));
 		n = tp->GetToByPrefix(frames_weapon, Weapon::cResPrefix);
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_eye_fire, Bullet_EyeFire::cResPrefix);
@@ -27,8 +31,12 @@ xx::Task<> GameLooper::MainTask() {
 		xx_assert(n);
 		n = tp->GetToByPrefix(frames_icon_gem, Experience::cResPrefix);
 		xx_assert(n);
-		n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
-		xx_assert(n);
+		//n = tp->GetToByPrefix(frames_dragon_babywhite, Monster_Dragon_BabyWhite::cResPrefix);
+		//xx_assert(n);
+		frames_dragon_babywhite.push_back(tp->Get("creature_1_165"sv));
+		frames_dragon_babywhite.push_back(tp->Get("creature_1_166"sv));
+		frames_dragon_babywhite.push_back(tp->Get("creature_1_167"sv));
+		frames_dragon_babywhite.push_back(tp->Get("creature_1_168"sv));
 	}
 	ready = true;											// all tex ready
 

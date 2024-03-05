@@ -25,8 +25,18 @@ struct Hero : Sprite {
 
 	void SetDirection(MoveDirections d) {
 		direction = d;
-		frameIndexFrom = cFrameIndexRanges[(int)d];
-		frameIndexTo = cFrameIndexRanges[(int)d + 1];
+		int v;
+		if (xx::FlagContains(d, MoveDirections::Up)) {
+			v = 3;
+		} else if (xx::FlagContains(d, MoveDirections::Down)) {
+			v = 0;
+		} else if (xx::FlagContains(d, MoveDirections::Left)) {
+			v = 1;
+		} else {
+			v = 2;
+		}
+		frameIndexFrom = cFrameIndexRanges[v];
+		frameIndexTo = cFrameIndexRanges[v + 1];
 		frameIndex = frameIndexFrom;
 	}
 

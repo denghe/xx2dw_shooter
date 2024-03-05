@@ -24,7 +24,7 @@ struct Bullet_EyeFire : Bullet {
 };
 
 struct Bullet_EyeFireBlue : Bullet {
-	constexpr static char const* cResPrefix{ "eye_fire_blue_" };
+	constexpr static char const* cResPrefix{ "eye_fire_" };	// known issue: no picture
 	constexpr static XY cAnchor{ 0.85f, 0.5f };
 	constexpr static float cRadius{ 5.f };
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
@@ -40,7 +40,7 @@ struct Bullet_EyeFireBlue : Bullet {
 };
 
 struct Bullet_Fireball : Bullet {
-	constexpr static char const* cResPrefix{ "fireball_10_" };
+	constexpr static char const* cResPrefix{ "fireball_white_" };
 	constexpr static XY cAnchor{ 0.85f, 0.5f };
 	constexpr static float cRadius{ 4.f };
 	constexpr static float cFrameInc{ 30.f / gDesign.fps };
@@ -56,7 +56,7 @@ struct Bullet_Fireball : Bullet {
 };
 
 struct Bullet_Explosion : Bullet {
-	constexpr static char const* cResPrefix{ "explosion_" };
+	constexpr static char const* cResPrefix{ "explosion_1_" };
 	constexpr static XY cAnchor{ 0.5f, 0.5f };
 	constexpr static float cScale{ 5.f };
 	constexpr static float cRadius{ 16.f * cScale };

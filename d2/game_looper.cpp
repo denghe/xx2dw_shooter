@@ -5,9 +5,9 @@ xx::Task<> GameLooper::MainTask() {
 	// load wall texs
 	{
 #ifdef __EMSCRIPTEN__
-		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/dungeon.blist");
+		auto tp = co_await AsyncLoadTexturePackerFromUrl("res/d20.blist");
 #else
-		auto tp = LoadTexturePacker("res/dungeon.blist");
+		auto tp = LoadTexturePacker("res/d20.blist");
 #endif
 		xx_assert(tp);
 		tp->GetToByPrefix(frames_walls, "wall_");
