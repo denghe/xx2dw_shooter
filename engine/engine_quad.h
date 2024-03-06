@@ -49,11 +49,12 @@ struct Quad : QuadInstanceData {
         return Size() * scale;
     }
 
+    // tp support: .SetAnchor( anchor - (f->spriteOffset / f->spriteSize) )     // todo: fix
     XX_FORCE_INLINE Quad& SetAnchor(XY const& a) {
         anchor = a;
         return *this;
     }
-    // if tp support rotate, .SetRotate( radians + (f->textureRotated ? gNPI / 2 : 0.f) )
+    // tp support: .SetRotate( radians + (f->textureRotated ? gNPI / 2 : 0.f) )
     XX_FORCE_INLINE Quad& SetRotate(float r) {
         radians = r;
         return *this;
@@ -126,10 +127,12 @@ struct Quad : QuadInstanceData {
 
     /*
     auto& q = DrawOnce( frame );
+    auto a = frame->spriteOffset / frame->spriteSize;   // todo: fix
+    auto r = frame->textureRotated ? gNPI / 2 : 0.f;
     q.pos = {};
-    q.anchor = {0.5f, 0.5f};
+    q.anchor = anchor - a;
     q.scale = {1, 1};
-    q.radians = frame->textureRotated ? gNPI / 2 : 0.f;
+    q.radians = radians + r;
     q.colorplus = 1;
     q.color = {255, 255, 255, 255};
     */

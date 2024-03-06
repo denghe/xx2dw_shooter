@@ -276,12 +276,23 @@ namespace TexturePackerReader {
 		// helpers
 
 		// format: 123
-		static int ReadInt(const char* p) {
+		template<typename R>
+		static R ReadInt(const char* p) {
+			bool negative{};
+			if constexpr (std::is_signed_v<R>) {
+				if (*p == '-') {
+					negative = true;
+					++p;
+				}
+			}
 			int x = 0;
 			while (*p >= '0') {
 				if (*p > '9') break;
 				x = (x * 10) + (*p - '0');
 				++p;
+			}
+			if constexpr (std::is_signed_v<R>) {
+				if (negative) return -x;
 			}
 			return x;
 		}
@@ -303,8 +314,8 @@ namespace TexturePackerReader {
 				a = (T)atof(std::string(as).c_str());
 				b = (T)atof(std::string(bs).c_str());
 			} else {
-				a = ReadInt(as.data());
-				b = ReadInt(bs.data());
+				a = ReadInt<T>(as.data());
+				b = ReadInt<T>(bs.data());
 			}
 		}
 
@@ -322,10 +333,10 @@ namespace TexturePackerReader {
 			auto n4Pos = dotPos + 1;
 			if (s[n4Pos] == ' ') ++n4Pos;
 
-			a = ReadInt(s.data() + n1Pos);
-			b = ReadInt(s.data() + n2Pos);
-			c = ReadInt(s.data() + n3Pos);
-			d = ReadInt(s.data() + n4Pos);
+			a = ReadInt<T>(s.data() + n1Pos);
+			b = ReadInt<T>(s.data() + n2Pos);
+			c = ReadInt<T>(s.data() + n3Pos);
+			d = ReadInt<T>(s.data() + n4Pos);
 		}
 
 		// ' ' continue，'<' quit. ascii： ' ' < '0-9' < '<'

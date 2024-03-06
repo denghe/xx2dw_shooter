@@ -5,7 +5,11 @@ struct GameLooper : Engine<GameLooper>, GDesign<1280, 800, 60> {
 	inline static GameLooper* instance;	// init by main()
 	xx::Task<> DrawTask() {
 		// todo: file path from args
-		auto [fd, fn] = LoadFileData("C:/Codes/tmp//test.plist"sv);
+#if 1
+		auto [fd, fn] = LoadFileData("C:/Codes/tmp/gen/test.plist"sv);
+#else
+		auto [fd, fn] = LoadFileData("C:/Codes/tmp/gen2/towers-hd.plist"sv);
+#endif
 
 		TexturePackerReader::Plist tp;
 		if (int r = tp.Load(fd)) {
@@ -22,6 +26,8 @@ struct GameLooper : Engine<GameLooper>, GDesign<1280, 800, 60> {
 
 		FrameBuffer fb{ true };
 		for (auto& fi : tp.frames) {
+			//if (!(fi.name == "CossbowHunter_hawk_0008.png"sv || fi.name == "CossbowHunter_hawk_0009.png"sv)) continue;
+
 			auto f = xx::MakeRef<Frame>();
 			f->tex = ft;
 			f->anchor = fi.anchor.has_value() ? XY{ fi.anchor->x, fi.anchor->y } : XY{ 0.5f, 0.5f };
@@ -38,12 +44,18 @@ struct GameLooper : Engine<GameLooper>, GDesign<1280, 800, 60> {
 			auto fn = rootPath + fi.name;
 			if (fn.find_last_of(".png") == std::string::npos) fn += ".png";
 
-			// todo: assign offset ?? size use spriteSourceSize ???
-			auto texSiz = f->spriteSize.As<uint32_t>();
+			auto texSiz = f->spriteSourceSize.As<uint32_t>();
 			auto t = fb.Draw(texSiz, true, {}, [&] {
-				Quad().SetFrame(f).SetScale({1, -1}).SetRotate(f->textureRotated ? gPI / 2 : 0.f).Draw();
+				Quad().SetFrame(f).SetScale({ 1, -1 }).SetRotate(f->textureRotated ? gPI / 2 : 0.f)
+#if 1
+					.SetAnchor({ 0.5f, 0.5f })
+					.SetPosition({ f->spriteOffset.MakeFlipY() })
+#else
+					.SetAnchor(XY{ 0.5f, 0.5f } - f->spriteOffset / XY{ (float)fi.textureRect.width, (float)fi.textureRect.height })		// todo: fix
+#endif
+					.Draw();
 				shader->End();
-				glFlush();
+				//glFlush();
 				GLsizei nrChannels = 4;
 				GLsizei stride = nrChannels * texSiz.x;
 				stride += (stride % 4) ? (4 - stride % 4) : 0;
@@ -56,8 +68,21 @@ struct GameLooper : Engine<GameLooper>, GDesign<1280, 800, 60> {
 				stbi_write_png(fn.c_str(), texSiz.x, texSiz.y, nrChannels, buffer.data(), stride);
 			});
 
-			for (auto& a : fi.aliases) {
-				// todo: write same data to filename: a
+			if (!fi.aliases.empty()) {
+				xx::Data d;
+				if (int r = xx::ReadAllBytes(fn, d)) {
+					std::cerr << "ReadAllBytes failed. r = " << r << " fn = " << fn << std::endl;
+					running = false;
+					co_return;
+				}
+				for (auto& a : fi.aliases) {
+					auto afn = rootPath + a;
+					if (int r = xx::WriteAllBytes(afn, d)) {
+						std::cerr << "WriteAllBytes failed. r = " << r << " fn = " << afn << std::endl;
+						running = false;
+						co_return;
+					}
+				}
 			}
 
 			Quad().SetFrame(f).Draw();
