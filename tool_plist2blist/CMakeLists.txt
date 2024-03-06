@@ -24,6 +24,7 @@ include_directories(
 	../pugixml/src
 	../zstd/lib
 	../stb
+	../engine
 	../xxlib
 )
 
@@ -32,6 +33,7 @@ file(GLOB sources
 	../nameof/include/*.hpp
 	../pugixml/src/*.hpp
 	../stb/*.h
+	../engine/*.h
 	../xxlib/*.cpp
 	../xxlib/*.c
 	../xxlib/*.hpp

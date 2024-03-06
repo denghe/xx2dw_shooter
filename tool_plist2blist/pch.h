@@ -4,6 +4,6 @@
 
 #include <xx_file.h>
 #include <xx_string.h>
-#include <tpr.h>
+#include <engine_texturepacker_reader.h>
 
 #endif
