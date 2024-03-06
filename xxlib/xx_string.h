@@ -352,7 +352,7 @@ namespace xx {
                     }
                 }
 #else
-                auto [ptr, _] = std::to_chars(buf.data(), buf.data() + buf.size(), in, std::chars_format::general, sizeof(T) == 4 ? 7 : 16);
+                auto [ptr, _] = std::to_chars(buf.data(), buf.data() + buf.size(), in, std::chars_format::fixed, sizeof(T) == 4 ? 7 : 16);
                 sv = std::string_view(buf.data(), ptr - buf.data());
 #endif
                 s.append(sv);

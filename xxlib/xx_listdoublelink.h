@@ -277,7 +277,7 @@ namespace xx {
 
 		// ll.Foreach( [&](auto& o) { o..... } );
 		// ll.Foreach( [&](auto& o)->bool { if ( o.... ) return ... } );
-		template<typename F>
+		template<bool doRemove = true, typename F>
 		void Foreach(F&& func, IndexType beginIdx = -1) {
             if (beginIdx == -1) {
                 beginIdx = head;
@@ -290,7 +290,9 @@ namespace xx {
 				for (IndexType next, idx = beginIdx; idx != -1;) {
 					if (func(buf[idx].value)) {
 						next = Next(idx);
-						Remove(idx);
+						if constexpr (doRemove) {
+							Remove(idx);
+						} else return;
 					} else {
 						next = Next(idx);
 					}
