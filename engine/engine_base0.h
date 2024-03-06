@@ -30,6 +30,7 @@ struct MouseEventHandlerNode;
 struct Shader;
 struct EngineBase0 {
     xx::Tasks tasks;
+    xx::Task<> drawTask;
     Rnd rnd;
 
 #ifndef DISABLE_ENGINE_AUDIO

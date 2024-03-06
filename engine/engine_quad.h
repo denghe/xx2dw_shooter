@@ -53,6 +53,7 @@ struct Quad : QuadInstanceData {
         anchor = a;
         return *this;
     }
+    // if tp support rotate, .SetRotate( radians + (f->textureRotated ? gNPI / 2 : 0.f) )
     XX_FORCE_INLINE Quad& SetRotate(float r) {
         radians = r;
         return *this;

@@ -10,6 +10,7 @@ template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -
 template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std::same_as<void>; };
 template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
 template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } -> std::same_as<xx::Task<>>; };
+template <typename T> concept Has_DrawTask = requires(T t) { { t.DrawTask() } -> std::same_as<xx::Task<>>; };
 
 template <typename T> concept Has_OnKeyPress = requires(T t) { { t.OnKeyPress(std::declval<EmscriptenKeyboardEvent const&>()) } -> std::same_as<EM_BOOL>; };
 template <typename T> concept Has_OnKeyDown = requires(T t) { { t.OnKeyDown(std::declval<EmscriptenKeyboardEvent const&>()) } -> std::same_as<EM_BOOL>; };

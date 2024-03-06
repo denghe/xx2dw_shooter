@@ -55,6 +55,10 @@ struct Engine : EngineBase3 {
             tasks.Add(((Derived*)this)->MainTask());
         }
 
+        if constexpr (Has_DrawTask<Derived>) {
+            drawTask = ((Derived*)this)->DrawTask();
+        }
+
 #ifndef DISABLE_ENGINE_AUDIO
         audio.Init();
 #endif
@@ -89,9 +93,15 @@ struct Engine : EngineBase3 {
 #endif
                 tasks();
             }
+
             if constexpr (Has_Draw<Derived>) {
                 ((Derived*)this)->Draw();
             }
+
+            if constexpr (Has_DrawTask<Derived>) {
+                drawTask();
+            }
+
             if (showFps) {
                 fpsViewer.Draw(ctcDefault);
             }
