@@ -117,5 +117,25 @@ struct EffectNumberManager {
 		}
 	}
 
-	// todo:   Backup()   Restore()    not perfect is ok
+	void Save(xx::Data& d) {
+		d.WriteFixed(ens.cap);
+		auto e = ens.Count();
+		d.WriteFixed(e);
+		for (size_t i = 0; i < e; ++i) {
+			d.WriteBuf(&ens[i], sizeof(ens[i]));
+		}
+	}
+
+	void Load(xx::Data& d) {
+		ens.Clear();
+		size_t cap, e;
+		(void)d.ReadFixed(cap);
+		ens.Reserve(cap);
+		(void)d.ReadFixed(e);
+		if (e) {
+			ens.tail += e;
+			auto siz = sizeof(ens.buf[0]) * e;
+			memcpy(&ens.buf[0], d.ReadBuf(siz), siz);
+		}
+	}
 };

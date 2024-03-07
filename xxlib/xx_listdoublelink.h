@@ -124,7 +124,12 @@ namespace xx {
 				}
 			}
 
-			buf[idx].version = ++version;
+			if (version == std::numeric_limits< VersionType>().max()) {
+				version = 1;
+			} else {
+				++version;
+			}
+			buf[idx].version = version;
 			return buf[idx].value;
 		}
 
@@ -142,7 +147,7 @@ namespace xx {
 		bool Exists(IndexType idx) const {
 			assert(idx >= 0);
 			if (idx >= len) return false;
-			return buf[idx].version >= 0;
+			return buf[idx].version > 0;
 		}
 		bool Exists(IndexAndVersion const& iv) const {
 			if (iv.index < 0 || iv.index >= len) return false;

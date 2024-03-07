@@ -24,6 +24,14 @@ void BigMonster::Draw() {
 	q.color = RGBA8_Blue;
 }
 
+void BigMonster::Save(xx::Data& d) {
+	d.WriteBuf(this, sizeof(BigMonster));
+}
+
+void BigMonster::Load(xx::Data& d) {
+	memcpy(this, d.ReadBuf(sizeof(BigMonster)), sizeof(BigMonster));
+}
+
 #pragma endregion
 
 #pragma region Bullet
@@ -38,7 +46,7 @@ void Bullet::Init(float radians_) {
 	scale.x = scale.y = cScale * rnd.Next<float>(0.2f, 1.f);
 	radius = cRadius * (scale.x / cScale);
 	tailRatio = cRadius / radius;
-	auto speed = rnd.Next<float>(cSpeed.from, cSpeed.to);
+	speed = rnd.Next<float>(cSpeed.from, cSpeed.to);
 	inc.x = std::cos(radians) * speed;
 	inc.y = std::sin(radians) * speed;
 	maxHitCount = rnd.Next<int>(cMaxHitCount.from, cMaxHitCount.to);
@@ -52,7 +60,7 @@ bool Bullet::Update() {
 int Bullet::UpdateCore() {
 	auto scene = SceneTest1::instance;
 	COR_BEGIN
-	for (e = (float)gLooper.nowSecs + cTimeSpan; gLooper.nowSecs < e;) {
+	for (e = scene->frameNumber + int(cTimeSpan / gDesign.frameDelay); e > scene->frameNumber;) {
 
 		// hit check	( lambda return false mean foreach next m )
 		scene->bigMonsters.Foreach<false>([&](BigMonster& m) {
@@ -128,22 +136,29 @@ void Bullet::Draw() {
 	}
 }
 
+// placement new logic
 void Bullet::Load(xx::Data& d) {
-	// placement new logic
-	memcpy(this, d.ReadBuf(_offsetof(Bullet, hitBlackList)), _offsetof(Bullet, hitBlackList));
-	int len;
+	auto siz = _offsetof(Bullet, hitBlackList);
+	memcpy(this, d.ReadBuf(siz), siz);
+
+	decltype(hitBlackList.len) len;
 	d.Read(len);
 	new (&hitBlackList) decltype(hitBlackList)();
-	hitBlackList.Reserve(len);
-	hitBlackList.len = len;
-	auto siz = len * sizeof(PointerInt);
-	memcpy(hitBlackList.buf, d.ReadBuf(siz), siz);
+	if (len) {
+		hitBlackList.Reserve(len);
+		hitBlackList.len = len;
+		siz = len * sizeof(PointerInt);
+		memcpy(hitBlackList.buf, d.ReadBuf(siz), siz);
+	}
 }
 
 void Bullet::Save(xx::Data& d) {
-	d.WriteBuf((void*)this, _offsetof(Bullet, hitBlackList));
+	auto siz = _offsetof(Bullet, hitBlackList);
+	d.WriteBuf(this, siz);
 	d.Write(hitBlackList.len);
-	d.WriteBuf(hitBlackList.buf, hitBlackList.len * sizeof(PointerInt));
+	if (hitBlackList.len) {
+		d.WriteBuf(hitBlackList.buf, hitBlackList.len * sizeof(PointerInt));
+	}
 }
 
 #pragma endregion
@@ -245,10 +260,13 @@ void SceneTest1::Save() {
 	for (int i = 0, e = bullets.len; i < e; ++i) {
 		auto& node = bullets.buf[i];
 		sd.WriteBuf(&node, 12);		// next, prev, version : [u]int32
+		if (node.version == 0) continue;
 		node.value.Save(sd);
 	}
 
-	// todo: backup  bigMonsters enm
+	// todo: backup  bigMonsters
+
+	enm.Save(sd);
 
 	xx::CoutN("Save() seconds = ", xx::NowEpochSeconds(secs), " data len = ", sd.len);
 }
@@ -266,22 +284,23 @@ void SceneTest1::Load() {
 	// restore bullets numbers memory
 	bullets.Clear<true>();
 	siz = _offsetof(decltype(bullets), version) - _offsetof(decltype(bullets), cap) + sizeof(bullets.version);
-	memcpy(&bullets, sd.ReadBuf(siz), siz);
+	memcpy((char*)&bullets + _offsetof(decltype(bullets), cap), sd.ReadBuf(siz), siz);
 
 	// restore bullets buf
 	bullets.buf = (decltype(bullets.buf))malloc(sizeof(decltype(bullets)::Node) * bullets.cap);
 	for (int i = 0, e = bullets.len; i < e; ++i) {
-		// todo
+		auto& node = bullets.buf[i];
+		memcpy(&node, sd.ReadBuf(12), 12);		// next, prev, version : [u]int32
+		if (node.version == 0) continue;
+		node.value.Load(sd);
 	}
 
-	//bullets.Reserve(len);
-	//bullets.AddCore()
-	//bullets.Foreach([this](Bullet& o) {
-	//	o.Save(sd);
-	//});
+	// todo: restore  bigMonsters 
 
+	enm.Load(sd);
+
+	assert(!sd.HasLeft());
 	xx::CoutN("Load() seconds = ", xx::NowEpochSeconds(secs), " data len = ", sd.len);
 }
-
 
 #pragma endregion

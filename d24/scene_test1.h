@@ -46,7 +46,7 @@ struct Bullet : SceneItem {
 	static constexpr int cHitDelayFrames{ int(gDesign.fps / 10) };
 
 	// pod memcpy begin
-	float e{};
+	int e{};
 	XY inc;
 	int maxHitCount{};
 	float tailRatio{};

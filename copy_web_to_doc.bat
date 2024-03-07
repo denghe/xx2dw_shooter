@@ -66,3 +66,6 @@ xcopy /S/Y web\s22\res docs\res
 
 xcopy /S/Y web\s23\s23.* docs
 xcopy /S/Y web\s23\res docs\res
+
+xcopy /S/Y web\s24\s24.* docs
+xcopy /S/Y web\s24\res docs\res
