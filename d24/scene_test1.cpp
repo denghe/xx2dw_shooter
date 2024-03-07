@@ -38,7 +38,9 @@ void Bullet::Init(float radians_) {
 	scale.x = scale.y = cScale * rnd.Next<float>(0.2f, 1.f);
 	radius = cRadius * (scale.x / cScale);
 	tailRatio = cRadius / radius;
-	speed = rnd.Next<float>(cSpeed.from, cSpeed.to);
+	auto speed = rnd.Next<float>(cSpeed.from, cSpeed.to);
+	inc.x = std::cos(radians) * speed;
+	inc.y = std::sin(radians) * speed;
 	maxHitCount = rnd.Next<int>(cMaxHitCount.from, cMaxHitCount.to);
 	hitBlackList.Reserve(maxHitCount);
 }
@@ -50,54 +52,52 @@ bool Bullet::Update() {
 int Bullet::UpdateCore() {
 	auto scene = SceneTest1::instance;
 	COR_BEGIN
-	inc.x = std::cos(radians) * speed;
-	inc.y = std::sin(radians) * speed;
 	for (e = (float)gLooper.nowSecs + cTimeSpan; gLooper.nowSecs < e;) {
 
 		// hit check
 		scene->bigMonsters.Foreach<false>([&](BigMonster& m) {
+			// intersects ?
+			if (!Calc::Intersects::CircleCircle<float>(
+				pos.x, pos.y, radius, m.pos.x, m.pos.y, m.radius)) return false;
 
-			if (Calc::Intersects::CircleCircle<float>(
-				pos.x, pos.y, radius,
-				m.pos.x, m.pos.y, m.radius)) {
+			// black list check
+			for (int i = hitBlackList.len - 1; i >= 0; --i) {
+				auto& o = hitBlackList[i];
 
-				for (i = hitBlackList.len - 1; i >= 0; --i) {
-					auto& o = hitBlackList[i];
-					if (hitBlackList[i].typeId != BigMonster::cTypeId) {
-						if (!o.Exists() || o.value <= scene->frameNumber) {
-							hitBlackList.SwapRemoveAt(i);
-						}
-						goto LabContinue;
-					} else if (auto p = o.Get<BigMonster>(); !p) {
+				if (!o.Is<BigMonster>()) {
+					if (/*!o.Exists2() || */o.value <= scene->frameNumber) {
 						hitBlackList.SwapRemoveAt(i);
-						goto LabContinue;
-					} 
-					else if (p == &m) {
-						if (o.value <= scene->frameNumber) {
-							o.value = scene->frameNumber + cHitDelayFrames;
-
-							// hit effect
-							scene->enm.Add(pos, XY{ 0, -1 }, RGBA8_Red, int(radius * 1000));
-							--maxHitCount;
-						}
-						goto LabContinue;
 					}
+					continue;
 				}
-				hitBlackList.Emplace(PointerInt{ {m.typeId, m.iv}, scene->frameNumber + cHitDelayFrames });
 
-				// hit effect
-				scene->enm.Add(pos, XY{ 0, -1 }, RGBA8_Red, int(radius * 1000));
-				--maxHitCount;
+				if (!o.Exists<BigMonster>()) {
+					hitBlackList.SwapRemoveAt(i);
+					continue;
+				}
+
+				// is same?
+				if (memcmp(&o.iv, &m.iv, sizeof(o.iv)) == 0) {
+					// not timeout ?
+					if (o.value > scene->frameNumber) return false;
+
+					// renew
+					o.value = scene->frameNumber + cHitDelayFrames;
+					goto LabHit;
+				}
 			}
 
-		LabContinue:
-			if (maxHitCount == 0) {
-				return true;	// todo: fade out ?
-			}
-			return false;
+			// add to black list 
+			hitBlackList.Emplace(PointerInt{ {m.typeId, m.iv}, scene->frameNumber + cHitDelayFrames });
+
+		LabHit:
+			// hit effect
+			scene->enm.Add(pos, XY{ 0, -1 }, RGBA8_Red, int(radius * 1000));
+			--maxHitCount;
+			return maxHitCount == 0;
 		});
 
-		if (maxHitCount == 0) COR_EXIT;
+		if (maxHitCount == 0) COR_EXIT;		// todo: fade out ?
 		pos += inc;
 		COR_YIELD
 	}

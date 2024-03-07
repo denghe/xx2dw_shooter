@@ -4,16 +4,15 @@
 
 // todo: very fast Save + Load for time rollback
 
-// weak ptr likely. need switch case type + iv check item
+// weak ptr likely. need switch case type + iv check
 struct Pointer {
 	int32_t typeId{};
 	LDLIV iv;
 
-	// return nullptr mean item is disposed
-	template<typename T>
-	T* Get();
-
-	bool Exists() const;
+	template<typename T> bool Is() const;
+	template<typename T> bool Exists() const;
+	template<typename T> T& Get();	// unsafe
+	bool Exists2() const;
 };
 
 struct PointerInt : Pointer {
@@ -48,7 +47,6 @@ struct Bullet : SceneItem {
 
 	// ...pod fields here
 	float e{};
-	int i{};
 	XY inc;
 	int maxHitCount{};
 	float tailRatio{};
@@ -109,21 +107,55 @@ struct SceneTest1 : Scene {
 };
 
 template<typename T>
-T* Pointer::Get() {
+bool Pointer::Is() const {
+	return typeId == T::cTypeId;
+}
+
+template<typename T>
+T& Pointer::Get() {
 	if constexpr (std::is_same_v<T, Bullet>) {
 		assert(Bullet::cTypeId == typeId);
 		auto& os = SceneTest1::instance->bullets;
-		if (os.Exists(iv)) return &os.At(iv);
+		assert(os.Exists(iv));
+		return os.At(iv);
 	}
-	// ... if constexpr ( .....
-
+	if constexpr (std::is_same_v<T, BigMonster>) {
+		assert(BigMonster::cTypeId == typeId);
+		auto& os = SceneTest1::instance->bigMonsters;
+		assert(os.Exists(iv));
+		return os.At(iv);
+	}
+	// ...
+	assert(false);
 	return nullptr;
 }
 
-inline bool Pointer::Exists() const {
-	switch (typeId) {
-	case BigMonster::cTypeId:
+template<typename T>
+bool Pointer::Exists() const {
+	if constexpr (std::is_same_v<T, Bullet>) {
+		assert(Bullet::cTypeId == typeId);
+		return SceneTest1::instance->bullets.Exists(iv);
+	}
+	if constexpr (std::is_same_v<T, BigMonster>) {
+		assert(BigMonster::cTypeId == typeId);
 		return SceneTest1::instance->bigMonsters.Exists(iv);
+	}
+	// ...
+	assert(false);
+	return false;
+}
+
+inline bool Pointer::Exists2() const {
+	switch (typeId) {
+	case Bullet::cTypeId:
+	{
+		return SceneTest1::instance->bullets.Exists(iv);
+	}
+	case BigMonster::cTypeId:
+	{
+		return SceneTest1::instance->bigMonsters.Exists(iv);
+	}
+	// ...
 	}
 	assert(false);
 	return false;
