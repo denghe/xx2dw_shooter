@@ -479,6 +479,17 @@ namespace xx {
             }
         }
 
+        // make a copy ( len == cap ) ( do not copy header )
+        Data_rw ShrinkCopy() {
+            Data_rw rtv;
+            if (len) {
+                rtv.buf = ((uint8_t*)malloc(bufHeaderReserveLen + len)) + bufHeaderReserveLen;
+                memcpy(rtv.buf, buf, len);
+                rtv.cap = rtv.len = len;
+            }
+            return rtv;
+        }
+
         // 修改数据长度( 可能扩容 )。会返回旧长度
         XX_INLINE size_t Resize(size_t newLen) {
             if (newLen > cap) {

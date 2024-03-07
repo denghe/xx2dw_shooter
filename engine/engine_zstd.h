@@ -2,6 +2,7 @@
 #include <engine_includes.h>
 #include <zstd.h>
 
+// .exe + 50k
 inline void ZstdDecompress(std::string_view const& src, xx::Data& dst) {
     auto&& siz = ZSTD_getFrameContentSize(src.data(), src.size());
     if (ZSTD_CONTENTSIZE_UNKNOWN == siz) throw std::logic_error("ZstdDecompress error: unknown content size.");
@@ -20,5 +21,16 @@ inline void TryZstdDecompress(xx::Data& d) {
             ZstdDecompress(d, d2);
             std::swap(d, d2);
         }
+    }
+}
+
+// .exe + 320k
+template<int level = 3, bool doShrink = true>
+inline void ZstdCompress(std::string_view const& src, xx::Data& dst) {
+    auto req = ZSTD_compressBound(src.size());
+    dst.Resize(req);
+    dst.len = ZSTD_compress(dst.buf, dst.cap, src.data(), src.size(), level);
+    if (doShrink) {
+        dst.Shrink();
     }
 }
