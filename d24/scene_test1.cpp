@@ -219,10 +219,12 @@ void SceneTest1::Update() {
 
 	bigMonsters.Foreach([](BigMonster& o) {
 		return o.Update();
-		});
+	});
+
 	bullets.Foreach([](Bullet& o) {
 		return o.Update();
-		});
+	});
+
 	enm.Update();
 }
 
@@ -232,9 +234,18 @@ void SceneTest1::Draw() {
 	bigMonsters.Foreach([](BigMonster& o) {
 		o.Draw();
 	});
-	bullets.Foreach([](Bullet& o) {
-		o.Draw();
-	});
+
+	if ((float)bullets.Count() / bullets.len < 0.4) {
+		bullets.Foreach([](Bullet& o) {
+			o.Draw();
+		});
+	} else {
+		for (int i = 0, e = bullets.len; i < e; ++i) {
+			auto& node = bullets.buf[i];
+			if (node.version == 0) continue;
+			node.value.Draw();
+		}
+	}
 	enm.Draw(camera);
 
 	auto str = xx::ToString("total bullet count = ", bullets.Count(), "  total blood text count = ", enm.ens.Count());

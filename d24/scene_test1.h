@@ -2,7 +2,7 @@
 #include <game_looper.h>
 #include <game_effect_number.h>
 
-// todo: very fast Save + Load for time rollback
+// very fast Save + Load for time rollback
 
 // weak ptr likely. need switch case type + iv check
 struct Pointer {
