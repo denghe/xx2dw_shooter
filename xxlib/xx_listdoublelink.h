@@ -10,6 +10,10 @@ namespace xx {
     struct ListDoubleLinkIndexAndVersion {
         IndexType index{ -1 };
         VersionType version{ 0 };
+
+		bool operator==(ListDoubleLinkIndexAndVersion const& o) const {
+			return index == o.index && version == o.version;
+		}
     };
 
     template<typename T, typename IndexType = ptrdiff_t, typename VersionType = size_t>

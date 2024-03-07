@@ -45,12 +45,13 @@ struct Bullet : SceneItem {
 	static constexpr xx::FromTo cMaxHitCount{ 1, 3 };
 	static constexpr int cHitDelayFrames{ int(gDesign.fps / 10) };
 
-	// ...pod fields here
+	// pod memcpy begin
 	float e{};
 	XY inc;
 	int maxHitCount{};
 	float tailRatio{};
-	xx::Listi32<PointerInt> hitBlackList;	// offset == 0x38	( sync with memory layout )
+	// pod memory end
+	xx::Listi32<PointerInt> hitBlackList;
 
 	void Init();
 	void Init(float radians_);
@@ -80,31 +81,49 @@ struct SceneTest1 : Scene {
 
 	xx::Shared<Node> rootNode;
 
-	// memcpy begin
+	// pod memcpy begin
 	Camera camera;
 	int numBulletGenerateByEveryFrame{ 1 };
-	int frameNumber{};						// does not use gLooper's frameNumber. for save load
+	int frameNumber{};						// don't use gLooper's frameNumber. for save load
 	Rnd rnd;
-	// memcpy end
+	// pod memcpy end
 
 	LDL<Bullet> bullets;
 	LDL<BigMonster> bigMonsters;
 	EffectNumberManager enm;
 	// ...
 
-	Bullet& MakeBullet();
-	BigMonster& MakeBigMonster();
-	// ...
+	// alloc only. need Init
+	template<typename T>
+	T& Make();
 
 	virtual void Init() override;
 	virtual void Update() override;
 	virtual void Draw() override;
 
-	//xx::Queue<xx::Data> memLog;		// for time rollback
-	xx::Data savedData;
+	xx::Data sd;	// todo: queue for time rollback
 	void Save();
 	void Load();
 };
+
+#pragma region Impls
+
+template<typename T>
+T& SceneTest1::Make() {
+	T* r{};
+	if constexpr (std::is_same_v<T, Bullet>) {
+		r = &SceneTest1::instance->bullets.Emplace();
+		r->iv = SceneTest1::instance->bullets.Tail();
+	}
+	if constexpr (std::is_same_v<T, BigMonster>) {
+		r = &SceneTest1::instance->bigMonsters.Emplace();
+		r->iv = SceneTest1::instance->bigMonsters.Tail();
+	}
+	//...
+	assert(r);
+	r->typeId = T::cTypeId;
+	return *r;
+}
 
 template<typename T>
 bool Pointer::Is() const {
@@ -148,15 +167,13 @@ bool Pointer::Exists() const {
 inline bool Pointer::Exists2() const {
 	switch (typeId) {
 	case Bullet::cTypeId:
-	{
 		return SceneTest1::instance->bullets.Exists(iv);
-	}
 	case BigMonster::cTypeId:
-	{
 		return SceneTest1::instance->bigMonsters.Exists(iv);
-	}
 	// ...
 	}
 	assert(false);
 	return false;
 }
+
+#pragma endregion
