@@ -37,8 +37,18 @@ void SceneTest1::Init() {
 	auto& foo = grid.Emplace({ 5,5 }, 3.f);
 	xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
 
-	grid.Update(foo, { 15,15 });
-	xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
+	auto& foo2 = grid.Emplace({ 5,5 }, 3.f);
+	xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
+
+	auto& foo3 = grid.Emplace({ 5,5 }, 3.f);
+	xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
+
+	//grid.Update(foo, { 15,15 });
+	//xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
+
+	grid.Update(foo2, { 15,15 });
+	xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
+
 
 
 	//tasks.Add([this]()->xx::Task<> {

@@ -13,6 +13,7 @@ struct Base {
 
 template<std::derived_from<Base> T>
 struct Grid {
+	using T_t = T;
 
 	T* buf{};
 	int32_t cap{}, len{};
@@ -166,8 +167,7 @@ struct Grid {
 		o.pos = newPos;
 
 		// unlink
-		if (o.cidx != cells[o.cidx]) {			// isn't header
-			assert(cells[o.cidx] != o.idx);
+		if (o.idx != cells[o.cidx]) {			// isn't header
 			buf[o.prev].next = o.next;
 			if (o.next >= 0) {
 				buf[o.next].prev = o.prev;
@@ -175,7 +175,7 @@ struct Grid {
 			}
 			//o.prev = -1;
 		} else {
-			assert(cells[o.cidx] == o.idx);
+			assert(o.prev == -1);
 			cells[o.cidx] = o.next;
 			if (o.next >= 0) {
 				buf[o.next].prev = -1;
@@ -183,8 +183,6 @@ struct Grid {
 			}
 		}
 		//o.cidx = -1;
-		assert(cells[o.cidx] != o.idx);
-		assert(cidx != o.cidx);
 
 		// relink
 		if (cells[cidx] >= 0) {
@@ -194,10 +192,6 @@ struct Grid {
 		o.prev = -1;
 		cells[cidx] = o.idx;
 		o.cidx = cidx;
-
-		assert(buf[cells[cidx]].prev == -1);
-		assert(o.prev != o.idx);
-		assert(o.next != o.idx);
 	}
 
 	// todo: search funcs
@@ -210,12 +204,37 @@ struct Foo : Base {
 	}
 };
 
+struct A : Foo {
+	int aaa{};
+};
+
+struct B : Foo {
+	std::string sss;
+};
+
+struct C : Base {};
+
+template<typename...TS>
+struct Grids {
+	using Tup = std::tuple<TS...>;
+	std::tuple<Grid<TS>...> gs;
+	std::array<size_t, sizeof...(TS)> ss{ sizeof(TS)... };
+};
+
+struct GridItemPointer {
+	int32_t  typeIdx;			// Grids TS.index
+	int32_t  itemIdx;			// Grids.gs[ typeIdx ].index
+	uint32_t version;			// Grids.gs[ typeIdx ][ index ].version
+};
+
 struct SceneTest1 : Scene {
 	inline static SceneTest1* instance{};			// init by Init()
 	xx::Shared<Node> rootNode;
 	Camera camera;
 
 	Grid<Foo> grid;
+
+	Grids<A, B, C> grids;
 
 	virtual void Init() override;
 	virtual void Update() override;
