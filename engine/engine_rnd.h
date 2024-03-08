@@ -1,90 +1,55 @@
 ﻿#pragma once
 #include <engine_includes.h>
-#include <random>
 
-// reference from https://github.com/cslarsen/mersenne-twister
-// faster than std impl, can store & restore state data directly
-// ser/de data size == 5000 bytes
+// reference from https://github.com/Reputeless/Xoshiro-cpp
 struct Rnd {
-
-#pragma region impl
-    inline static const size_t SIZE = 624;
-    inline static const size_t PERIOD = 397;
-    inline static const size_t DIFF = SIZE - PERIOD;
-    inline static const uint32_t MAGIC = 0x9908b0df;
-
-    uint32_t MT[SIZE];
-    uint32_t MT_TEMPERED[SIZE];
-    size_t index = SIZE;
-    uint32_t seed;
-
-#define Random5_M32(x) (0x80000000 & x) // 32nd MSB
-#define Random5_L31(x) (0x7FFFFFFF & x) // 31 LSBs
-#define Random5_UNROLL(expr) \
-  y = Random5_M32(MT[i]) | Random5_L31(MT[i+1]); \
-  MT[i] = MT[expr] ^ (y >> 1) ^ (((int32_t(y) << 31) >> 31) & MAGIC); \
-  ++i;
-    void Generate() {
-        size_t i = 0;
-        uint32_t y;
-        while (i < DIFF) {
-            Random5_UNROLL(i + PERIOD);
-        }
-        while (i < SIZE - 1) {
-            Random5_UNROLL(i - DIFF);
-        }
-        {
-            y = Random5_M32(MT[SIZE - 1]) | Random5_L31(MT[0]);
-            MT[SIZE - 1] = MT[PERIOD - 1] ^ (y >> 1) ^ (((int32_t(y) << 31) >> 31) & MAGIC);
-        }
-        for (size_t i = 0; i < SIZE; ++i) {
-            y = MT[i];
-            y ^= y >> 11;
-            y ^= y << 7 & 0x9d2c5680;
-            y ^= y << 15 & 0xefc60000;
-            y ^= y >> 18;
-            MT_TEMPERED[i] = y;
-        }
-        index = 0;
-    }
-#undef Random5_UNROLL
-#undef Random5_L31
-#undef Random5_M32
-#pragma endregion
+    std::array<uint32_t, 4> state;
 
     Rnd() {
-        SetSeed(std::random_device()());
+        SetSeed(xx::NowEpoch10m());
     }
+    Rnd(Rnd const&) = default;
+    Rnd& operator=(Rnd const&) = default;
 
-    void SetSeed(uint32_t seed) {
-        this->seed = seed;
-        MT[0] = seed;
-        index = SIZE;
-        for (uint_fast32_t i = 1; i < SIZE; ++i) {
-            MT[i] = 0x6c078965 * (MT[i - 1] ^ MT[i - 1] >> 30) + i;
-        }
+    void SetSeed(uint64_t seed) {
+        auto calc = [&]()->uint64_t {
+            auto z = (seed += 0x9e3779b97f4a7c15);
+            z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9;
+            z = (z ^ (z >> 27)) * 0x94d049bb133111eb;
+            return z ^ (z >> 31);
+            };
+        auto v = calc();
+        memcpy(&state[0], &v, 8);
+        v = calc();
+        memcpy(&state[2], &v, 8);
     }
 
     uint32_t Get() {
-        if (index == SIZE) {
-            Generate();
-            index = 0;
-        }
-        return MT_TEMPERED[index++];
+        auto rotl = [](uint32_t x, int s)->uint32_t {
+            return (x << s) | (x >> (32 - s));
+            };
+        auto result = rotl(state[1] * 5, 7) * 9;
+        auto t = state[1] << 9;
+        state[2] ^= state[0];
+        state[3] ^= state[1];
+        state[1] ^= state[2];
+        state[0] ^= state[3];
+        state[2] ^= t;
+        state[3] = rotl(state[3], 11);
+        return result;
     }
 
     void NextBytes(void* buf, size_t len) {
-        if (index == SIZE) {
-            Generate();
-            index = 0;
+        uint32_t v{};
+        size_t i{};
+        auto e = len & (std::numeric_limits<size_t>().max() - 3);
+        for (; i < e; i += 4) {
+            v = Get();
+            memcpy((char*)buf + i, &v, 4);
         }
-        if (auto left = (SIZE - index) * 4; left >= len) {
-            memcpy(buf, &MT_TEMPERED[index], len);
-            index += len / 4 + (len % 4 ? 1 : 0);
-        } else {
-            memcpy(buf, &MT_TEMPERED[index], left);
-            index = SIZE;
-            NextBytes((char*)buf + left, len - left);
+        if (i < len) {
+            v = Get();
+            memcpy((char*)buf + i, &v, len - i);
         }
     }
 
