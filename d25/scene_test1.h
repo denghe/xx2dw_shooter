@@ -5,26 +5,27 @@
 
 struct Base {
 	int32_t next, prev, idx, cidx;
-	uint32_t version;			// disposed flag
+	uint32_t version;							// disposed flag
 	XY pos;
 };
 
 // todo: Pointer
 
-//template<std::derived_from<Base> T>
+template<std::derived_from<Base> T>
 struct Grid {
-	using T = Base;
 
-	int32_t* cells{};
 	T* buf{};
-	int32_t cap{}, len{};	// for buf
+	int32_t cap{}, len{};
 	int32_t freeHead{ -1 }, freeCount{};
 	uint32_t version{};
-	int32_t numRows{}, numCols{}, diameter{};	// for cells
+
+	int32_t numRows{}, numCols{}, diameter{};
+	int32_t* cells{};
 
 	Grid() = default;
 	Grid(Grid const&) = delete;
 	Grid& operator=(Grid const&) = delete;
+
 	~Grid() {
 		if (cells) {
 			free(cells);
@@ -105,20 +106,28 @@ struct Grid {
 	T& Add(XY const& pos) {
 		auto cidx = PosToCIdx(pos);
 		auto idx = Alloc();
-		auto head = cells[cidx];
+		auto head = cells[cidx];	// backup
 		if (head >= 0) {
 			buf[head].prev = idx;
 		}
-		cells[cidx] = idx;
+		cells[cidx] = idx;	// assign new
 
 		auto& o = buf[idx];
 		new (&o) T();
-		o.next = head;
+		o.next = head;	// write backup to o
 		o.prev = -1;
 		o.idx = idx;
 		o.cidx = cidx;
 		o.version = GenVersion();
 		o.pos = pos;
+		return o;
+	}
+
+	// o need Init func
+	template<typename...Args>
+	T& Emplace(XY const& pos, Args&&...args) {
+		auto& o = Add(pos);
+		o.Init(std::forward<Args>(args)...);
 		return o;
 	}
 
@@ -186,7 +195,7 @@ struct Grid {
 		cells[cidx] = o.idx;
 		o.cidx = cidx;
 
-		assert(buf[cells[cidx]].prev == 0);
+		assert(buf[cells[cidx]].prev == -1);
 		assert(o.prev != o.idx);
 		assert(o.next != o.idx);
 	}
@@ -194,12 +203,19 @@ struct Grid {
 	// todo: search funcs
 };
 
-
+struct Foo : Base {
+	float radius{};
+	void Init(float radius_) {
+		radius = radius_;
+	}
+};
 
 struct SceneTest1 : Scene {
 	inline static SceneTest1* instance{};			// init by Init()
 	xx::Shared<Node> rootNode;
 	Camera camera;
+
+	Grid<Foo> grid;
 
 	virtual void Init() override;
 	virtual void Update() override;

@@ -1,6 +1,8 @@
 ﻿#include <pch.h>
 #include <all.h>
 
+
+
 #pragma region SceneTest1
 
 void SceneTest1::Init() {
@@ -30,14 +32,23 @@ void SceneTest1::Init() {
 
 	camera.SetScale(1.f);
 
-	tasks.Add([this]()->xx::Task<> {
-		while (true) {
-			//for (size_t i = 0; i < numBulletGenerateByEveryFrame; i++) {
-			//	Make<Bullet>().Init();
-			//}
-			co_yield 0;
-		}
-	});
+	grid.Init(2, 3, 10);
+
+	auto& foo = grid.Emplace({ 5,5 }, 3.f);
+	xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
+
+	grid.Update(foo, { 15,15 });
+	xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
+
+
+	//tasks.Add([this]()->xx::Task<> {
+	//	while (true) {
+	//		//for (size_t i = 0; i < numBulletGenerateByEveryFrame; i++) {
+	//		//	Make<Bullet>().Init();
+	//		//}
+	//		co_yield 0;
+	//	}
+	//});
 }
 
 void SceneTest1::Update() {
