@@ -36,16 +36,16 @@ void SceneTest1::Init() {
 	grid.Init(2, 3, 10);
 	xx::CoutN("************************ 1");
 
-	auto& foo1 = grid.AddInit({ 5,5 }, 3.f);
+	auto& foo1 = grid.MakeInit({ 5,5 }, 3.f);
 	xx::CoutN("foo1: ", foo1);
 	xx::CoutN("************************ 2");
 
-	auto& foo2 = grid.AddInit({ 5,5 }, 3.f);
+	auto& foo2 = grid.MakeInit({ 5,5 }, 3.f);
 	xx::CoutN("foo1: ", foo1);
 	xx::CoutN("foo2: ", foo2);
 	xx::CoutN("************************ 3");
 
-	auto& foo3 = grid.AddInit({ 5,5 }, 3.f);
+	auto& foo3 = grid.MakeInit({ 5,5 }, 3.f);
 	xx::CoutN("foo1: ", foo1);
 	xx::CoutN("foo2: ", foo2);
 	xx::CoutN("foo3: ", foo3);
@@ -60,11 +60,14 @@ void SceneTest1::Init() {
 	xx::CoutN("foo3: ", foo3);
 	xx::CoutN("************************ 5");
 
+	//grid.Foreach([](Foo& f)->void {
+	//	xx::CoutN(f);
+	//});
 
 
 	grids.InitAll(1, 1, 1);
 
-	auto& b = grids.AddInit<B>({});
+	auto& b = grids.MakeInit<B>({});
 	xx::CoutN("b = ", b);
 	auto p = b.ToGridsWeak();
 	xx::CoutN("p = ", p);
@@ -72,6 +75,36 @@ void SceneTest1::Init() {
 	grids.Remove(p);
 	xx::CoutN(grids.Exists(p));
 	xx::CoutN("b = ", b);
+
+
+
+	Grid<D> dGrid(10000, 10000, 32);
+	dGrid.Reserve(110000);
+	for (size_t i = 0; i < 100000; i++) {
+		auto x = gLooper.rnd.Next(dGrid.numCols - 1) * 16.f;
+		auto y = gLooper.rnd.Next(dGrid.numRows - 1) * 16.f;
+		dGrid.Make({ x, y });
+	}
+
+	dGrid.BufForeach([&](D& o)->GridForeachResult {
+		return o.idx < 99999 ? GridForeachResult::RemoveAndContinue : GridForeachResult::Break;
+	});
+
+	auto secs = xx::NowEpochSeconds();
+	int counter = 0;
+	dGrid.BufForeach([&](D& o)->void {
+		counter += o.val;
+	});
+	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
+	counter = 0;
+	for (int i = 0, e = dGrid.len; i < e; ++i) {
+		if (auto& o = dGrid.buf[i]; o.version > 0) {
+			counter += o.val;
+		}
+	}
+	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
+
+
 
 	//tasks.Add([this]()->xx::Task<> {
 	//	while (true) {

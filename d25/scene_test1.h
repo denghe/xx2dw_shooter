@@ -41,6 +41,13 @@ struct C : GridItemBase {
 	}
 };
 
+struct D : GridItemBase {
+	static constexpr uint32_t cTypeId{ 0 };
+	int val{ 1 };
+	void Update() {};
+};
+
+
 struct SceneTest1 : Scene {
 	inline static SceneTest1* instance{};			// init by Init()
 	xx::Shared<Node> rootNode;
