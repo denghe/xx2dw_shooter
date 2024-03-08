@@ -65,12 +65,13 @@ void SceneTest1::Init() {
 	grids.InitAll(1, 1, 1);
 
 	auto& b = grids.AddInit<B>({});
+	xx::CoutN("b = ", b);
 	auto p = b.ToGridsWeak();
+	xx::CoutN("p = ", p);
 	xx::CoutN(grids.Exists(p));
 	grids.Remove(p);
 	xx::CoutN(grids.Exists(p));
-
-
+	xx::CoutN("b = ", b);
 
 	//tasks.Add([this]()->xx::Task<> {
 	//	while (true) {

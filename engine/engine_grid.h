@@ -36,18 +36,45 @@ struct GridItemBase {
 
 namespace xx {
 	template<typename T>
-	struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<GridItemBase, T>>> {
+	struct StringFuncs<T, std::enable_if_t<std::is_same_v<::GridWeak, T>>> {
 		static inline void Append(std::string& s, T const& in) {
-			::xx::Append(s, "Derived From GridItemBase{ "
-				, "version = ", in.version
-				, ", typeId = ", in.typeId
-				, ", next = ", in.next
-				, ", prev = ", in.prev
-				, ", idx = ", in.idx
-				, ", cidx = ", in.cidx
-				, ", pos = ", in.pos
+			::xx::Append(s, "GridWeak { "
+				, "idx = ", in.idx
+				, ", version = ", in.version
 				, " }"
 				);
+		}
+	};
+
+	template<typename T>
+	struct StringFuncs<T, std::enable_if_t<std::is_same_v<::GridsWeak, T>>> {
+		static inline void Append(std::string& s, T const& in) {
+			::xx::Append(s, "GridsWeak { "
+				, "idx = ", in.idx
+				, ", version = ", in.version
+				, ", typeId = ", in.typeId
+				, " }"
+				);
+		}
+	};
+
+	template<typename T>
+	struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<::GridItemBase, T>>> {
+		static inline void Append(std::string& s, T const& in) {
+			if (in.version == 0) {
+				::xx::Append(s, "GridItemBase { null }");
+			} else {
+				::xx::Append(s, "GridItemBase { "
+					, "version = ", in.version
+					, ", typeId = ", in.typeId
+					, ", next = ", in.next
+					, ", prev = ", in.prev
+					, ", idx = ", in.idx
+					, ", cidx = ", in.cidx
+					, ", pos = ", in.pos
+					, " }"
+				);
+			}
 		}
 	};
 }
