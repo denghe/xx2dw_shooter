@@ -3,16 +3,32 @@
 
 // todo: intrusive grid container. only support memmoveable type
 
-struct Base {
-	int32_t next, prev, idx, cidx;
-	uint32_t version;							// disposed flag
-	XY pos;
+// Grid item weak pointer
+struct GridsWeak {
+	uint32_t typeId;			// Grids TS.index
+	int32_t idx;				// Grids.gs[ typeIdx ].index
+	uint32_t version;			// Grids.gs[ typeIdx ][ index ].version
 };
 
-// todo: Pointer
+// every derived class need member: " static constexpr uint32_t cTypeId{ ???? } "
+template <class T>
+concept Has_cTypeId = requires(T) { T::cTypeId; };
+
+// all grid item's base class
+struct Base {
+	static constexpr uint32_t cTypeId{ (uint32_t) - 1};
+	uint32_t version, typeId;
+	int32_t next, prev, idx, cidx;
+	XY pos;
+
+	GridsWeak ToWeak() {
+		return { typeId, idx, version };
+	}
+};
 
 template<std::derived_from<Base> T>
 struct Grid {
+	static_assert(Has_cTypeId<T>);
 	using T_t = T;
 
 	T* buf{};
@@ -115,11 +131,12 @@ struct Grid {
 
 		auto& o = buf[idx];
 		new (&o) T();
+		o.version = GenVersion();
+		o.typeId = T::cTypeId;
 		o.next = head;	// write backup to o
 		o.prev = -1;
 		o.idx = idx;
 		o.cidx = cidx;
-		o.version = GenVersion();
 		o.pos = pos;
 		return o;
 	}
@@ -145,17 +162,24 @@ struct Grid {
 		if (o.next >= 0) {
 			buf[o.next].prev = o.prev;
 		}
+		o.version = 0;
+		//o.typeId = 
 		o.next = -1;
 		o.prev = -1;
 		o.idx = -1;
 		o.cidx = -1;
-		o.version = 0;
 		o.~T();
 		Free(idx);
 	}
 
 	void Remove(T const& o) {
 		Remove(o.idx);
+	}
+
+	void Remove(GridsWeak const& gw) {
+		if (Exists(gw)) {
+			Remove(gw.idx);
+		}
 	}
 
 	void Update(T& o, XY const& newPos) {
@@ -194,38 +218,92 @@ struct Grid {
 		o.cidx = cidx;
 	}
 
+	bool Exists(GridsWeak const& gw) {
+		assert(gw.typeId == T::cTypeId);
+		assert(gw.version > 0);
+		assert(gw.idx >= 0 && gw.idx < len);
+		return buf[gw.idx].version == gw.version;
+	}
+
+	T& Get(GridsWeak const& gw) const {
+		assert(Exists(gw));
+		return (T&)buf[gw.idx];
+	}
+
 	// todo: search funcs
 };
 
+template<typename...TS>
+struct Grids {
+	using Tup = std::tuple<TS...>;
+	static constexpr std::array<size_t, sizeof...(TS)> ss{ sizeof(TS)... };
+	static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };
+	static constexpr std::array<size_t, sizeof...(TS)> is{ TS::cTypeId... };
+	static_assert(ts == is);
+
+	std::tuple<Grid<TS>...> gs;
+	std::array<Grid<Base>*, sizeof...(TS)> gas;
+
+	Grids() {
+		// todo: addrs[TS::cTypeId] = (Grid<Base>*)gs[TS].buf ...;
+	}
+	Grids(Grids const&) = delete;
+	Grids& operator=(Grids const&) = delete;
+
+	template<typename T>
+	Grid<T>& Get() const {
+		return (Grid<T>&)std::get<Grid<T>>(gs);
+	}
+
+	// more forward funcs?
+
+	template<typename T, typename ... Args>
+	void Init(Args && ... args) {
+		std::get<Grid<T>>(gs).Init(std::forward<Args>(args)...);
+	}
+
+	template<typename T, typename ... Args>
+	T& Emplace(XY const& pos, Args && ... args) {
+		return std::get<Grid<T>>(gs).Emplace(pos, std::forward<Args>(args)...);
+	}
+
+	bool Exists(GridsWeak const& gw) {
+		auto buf = ((Grid<Base>*)&std::get<0>(gs))[gw.typeId].buf;
+		auto ptr = (char*)buf + ss[gw.typeId] * gw.idx;
+		return ((Base*)ptr)->version == gw.version;
+	}
+
+	void Remove(GridsWeak const& gw) {
+		// todo
+	}
+};
+
+
 struct Foo : Base {
+	static constexpr uint32_t cTypeId{ 3 };
 	float radius{};
 	void Init(float radius_) {
 		radius = radius_;
 	}
 };
 
-struct A : Foo {
+struct A : Base {
+	static constexpr uint32_t cTypeId{ 0 };
 	int aaa{};
+	void Init() {}
 };
 
-struct B : Foo {
+struct B : Base {
+	static constexpr uint32_t cTypeId{ 1 };
 	std::string sss;
+	void Init() {}
 };
 
-struct C : Base {};
-
-template<typename...TS>
-struct Grids {
-	using Tup = std::tuple<TS...>;
-	std::tuple<Grid<TS>...> gs;
-	std::array<size_t, sizeof...(TS)> ss{ sizeof(TS)... };
+struct C : Base {
+	static constexpr uint32_t cTypeId{ 2 };
+	void Init() {}
 };
 
-struct GridItemPointer {
-	int32_t  typeIdx;			// Grids TS.index
-	int32_t  itemIdx;			// Grids.gs[ typeIdx ].index
-	uint32_t version;			// Grids.gs[ typeIdx ][ index ].version
-};
 
 struct SceneTest1 : Scene {
 	inline static SceneTest1* instance{};			// init by Init()
