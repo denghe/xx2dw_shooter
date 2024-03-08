@@ -32,31 +32,40 @@ void SceneTest1::Init() {
 
 	camera.SetScale(1.f);
 
-	//// init
-	//grid.Init(2, 3, 10);
+	// init
+	grid.Init(2, 3, 10);
+	xx::CoutN("************************ 1");
 
-	//auto& foo = grid.Emplace({ 5,5 }, 3.f);
+	auto& foo1 = grid.AddInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("************************ 2");
+
+	auto& foo2 = grid.AddInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("************************ 3");
+
+	auto& foo3 = grid.AddInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("foo3: ", foo3);
+	xx::CoutN("************************ 4");
+
+	//grid.Update(foo, { 15,15 });
 	//xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
 
-	//auto& foo2 = grid.Emplace({ 5,5 }, 3.f);
-	//xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
+	grid.Update(foo2, { 15,15 });
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("foo3: ", foo3);
+	xx::CoutN("************************ 5");
 
-	//auto& foo3 = grid.Emplace({ 5,5 }, 3.f);
-	//xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
 
-	////grid.Update(foo, { 15,15 });
-	////xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
 
-	//grid.Update(foo2, { 15,15 });
-	//xx::CoutN(foo2.idx, "  ", foo2.cidx, "  ", foo2.pos);
+	grids.InitAll(1, 1, 1);
 
-	// init all
-	grids.Init<A>(1, 1, 1);
-	grids.Init<B>(1, 1, 1);
-	grids.Init<C>(1, 1, 1);
-
-	auto& a = grids.Emplace<B>({});
-	auto p = a.ToWeak();
+	auto& b = grids.AddInit<B>({});
+	auto p = b.ToGridsWeak();
 	xx::CoutN(grids.Exists(p));
 	grids.Remove(p);
 	xx::CoutN(grids.Exists(p));

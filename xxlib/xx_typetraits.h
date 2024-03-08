@@ -385,6 +385,51 @@ namespace xx {
     template<typename T, typename Tuple>
     constexpr size_t TupleTypeIndex_v = TupleTypeIndex<T, Tuple>::value;
 
+    /************************************************************************************/
+    // 遍历 tuple 所有成员
+
+    template <typename Tuple, typename F, std::size_t ...Indices>
+    void ForEachCore(Tuple&& tuple, F&& f, std::index_sequence<Indices...>) {
+    	using swallow = int[];
+    	(void)swallow { 1, (f(std::get<Indices>(std::forward<Tuple>(tuple))), void(), int{})... };
+    }
+    
+    template <typename Tuple, typename F>
+    void ForEach(Tuple&& tuple, F&& f) {
+    	constexpr std::size_t N = std::tuple_size<std::remove_reference_t<Tuple>>::value;
+        ForEachCore(std::forward<Tuple>(tuple), std::forward<F>(f), std::make_index_sequence<N>{});
+    }
+
+    /************************************************************************************/
+    // 遍历 tuple 所有类型
+    /*
+    	xx::ForEachType<Tup>([&]<typename T>() {
+			// ...
+		});
+    */
+
+    template<typename T, typename F>
+    static inline constexpr void ForEachType(F&& func) {
+        auto h = []<typename T, typename F, size_t... I>(F && func, std::index_sequence<I...>) {
+            (func.template operator()<std::tuple_element_t<I, T>>(), ...);
+        };
+        h.template operator()<T> (
+            std::forward<F>(func),
+            std::make_index_sequence<std::tuple_size_v<T>>{}
+        );
+    }
+
+    /************************************************************************************/
+    // simple tuple memory like array<T, siz>
+
+    template<typename ...TS> struct SimpleTuple;
+    template<typename T> struct SimpleTuple<T> {
+        T value;
+    };
+    template<typename T, typename ...TS> struct SimpleTuple<T, TS...> {
+        T value;
+        SimpleTuple<TS...> others;
+    };
 
     /************************************************************************************/
     // 获取指定下标参数
