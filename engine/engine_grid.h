@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include <engine_prims.h>
 
-// intrusive grid container. only support memmoveable type
+// intrusive grid container
+
+#pragma region Weak
 
 // single Grid item weak pointer
 struct GridWeak {
@@ -13,6 +15,10 @@ struct GridWeak {
 struct GridsWeak : GridWeak {
 	uint32_t typeId;
 };
+
+#pragma endregion
+
+#pragma region ItemBase
 
 // every derived class need member: " static constexpr uint32_t cTypeId{ ???? } "
 template <class T>
@@ -41,7 +47,12 @@ enum class GridForeachResult {
 	RemoveAndReturn
 };
 
-#define GRID_ENABLE_CELL_FLAG
+#pragma endregion
+
+#pragma region Grid
+
+
+//#define GRID_ENABLE_CELL_FLAG
 
 // single grid ( space index by pos )
 template<std::derived_from<GridItemBase> T>
@@ -54,7 +65,7 @@ struct Grid {
 	int32_t freeHead{ -1 }, freeCount{};
 	uint32_t version{};
 
-	int32_t numRows{}, numCols{}, diameter{};
+	int32_t numRows{}, numCols{}, cellSize{};
 	int32_t cellsLen{};			// fill by init
 	int32_t bufFlagsLen{};		// fill by init
 
@@ -68,8 +79,8 @@ struct Grid {
 
 
 	Grid() = default;
-	Grid(int32_t numRows_, int32_t numCols_, int32_t diameter_) : Grid() {
-		Init(numRows_, numCols_, diameter_);
+	Grid(int32_t numRows_, int32_t numCols_, int32_t cellSize_) : Grid() {
+		Init(numRows_, numCols_, cellSize_);
 	}
 	Grid(Grid const&) = delete;
 	Grid& operator=(Grid const&) = delete;
@@ -97,7 +108,6 @@ struct Grid {
 		for (int32_t i = 0; i < cellFlagsLen; ++i) {
 			if (!cellFlags[i]) continue;
 			auto b = i * sizeof(size_t) * 8;
-			// todo: cells / items size align to sizeof(size_t) * 8 ?  avoid foreach std min ?
 			auto e = std::min(b + sizeof(size_t) * 8, (size_t)cellsLen);
 			for (; b < e; ++b) {
 				auto node = cells[b];
@@ -208,11 +218,11 @@ struct Grid {
 
 	// todo: Clear ?
 
-	void Init(int32_t numRows_, int32_t numCols_, int32_t diameter_) {
+	void Init(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
 		assert(!cells);
 		numRows = numRows_;
 		numCols = numCols_;
-		diameter = diameter_;
+		cellSize = cellSize_;
 
 		cellsLen = numRows * numCols;
 		assert(cellsLen);
@@ -255,10 +265,10 @@ struct Grid {
 	}
 
 	int32_t PosToCIdx(XY const& pos) {
-		assert(pos.x >= 0 && pos.x < diameter * numCols);
-		assert(pos.y >= 0 && pos.y < diameter * numRows);
-		auto c = int32_t(pos.x) / diameter;
-		auto r = int32_t(pos.y) / diameter;
+		assert(pos.x >= 0 && pos.x < cellSize * numCols);
+		assert(pos.y >= 0 && pos.y < cellSize * numRows);
+		auto c = int32_t(pos.x) / cellSize;
+		auto r = int32_t(pos.y) / cellSize;
 		return r * numCols + c;
 	}
 
@@ -297,7 +307,7 @@ struct Grid {
 		BufFlagUnset(idx);
 	}
 
-	T& Make(XY const& pos) {
+	T& Make(XY const& pos = {}) {
 		auto cidx = PosToCIdx(pos);
 		auto idx = Alloc();
 		auto head = cells[cidx];	// backup
@@ -322,11 +332,32 @@ struct Grid {
 		return o;
 	}
 
-	// o need Init func
+	// o need Init func ( need fill pos )
 	template<typename...Args>
-	T& MakeInit(XY const& pos, Args&&...args) {
-		auto& o = Make(pos);
-		o.Init(std::forward<Args>(args)...);
+	T& MakeInit(Args&&...args) {
+		auto idx = Alloc();
+		auto& o = buf[idx];
+		new (&o) T();
+
+		o.version = GenVersion();
+		o.typeId = T::cTypeId;
+		o.idx = idx;
+
+		o.Init(std::forward<Args>(args)...);	// need fill pos here
+
+		auto cidx = PosToCIdx(o.pos);
+		auto head = cells[cidx];	// backup
+		if (head >= 0) {
+			buf[head].prev = idx;
+		} else {
+#ifdef GRID_ENABLE_CELL_FLAG
+			CellFlagSet(cidx);
+#endif
+		}
+		cells[cidx] = idx;	// assign new
+		o.next = head;	// write backup to o
+		o.prev = -1;
+		o.cidx = cidx;
 		return o;
 	}
 
@@ -349,7 +380,7 @@ struct Grid {
 			buf[o.next].prev = o.prev;
 		}
 		o.version = 0;
-		//o.typeId = 
+		//o.typeId = -1;
 		o.next = -1;
 		o.prev = -1;
 		o.idx = -1;
@@ -384,9 +415,9 @@ struct Grid {
 		assert(o.idx >= 0);
 		assert(o.prev != o.idx);
 		assert(o.next != o.idx);
+		o.pos = newPos;
 		auto cidx = PosToCIdx(newPos);
 		if (cidx == o.cidx) return;				// no change
-		o.pos = newPos;
 
 		// unlink
 		if (o.idx != cells[o.cidx]) {			// isn't header
@@ -431,16 +462,17 @@ struct Grid {
 	// todo: Save Load
 };
 
+#pragma endregion
+
+#pragma region Grids
+
 // grid groups( cross visit by GridsWeak )
 template<typename...TS>
 struct Grids {
 	using Tup = std::tuple<TS...>;
-	typedef void(*Deleter)(void*);
-
 	static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };
 	static constexpr std::array<size_t, sizeof...(TS)> is{ TS::cTypeId... };
 	static_assert(ts == is);
-	static_assert(ts[0] == 0);
 
 	// container
 	xx::SimpleTuple<Grid<TS>...> gs;
@@ -450,6 +482,7 @@ struct Grids {
 	static constexpr std::array<size_t, sizeof...(TS)> sizes{ sizeof(TS)... };
 
 	// for fast Remove weak type
+	typedef void(*Deleter)(void*);
 	std::array<Deleter, sizeof...(TS)> deleters;
 
 	Grids() {
@@ -466,14 +499,14 @@ struct Grids {
 	}
 
 	template<typename ...US>
-	void Init(int32_t numRows_, int32_t numCols_, int32_t diameter_) {
+	void Init(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
 		xx::ForEachType<Tup>([&]<typename T>() {
-			Get<T>().Init(numRows_, numCols_, diameter_);
+			Get<T>().Init(numRows_, numCols_, cellSize_);
 		});
 	}
 
-	void InitAll(int32_t numRows_, int32_t numCols_, int32_t diameter_) {
-		Init<TS...>(numRows_, numCols_, diameter_);
+	void InitAll(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
+		Init<TS...>(numRows_, numCols_, cellSize_);
 	}
 
 	template<typename T>
@@ -482,8 +515,8 @@ struct Grids {
 	}
 
 	template<typename T, typename ... Args>
-	T& MakeInit(XY const& pos, Args && ... args) {
-		return Get<T>().MakeInit(pos, std::forward<Args>(args)...);
+	T& MakeInit(Args && ... args) {
+		return Get<T>().MakeInit(std::forward<Args>(args)...);
 	}
 
 	template<typename T = void>
@@ -514,6 +547,10 @@ struct Grids {
 
 	// todo: Save Load
 };
+
+#pragma endregion
+
+#pragma region Append
 
 namespace xx {
 	template<typename T>
@@ -559,3 +596,134 @@ namespace xx {
 		}
 	};
 }
+
+#pragma endregion
+
+/*
+
+useage examples:
+
+
+struct Foo : GridItemBase {
+	static constexpr uint32_t cTypeId{ 3 };
+	float radius{};
+	void Init(float radius_) {
+		radius = radius_;
+	}
+};
+
+struct A : GridItemBase {
+	static constexpr uint32_t cTypeId{ 0 };
+	int aaa{};
+	void Init() {
+		xx::CoutN("A.Init()");
+	}
+	~A() {
+		xx::CoutN("~A()");
+	}
+};
+
+struct B : GridItemBase {
+	static constexpr uint32_t cTypeId{ 1 };
+	std::string sss;
+	void Init() {
+		xx::CoutN("B.Init()");
+	}
+	~B() {
+		xx::CoutN("~B()");
+	}
+};
+
+struct C : GridItemBase {
+	static constexpr uint32_t cTypeId{ 2 };
+	void Init() {
+		xx::CoutN("C.Init()");
+	}
+	~C() {
+		xx::CoutN("~C()");
+	}
+};
+
+struct D : GridItemBase {
+	static constexpr uint32_t cTypeId{ 0 };
+	int val{ 1 };
+	void Update() {};
+};
+
+
+
+	Grid<Foo> grid;
+
+	Grids<A, B, C> grids;
+
+
+
+	grid.Init(2, 3, 10);
+	xx::CoutN("************************ 1");
+
+	auto& foo1 = grid.MakeInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("************************ 2");
+
+	auto& foo2 = grid.MakeInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("************************ 3");
+
+	auto& foo3 = grid.MakeInit({ 5,5 }, 3.f);
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("foo3: ", foo3);
+	xx::CoutN("************************ 4");
+
+	//grid.Update(foo, { 15,15 });
+	//xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
+
+	grid.Update(foo2, { 15,15 });
+	xx::CoutN("foo1: ", foo1);
+	xx::CoutN("foo2: ", foo2);
+	xx::CoutN("foo3: ", foo3);
+	xx::CoutN("************************ 5");
+
+
+
+	grids.InitAll(1, 1, 1);
+
+	auto& b = grids.MakeInit<B>({});
+	xx::CoutN("b = ", b);
+	auto p = b.ToGridsWeak();
+	xx::CoutN("p = ", p);
+	xx::CoutN(grids.Exists(p));
+	grids.Remove(p);
+	xx::CoutN(grids.Exists(p));
+	xx::CoutN("b = ", b);
+
+
+
+	Grid<D> dGrid(10000, 10000, 32);
+	dGrid.Reserve(110000);
+	for (size_t i = 0; i < 100000; i++) {
+		auto x = gLooper.rnd.Next(dGrid.numCols - 1) * 16.f;
+		auto y = gLooper.rnd.Next(dGrid.numRows - 1) * 16.f;
+		dGrid.Make({ x, y });
+	}
+
+	dGrid.BufForeach([&](D& o)->GridForeachResult {
+		return o.idx < 99999 ? GridForeachResult::RemoveAndContinue : GridForeachResult::Break;
+	});
+
+	auto secs = xx::NowEpochSeconds();
+	int counter = 0;
+	dGrid.BufForeach([&](D& o)->void {
+		counter += o.val;
+	});
+	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
+	counter = 0;
+	for (int i = 0, e = dGrid.len; i < e; ++i) {
+		if (auto& o = dGrid.buf[i]; o.version > 0) {
+			counter += o.val;
+		}
+	}
+	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
+
+*/

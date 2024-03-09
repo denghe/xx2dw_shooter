@@ -167,6 +167,24 @@ struct ItemManager : ItemManagerBase {
 	void DrawAll(Camera const& camera) {
 		Draw<TS...>(camera);
 	}
+
+	// no sort
+	template<std::derived_from<Item>...US>
+	void DirectDraw(Camera const& camera) {
+		if constexpr (sizeof...(US) > 0) {
+			Foreach<US...>([&]<typename T>(xx::Listi32<xx::Shared<T>>&items) {
+				for (auto& o : items) {
+					if (camera.InArea(o->pos)) {
+						o->Draw(camera);
+					}
+				}
+			});
+		}
+	}
+
+	void DirectDrawAll(Camera const& camera) {
+		DirectDraw<TS...>(camera);
+	}
 };
 
 /*

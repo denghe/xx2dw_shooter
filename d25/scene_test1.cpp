@@ -1,12 +1,52 @@
 ﻿#include <pch.h>
 #include <all.h>
 
+#pragma region SceneTest1
 
+void Monster1::Init(double hp_) {
+	hpBak = hp = hp_;
+	radius = (float)std::sqrt(cRadius * cRadius / cHP * hp_);
+	auto& tm = gScene->tm;
+	assert(radius <= tm.totalWidth);
+	assert(radius >= tm.padding);
+	auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
+	auto baseTrackIndex = (tm.trackCount - numTrackCovered) / 2;
+	trackIndex = baseTrackIndex + gScene->rnd.Next<int32_t>(1, numTrackCovered);
+	pointIndex = {};
+	speed = cSpeed * cRadius / radius;
+	radians = tm.GetRadians((int)pointIndex);
+	pos = tm.GetPoint(trackIndex, (int)pointIndex);
+}
+
+bool Monster1::Update() {
+	auto& tm = gScene->tm;
+	pointIndex += speed;
+	if (auto c = tm.GetPointCount(); pointIndex >= c) {
+		//pointIndex -= c;	// todo
+		return true;
+	}
+	gScene->grid.Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
+	radians = tm.GetRadians((int)pointIndex);
+	return false;
+}
+
+void Monster1::Draw() {
+	auto& camera = gScene->camera;
+	auto& q = Quad::DrawOnce(gLooper.frames_coin_2[0]);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY::Make(camera.scale) * (radius / cRadius);
+	q.radians = radians;
+	q.colorplus = 1;
+	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(55 + 200 * (hp / hpBak)) };
+}
+
+#pragma endregion
 
 #pragma region SceneTest1
 
 void SceneTest1::Init() {
-	instance = this;
+	gScene = this;
 
 	rootNode.Emplace()->Init();
 
@@ -16,7 +56,6 @@ void SceneTest1::Init() {
 	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"Load", [&]() {
 	//	Load();
 	//	});
-
 	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
 	//		numBulletGenerateByEveryFrame = 1;
 	//	});
@@ -31,89 +70,28 @@ void SceneTest1::Init() {
 	//	});
 
 	camera.SetScale(1.f);
+	camera.SetOriginal(gCfg.mapSize_2);
+	camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
 
-	// init
-	grid.Init(2, 3, 10);
-	xx::CoutN("************************ 1");
+	grid.Init(gCfg.gridNumRows, gCfg.gridNumCols, gCfg.gridCellSize);
 
-	auto& foo1 = grid.MakeInit({ 5,5 }, 3.f);
-	xx::CoutN("foo1: ", foo1);
-	xx::CoutN("************************ 2");
+	std::vector<CurvePoint> cps;
+	cps.emplace_back(gCfg.mapSize_2 + XY{ -200, -200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ 200, -200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ 200, 200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ -200, 200 });
+	tm.Init(cps);
 
-	auto& foo2 = grid.MakeInit({ 5,5 }, 3.f);
-	xx::CoutN("foo1: ", foo1);
-	xx::CoutN("foo2: ", foo2);
-	xx::CoutN("************************ 3");
+	grid.MakeInit(200);
 
-	auto& foo3 = grid.MakeInit({ 5,5 }, 3.f);
-	xx::CoutN("foo1: ", foo1);
-	xx::CoutN("foo2: ", foo2);
-	xx::CoutN("foo3: ", foo3);
-	xx::CoutN("************************ 4");
-
-	//grid.Update(foo, { 15,15 });
-	//xx::CoutN(foo.idx, "  ", foo.cidx, "  ", foo.pos);
-
-	grid.Update(foo2, { 15,15 });
-	xx::CoutN("foo1: ", foo1);
-	xx::CoutN("foo2: ", foo2);
-	xx::CoutN("foo3: ", foo3);
-	xx::CoutN("************************ 5");
-
-	//grid.Foreach([](Foo& f)->void {
-	//	xx::CoutN(f);
-	//});
-
-
-	grids.InitAll(1, 1, 1);
-
-	auto& b = grids.MakeInit<B>({});
-	xx::CoutN("b = ", b);
-	auto p = b.ToGridsWeak();
-	xx::CoutN("p = ", p);
-	xx::CoutN(grids.Exists(p));
-	grids.Remove(p);
-	xx::CoutN(grids.Exists(p));
-	xx::CoutN("b = ", b);
-
-
-
-	Grid<D> dGrid(10000, 10000, 32);
-	dGrid.Reserve(110000);
-	for (size_t i = 0; i < 100000; i++) {
-		auto x = gLooper.rnd.Next(dGrid.numCols - 1) * 16.f;
-		auto y = gLooper.rnd.Next(dGrid.numRows - 1) * 16.f;
-		dGrid.Make({ x, y });
-	}
-
-	dGrid.BufForeach([&](D& o)->GridForeachResult {
-		return o.idx < 99999 ? GridForeachResult::RemoveAndContinue : GridForeachResult::Break;
-	});
-
-	auto secs = xx::NowEpochSeconds();
-	int counter = 0;
-	dGrid.BufForeach([&](D& o)->void {
-		counter += o.val;
-	});
-	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
-	counter = 0;
-	for (int i = 0, e = dGrid.len; i < e; ++i) {
-		if (auto& o = dGrid.buf[i]; o.version > 0) {
-			counter += o.val;
+	tasks.Add([this]()->xx::Task<> {
+		while (true) {
+			for (size_t i = 0; i < 80; i++) {
+				grid.MakeInit( rnd.Next<double>( 50., 200. ) );
+			}
+			co_yield 0;
 		}
-	}
-	xx::CoutN(xx::NowEpochSeconds(secs), " counter = ", counter);
-
-
-
-	//tasks.Add([this]()->xx::Task<> {
-	//	while (true) {
-	//		//for (size_t i = 0; i < numBulletGenerateByEveryFrame; i++) {
-	//		//	Make<Bullet>().Init();
-	//		//}
-	//		co_yield 0;
-	//	}
-	//});
+	});
 }
 
 void SceneTest1::Update() {
@@ -124,16 +102,25 @@ void SceneTest1::Update() {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
 	camera.Calc();
+
+	grid.BufForeach([](Monster1& o)->GridForeachResult {
+		return o.Update() ? GridForeachResult::RemoveAndContinue : GridForeachResult::Continue;
+	});
 }
 
 void SceneTest1::Draw() {
 	camera.Calc();
 
-	//auto str = xx::ToString("total bullet count = ", bullets.Count(), "  total blood text count = ", enm.ens.Count());
-	//gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
+	grid.BufForeach([camera = &camera](Monster1& o)->void {
+		if (camera->InArea(o.pos)) {
+			o.Draw();
+		}
+	});
+
+	auto str = xx::ToString("total monster count = ", grid.Count());// , "  total blood text count = ", enm.ens.Count());
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
 
 	gLooper.DrawNode(rootNode);
 }
-
 
 #pragma endregion

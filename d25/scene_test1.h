@@ -1,61 +1,58 @@
 ﻿#pragma once
 #include <game_looper.h>
 
-struct Foo : GridItemBase {
-	static constexpr uint32_t cTypeId{ 3 };
+// tower defense: circle world game play ? all of them ar clecles
+// monster = 1 ~ n circle, cannon too
+// circle texture size: 32x32
+// map design: tile set = 32x32, window size = 1280x720, map rows = 22, cols = 40
+
+struct Cfg {
+	static constexpr float unitSize{ 32 };
+
+	static constexpr int gridCellSize{ 32 };	// need >= max unit size
+	static constexpr int gridNumRows{ 40 };
+	static constexpr int gridNumCols{ 22 };
+
+	static constexpr XY mapSize{ float(gridNumCols * gridCellSize), float(gridNumRows * gridCellSize) };
+	static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+};
+inline Cfg gCfg;
+
+struct SceneTest1;
+inline SceneTest1* gScene;		// init by SceneTest1::Init()
+
+struct MonsterBase : GridItemBase {
+	static constexpr double cHP{ 100 };
+	static constexpr float cRadius{ 16 };
+	static constexpr float cSpeed{ 10 };
+	static constexpr RGBA8 cColor{ RGBA8_White };
+
+	double hp{};					// fill by init
 	float radius{};
-	void Init(float radius_) {
-		radius = radius_;
-	}
+	int trackIndex{};				// random by "safe range"
+	float pointIndex{}, speed{}, radians{};
+	// todo: more?
 };
 
-struct A : GridItemBase {
+struct Monster1 : MonsterBase {
 	static constexpr uint32_t cTypeId{ 0 };
-	int aaa{};
-	void Init() {
-		xx::CoutN("A.Init()");
-	}
-	~A() {
-		xx::CoutN("~A()");
-	}
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
+
+	double hpBak{};
+
+	void Init(double hp_);
+	bool Update();
+	void Draw();
 };
 
-struct B : GridItemBase {
-	static constexpr uint32_t cTypeId{ 1 };
-	std::string sss;
-	void Init() {
-		xx::CoutN("B.Init()");
-	}
-	~B() {
-		xx::CoutN("~B()");
-	}
-};
-
-struct C : GridItemBase {
-	static constexpr uint32_t cTypeId{ 2 };
-	void Init() {
-		xx::CoutN("C.Init()");
-	}
-	~C() {
-		xx::CoutN("~C()");
-	}
-};
-
-struct D : GridItemBase {
-	static constexpr uint32_t cTypeId{ 0 };
-	int val{ 1 };
-	void Update() {};
-};
-
+// todo: Map, Tower
 
 struct SceneTest1 : Scene {
-	inline static SceneTest1* instance{};			// init by Init()
 	xx::Shared<Node> rootNode;
 	Camera camera;
-
-	Grid<Foo> grid;
-
-	Grids<A, B, C> grids;
+	Rnd rnd;
+	TrackManager tm;
+	Grid<Monster1> grid;
 
 	virtual void Init() override;
 	virtual void Update() override;

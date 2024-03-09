@@ -511,8 +511,9 @@ void SceneTest1::Draw() {
 		ls.Draw();
 	}
 
-	// draw items ( order by y )
-	im.DrawAll(camera);
+	
+	//im.DrawAll(camera);		// sort by y
+	im.DirectDrawAll(camera);	// no sort
 
 	ls.Clear();
 	ls.FillCirclePoints({}, human->cAttackRadius, {}, 100, { camera.scale ,camera.scale })
