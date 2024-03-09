@@ -3,12 +3,11 @@
 #include <engine_curvemovepath.h>
 
 struct TrackManager {
-	static constexpr float padding{ 8 };
 	static constexpr float totalWidth{ 32 * 3 };
 
 	static constexpr int trackCount{ 25 };
 	static constexpr float pointDistance{ 0.1f };
-	static constexpr float trackMargin{ (totalWidth - padding * 2) / trackCount };
+	static constexpr float trackMargin{ totalWidth / trackCount };
 
 	xx::Listi32<xx::Listi32<XY>> tracks;		// todo: combine to 1 array ??
 	xx::Listi32<float> radianss;

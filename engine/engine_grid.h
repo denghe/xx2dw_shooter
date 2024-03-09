@@ -194,6 +194,39 @@ struct Grid {
 		}
 	}
 
+	// grid.CellForeach([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	template<typename F>
+	void CellForeach(int32_t cidx, F&& func) {
+		using R = xx::FuncR_t<F>;
+		auto idx = cells[cidx];
+		while (idx >= 0) {
+			auto next = buf[idx].next;
+			if constexpr (std::is_void_v<R>) {
+				func(buf[idx]);
+			} else {
+				auto r = func(buf[idx]);
+				if constexpr (std::is_same_v<R, bool>) {
+					if (r) return;
+				} else {
+					switch (r) {
+					case GridForeachResult::Continue: break;
+					case GridForeachResult::Break: return;
+					case GridForeachResult::RemoveAndContinue: {
+						Remove(idx);
+						break;
+					}
+					case GridForeachResult::RemoveAndReturn: {
+						Remove(idx);
+						return;
+					}
+					}
+				}
+			}
+			idx = next;
+		}
+	}
+
+
 	~Grid() {
 		BufForeach([](T& o) {
 			o.~T();

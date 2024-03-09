@@ -15,6 +15,9 @@ struct Cfg {
 
 	static constexpr XY mapSize{ float(gridNumCols * gridCellSize), float(gridNumRows * gridCellSize) };
 	static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+
+	static constexpr int32_t unitLimit{ 100000 };
+	static constexpr xx::FromTo<double> hpRange{ 25., 900. };
 };
 inline Cfg gCfg;
 

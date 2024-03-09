@@ -5,13 +5,14 @@
 
 void Monster1::Init(double hp_) {
 	hpBak = hp = hp_;
+	hp *= (double)gScene->rnd.Next<float>(0.01f, 0.99f);
 	radius = (float)std::sqrt(cRadius * cRadius / cHP * hp_);
 	auto& tm = gScene->tm;
 	assert(radius <= tm.totalWidth);
-	assert(radius >= tm.padding);
+	assert(radius >= tm.trackMargin);
 	auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
-	auto baseTrackIndex = (tm.trackCount - numTrackCovered) / 2;
-	trackIndex = baseTrackIndex + gScene->rnd.Next<int32_t>(1, numTrackCovered);
+	auto range = (tm.trackCount - numTrackCovered);
+	trackIndex = numTrackCovered / 2 + gScene->rnd.Next<int32_t>(range);
 	pointIndex = {};
 	speed = cSpeed * cRadius / radius;
 	radians = tm.GetRadians((int)pointIndex);
@@ -32,13 +33,13 @@ bool Monster1::Update() {
 
 void Monster1::Draw() {
 	auto& camera = gScene->camera;
-	auto& q = Quad::DrawOnce(gLooper.frames_coin_2[0]);
+	auto& q = Quad::DrawOnce(gLooper.frame_circle);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY::Make(camera.scale) * (radius / cRadius);
 	q.radians = radians;
 	q.colorplus = 1;
-	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(55 + 200 * (hp / hpBak)) };
+	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(25 + 230 * (hp / hpBak)) };
 }
 
 #pragma endregion
@@ -49,25 +50,6 @@ void SceneTest1::Init() {
 	gScene = this;
 
 	rootNode.Emplace()->Init();
-
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"Save", [&]() {
-	//	Save();
-	//	});
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"Load", [&]() {
-	//	Load();
-	//	});
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
-	//		numBulletGenerateByEveryFrame = 1;
-	//	});
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10", [&]() {
-	//		numBulletGenerateByEveryFrame = 10;
-	//	});
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
-	//		numBulletGenerateByEveryFrame = 100;
-	//	});
-	//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
-	//		numBulletGenerateByEveryFrame = 1000;
-	//	});
 
 	camera.SetScale(1.f);
 	camera.SetOriginal(gCfg.mapSize_2);
@@ -82,12 +64,12 @@ void SceneTest1::Init() {
 	cps.emplace_back(gCfg.mapSize_2 + XY{ -200, 200 });
 	tm.Init(cps);
 
-	grid.MakeInit(200);
-
 	tasks.Add([this]()->xx::Task<> {
+		co_await gLooper.AsyncSleep(2);
 		while (true) {
 			for (size_t i = 0; i < 80; i++) {
-				grid.MakeInit( rnd.Next<double>( 50., 200. ) );
+				if (grid.Count() >= gCfg.unitLimit) break;
+				grid.MakeInit(rnd.Next<double>(gCfg.hpRange.from, gCfg.hpRange.to));
 			}
 			co_yield 0;
 		}
@@ -111,11 +93,26 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
+#if 1
+	// draw camera range cells( slow 1/5 )
+	int32_t rowFrom, rowTo, colFrom, colTo;
+	camera.FillRowColIdxRange(grid.numRows, grid.numCols, grid.cellSize, rowFrom, rowTo, colFrom, colTo);
+	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+			auto cidx = grid.numCols * rowIdx + colIdx;
+			grid.CellForeach(cidx, [&](Monster1& o)->void {
+				o.Draw();
+			});
+		}
+	}
+#else
+	// draw all
 	grid.BufForeach([camera = &camera](Monster1& o)->void {
 		if (camera->InArea(o.pos)) {
 			o.Draw();
 		}
 	});
+#endif
 
 	auto str = xx::ToString("total monster count = ", grid.Count());// , "  total blood text count = ", enm.ens.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
@@ -124,3 +121,23 @@ void SceneTest1::Draw() {
 }
 
 #pragma endregion
+
+
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"Save", [&]() {
+//	Save();
+//	});
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"Load", [&]() {
+//	Load();
+//	});
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
+//		numBulletGenerateByEveryFrame = 1;
+//	});
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10", [&]() {
+//		numBulletGenerateByEveryFrame = 10;
+//	});
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
+//		numBulletGenerateByEveryFrame = 100;
+//	});
+//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
+//		numBulletGenerateByEveryFrame = 1000;
+//	});
