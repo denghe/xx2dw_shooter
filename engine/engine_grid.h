@@ -48,7 +48,6 @@ template<std::derived_from<GridItemBase> T>
 struct Grid {
 	static_assert(Has_cTypeId<T>);
 	using T_t = T;
-	typedef void(*Deleter)(void*);
 
 	T* buf{};
 	int32_t cap{}, len{};
@@ -66,12 +65,9 @@ struct Grid {
 
 	size_t* bufFlags{};			// buf empty flag. has value: 1. when foreach, fast skip empty buf. length == cap / 4/8 + 1 ??
 	int32_t* cells{};
-	Deleter deleter{};			// for T == GridItemBase ( weak type mode )
 
 
-	Grid() {
-		deleter = [](void* o) { ((T*)o)->~T(); };
-	}
+	Grid() = default;
 	Grid(int32_t numRows_, int32_t numCols_, int32_t diameter_) : Grid() {
 		Init(numRows_, numCols_, diameter_);
 	}
@@ -358,9 +354,7 @@ struct Grid {
 		o.prev = -1;
 		o.idx = -1;
 		o.cidx = -1;
-		if constexpr (std::is_same_v<GridItemBase, T>) {
-			deleter(&o);
-		} else {
+		if constexpr (!std::is_same_v<GridItemBase, T>) {		// for Grids call. let Grids use deleter destruct
 			o.~T();
 		}
 		Free(idx);
@@ -441,6 +435,7 @@ struct Grid {
 template<typename...TS>
 struct Grids {
 	using Tup = std::tuple<TS...>;
+	typedef void(*Deleter)(void*);
 
 	static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };
 	static constexpr std::array<size_t, sizeof...(TS)> is{ TS::cTypeId... };
@@ -454,7 +449,14 @@ struct Grids {
 	// sizes for calculate offsets
 	static constexpr std::array<size_t, sizeof...(TS)> sizes{ sizeof(TS)... };
 
-	Grids() = default;
+	// for fast Remove weak type
+	std::array<Deleter, sizeof...(TS)> deleters;
+
+	Grids() {
+		xx::ForEachType<Tup>([&]<typename T>() {
+			deleters[xx::TupleTypeIndex_v<T, Tup>] = [](void* o) { ((T*)o)->~T(); };
+		});
+	}
 	Grids(Grids const&) = delete;
 	Grids& operator=(Grids const&) = delete;
 
@@ -488,7 +490,9 @@ struct Grids {
 	void Remove(GridsWeak const& gw) {
 		if constexpr (std::is_void_v<T>) {
 			auto& g = ((Grid<GridItemBase>*) & gs)[gw.typeId];
+			auto& o = g.Get(gw);
 			g.Remove(gw);
+			deleters[gw.typeId](&o);
 		} else {
 			assert(gw.typeId == T::cTypeId);
 			Get<T>().Remove(gw);
