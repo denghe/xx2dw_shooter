@@ -410,8 +410,8 @@ namespace xx {
 
     template<typename T, typename F>
     static inline constexpr void ForEachType(F&& func) {
-        auto h = []<typename T, typename F, size_t... I>(F && func, std::index_sequence<I...>) {
-            (func.template operator()<std::tuple_element_t<I, T>>(), ...);
+        auto h = []<typename TT, typename FF, size_t... I>(FF && func, std::index_sequence<I...>) {
+            (func.template operator()<std::tuple_element_t<I, TT>>(), ...);
         };
         h.template operator()<T> (
             std::forward<F>(func),

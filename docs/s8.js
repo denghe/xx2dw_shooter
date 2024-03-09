@@ -294,20 +294,15 @@ var za,
   La,
   Ma = ["default", "low-power", "high-performance"],
   Na = [null, [], []],
-  Oa = () => {
-    if ("object" == typeof crypto && "function" == typeof crypto.getRandomValues) return a => crypto.getRandomValues(a);
-    t("initRandomDevice");
-  },
-  Pa = a => (Pa = Oa())(a),
-  Qa = a => "]" == a.slice(-1) && a.lastIndexOf("["),
-  Ra = a => {
+  Oa = a => "]" == a.slice(-1) && a.lastIndexOf("["),
+  Pa = a => {
     var b = W.Ha,
       c = b.sa[a];
     "number" == typeof c && (b.sa[a] = c = W.getUniformLocation(b, b.Da[a] + (0 < c ? `[${c}]` : "")));
     return c;
   },
   W,
-  Sa = {
+  Qa = {
     e: (a, b, c, d) => {
       t(`Assertion failed: ${H(a)}, at: ` + [b ? H(b) : "unknown filename", c, d ? H(d) : "unknown function"]);
     },
@@ -320,10 +315,11 @@ var za,
       xa++;
       throw wa;
     },
-    N: () => 1,
+    M: () => 1,
     r: () => {
       t("");
     },
+    N: () => Date.now(),
     P: () => performance.now(),
     ia: (a, b) => {
       function c(d) {
@@ -411,10 +407,6 @@ var za,
         g += n;
       }
       z[d >> 2] = g;
-      return 0;
-    },
-    M: (a, b) => {
-      Pa(w.subarray(a, a + b));
       return 0;
     },
     _: a => W.activeTexture(a),
@@ -561,7 +553,7 @@ var za,
           var f = W.getActiveUniform(c, l);
           var n = f.name;
           f = f.size;
-          var m = Qa(n);
+          var m = Oa(n);
           m = 0 < m ? n.slice(0, m) : n;
           var p = c.xa;
           c.xa += f;
@@ -571,7 +563,7 @@ var za,
         c = a.sa;
         d = 0;
         g = b;
-        l = Qa(b);
+        l = Oa(b);
         0 < l && (d = parseInt(b.slice(l + 1)) >>> 0, g = b.slice(0, l));
         if ((g = a.Ea[g]) && d < g[0] && (d += g[1], c[d] = c[d] || W.getUniformLocation(a, b))) return d;
       }
@@ -596,10 +588,10 @@ var za,
     },
     b: (a, b, c) => W.texParameteri(a, b, c),
     Z: (a, b) => {
-      W.uniform1i(Ra(a), b);
+      W.uniform1i(Pa(a), b);
     },
     C: (a, b, c) => {
-      W.uniform2f(Ra(a), b, c);
+      W.uniform2f(Pa(a), b, c);
     },
     D: a => {
       a = Q[a];
@@ -650,7 +642,7 @@ var za,
       return Y;
     }
     var b = {
-      a: Sa
+      a: Qa
     };
     B++;
     (_e$monitorRunDependen2 = (_e3 = e).monitorRunDependencies) === null || _e$monitorRunDependen2 === void 0 || _e$monitorRunDependen2.call(_e3, B);
@@ -665,20 +657,20 @@ var za,
     return {};
   }(),
   Ea = a => (Ea = Y.na)(a),
-  Ta = e._main = (a, b) => (Ta = e._main = Y.pa)(a, b),
+  Ra = e._main = (a, b) => (Ra = e._main = Y.pa)(a, b),
   Z;
-E = function Ua() {
-  Z || Va();
-  Z || (E = Ua);
+E = function Sa() {
+  Z || Ta();
+  Z || (E = Sa);
 };
-function Va() {
+function Ta() {
   function a() {
     if (!Z && (Z = !0, e.calledRun = !0, !v)) {
       G(ia);
       G(ja);
       if (e.onRuntimeInitialized) e.onRuntimeInitialized();
-      if (Wa) {
-        var b = Ta;
+      if (Ua) {
+        var b = Ra;
         try {
           var _e$onExit, _e4;
           var c = b(0, 0);
@@ -704,6 +696,6 @@ function Va() {
   }
 }
 if (e.preInit) for ("function" == typeof e.preInit && (e.preInit = [e.preInit]); 0 < e.preInit.length;) e.preInit.pop()();
-var Wa = !0;
-e.noInitialRun && (Wa = !1);
-Va();
+var Ua = !0;
+e.noInitialRun && (Ua = !1);
+Ta();

@@ -65,7 +65,7 @@ void SceneTest1::Init() {
 	tm.Init(cps);
 
 	tasks.Add([this]()->xx::Task<> {
-		co_await gLooper.AsyncSleep(2);
+		//co_await gLooper.AsyncSleep(2);
 		while (true) {
 			for (size_t i = 0; i < 80; i++) {
 				if (grid.Count() >= gCfg.unitLimit) break;

@@ -240,7 +240,7 @@ function createWasm() {
   return {};
 }
 var ASM_CONSTS = {
-  18816: ($0, $1, $2, $3, $4) => {
+  18784: ($0, $1, $2, $3, $4) => {
     if (typeof window === "undefined" || (window.AudioContext || window.webkitAudioContext) === undefined) {
       return 0;
     }
@@ -311,7 +311,7 @@ var ASM_CONSTS = {
     window.miniaudio.referenceCount += 1;
     return 1;
   },
-  20974: () => {
+  20942: () => {
     if (typeof window.miniaudio !== "undefined") {
       window.miniaudio.referenceCount -= 1;
       if (window.miniaudio.referenceCount === 0) {
@@ -319,8 +319,8 @@ var ASM_CONSTS = {
       }
     }
   },
-  21138: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
-  21242: () => {
+  21106: () => navigator.mediaDevices !== undefined && navigator.mediaDevices.getUserMedia !== undefined,
+  21210: () => {
     try {
       var temp = new (window.AudioContext || window.webkitAudioContext)();
       var sampleRate = temp.sampleRate;
@@ -330,7 +330,7 @@ var ASM_CONSTS = {
       return 0;
     }
   },
-  21413: ($0, $1, $2, $3, $4, $5) => {
+  21381: ($0, $1, $2, $3, $4, $5) => {
     var deviceType = $0;
     var channels = $1;
     var sampleRate = $2;
@@ -401,8 +401,8 @@ var ASM_CONSTS = {
     device.pDevice = pDevice;
     return miniaudio.track_device(device);
   },
-  24241: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
-  24307: $0 => {
+  24209: $0 => miniaudio.get_device_by_index($0).webaudio.sampleRate,
+  24275: $0 => {
     var device = miniaudio.get_device_by_index($0);
     if (device.scriptNode !== undefined) {
       device.scriptNode.onaudioprocess = function (e) {};
@@ -417,15 +417,15 @@ var ASM_CONSTS = {
     device.webaudio = undefined;
     device.pDevice = undefined;
   },
-  24700: $0 => {
+  24668: $0 => {
     miniaudio.untrack_device_by_index($0);
   },
-  24743: $0 => {
+  24711: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.resume();
     device.state = miniaudio.device_state.started;
   },
-  24868: $0 => {
+  24836: $0 => {
     var device = miniaudio.get_device_by_index($0);
     device.webaudio.suspend();
     device.state = miniaudio.device_state.stopped;
@@ -571,6 +571,7 @@ var runEmAsmFunction = (code, sigPtr, argbuf) => {
   return ASM_CONSTS[code](...args);
 };
 var _emscripten_asm_const_int = (code, sigPtr, argbuf) => runEmAsmFunction(code, sigPtr, argbuf);
+var _emscripten_date_now = () => Date.now();
 var _emscripten_get_now;
 _emscripten_get_now = () => performance.now();
 var _emscripten_is_main_browser_thread = () => !ENVIRONMENT_IS_WORKER;
@@ -1416,16 +1417,6 @@ var _fd_write = (fd, iov, iovcnt, pnum) => {
   HEAPU32[pnum >> 2] = num;
   return 0;
 };
-var initRandomFill = () => {
-  if (typeof crypto == "object" && typeof crypto["getRandomValues"] == "function") {
-    return view => crypto.getRandomValues(view);
-  } else abort("initRandomDevice");
-};
-var randomFill = view => (randomFill = initRandomFill())(view);
-var _getentropy = (buffer, size) => {
-  randomFill(HEAPU8.subarray(buffer, buffer + size));
-  return 0;
-};
 var _glActiveTexture = x0 => GLctx.activeTexture(x0);
 var _glAttachShader = (program, shader) => {
   GLctx.attachShader(GL.programs[program], GL.shaders[shader]);
@@ -1810,9 +1801,10 @@ var wasmImports = {
   W: ___syscall_ioctl,
   X: ___syscall_openat,
   Y: __emscripten_fetch_free,
-  R: __emscripten_get_now_is_monotonic,
+  Q: __emscripten_get_now_is_monotonic,
   u: _abort,
   d: _emscripten_asm_const_int,
+  R: _emscripten_date_now,
   T: _emscripten_get_now,
   _: _emscripten_is_main_browser_thread,
   ua: _emscripten_request_animation_frame_loop,
@@ -1830,7 +1822,6 @@ var wasmImports = {
   V: _fd_read,
   P: _fd_seek,
   B: _fd_write,
-  Q: _getentropy,
   ka: _glActiveTexture,
   F: _glAttachShader,
   c: _glBindBuffer,
