@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "game_cfg.h"
+#include "cfg.h"
 #include "scene_editor.h"
 #include "scene_main_menu.h"
 

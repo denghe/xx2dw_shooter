@@ -1,9 +1,9 @@
 #include <pch.h>
 #include <engine__pch_cpp.h>
 
-#include "game_looper.h"
+#include "looper.h"
 
-GameLooper gLooper;
+Looper gLooper;
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {

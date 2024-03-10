@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include "game_looper.h"
-#include "game_track_manager.h"
+#include "looper.h"
+#include "track_manager.h"
 
 // tower defense: circle world game play ? all of them ar clecles
 // monster = 1 ~ n circle, cannon too

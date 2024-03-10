@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "game_looper.h"
+#include "looper.h"
 
 struct SceneMainMenu : Scene {
 	xx::Shared<Node> rootNode;

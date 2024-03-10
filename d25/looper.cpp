@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
-#include "game_looper.h"
+#include "looper.h"
 #include "scene_main_menu.h"
 
-xx::Task<> GameLooper::MainTask() {
+xx::Task<> Looper::MainTask() {
 	{
 		sgrdd.Init(128, 32);
 

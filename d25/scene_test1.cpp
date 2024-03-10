@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
-#include "game_looper.h"
-#include "game_cfg.h"
+#include "looper.h"
+#include "cfg.h"
 #include "scene_main_menu.h"
 #include "scene_test1.h"
 

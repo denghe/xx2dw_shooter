@@ -3,7 +3,7 @@
 
 constexpr GDesign<1280, 800, 60> gDesign;
 
-struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
+struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Task<> MainTask();
 
 	// res
@@ -83,4 +83,4 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	SpaceGridRingDiffuseData sgrdd;
 };
 
-extern GameLooper gLooper;
+extern Looper gLooper;
