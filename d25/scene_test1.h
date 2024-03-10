@@ -8,7 +8,7 @@
 // map design: tile set = 32x32, window size = 1280x720, map rows = 22, cols = 40
 
 struct SceneTest1;
-inline static SceneTest1* gScene;		// init by SceneTest1::Init()
+inline static SceneTest1* gSceneTest1;		// init by SceneTest1::Init()
 
 struct MonsterBase : GridItemBase {
 	static constexpr double cHP{ 100 };

@@ -42,8 +42,7 @@ namespace xx {
 			case TMX::PropertyTypes::Int:
 				d.Write<needReserve>(std::get<int64_t>(in.value));
 				break;
-			case TMX::PropertyTypes::Object:
-			{
+			case TMX::PropertyTypes::Object: {
 				auto& td = (TmxData&)d;
 				auto o = std::get<TMX::Object*>(in.value);
 				if (!o) {
@@ -85,44 +84,38 @@ namespace xx {
 		static inline int Read(Data_r& d, TMX::Property& out) {
 			if (int r = d.Read(out.type, out.name)) return r;
 			switch (out.type) {
-			case TMX::PropertyTypes::Bool:
-			{
+			case TMX::PropertyTypes::Bool: {
 				bool v;
 				if (int r = d.Read(v)) return r;
 				out.value = v;
 				break;
 			}
-			case TMX::PropertyTypes::Color:
-			{
+			case TMX::PropertyTypes::Color: {
 				RGBA8 v;
 				if (int r = d.Read(v)) return r;
 				out.value = v;
 				break;
 			}
-			case TMX::PropertyTypes::Float:
-			{
+			case TMX::PropertyTypes::Float: {
 				double v;
 				if (int r = d.Read(v)) return r;
 				out.value = v;
 				break;
 			}
 			case TMX::PropertyTypes::String:
-			case TMX::PropertyTypes::File:
-			{
+			case TMX::PropertyTypes::File: {
 				std::unique_ptr<std::string> v;
 				if (int r = d.Read(v)) return r;
 				out.value = std::move(v);
 				break;
 			}
-			case TMX::PropertyTypes::Int:
-			{
+			case TMX::PropertyTypes::Int: {
 				int64_t v;
 				if (int r = d.Read(v)) return r;
 				out.value = v;
 				break;
 			}
-			case TMX::PropertyTypes::Object:
-			{
+			case TMX::PropertyTypes::Object: {
 				auto& td = (TmxData&)d;
 				int32_t key;
 				if (int r = d.Read(key)) return r;
@@ -134,43 +127,37 @@ namespace xx {
 					TMX::ObjectTypes ot;
 					if (int r = d.Read(ot)) return r;
 					switch (ot) {
-					case TMX::ObjectTypes::Point:
-					{
+					case TMX::ObjectTypes::Point: {
 						auto sp = MakeRef<TMX::Object_Point>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
 						return d.Read(*sp);
 					}
-					case TMX::ObjectTypes::Ellipse:
-					{
+					case TMX::ObjectTypes::Ellipse: {
 						auto sp = MakeRef<TMX::Object_Ellipse>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
 						return d.Read(*sp);
 					}
-					case TMX::ObjectTypes::Polygon:
-					{
+					case TMX::ObjectTypes::Polygon: {
 						auto sp = MakeRef<TMX::Object_Polygon>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
 						return d.Read(*sp);
 					}
-					case TMX::ObjectTypes::Rectangle:
-					{
+					case TMX::ObjectTypes::Rectangle: {
 						auto sp = MakeRef<TMX::Object_Rectangle>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
 						return d.Read(*sp);
 					}
-					case TMX::ObjectTypes::Tile:
-					{
+					case TMX::ObjectTypes::Tile: {
 						auto sp = MakeRef<TMX::Object_Tile>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
 						return d.Read(*sp);
 					}
-					case TMX::ObjectTypes::Text:
-					{
+					case TMX::ObjectTypes::Text: {
 						auto sp = MakeRef<TMX::Object_Text>();
 						td.objs[++td.key] = sp;
 						out.value = sp.pointer;
@@ -370,43 +357,37 @@ namespace xx {
 				TMX::ObjectTypes ot;
 				if (int r = d.Read(ot)) return r;
 				switch (ot) {
-				case TMX::ObjectTypes::Point:
-				{
+				case TMX::ObjectTypes::Point: {
 					auto sp = MakeRef<TMX::Object_Point>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::ObjectTypes::Ellipse:
-				{
+				case TMX::ObjectTypes::Ellipse: {
 					auto sp = MakeRef<TMX::Object_Ellipse>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::ObjectTypes::Polygon:
-				{
+				case TMX::ObjectTypes::Polygon: {
 					auto sp = MakeRef<TMX::Object_Polygon>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::ObjectTypes::Rectangle:
-				{
+				case TMX::ObjectTypes::Rectangle: {
 					auto sp = MakeRef<TMX::Object_Rectangle>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::ObjectTypes::Tile:
-				{
+				case TMX::ObjectTypes::Tile: {
 					auto sp = MakeRef<TMX::Object_Tile>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::ObjectTypes::Text:
-				{
+				case TMX::ObjectTypes::Text: {
 					auto sp = MakeRef<TMX::Object_Text>();
 					td.objs[++td.key] = sp;
 					out = sp;
@@ -475,29 +456,25 @@ namespace xx {
 				TMX::LayerTypes ot;
 				if (int r = d.Read(ot)) return r;
 				switch (ot) {
-				case TMX::LayerTypes::TileLayer:
-				{
+				case TMX::LayerTypes::TileLayer: {
 					auto sp = MakeRef<TMX::Layer_Tile>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::LayerTypes::ObjectLayer:
-				{
+				case TMX::LayerTypes::ObjectLayer: {
 					auto sp = MakeRef<TMX::Layer_Object>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::LayerTypes::ImageLayer:
-				{
+				case TMX::LayerTypes::ImageLayer: {
 					auto sp = MakeRef<TMX::Layer_Image>();
 					td.objs[++td.key] = sp;
 					out = sp;
 					return d.Read(*sp);
 				}
-				case TMX::LayerTypes::GroupLayer:
-				{
+				case TMX::LayerTypes::GroupLayer: {
 					auto sp = MakeRef<TMX::Layer_Group>();
 					td.objs[++td.key] = sp;
 					out = sp;

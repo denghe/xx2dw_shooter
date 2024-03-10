@@ -8,14 +8,14 @@
 
 void Monster1::Init(double hp_) {
 	hpBak = hp = hp_;
-	hp *= (double)gScene->rnd.Next<float>(0.01f, 0.99f);
+	hp *= (double)gSceneTest1->rnd.Next<float>(0.01f, 0.99f);
 	radius = (float)std::sqrt(cRadius * cRadius / cHP * hp_);
-	auto& tm = gScene->tm;
+	auto& tm = gSceneTest1->tm;
 	assert(radius <= tm.totalWidth);
 	assert(radius >= tm.trackMargin);
 	auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
 	auto range = (tm.trackCount - numTrackCovered);
-	trackIndex = numTrackCovered / 2 + gScene->rnd.Next<int32_t>(range);
+	trackIndex = numTrackCovered / 2 + gSceneTest1->rnd.Next<int32_t>(range);
 	pointIndex = {};
 	speed = cSpeed * cRadius / radius;
 	radians = tm.GetRadians((int)pointIndex);
@@ -23,19 +23,19 @@ void Monster1::Init(double hp_) {
 }
 
 bool Monster1::Update() {
-	auto& tm = gScene->tm;
+	auto& tm = gSceneTest1->tm;
 	pointIndex += speed;
 	if (auto c = tm.GetPointCount(); pointIndex >= c) {
 		//pointIndex -= c;	// todo
 		return true;
 	}
-	gScene->grid.Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
+	gSceneTest1->grid.Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
 	radians = tm.GetRadians((int)pointIndex);
 	return false;
 }
 
 void Monster1::Draw() {
-	auto& camera = gScene->camera;
+	auto& camera = gSceneTest1->camera;
 	auto& q = Quad::DrawOnce(gLooper.frame_circle);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
@@ -50,7 +50,7 @@ void Monster1::Draw() {
 #pragma region SceneTest1
 
 void SceneTest1::Init() {
-	gScene = this;
+	gSceneTest1 = this;
 
 	rootNode.Emplace()->Init();
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {

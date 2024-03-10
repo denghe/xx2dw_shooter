@@ -393,7 +393,7 @@ namespace TMX {
 
 		/****************************************************/
 		// ext
-		std::vector<xx::Ref<Image>> images;											// all textures here
+		std::vector<xx::Ref<Image>> images;												// all textures here
 		std::vector<GidInfo> gidInfos;													// all gid info here. index == gid
 		std::vector<::Anim*> anims;														// point to all gid info's anim for easy update anims
 		std::vector<Layer*> flatLayers;													// extract layers tree here for easy search by name
