@@ -1,28 +1,14 @@
 ﻿#pragma once
-#include <game_looper.h>
+#include "game_looper.h"
+#include "game_track_manager.h"
 
 // tower defense: circle world game play ? all of them ar clecles
 // monster = 1 ~ n circle, cannon too
 // circle texture size: 32x32
 // map design: tile set = 32x32, window size = 1280x720, map rows = 22, cols = 40
 
-struct Cfg {
-	static constexpr float unitSize{ 32 };
-
-	static constexpr int gridCellSize{ 32 };	// need >= max unit size
-	static constexpr int gridNumRows{ 40 };
-	static constexpr int gridNumCols{ 22 };
-
-	static constexpr XY mapSize{ float(gridNumCols * gridCellSize), float(gridNumRows * gridCellSize) };
-	static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
-
-	static constexpr int32_t unitLimit{ 100000 };
-	static constexpr xx::FromTo<double> hpRange{ 25., 900. };
-};
-inline Cfg gCfg;
-
 struct SceneTest1;
-inline SceneTest1* gScene;		// init by SceneTest1::Init()
+inline static SceneTest1* gScene;		// init by SceneTest1::Init()
 
 struct MonsterBase : GridItemBase {
 	static constexpr double cHP{ 100 };

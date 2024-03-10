@@ -1,5 +1,6 @@
-﻿#include <pch.h>
-#include <all.h>
+﻿#include "pch.h"
+#include "game_looper.h"
+#include "scene_main_menu.h"
 
 xx::Task<> GameLooper::MainTask() {
 	{
@@ -104,5 +105,5 @@ xx::Task<> GameLooper::MainTask() {
 	frame_circle = tmp[0];
 	frame_trangle = tmp[1];
 
-	co_await AsyncSwitchTo<SceneTest1>();
+	co_await AsyncSwitchTo<SceneMainMenu>();
 }

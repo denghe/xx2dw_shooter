@@ -1,5 +1,8 @@
-﻿#include <pch.h>
-#include <all.h>
+﻿#include "pch.h"
+#include "game_looper.h"
+#include "game_cfg.h"
+#include "scene_main_menu.h"
+#include "scene_test1.h"
 
 #pragma region SceneTest1
 
@@ -50,6 +53,9 @@ void SceneTest1::Init() {
 	gScene = this;
 
 	rootNode.Emplace()->Init();
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {
+		gLooper.DelaySwitchTo<SceneMainMenu>();
+	});
 
 	camera.SetScale(1.f);
 	camera.SetOriginal(gCfg.mapSize_2);
@@ -58,10 +64,10 @@ void SceneTest1::Init() {
 	grid.Init(gCfg.gridNumRows, gCfg.gridNumCols, gCfg.gridCellSize);
 
 	std::vector<CurvePoint> cps;
-	cps.emplace_back(gCfg.mapSize_2 + XY{ -200, -200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ 200, -200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ 200, 200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ -200, 200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ -400, -200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ 400, -200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ 400, 200 });
+	cps.emplace_back(gCfg.mapSize_2 + XY{ -400, 200 });
 	tm.Init(cps);
 
 	tasks.Add([this]()->xx::Task<> {

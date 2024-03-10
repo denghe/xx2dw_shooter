@@ -1,0 +1,41 @@
+﻿#include "pch.h"
+#include "game_cfg.h"
+#include "scene_editor.h"
+#include "scene_main_menu.h"
+
+#pragma region SceneEditor
+
+void SceneEditor::Init() {
+	gSceneEditor = this;
+
+	rootNode.Emplace()->Init();
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {
+		gLooper.DelaySwitchTo<SceneMainMenu>();
+	});
+
+	camera.SetScale(1.f);
+	camera.SetOriginal(gCfg.mapSize_2);
+	camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
+
+	// ...
+}
+
+void SceneEditor::Update() {
+	// scale control
+	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
+		camera.IncreaseScale(0.1f, 5);
+	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+		camera.DecreaseScale(0.1f, 0.1f);
+	}
+	camera.Calc();
+
+}
+
+void SceneEditor::Draw() {
+	camera.Calc();
+
+
+	gLooper.DrawNode(rootNode);
+}
+
+#pragma endregion
