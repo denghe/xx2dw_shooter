@@ -149,7 +149,7 @@ struct EngineBase3 : EngineBase2 {
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "res/") {
+    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "") {
         auto map = xx::MakeRef<TMX::Map>();
         // download bmx & fill
         {
@@ -161,6 +161,13 @@ struct EngineBase3 : EngineBase2 {
             auto r = td.Read(*map);
             xx_assert(!r);
         }
+
+        if (root.empty()) {
+            if (auto&& i = bmxUrl.find_last_of("/"); i != bmxUrl.npos) {
+                root = bmxUrl.substr(0, i + 1);
+            }
+        }
+
         // download textures
         auto n = map->images.size();
         for (auto& img : map->images) {

@@ -34,6 +34,13 @@ void SceneEditor::Update() {
 void SceneEditor::Draw() {
 	camera.Calc();
 
+	for (int i = 0, ie = gLooper.mapNumRows; i < ie; ++i) {
+		for (int j = 0, je = gLooper.mapNumCols; j < je; ++j) {
+			if (auto idx = gLooper.mapData[i * je + j]) {
+				gLooper.tiledQuads[idx].SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i })).Draw();
+			}
+		}
+	}
 
 	gLooper.DrawNode(rootNode);
 }

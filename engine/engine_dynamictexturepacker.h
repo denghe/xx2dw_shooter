@@ -6,7 +6,7 @@
 #include <engine_frames.h>
 
 template<int maxTextureWidthHeight_ = 4096>
-struct DynamicTexturePacker : protected Frames {
+struct DynamicTexturePacker : Frames {
     static constexpr int maxTextureWidthHeight = maxTextureWidthHeight_;
 
     void Clear() {

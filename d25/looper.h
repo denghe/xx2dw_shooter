@@ -77,7 +77,10 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 
 
 	xx::Ref<Frame> frame_circle, frame_trangle;
-
+	xx::Listi32<xx::Ref<Frame>> frames_tiled;
+	xx::Listi32<uint32_t> mapData;
+	int32_t mapNumRows{}, mapNumCols{};
+	xx::List<Quad> tiledQuads;
 
 	// for space grid  FindNearest  ForeachByRange
 	SpaceGridRingDiffuseData sgrdd;

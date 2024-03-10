@@ -222,15 +222,24 @@ struct EngineBase1 : EngineBase0 {
     }
 
     template<bool autoDecompress = false>
-    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root/* = "res/"*/) {
+    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "") {
         auto map = xx::MakeRef<TMX::Map>();
+        std::string fullPath;
         {
             auto [d, fp] = LoadFileData<autoDecompress>(bmxPath);
             xx_assert(d);
             xx::TmxData td(std::move(d));
             auto r = td.Read(*map);
             xx_assert(!r);
+            fullPath = std::move(fp);
         }
+
+        if (root.empty()) {
+            if (auto&& i = fullPath.find_last_of("/"); i != fullPath.npos) {
+                root = fullPath.substr(0, i + 1);
+            }
+        }
+
         for (auto& img : map->images) {
             img->texture = LoadTexture(root + img->source);
         }

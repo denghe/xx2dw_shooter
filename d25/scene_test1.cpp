@@ -64,10 +64,13 @@ void SceneTest1::Init() {
 	grid.Init(gCfg.gridNumRows, gCfg.gridNumCols, gCfg.gridCellSize);
 
 	std::vector<CurvePoint> cps;
-	cps.emplace_back(gCfg.mapSize_2 + XY{ -400, -200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ 400, -200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ 400, 200 });
-	cps.emplace_back(gCfg.mapSize_2 + XY{ -400, 200 });
+	static constexpr XY fix{ 0, -45};
+	cps.emplace_back(XY{ 5, 415 } + fix);
+	cps.emplace_back(XY{ 315, 400 } + fix);
+	cps.emplace_back(XY{ 524, 190 } + fix);
+	cps.emplace_back(XY{ 845, 190 } + fix);
+	cps.emplace_back(XY{ 990, 385 } + fix);
+	cps.emplace_back(XY{ 687, 720 } + fix);
 	tm.Init(cps);
 
 	tasks.Add([this]()->xx::Task<> {
@@ -99,7 +102,17 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
-#if 1
+	// draw tiled bg
+	for (int i = 0, ie = gLooper.mapNumRows; i < ie; ++i) {
+		for (int j = 0, je = gLooper.mapNumCols; j < je; ++j) {
+			if (auto idx = gLooper.mapData[i * je + j]) {
+				gLooper.tiledQuads[idx].SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i })).Draw();
+			}
+		}
+	}
+
+
+#if 0
 	// draw camera range cells( slow 1/5 )
 	int32_t rowFrom, rowTo, colFrom, colTo;
 	camera.FillRowColIdxRange(grid.numRows, grid.numCols, grid.cellSize, rowFrom, rowTo, colFrom, colTo);
@@ -121,7 +134,7 @@ void SceneTest1::Draw() {
 #endif
 
 	auto str = xx::ToString("total monster count = ", grid.Count());// , "  total blood text count = ", enm.ens.Count());
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 50 }, str, RGBA8_Green, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
 
 	gLooper.DrawNode(rootNode);
 }
