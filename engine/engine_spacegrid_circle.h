@@ -213,7 +213,7 @@ struct SpaceGridC {
     void Foreach9(Vec2<int32_t> const& crIdx, F&& f) {
         for (auto& offset : offsets9) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offset);
-            if (cellIndex < 0 || cellIndex >= cells.size()) continue;
+            if (cellIndex < 0 || cellIndex >= cells.size()) continue;   // todo: fix
             auto c = cells[cellIndex];
             while (c) {
                 assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);
@@ -232,7 +232,7 @@ struct SpaceGridC {
     void ForeachCells(Vec2<int32_t> const& crIdx, Vec2<int32_t> const* offsets, int size, F&& f) {
         for (int i = 0; i < size; ++i) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offsets[i]);
-            if (cellIndex < 0 || cellIndex >= cells.size()) continue;
+            if (cellIndex < 0 || cellIndex >= cells.size()) continue;   // todo: fix
             auto c = cells[cellIndex];
             while (c) {
                 assert(cells[c->_sgcIdx]->_sgcPrev == nullptr);

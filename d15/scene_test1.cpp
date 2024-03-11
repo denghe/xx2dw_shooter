@@ -215,14 +215,13 @@ void SceneTest1::Init() {
 }
 
 void SceneTest1::Update() {
-	camera.Calc();
-
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
+	camera.Calc();
 
 	// hit control
 	auto& m = gLooper.mouse;
@@ -239,8 +238,8 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
-#if 0
-	im.DrawAll(camera);
+#if 1
+	im.DirectDrawAll(camera);
 #else
 	// fill phys items to iys order by row & cut by cell pos
 	int32_t rowFrom, rowTo, colFrom, colTo;

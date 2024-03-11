@@ -27,16 +27,16 @@ concept Has_cTypeId = requires(T) { T::cTypeId; };
 // all grid item's base class
 struct GridItemBase {
 	static constexpr uint32_t cTypeId{ (uint32_t)-1 };
-	uint32_t version, typeId;
-	int32_t next, prev, idx, cidx;
+	uint32_t __grid_version, typeId;
+	int32_t __grid_next, __grid_prev, __grid_idx, __grid_cidx;
 	XY pos;
 
 	GridWeak ToGridWeak() {
-		return {idx, version};
+		return { __grid_idx, __grid_version};
 	}
 
 	GridsWeak ToGridsWeak() {
-		return { {idx, version}, typeId };
+		return { {__grid_idx, __grid_version}, typeId };
 	}
 };
 
@@ -168,7 +168,7 @@ struct Grid {
 			auto e = std::min(b + sizeof(size_t) * 8, (size_t)len);
 			for (; b < e; ++b) {
 				auto& o = buf[b];
-				if (!o.version) continue;
+				if (!o.__grid_version) continue;
 				if constexpr (std::is_void_v<R>) {
 					func(o);
 				} else {
@@ -200,7 +200,7 @@ struct Grid {
 		using R = xx::FuncR_t<F>;
 		auto idx = cells[cidx];
 		while (idx >= 0) {
-			auto next = buf[idx].next;
+			auto next = buf[idx].__grid_next;
 			if constexpr (std::is_void_v<R>) {
 				func(buf[idx]);
 			} else {
@@ -249,7 +249,30 @@ struct Grid {
 #endif
 	}
 
-	// todo: Clear ?
+	template<bool resetVersion = false>
+	void Clear() {
+		if (!cells) return;
+
+		BufForeach([](T& o) {
+			o.~T();
+		});
+		len = 0;
+		freeHead = -1;
+		freeCount = 0;
+		if constexpr (resetVersion) {
+			version = 0;
+		}
+
+		memset(bufFlags, 0, bufFlagsLen * sizeof(size_t));
+
+		auto numBytes = sizeof(int32_t) * cellsLen;
+		memset(cells, -1, numBytes);	// -1 mean empty
+
+#ifdef GRID_ENABLE_CELL_FLAG
+		numBytes = cellFlagsLen * sizeof(size_t);
+		memset(cellFlags, 0, numBytes);
+#endif
+	}
 
 	void Init(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
 		assert(!cells);
@@ -297,14 +320,6 @@ struct Grid {
 		return len - freeCount;
 	}
 
-	int32_t PosToCIdx(XY const& pos) {
-		assert(pos.x >= 0 && pos.x < cellSize * numCols);
-		assert(pos.y >= 0 && pos.y < cellSize * numRows);
-		auto c = int32_t(pos.x) / cellSize;
-		auto r = int32_t(pos.y) / cellSize;
-		return r * numCols + c;
-	}
-
 	uint32_t GenVersion() {
 		if (version == std::numeric_limits<uint32_t>().max()) {
 			version = 1;
@@ -318,7 +333,7 @@ struct Grid {
 		int32_t idx;
 		if (freeCount > 0) {
 			idx = freeHead;
-			freeHead = buf[idx].next;
+			freeHead = buf[idx].__grid_next;
 			freeCount--;
 		} else {
 			if (len == cap) {
@@ -333,8 +348,8 @@ struct Grid {
 
 	void Free(int32_t idx) {
 		auto& o = buf[idx];
-		o.next = freeHead;
-		o.version = 0;
+		o.__grid_next = freeHead;
+		o.__grid_version = 0;
 		freeHead = idx;
 		++freeCount;
 		BufFlagUnset(idx);
@@ -355,12 +370,12 @@ struct Grid {
 
 		auto& o = buf[idx];
 		new (&o) T();
-		o.version = GenVersion();
+		o.__grid_version = GenVersion();
 		o.typeId = T::cTypeId;
-		o.next = head;	// write backup to o
-		o.prev = -1;
-		o.idx = idx;
-		o.cidx = cidx;
+		o.__grid_next = head;	// write backup to o
+		o.__grid_prev = -1;
+		o.__grid_idx = idx;
+		o.__grid_cidx = cidx;
 		o.pos = pos;
 		return o;
 	}
@@ -372,52 +387,52 @@ struct Grid {
 		auto& o = buf[idx];
 		new (&o) T();
 
-		o.version = GenVersion();
+		o.__grid_version = GenVersion();
 		o.typeId = T::cTypeId;
-		o.idx = idx;
+		o.__grid_idx = idx;
 
 		o.Init(std::forward<Args>(args)...);	// need fill pos here
 
 		auto cidx = PosToCIdx(o.pos);
 		auto head = cells[cidx];	// backup
 		if (head >= 0) {
-			buf[head].prev = idx;
+			buf[head].__grid_prev = idx;
 		} else {
 #ifdef GRID_ENABLE_CELL_FLAG
 			CellFlagSet(cidx);
 #endif
 		}
 		cells[cidx] = idx;	// assign new
-		o.next = head;	// write backup to o
-		o.prev = -1;
-		o.cidx = cidx;
+		o.__grid_next = head;	// write backup to o
+		o.__grid_prev = -1;
+		o.__grid_cidx = cidx;
 		return o;
 	}
 
 	void Remove(int32_t idx) {
 		assert(idx >= 0 && idx < len);
 		auto& o = buf[idx];
-		assert(o.prev != o.idx && o.next != o.idx && o.version && o.cidx >= 0 && o.idx == idx);
-		if (idx == cells[o.cidx]) {
-			cells[o.cidx] = o.next;
-			if (o.next == -1) {
+		assert(o.__grid_prev != o.__grid_idx && o.__grid_next != o.__grid_idx && o.__grid_version && o.__grid_cidx >= 0 && o.__grid_idx == idx);
+		if (idx == cells[o.__grid_cidx]) {
+			cells[o.__grid_cidx] = o.__grid_next;
+			if (o.__grid_next == -1) {
 #ifdef GRID_ENABLE_CELL_FLAG
-				CellFlagUnset(o.cidx);
+				CellFlagUnset(o.__grid_cidx);
 #endif
 			}
 		}
-		if (o.prev >= 0) {
-			buf[o.prev].next = o.next;
+		if (o.__grid_prev >= 0) {
+			buf[o.__grid_prev].__grid_next = o.__grid_next;
 		}
-		if (o.next >= 0) {
-			buf[o.next].prev = o.prev;
+		if (o.__grid_next >= 0) {
+			buf[o.__grid_next].__grid_prev = o.__grid_prev;
 		}
-		o.version = 0;
+		o.__grid_version = 0;
 		//o.typeId = -1;
-		o.next = -1;
-		o.prev = -1;
-		o.idx = -1;
-		o.cidx = -1;
+		o.__grid_next = -1;
+		o.__grid_prev = -1;
+		o.__grid_idx = -1;
+		o.__grid_cidx = -1;
 		if constexpr (!std::is_same_v<GridItemBase, T>) {		// for Grids call. let Grids use deleter destruct
 			o.~T();
 		}
@@ -425,7 +440,7 @@ struct Grid {
 	}
 
 	void Remove(T const& o) {
-		Remove(o.idx);
+		Remove(o.__grid_idx);
 	}
 
 	void Remove(GridWeak const& gw) {
@@ -434,9 +449,9 @@ struct Grid {
 	}
 
 	bool Exists(GridWeak const& gw) const {
-		assert(gw.version > 0);
+		if (gw.version == 0) return false;
 		assert(gw.idx >= 0 && gw.idx < len);
-		return buf[gw.idx].version == gw.version;
+		return buf[gw.idx].__grid_version == gw.version;
 	}
 
 	T& Get(GridWeak const& gw) const {
@@ -445,26 +460,26 @@ struct Grid {
 	}
 
 	void Update(T& o, XY const& newPos) {
-		assert(o.idx >= 0);
-		assert(o.prev != o.idx);
-		assert(o.next != o.idx);
+		assert(o.__grid_idx >= 0);
+		assert(o.__grid_prev != o.__grid_idx);
+		assert(o.__grid_next != o.__grid_idx);
 		o.pos = newPos;
 		auto cidx = PosToCIdx(newPos);
-		if (cidx == o.cidx) return;				// no change
+		if (cidx == o.__grid_cidx) return;				// no change
 
 		// unlink
-		if (o.idx != cells[o.cidx]) {			// isn't header
-			buf[o.prev].next = o.next;
-			if (o.next >= 0) {
-				buf[o.next].prev = o.prev;
-				//o.next = -1;
+		if (o.__grid_idx != cells[o.__grid_cidx]) {			// isn't header
+			buf[o.__grid_prev].__grid_next = o.__grid_next;
+			if (o.__grid_next >= 0) {
+				buf[o.__grid_next].__grid_prev = o.__grid_prev;
+				//o.__grid_next = -1;
 			}
-			//o.prev = -1;
+			//o.__grid_prev = -1;
 		} else {
-			assert(o.prev == -1);
-			cells[o.cidx] = o.next;
-			if (o.next >= 0) {
-				buf[o.next].prev = -1;
+			assert(o.__grid_prev == -1);
+			cells[o.__grid_cidx] = o.__grid_next;
+			if (o.__grid_next >= 0) {
+				buf[o.__grid_next].__grid_prev = -1;
 				//o.next = -1;
 			} else {
 #ifdef GRID_ENABLE_CELL_FLAG
@@ -476,21 +491,66 @@ struct Grid {
 
 		// relink
 		if (cells[cidx] >= 0) {
-			buf[cells[cidx]].prev = o.idx;
+			buf[cells[cidx]].__grid_prev = o.__grid_idx;
 		} else {
 #ifdef GRID_ENABLE_CELL_FLAG
 			CellFlagSet(cidx);
 #endif
 		}
-		o.next = cells[cidx];
-		o.prev = -1;
-		cells[cidx] = o.idx;
-		o.cidx = cidx;
+		o.__grid_next = cells[cidx];
+		o.__grid_prev = -1;
+		cells[cidx] = o.__grid_idx;
+		o.__grid_cidx = cidx;
 	}
 
-	// todo: fast foreach. use 64bit flag skip empty cell ?
+	XX_FORCE_INLINE int32_t PosToCIdx(XY const& pos) {
+		assert(pos.x >= 0 && pos.x < cellSize * numCols);
+		assert(pos.y >= 0 && pos.y < cellSize * numRows);
+		auto c = int32_t(pos.x) / cellSize;
+		auto r = int32_t(pos.y) / cellSize;
+		return r * numCols + c;
+	}
 
-	// todo: search funcs
+	// return x: col index   y: row index
+	XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY const& pos) {
+		assert(pos.x >= 0 && pos.x < cellSize * numCols);
+		assert(pos.y >= 0 && pos.y < cellSize * numRows);
+		return { int32_t(pos.x) / cellSize, int32_t(pos.y) / cellSize };
+	}
+
+	// return cell's index
+	XX_FORCE_INLINE int32_t CrIdxToCIdx(Vec2<int32_t> const& crIdx) {
+		return crIdx.y * numCols + crIdx.x;
+	}
+
+
+	template<typename F>
+	void ForeachByRange(SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance, F&& func) {
+		auto crIdx = PosToCrIdx(pos);					// calc grid col row index
+		float rr = maxDistance * maxDistance;
+		auto& lens = sgrdd.lens;
+		auto& idxs = sgrdd.idxs;
+		for (int i = 1; i < lens.len; i++) {
+
+			auto offsets = &idxs[lens[i - 1].count];
+			auto size = lens[i].count - lens[i - 1].count;
+
+			for (int j = 0; j < size; ++j) {
+				auto cr = crIdx + offsets[j];
+				if (cr.x < 0 || cr.x >= numCols || cr.y < 0 || cr.y >= numRows) continue;
+				auto cidx = CrIdxToCIdx(cr);
+				CellForeach(cidx, [&](T& m)->void {
+					auto v = m.pos - pos;
+					if (v.x * v.x + v.y * v.y < rr) {
+						func(m);
+					}
+				});
+			}
+
+			if (lens[i].radius > maxDistance) break;			// limit search range
+		}
+	}
+	// todo: more search funcs
 
 	// todo: Save Load
 };
@@ -616,12 +676,12 @@ namespace xx {
 				::xx::Append(s, "GridItemBase { null }");
 			} else {
 				::xx::Append(s, "GridItemBase { "
-					, "version = ", in.version
+					, "version = ", in.__grid_version
 					, ", typeId = ", in.typeId
-					, ", next = ", in.next
-					, ", prev = ", in.prev
-					, ", idx = ", in.idx
-					, ", cidx = ", in.cidx
+					, ", next = ", in.__grid_next
+					, ", prev = ", in.__grid_prev
+					, ", idx = ", in.__grid_idx
+					, ", cidx = ", in.__grid_cidx
 					, ", pos = ", in.pos
 					, " }"
 				);
