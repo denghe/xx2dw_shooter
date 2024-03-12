@@ -479,57 +479,57 @@ namespace TMX {
 		anims.clear();
 		if (tilesets.empty()) return;
 
-		uint32_t numCells = 0;
+		uint32_t maxGid{};
 		for (auto&& tileset : tilesets) {
-			numCells += tileset->tilecount;
+			for (auto&& o : tileset->tiles) {
+				auto gid = tileset->firstgid + o->id;
+				if (gid > maxGid) {
+					maxGid = gid;
+				}
+			}
 		}
-		gidInfos.resize(numCells + tilesets[0]->firstgid);
+		if (!maxGid) return;
+		gidInfos.resize(maxGid + 1);
 
 		// fill info
 		for (auto&& tileset : tilesets) {
-			uint32_t numRows = 1, numCols = tileset->tilecount;
 
 			TMX::Image* img = nullptr;
+			uint32_t numRows = 1, numCols = tileset->tilecount;
 			if (tileset->image) {
 				numCols = tileset->columns;
 				numRows = tileset->tilecount / numCols;
 				img = tileset->image;
 			}
 
-			for (uint32_t y = 0; y < numRows; ++y) {
-				for (uint32_t x = 0; x < numCols; ++x) {
+			// tileset? single picture?
+			if (img) {
+				for (uint32_t y = 0; y < numRows; ++y) {
+					for (uint32_t x = 0; x < numCols; ++x) {
+						auto id = y * numCols + x;
+						auto gid = tileset->firstgid + id;
+						auto& info = gidInfos[gid];
 
-					auto id = y * numCols + x;
-					auto gid = tileset->firstgid + id;
-					auto& info = gidInfos[gid];
+						info.tileset = tileset;
+						info.tile = nullptr;
+						info.image = img;
 
-					info.tileset = tileset;
-					info.tile = nullptr;
-					info.image = img;
-
-					for (auto& t : tileset->tiles) {	// search tile
-						if (t->id == id) {
-							info.tile = t.get();
-							if (t->image) {
-								info.image = t->image;	// override to single image
+						for (auto& t : tileset->tiles) {	// search tile
+							if (t->id == id) {
+								info.tile = t.get();
+								if (t->image) {
+									info.image = t->image;	// override to single image
+								}
+								break;
 							}
-							break;
 						}
-					}
 
-					auto& f = info.frame.Emplace();
-					f->tex = info.image->texture;
-					if (f->tex) {
-						f->key = f->tex->FileName();
-					}
-					f->anchor = { 0.5, 0.5 };
-					if (info.IsSingleImage()) {
-						auto w = (float)info.image->width;
-						auto h = (float)info.image->height;
-						f->anchor = { 0, tileHeight / h };
-						f->spriteSize = { w, h };
-						f->textureRect = { 0, 0, (uint16_t)w, (uint16_t)h };
-					} else {
+						auto& f = info.frame.Emplace();
+						f->tex = info.image->texture;
+						if (f->tex) {
+							f->key = f->tex->FileName();
+						}
+						f->anchor = { 0.5, 0.5 };
 						auto u = (float)tileset->margin + (tileset->spacing + tileset->tilewidth) * x;
 						auto v = (float)tileset->margin + (tileset->spacing + tileset->tileheight) * y;
 						auto w = (float)tileset->tilewidth;
@@ -539,7 +539,29 @@ namespace TMX {
 						f->textureRect = { (uint16_t)u, (uint16_t)v, (uint16_t)w, (uint16_t)h };
 					}
 				}
+			} else {
+				for (auto& tile : tileset->tiles) {
+					auto gid = tileset->firstgid + tile->id;
+					auto& info = gidInfos[gid];
+
+					info.tileset = tileset;
+					info.tile = tile.get();
+					info.image = tile->image;
+
+					auto& f = info.frame.Emplace();
+					f->tex = info.image->texture;
+					if (f->tex) {
+						f->key = f->tex->FileName();
+					}
+					f->anchor = { 0.5, 0.5 };
+					auto w = (float)info.image->width;
+					auto h = (float)info.image->height;
+					f->anchor = { 0, tileHeight / h };
+					f->spriteSize = { w, h };
+					f->textureRect = { 0, 0, (uint16_t)w, (uint16_t)h };
+				}
 			}
+
 		}
 
 		// fill anim

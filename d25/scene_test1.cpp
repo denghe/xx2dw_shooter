@@ -61,7 +61,7 @@ void SceneTest1::Init() {
 	camera.SetOriginal(gCfg.cameraOriginal);
 	camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
 
-	grid.Init(gLooper.mapNumRows + 5, gLooper.mapNumCols + 5, gCfg.gridCellSize);
+	grid.Init(gLooper.map1->height + 5, gLooper.map1->width + 5, gCfg.gridCellSize);
 
 	std::vector<CurvePoint> cps;
 	static constexpr XY fix{ 0, -45};
@@ -74,6 +74,10 @@ void SceneTest1::Init() {
 	cps.emplace_back(XY{ 687, 710 } + fix);
 	cps.emplace_back(XY{ 687, 810 } + fix);
 	tm.Init(cps);
+
+	// set target layer for easy use
+	layer = gLooper.map1->FindLayer<TMX::Layer_Tile>("Tile Layer 1");
+	assert(layer && layer->type == TMX::LayerTypes::TileLayer);
 
 	tasks.Add([this]()->xx::Task<> {
 		//co_await gLooper.AsyncSleep(2);
@@ -104,11 +108,16 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
-	// draw tiled bg
-	for (int i = 0, ie = gLooper.mapNumRows; i < ie; ++i) {
-		for (int j = 0, je = gLooper.mapNumCols; j < je; ++j) {
-			if (auto idx = gLooper.mapData[i * je + j]) {
-				gLooper.tiledQuads[idx].SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i })).Draw();
+	// draw tiled map
+	for (int i = 0, ie = gLooper.map1->height; i < ie; ++i) {
+		for (int j = 0, je = gLooper.map1->width; j < je; ++j) {
+			auto idx = i * je + j;
+			if (auto gid = layer->gids[idx]) {
+				auto& gi = gLooper.map1->gidInfos[gid];
+				Quad().SetFrame(gi.frame).SetAnchor({ 0, 1 })
+					.SetScale(camera.scale)
+					.SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i }))
+					.Draw();
 			}
 		}
 	}
@@ -142,23 +151,3 @@ void SceneTest1::Draw() {
 }
 
 #pragma endregion
-
-
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m - XY{ 5,0 }, { 1,0 }, gLooper.s9cfg_btn, U"Save", [&]() {
-//	Save();
-//	});
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy2m + XY{ 5,0 }, { 0,0 }, gLooper.s9cfg_btn, U"Load", [&]() {
-//	Load();
-//	});
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1", [&]() {
-//		numBulletGenerateByEveryFrame = 1;
-//	});
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m + XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+10", [&]() {
-//		numBulletGenerateByEveryFrame = 10;
-//	});
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 50 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+100", [&]() {
-//		numBulletGenerateByEveryFrame = 100;
-//	});
-//rootNode->MakeChildren<Button>()->Init(1, gDesign.xy4m - XY{ 0, 150 }, gDesign.xy4a, gLooper.s9cfg_btn, U"+1000", [&]() {
-//		numBulletGenerateByEveryFrame = 1000;
-//	});

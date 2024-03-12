@@ -150,3 +150,9 @@ struct Quad : QuadInstanceData {
     }
 
 };
+
+namespace xx {
+    // mem moveable tag
+    template<>
+    struct IsPod<Quad, void> : std::true_type {};
+}

@@ -6,6 +6,9 @@ constexpr GDesign<1280, 800, 60> gDesign;
 struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Task<> MainTask();
 
+	// for space grid  FindNearest  ForeachByRange
+	SpaceGridRingDiffuseData sgrdd;
+
 	// res
 
 	// following code is copy from d20.txt
@@ -73,17 +76,12 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 	// cfgs
 	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
 
-	xx::Listi32<xx::Ref<Frame>> frames_snake;
-
+	// tiled map & frames
+	xx::Ref<TMX::Map> map1, map2;
 
 	xx::Ref<Frame> frame_circle, frame_trangle;
-	xx::Listi32<xx::Ref<Frame>> frames_tiled;
-	xx::Listi32<uint32_t> mapData;
-	int32_t mapNumRows{}, mapNumCols{};
-	xx::List<Quad> tiledQuads;
+	xx::Ref<Frame> frame_td_block, frame_td_platform, frame_td_path;
 
-	// for space grid  FindNearest  ForeachByRange
-	SpaceGridRingDiffuseData sgrdd;
 };
 
 extern Looper gLooper;

@@ -42,6 +42,8 @@ struct SceneTest1 : Scene {
 	Rnd rnd;
 	TrackManager tm;
 	Grid<Monster1> grid;
+	TMX::Layer_Tile* layer{};
+	
 
 	virtual void Init() override;
 	virtual void Update() override;

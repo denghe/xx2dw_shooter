@@ -149,7 +149,7 @@ struct EngineBase3 : EngineBase2 {
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "") {
+    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "", bool loadTextures = false, bool fillExts = false) {
         auto map = xx::MakeRef<TMX::Map>();
         // download bmx & fill
         {
@@ -169,17 +169,21 @@ struct EngineBase3 : EngineBase2 {
         }
 
         // download textures
-        auto n = map->images.size();
-        for (auto& img : map->images) {
-            tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
-                img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
-                --n;
-            });
+        if (loadTextures) {
+            auto n = map->images.size();
+            for (auto& img : map->images) {
+                tasks.Add([this, &n, img = img, url = root + img->source]()->xx::Task<> {
+                    img->texture = co_await AsyncLoadTextureFromUrl(url.c_str());
+                    --n;
+                    });
+            }
+            while (n) co_yield 0;	// wait all
         }
-        while (n) co_yield 0;	// wait all
 
         // fill ext data for easy use
-        map->FillExts();
+        if (fillExts) {
+            map->FillExts();
+        }
 
         co_return map;
     }

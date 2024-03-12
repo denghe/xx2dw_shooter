@@ -12,10 +12,10 @@
 0,0,0,30,30,30,30,0,0,0,
 0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,29
+0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="1" name="path1" width="10" height="10">
+ <layer id="1" name="path1" width="10" height="10" visible="0">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,
 31,5,5,5,5,5,5,5,21,0,
@@ -29,7 +29,7 @@
 0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <layer id="3" name="blocks" width="10" height="10">
+ <layer id="3" name="blocks" width="10" height="10" visible="0">
   <data encoding="csv">
 29,29,29,29,29,29,29,29,29,29,
 0,0,0,0,0,0,0,0,0,29,

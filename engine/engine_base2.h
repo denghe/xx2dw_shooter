@@ -16,6 +16,8 @@
 #include <engine_bitmapdc.h>
 #endif
 
+template<typename T> concept Has_AsyncInit = requires(T t) { { t.AsyncInit() } -> std::same_as<xx::Task<>>; };
+
 struct EngineBase2 : EngineBase1 {
     XX_FORCE_INLINE static EngineBase2& Instance() { return *(EngineBase2*)gEngine; }
 
@@ -32,6 +34,9 @@ struct EngineBase2 : EngineBase1 {
     template<std::derived_from<Scene> T>
     xx::Task<> AsyncSwitchTo() {
         auto newScene = xx::MakeShared<T>();
+        if constexpr (Has_AsyncInit<T>) {
+            co_await newScene->AsyncInit();
+        }
         newScene->Init();
         scene.Reset();
         scene = std::move(newScene);

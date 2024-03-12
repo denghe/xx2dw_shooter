@@ -222,7 +222,7 @@ struct EngineBase1 : EngineBase0 {
     }
 
     template<bool autoDecompress = false>
-    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "") {
+    xx::Ref<TMX::Map> LoadTiledMap(char const* bmxPath, std::string root = "", bool loadTextures = false, bool fillExts = true) {
         auto map = xx::MakeRef<TMX::Map>();
         std::string fullPath;
         {
@@ -239,11 +239,16 @@ struct EngineBase1 : EngineBase0 {
                 root = fullPath.substr(0, i + 1);
             }
         }
-
-        for (auto& img : map->images) {
-            img->texture = LoadTexture(root + img->source);
+        
+        if (loadTextures) {
+            for (auto& img : map->images) {
+                img->texture = LoadTexture(root + img->source);
+            }
         }
-        map->FillExts();
+
+        if (fillExts) {
+            map->FillExts();
+        }
         return map;
     }
 

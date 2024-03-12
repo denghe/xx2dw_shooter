@@ -72,4 +72,19 @@ struct DynamicTexturePacker : Frames {
         }
         return Fill(fs);
     }
+
+
+    inline static bool FillTo(std::vector<std::pair<std::string, xx::Ref<Frame>*>> const& ffs) {
+        std::vector<xx::Ref<Frame>> tmp;
+        for (auto& ff : ffs) {
+            tmp.emplace_back(*ff.second);
+        }
+        DynamicTexturePacker dtp;
+        if (!dtp.Fill(tmp)) return false;
+
+        for (size_t i = 0, e = tmp.size(); i < e; ++i) {
+            *ffs[i].second = tmp[i];
+        }
+        return true;
+    }
 };

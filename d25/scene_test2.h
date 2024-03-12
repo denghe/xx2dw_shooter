@@ -3,8 +3,8 @@
 
 // tower defense: map editor
 
-struct SceneEditor;
-inline SceneEditor* gSceneEditor;		// init by SceneEditor::Init()
+struct SceneTest2;
+inline SceneTest2* gSceneEditor;		// init by SceneTest2::Init()
 
 // todo
 
@@ -48,9 +48,11 @@ inline SceneEditor* gSceneEditor;		// init by SceneEditor::Init()
 //	virtual void Draw(Camera const& camera) override;
 //};
 
-struct SceneEditor : Scene {
+struct SceneTest2 : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
+	xx::Ref<TMX::Map> map;
+	xx::Listi32<xx::Ref<Frame>> mapFrames;
 
 	virtual void Init() override;
 	virtual void Update() override;

@@ -91,64 +91,53 @@ xx::Task<> Looper::MainTask() {
 	s9cfg_hp.color = { 90,90,90,255 };
 
 
-	// load tiled map data
+	// load / download textures
+	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
+	ffs.emplace_back("res/circle.png", &frame_circle);
+	ffs.emplace_back("res/trangle.png", &frame_trangle);
+	ffs.emplace_back("res/td_block.png", &frame_td_block);
+	ffs.emplace_back("res/td_platform.png", &frame_td_platform);
+	ffs.emplace_back("res/td_path.png", &frame_td_path);
 
-	xx::Ref<TMX::Map> tiledMap;
+	for (auto& ff : ffs) {
 #ifdef __EMSCRIPTEN__
-	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/level1.bmx");	// load tiled map data
+		*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
 #else
-	tiledMap = LoadTiledMap<true>("res/level1.bmx");						// load tiled map data
+		*ff.second = LoadFrame(ff.first);
 #endif
-
-	// copy layer data to array for easy use
-	auto& layer = *(TMX::Layer_Tile*)tiledMap->flatLayers[0];
-	assert(layer.type == TMX::LayerTypes::TileLayer);
-	mapData.Resize((int)layer.gids.size());
-	memcpy(mapData.buf, layer.gids.data(), mapData.len * sizeof(uint32_t));
-
-	mapNumRows = tiledMap->height;
-	mapNumCols = tiledMap->width;
-	
+	}
 
 	// batch combine textures
-
-	std::vector<xx::Ref<Frame>> tmp;
-
-	auto e = (int)tiledMap->gidInfos.size();
-	for (int i = 1; i < e; ++i) {											// index: 0 is null
-		tmp.emplace_back(tiledMap->gidInfos[i].frame);
-	}
-	--e;
-
-#ifdef __EMSCRIPTEN__
-	tmp.emplace_back(co_await AsyncLoadFrameFromUrl("res/circle.png"));
-	tmp.emplace_back(co_await AsyncLoadFrameFromUrl("res/trangle.png"));
-#else
-	tmp.emplace_back(Frame::Create(LoadTexture("res/circle.png")));
-	tmp.emplace_back(Frame::Create(LoadTexture("res/trangle.png")));
-#endif
-
-	DynamicTexturePacker<128> dtp;
-	auto ok = dtp.Fill(tmp);
+	auto ok = DynamicTexturePacker<128>::FillTo(ffs);
 	assert(ok);
 
-	frames_tiled.Emplace();													// place holder
-	for (int i = 0; i < e; ++i) {
-		frames_tiled.Emplace(tmp[i]);
+
+	// load tiled map data
+
+#ifdef __EMSCRIPTEN__
+	map1 = co_await AsyncLoadTiledMapFromUrl<true>("res/level1.bmx");
+	map2 = co_await AsyncLoadTiledMapFromUrl<true>("res/td_1.bmx");
+#else
+	map1 = LoadTiledMap<true>("res/level1.bmx");
+	map2 = LoadTiledMap<true>("res/td_1.bmx");
+#endif
+
+	// fill tiled map's frame
+
+	for (auto& gi : map1->gidInfos) {
+		if (!gi.image) continue;
+		else if (gi.image->source == "tiled_block.png") gi.frame = gLooper.frame_td_block;
+		else if (gi.image->source == "tiled_foundation.png") gi.frame = gLooper.frame_td_platform;
+		else if (gi.image->source == "tiled_road.png") gi.frame = gLooper.frame_td_path;
 	}
 
-	frame_circle = tmp[e + 0];
-	frame_trangle = tmp[e + 1];
-
-
-	tiledQuads.Resize(gLooper.frames_tiled.len);
-	for (int i = 0, ie = gLooper.frames_tiled.len; i < ie; ++i) {
-		if (auto& f = gLooper.frames_tiled[i]) {
-			tiledQuads[i].SetFrame(f).SetAnchor({ 0, 1 });
-		}
+	for (auto& gi : map2->gidInfos) {
+		if (!gi.image) continue;
+		else if (gi.image->source == "td_block.png") gi.frame = gLooper.frame_td_block;
+		else if (gi.image->source == "td_platform.png") gi.frame = gLooper.frame_td_platform;
+		else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;
 	}
 
-	
 
 	// load first scene
 

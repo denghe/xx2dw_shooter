@@ -751,10 +751,10 @@ namespace Calc {
     // Expands to ...
     //   (1 - t)3 + 3t(1-t)2 + 3t2(1 - t) + t3 = 1 
     inline XX_FORCE_INLINE float Bezierat(float a, float b, float c, float d, float t) {
-        return (powf(1 - t, 3) * a +
-            3 * t * (powf(1 - t, 2)) * b +
-            3 * powf(t, 2) * (1 - t) * c +
-            powf(t, 3) * d);
+        return (std::pow(1.f - t, 3.f) * a +
+            3.f * t * (std::pow(1.f - t, 2.f)) * b +
+            3.f * std::pow(t, 2.f) * (1.f - t) * c +
+            std::pow(t, 3.f) * d);
     }
 
     namespace Intersects {
