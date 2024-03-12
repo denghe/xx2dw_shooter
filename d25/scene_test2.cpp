@@ -20,6 +20,7 @@ void SceneTest2::Init() {
 	map = gLooper.map2;
 	auto w = map->width;
 	auto h = map->height;
+	auto e = int(w * h);
 	mapFrames.Resize(w * h);
 
 	// fill default frame
@@ -29,7 +30,7 @@ void SceneTest2::Init() {
 
 	// override blocks frame
 	auto layer = map->FindLayer<TMX::Layer_Tile>("blocks");
-	for (int i = 0, e = int(w * h); i < e; ++i) {
+	for (int i = 0; i < e; ++i) {
 		auto gid = layer->gids[i];
 		auto& gi = map->gidInfos[gid];
 		auto& f = map->gidInfos[gid].frame;
@@ -40,7 +41,7 @@ void SceneTest2::Init() {
 
 	// override platforms frame
 	layer = map->FindLayer<TMX::Layer_Tile>("platforms");
-	for (int i = 0, e = int(w * h); i < e; ++i) {
+	for (int i = 0; i < e; ++i) {
 		auto gid = layer->gids[i];
 		auto& f = map->gidInfos[gid].frame;
 		if (f) {
@@ -49,6 +50,19 @@ void SceneTest2::Init() {
 	}
 
 	// todo: calculate path ?
+	// search start pos
+	// store path gid
+
+
+	static constexpr auto prefix = "td_path_"sv;
+	static constexpr auto suffix = ".png"sv;
+	for (auto& gi : map->gidInfos) {
+		if (!gi) continue;
+		if (gi.image->source.starts_with(prefix)) {
+			std::string_view sv(gi.image->source.c_str() + prefix.size(), gi.image->source.size() - prefix.size() - suffix.size());
+			sv.size();
+		}
+	}
 
 	camera.SetScale(2.f);
 	camera.SetOriginal({ gCfg.unitSize * map->width / 2, gCfg.unitSize * map->height / 2 });
@@ -65,6 +79,7 @@ void SceneTest2::Update() {
 	}
 	camera.Calc();
 
+	// todo
 }
 
 void SceneTest2::Draw() {
@@ -78,6 +93,8 @@ void SceneTest2::Draw() {
 				.Draw();
 		}
 	}
+
+	// todo
 
 	gLooper.DrawNode(rootNode);
 }

@@ -125,14 +125,14 @@ xx::Task<> Looper::MainTask() {
 	// fill tiled map's frame
 
 	for (auto& gi : map1->gidInfos) {
-		if (!gi.image) continue;
+		if (!gi) continue;
 		else if (gi.image->source == "tiled_block.png") gi.frame = gLooper.frame_td_block;
 		else if (gi.image->source == "tiled_foundation.png") gi.frame = gLooper.frame_td_platform;
 		else if (gi.image->source == "tiled_road.png") gi.frame = gLooper.frame_td_path;
 	}
 
 	for (auto& gi : map2->gidInfos) {
-		if (!gi.image) continue;
+		if (!gi) continue;
 		else if (gi.image->source == "td_block.png") gi.frame = gLooper.frame_td_block;
 		else if (gi.image->source == "td_platform.png") gi.frame = gLooper.frame_td_platform;
 		else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;

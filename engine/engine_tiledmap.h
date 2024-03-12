@@ -344,6 +344,10 @@ namespace TMX {
 		bool IsSingleImage() const {
 			return tile && tile->image == image;
 		}
+		void* ud{};	// user data
+		operator bool() const {
+			return image;
+		}
 
 		xx::Ref<::Anim> anim;
 		xx::Ref<::Frame> frame;

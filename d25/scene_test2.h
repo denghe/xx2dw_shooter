@@ -6,53 +6,28 @@
 struct SceneTest2;
 inline SceneTest2* gSceneEditor;		// init by SceneTest2::Init()
 
-// todo
+// todo: monsters
 
-//struct Item {
-//	int typeId{};	// need fill by Init
-//	XY pos{}, anchor{ 0.5f, 0.5f };
-//	float scale{ 1 };
-//	bool dragging{};
-//	virtual void Update(Camera const& camera) {};
-//	virtual void Draw(Camera const& camera) {};
-//};
-//
-//struct Bag;
-//struct BagItem : Item {
-//	xx::Weak<Bag> bag;
-//	int bagItemsIndex{}, bagRowIdx{}, bagColIdx{};
-//	void BagItemInit(xx::Weak<Bag> bag_, int rowIdx_, int colIdx_);	// add item to items & cells
-//	XY GetDrawBasePos();
-//};
-//
-//struct Bag : Item {
-//	xx::Listi32<xx::Shared<BagItem>> items;		// todo: group? quantity combine?
-//	xx::Listi32<xx::Weak<BagItem>> cells;
-//
-//	int numRows{}, numCols{};
-//	XY cellSize{};
-//
-//	XY basePos{};	// fill when Draw begin
-//
-//	XY dragPos;		// last mouse pos
-//	xx::Weak<BagItem> dragItem;
-//
-//	xx::Weak<BagItem>& RefCell(int rowIdx_, int colIdx_) const;
-//	XY GetDrawSize() const;
-//	Vec2<> PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
-//	xx::Weak<BagItem> GetItemByPos(XY const& pos_) const;
-//	void Sort();
-//
-//	void Init(int numRows_, int numCols_, XY const& cellSize_, XY const& pos_, XY const& anchor_);
-//	virtual void Update(Camera const& camera) override;
-//	virtual void Draw(Camera const& camera) override;
-//};
+enum class MoveTips {
+	Left, Right, Up, Down, Begin, End
+};
+
+struct MapPath {
+	struct Node {
+		MoveTips mt;
+		int32_t next;
+	};
+	xx::Listi32<Node> mapMoveTips;
+	int32_t beginIdx{}, endIdx{};
+};
 
 struct SceneTest2 : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
+
 	xx::Ref<TMX::Map> map;
 	xx::Listi32<xx::Ref<Frame>> mapFrames;
+	xx::Listi32<MapPath> mapPaths;
 
 	virtual void Init() override;
 	virtual void Update() override;
