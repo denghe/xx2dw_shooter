@@ -1,29 +1,43 @@
 ﻿#pragma once
 #include "looper.h"
+#include "game_monster_base.h"
 
-// tower defense: map editor
+// tower defense 2
 
-struct SceneTest2;
-inline SceneTest2* gSceneEditor;		// init by SceneTest2::Init()
+enum class MoveTips : uint16_t {
+	__begin, Left, Right, Up, Down, Begin, End, __end
+};
+constexpr std::array<std::string_view, (size_t)MoveTips::__end> MoveTips_txt{
+	""sv, "left"sv, "right"sv,"up"sv,"down"sv,"begin"sv,"end"sv,
+};
 
-// todo: monsters
+struct Monster2 : MonsterBase {
+	static constexpr uint32_t cTypeId{ 0 };
+	static constexpr XY cAnchor{ 0.5f, 0.5f };
 
-enum class MoveTips {
-	Left, Right, Up, Down, Begin, End
+	xx::FromTo<MoveTips> mt{};
+	XY offset;
+	int32_t mapPathIndex{};
+	double hpBak{};
+
+	void Init(double hp_, int32_t mapPathIndex_);
+	bool Update();
+	void Draw();
 };
 
 struct MapPath {
-	struct Node {
-		MoveTips mt;
-		int32_t next;
-	};
-	xx::Listi32<Node> mapMoveTips;
-	int32_t beginIdx{}, endIdx{};
+	xx::Listi32<xx::FromTo<MoveTips>> mapMoveTips;
+	int32_t beginIdx{-1}, endIdx{-1};
+	Vec2<> beginCRIdx{-1,-1}, endCRIdx{-1,-1};
+	std::string_view name;
 };
 
 struct SceneTest2 : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
+	Rnd rnd;
+
+	Grid<Monster2> grid;
 
 	xx::Ref<TMX::Map> map;
 	xx::Listi32<xx::Ref<Frame>> mapFrames;
@@ -33,3 +47,4 @@ struct SceneTest2 : Scene {
 	virtual void Update() override;
 	virtual void Draw() override;
 };
+inline SceneTest2* gSceneTest2;		// init by SceneTest2::Init()

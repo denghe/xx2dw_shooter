@@ -1,27 +1,12 @@
 ﻿#pragma once
 #include "looper.h"
 #include "track_manager.h"
+#include "game_monster_base.h"
 
 // tower defense: circle world game play ? all of them ar clecles
 // monster = 1 ~ n circle, cannon too
 // circle texture size: 32x32
 // map design: tile set = 32x32, window size = 1280x720, map rows = 22, cols = 40
-
-struct SceneTest1;
-inline static SceneTest1* gSceneTest1;		// init by SceneTest1::Init()
-
-struct MonsterBase : GridItemBase {
-	static constexpr double cHP{ 100 };
-	static constexpr float cRadius{ 16 };
-	static constexpr float cSpeed{ 10 };
-	static constexpr RGBA8 cColor{ RGBA8_White };
-
-	double hp{};					// fill by init
-	float radius{};
-	int trackIndex{};				// random by "safe range"
-	float pointIndex{}, speed{}, radians{};
-	// todo: more?
-};
 
 struct Monster1 : MonsterBase {
 	static constexpr uint32_t cTypeId{ 0 };
@@ -49,3 +34,4 @@ struct SceneTest1 : Scene {
 	virtual void Update() override;
 	virtual void Draw() override;
 };
+inline SceneTest1* gSceneTest1;		// init by SceneTest1::Init()
