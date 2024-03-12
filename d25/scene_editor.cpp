@@ -14,8 +14,8 @@ void SceneEditor::Init() {
 	});
 
 	camera.SetScale(1.f);
-	camera.SetOriginal(gCfg.mapSize_2);
-	camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
+	camera.SetOriginal({ gCfg.unitSize * 20, gCfg.unitSize * 11 });
+	camera.SetMaxFrameSize({ (float)gCfg.gridCellSize, (float)gCfg.gridCellSize });
 
 	// ...
 }

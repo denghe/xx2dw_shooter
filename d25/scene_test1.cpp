@@ -42,7 +42,7 @@ void Monster1::Draw() {
 	q.scale = XY::Make(camera.scale) * (radius / cRadius);
 	q.radians = radians;
 	q.colorplus = 1;
-	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(25 + 230 * (hp / hpBak)) };
+	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(40 + 160 * (hp / hpBak)) };
 }
 
 #pragma endregion
@@ -58,25 +58,27 @@ void SceneTest1::Init() {
 	});
 
 	camera.SetScale(1.f);
-	camera.SetOriginal(gCfg.mapSize_2);
+	camera.SetOriginal(gCfg.cameraOriginal);
 	camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
 
-	grid.Init(gCfg.gridNumRows, gCfg.gridNumCols, gCfg.gridCellSize);
+	grid.Init(gLooper.mapNumRows + 5, gLooper.mapNumCols + 5, gCfg.gridCellSize);
 
 	std::vector<CurvePoint> cps;
 	static constexpr XY fix{ 0, -45};
 	cps.emplace_back(XY{ 5, 415 } + fix);
 	cps.emplace_back(XY{ 315, 400 } + fix);
 	cps.emplace_back(XY{ 524, 190 } + fix);
+	cps.emplace_back(XY{ 684, 190 } + fix);
 	cps.emplace_back(XY{ 845, 190 } + fix);
-	cps.emplace_back(XY{ 990, 385 } + fix);
-	cps.emplace_back(XY{ 687, 720 } + fix);
+	cps.emplace_back(XY{ 990, 400 } + fix);
+	cps.emplace_back(XY{ 687, 710 } + fix);
+	cps.emplace_back(XY{ 687, 810 } + fix);
 	tm.Init(cps);
 
 	tasks.Add([this]()->xx::Task<> {
 		//co_await gLooper.AsyncSleep(2);
 		while (true) {
-			for (size_t i = 0; i < 80; i++) {
+			for (size_t i = 0; i < 1; i++) {
 				if (grid.Count() >= gCfg.unitLimit) break;
 				grid.MakeInit(rnd.Next<double>(gCfg.hpRange.from, gCfg.hpRange.to));
 			}
