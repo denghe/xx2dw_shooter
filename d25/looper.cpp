@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "looper.h"
 #include "scene_main_menu.h"
+#include "map_path.h"
 
 xx::Task<> Looper::MainTask() {
 	{
@@ -122,7 +123,7 @@ xx::Task<> Looper::MainTask() {
 	map2 = LoadTiledMap<true>("res/td_1.bmx");
 #endif
 
-	// fill tiled map's frame
+	// prepares
 
 	for (auto& gi : map1->gidInfos) {
 		if (!gi) continue;
@@ -138,7 +139,7 @@ xx::Task<> Looper::MainTask() {
 		else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;
 	}
 
-
+	MapPath::InitMapGidInfos(map2);
 	// load first scene
 
 	co_await AsyncSwitchTo<SceneMainMenu>();

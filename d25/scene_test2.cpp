@@ -6,84 +6,31 @@
 #pragma region Monster2
 
 void Monster2::Init(double hp_, int32_t mapPathIndex_) {
-	auto& rnd = gSceneTest2->rnd;
 	hpBak = hp = hp_;
+	hp *= (double)gSceneTest2->rnd.Next<float>(0.01f, 0.99f);
 	radius = (float)std::sqrt(cRadius * cRadius / cHP * hp_);
-	speed = cSpeed * cRadius / radius;
-	radians = {};
-
 	mapPathIndex = mapPathIndex_;
-	auto& mp = gSceneTest2->mapPaths[mapPathIndex_];
-
-	auto range = (float)(gCfg.unitSize * (1 - hp / cHP) / 2);
-	offset.x = gCfg.unitSize / 2 + rnd.Next<float>(-range, range);
-	offset.y = gCfg.unitSize / 2 + rnd.Next<float>(-range, range);
-	assert(offset.x > 0 && offset.y > 0);
-	pos.x = mp.beginCRIdx.x * gCfg.unitSize + 0.00001f + offset.x;
-	pos.y = mp.beginCRIdx.y * gCfg.unitSize + 0.00001f + offset.y;
-
-	mt = mp.mapMoveTips[mp.beginIdx];
-	//hp *= (double)rnd.Next<float>(0.01f, 0.99f);	// simulate not full blood
+	auto& tm = gSceneTest2->mapPaths[mapPathIndex_].tm;
+	assert(radius <= tm.totalWidth);
+	assert(radius >= tm.trackMargin);
+	auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
+	auto range = (tm.trackCount - numTrackCovered);
+	trackIndex = numTrackCovered / 2 + gSceneTest2->rnd.Next<int32_t>(range);
+	pointIndex = {};
+	speed = cSpeed * cRadius / radius;
+	radians = tm.GetRadians((int)pointIndex);
+	pos = tm.GetPoint(trackIndex, (int)pointIndex);
 }
 
 bool Monster2::Update() {
-	auto rowIdx1 = (int32_t)(pos.y / gCfg.unitSize);
-	auto colIdx1 = (int32_t)(pos.x / gCfg.unitSize);
-
-	auto p = pos - offset;
-	auto rowIdx2 = (int32_t)(p.y / gCfg.unitSize);
-	auto colIdx2 = (int32_t)(p.x / gCfg.unitSize);
-
-	if (rowIdx1 == rowIdx2 && colIdx1 == colIdx2) {
-		auto mtIdx = rowIdx1 * gSceneTest2->map->width + colIdx1;
-		mt = gSceneTest2->mapPaths[mapPathIndex].mapMoveTips[mtIdx];
-	}
-
-	if ((uint16_t)mt.from || (uint16_t)mt.to) {
-		switch (mt.to) {
-		case MoveTips::Left: {
-			gSceneTest2->grid.Update(*this, { pos.x - speed, pos.y });
-			break;
-		}
-		case MoveTips::Right: {
-			gSceneTest2->grid.Update(*this, { pos.x + speed, pos.y });
-			break;
-		}
-		case MoveTips::Up: {
-			gSceneTest2->grid.Update(*this, { pos.x, pos.y - speed });
-			break;
-		}
-		case MoveTips::Down: {
-			gSceneTest2->grid.Update(*this, { pos.x, pos.y + speed });
-			break;
-		}
-		case MoveTips::End: {
-			// todo: end pos check
-			switch (mt.from) {
-			case MoveTips::Left: {
-				gSceneTest2->grid.Update(*this, { pos.x + speed, pos.y });
-				break;
-			}
-			case MoveTips::Right: {
-				gSceneTest2->grid.Update(*this, { pos.x - speed, pos.y });
-				break;
-			}
-			case MoveTips::Up: {
-				gSceneTest2->grid.Update(*this, { pos.x, pos.y + speed });
-				break;
-			}
-			case MoveTips::Down: {
-				gSceneTest2->grid.Update(*this, { pos.x, pos.y - speed });
-				break;
-			}
-			}
-			break;
-		}
-		}
-	} else {
-		// todo: free attack mode?
+	auto& tm = gSceneTest2->mapPaths[mapPathIndex].tm;
+	pointIndex += speed;
+	if (auto c = tm.GetPointCount(); pointIndex >= c) {
+		// todo
 		return true;
 	}
+	gSceneTest2->grid.Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
+	radians = tm.GetRadians((int)pointIndex);
 	return false;
 }
 
@@ -148,57 +95,12 @@ void SceneTest2::Init() {
 		}
 	}
 
-	// remove prefix & suffix, convert name to MoveTips and fill to gi.ud
-	static constexpr auto prefix = "td_path_"sv;
-	static constexpr auto suffix = ".png"sv;
-	for (auto& gi : map->gidInfos) {
-		if (!gi) continue;
-		if (gi.image->source.starts_with(prefix)) {
-			auto& mt = (xx::FromTo<MoveTips>&)gi.ud;
-			std::string_view sv(gi.image->source.c_str() + prefix.size(), gi.image->source.size() - prefix.size() - suffix.size());
-			auto idx = sv.find('_');
-			auto sv1 = sv.substr(0, idx);
-			auto sv2 = sv.substr(idx + 1, sv.size() - idx - 1);
-
-			auto it = std::find(MoveTips_txt.begin(), MoveTips_txt.end(), sv1);
-			assert(it != MoveTips_txt.end());
-			mt.from = (MoveTips)std::distance(MoveTips_txt.begin(), it);
-			
-			it = std::find(MoveTips_txt.begin(), MoveTips_txt.end(), sv2);
-			assert(it != MoveTips_txt.end());
-			mt.to = (MoveTips)std::distance(MoveTips_txt.begin(), it);
-
-			//xx::CoutN(sv, " ", MoveTips_txt[(uint16_t)mt.from], " ", MoveTips_txt[(uint16_t)mt.to]);
-		}
-	}
-
 	// search all layer prefix == "path" create MapPath
 	for (auto& ly : map->flatLayers) {
 		if (ly->name.starts_with("path")) {
 			assert(ly->type == TMX::LayerTypes::TileLayer);
 			layer = (TMX::Layer_Tile*)ly;
-			auto& mp = mapPaths.Emplace();
-			mp.name = layer->name;
-			mp.mapMoveTips.Resize((int)layer->gids.size());
-			for (int i = 0, e = (int)layer->gids.size(); i < e; ++i) {
-				if (auto gid = layer->gids[i]) {
-					auto& gi = map->gidInfos[gid];
-					auto& mt = (xx::FromTo<MoveTips>&)gi.ud;
-					mp.mapMoveTips[i] = mt;
-					if (mt.from == MoveTips::Begin) {
-						mp.beginIdx = i;
-						mp.beginCRIdx.y = i / map->width;
-						mp.beginCRIdx.x = i - mp.beginCRIdx.y * map->width;
-					} else if (mt.to == MoveTips::End) {
-						mp.endIdx = i;
-						mp.endCRIdx.y = i / map->width;
-						mp.endCRIdx.x = i - mp.endCRIdx.y * map->width;
-					}
-					assert((uint16_t)mt.from > (uint16_t)MoveTips::__begin);
-					assert((uint16_t)mt.to < (uint16_t)MoveTips::__end);
-				}
-			}
-			assert(mp.beginIdx >= 0 && mp.endIdx >= 0);
+			mapPaths.Emplace().Init(map, layer, gCfg.unitSize);
 		}
 	}
 
@@ -210,7 +112,7 @@ void SceneTest2::Init() {
 		//co_await gLooper.AsyncSleep(2);
 		while (true)
 		{
-			//for (size_t i = 0; i < 10; i++)
+			for (size_t i = 0; i < 60; i++)
 			{
 				//if (grid.Count() >= gCfg.unitLimit) break;
 				grid.MakeInit(rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to), 0);
