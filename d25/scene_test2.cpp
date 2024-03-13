@@ -75,22 +75,22 @@ void SceneTest2::Init() {
 	grids.MakeInit<::Tower::Arrow>(6,4);
 	grids.MakeInit<::Tower::Arrow>(6,5);
 	grids.MakeInit<::Tower::Arrow>(6,6);
+	grids.MakeInit<::Tower::Arrow>(5,6);
+	grids.MakeInit<::Tower::Arrow>(4,6);
+	grids.MakeInit<::Tower::Arrow>(3,6);
+	grids.MakeInit<::Tower::Arrow>(3,5);
+	grids.MakeInit<::Tower::Arrow>(4,5);
 
 
 	tasks.Add([this]()->xx::Task<> {
 		//co_await gLooper.AsyncSleep(2);
 		while (true)
 		{
-			//for (size_t i = 0; i < 60; i++)
+			for (size_t i = 0; i < 5; i++)
 			{
 				//if (grid.Count() >= gCfg.unitLimit) break;
 				grids.MakeInit<::Enemy::Monster2>(rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to), 0);
 			}
-			co_yield 0;
-			co_yield 0;
-			co_yield 0;
-			co_yield 0;
-			co_yield 0;
 			co_yield 0;
 		}
 	});

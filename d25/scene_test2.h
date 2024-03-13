@@ -23,9 +23,9 @@ namespace Enemy {
 namespace Tower {
 	struct Arrow : TowerBase {
 		static constexpr uint32_t cTypeId{ 1 };
-		static constexpr int32_t cFireAfterDelayFrame{ int32_t(0.1f / gDesign.frameDelay) };
+		static constexpr int32_t cFireAfterDelayFrame{ int32_t(0.01f / gDesign.frameDelay) };
 		static constexpr float cAttackRange{ gCfg.unitSize * 3 };
-		static constexpr double cDamage{ 10 };
+		static constexpr double cDamage{ 30 };
 
 		int32_t level{};
 		double damage{};
