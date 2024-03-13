@@ -68,7 +68,7 @@ namespace TMX {
 	};
 
 	struct Object_Polygon : Object {
-		std::vector<Pointi> points;
+		std::vector<Pointf> points;
 	};
 
 	struct Object_Tile : Object_Rectangle {

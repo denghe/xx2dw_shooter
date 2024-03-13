@@ -14,6 +14,25 @@ struct MapPath {
 	std::string_view name;
 	TrackManager tm;
 
+	// use object layer polygon fill tm
+	void Init(xx::Ref<TMX::Map> const& map, TMX::Layer_Object* layer, float tileSize) {
+		assert(layer->objects.size() == 1);
+		assert(layer->objects[0]->type == TMX::ObjectTypes::Polygon);
+		auto& polygon = (xx::Ref<TMX::Object_Polygon>&)layer->objects[0];
+		std::vector<CurvePoint> ps;
+		ps.reserve(polygon->points.size());
+		auto scale = tileSize / map->tileWidth;
+		for (auto& p : polygon->points) {
+			ps.emplace_back(XY{ (float)((polygon->x + p.x) * scale), (float)((polygon->y + p.y) * scale) }, 0.05f, 50);
+		}
+		tm.totalWidth = tileSize;
+		tm.trackCount = 11;
+		tm.pointDistance = 0.1f;
+		tm.trackMargin = tm.totalWidth / tm.trackCount;
+		tm.Init(ps);
+	}
+
+	// use green arrow tiles fill tm
 	void Init(xx::Ref<TMX::Map> const& map, TMX::Layer_Tile* layer, float tileSize) {
 		name = layer->name;
 		mapMoveTips.Resize((int)layer->gids.size());
@@ -160,4 +179,5 @@ struct MapPath {
 			}
 		}
 	}
+
 };

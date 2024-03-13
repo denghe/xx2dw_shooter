@@ -10,21 +10,20 @@
             "scaleInEditor": 1
         },
         "td_1.tmx": {
-            "scale": 2.909375,
-            "selectedLayer": 0,
+            "scale": 2,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 320.17185821697103,
-                "y": 320.17185821697103
+                "x": 390.25,
+                "y": 351.25
             }
         }
     },
     "openFiles": [
-        "map_icons.tsx",
         "td_1.tmx"
     ],
     "project": "td2.tiled-project",
     "recentFiles": [
-        "map_icons.tsx",
-        "td_1.tmx"
+        "td_1.tmx",
+        "map_icons.tsx"
     ]
 }

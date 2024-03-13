@@ -49,15 +49,22 @@ void SceneTest2::Init() {
 		auto& f = map->gidInfos[gid].frame;
 		if (f) {
 			mapFrames[i] = f;
+
+			// make some Tower
+			grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
 		}
 	}
 
 	// search all layer prefix == "path" create MapPath
 	for (auto& ly : map->flatLayers) {
 		if (ly->name.starts_with("path")) {
-			assert(ly->type == TMX::LayerTypes::TileLayer);
-			layer = (TMX::Layer_Tile*)ly;
-			mapPaths.Emplace().Init(map, layer, gCfg.unitSize);
+			if (ly->type == TMX::LayerTypes::TileLayer) {
+				mapPaths.Emplace().Init(map, (TMX::Layer_Tile*)ly, gCfg.unitSize);
+			} else if (ly->type == TMX::LayerTypes::ObjectLayer) {
+				mapPaths.Emplace().Init(map, (TMX::Layer_Object*)ly, gCfg.unitSize);
+			} else {
+				assert(false);
+			}
 		}
 	}
 
@@ -66,27 +73,11 @@ void SceneTest2::Init() {
 	camera.SetMaxFrameSize({ (float)gCfg.unitSize, (float)gCfg.unitSize });
 
 
-	// make some Tower
-	grids.MakeInit<::Tower::Arrow>(2,3);
-	grids.MakeInit<::Tower::Arrow>(3,3);
-	grids.MakeInit<::Tower::Arrow>(4,3);
-	grids.MakeInit<::Tower::Arrow>(5,3);
-	grids.MakeInit<::Tower::Arrow>(6,3);
-	grids.MakeInit<::Tower::Arrow>(6,4);
-	grids.MakeInit<::Tower::Arrow>(6,5);
-	grids.MakeInit<::Tower::Arrow>(6,6);
-	grids.MakeInit<::Tower::Arrow>(5,6);
-	grids.MakeInit<::Tower::Arrow>(4,6);
-	grids.MakeInit<::Tower::Arrow>(3,6);
-	grids.MakeInit<::Tower::Arrow>(3,5);
-	grids.MakeInit<::Tower::Arrow>(4,5);
-
-
 	tasks.Add([this]()->xx::Task<> {
 		//co_await gLooper.AsyncSleep(2);
 		while (true)
 		{
-			for (size_t i = 0; i < 5; i++)
+			for (size_t i = 0; i < 20; i++)
 			{
 				//if (grid.Count() >= gCfg.unitLimit) break;
 				grids.MakeInit<::Enemy::Monster2>(rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to), 0);
@@ -295,7 +286,7 @@ bool Arrow::Update() {
 		if (Calc::Intersects::CircleCircle<float>(
 			pos.x, pos.y, radius, o.pos.x, o.pos.y, o.radius)) {
 			death = true;
-			gSceneTest2->enm.Add(pos, pos - o.pos, {255,0,0,127}, damage);
+			gSceneTest2->enm.Add(pos, pos - o.pos, {255,0,0,127}, (int32_t)damage);
 			o.hp -= damage;
 			if (o.hp <= 0) {
 				return GridForeachResult::RemoveAndBreak;
