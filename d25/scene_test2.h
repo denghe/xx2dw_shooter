@@ -4,6 +4,7 @@
 #include "game_base.h"
 #include "track_manager.h"
 #include "map_path.h"
+#include "effect_number.h"
 
 // tower defense 2
 
@@ -11,7 +12,6 @@ namespace Enemy {
 	struct Monster2 : MonsterBase {
 		static constexpr uint32_t cTypeId{ 0 };
 
-		int32_t mapPathIndex{};
 		double hpBak{};
 
 		void Init(double hp_, int32_t mapPathIndex_);
@@ -25,6 +25,7 @@ namespace Tower {
 		static constexpr uint32_t cTypeId{ 1 };
 		static constexpr int32_t cFireAfterDelayFrame{ int32_t(0.1f / gDesign.frameDelay) };
 		static constexpr float cAttackRange{ gCfg.unitSize * 3 };
+		static constexpr double cDamage{ 10 };
 
 		int32_t level{};
 		double damage{};
@@ -51,9 +52,10 @@ namespace Bullet {
 		struct Arrow : BulletBase {
 			static constexpr uint32_t cTypeId{ 3 };
 
+			static constexpr float cSpeed{ 200.f / gDesign.fps };
 			static constexpr float cScale{ 0.2f };
 			static constexpr float cTailRatio{ 5.f };
-			static constexpr float cTimeSpan{ 0.5f };
+			static constexpr float cTimeSpan{ 1.f };
 
 			XY inc{};
 
@@ -97,6 +99,8 @@ struct SceneTest2 : Scene {
 	xx::Listi32<xx::Ref<Frame>> mapFrames;
 	xx::Listi32<MapPath> mapPaths;
 	float mapMaxX{}, mapMaxY{};
+
+	EffectNumberManager enm;
 
 	virtual void Init() override;
 	virtual void Update() override;

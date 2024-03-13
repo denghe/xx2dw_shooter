@@ -4,7 +4,7 @@
 // todo: Scientific notation ?
 struct EffectNumber  {
 	constexpr static float cCharPixelWidth{ 8 };
-	constexpr static float cScale{ 2.f };
+	constexpr static float cScale{ 1.f };
 
 	constexpr static float cMoveDurationSeconds{ 0.5f };
 	constexpr static float cMoveSpeedMin { 20 / gDesign.fps };

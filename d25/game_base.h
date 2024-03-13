@@ -8,9 +8,9 @@ struct MonsterBase : GridItemBase {
 	static constexpr float cSpeed{ 300.f / gDesign.fps };
 	static constexpr RGBA8 cColor{ RGBA8_White };
 
-	double hp{};					// fill by init
+	double hp{};
 	float radius{};
-	int trackIndex{};				// random by "safe range"
+	int32_t mapPathIndex{}, trackIndex{};
 	float pointIndex{}, speed{}, radians{};
 	// todo: more?
 };
@@ -26,10 +26,9 @@ struct BulletBase : GridItemBase {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr double cDamage{ 100 };
 	static constexpr float cRadius{ 16 };
-	static constexpr float cSpeed{ 600.f / gDesign.fps };
 	static constexpr RGBA8 cColor{ RGBA8_White };
 
-	double damage{};					// fill by init
+	double damage{};
 	float radius{};
 	float speed{}, radians{};
 	int32_t deathFrameNumber{};

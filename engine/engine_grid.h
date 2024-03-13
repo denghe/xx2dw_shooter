@@ -63,7 +63,7 @@ enum class GridForeachResult {
 	Continue,
 	Break,
 	RemoveAndContinue,
-	RemoveAndReturn
+	RemoveAndBreak
 };
 
 #pragma endregion
@@ -146,7 +146,7 @@ struct Grid {
 								Remove(node);
 								break;
 							}
-							case GridForeachResult::RemoveAndReturn: {
+							case GridForeachResult::RemoveAndBreak: {
 								Remove(node);
 								return;
 							}
@@ -202,7 +202,7 @@ struct Grid {
 							Remove((int32_t)b);
 							break;
 						}
-						case GridForeachResult::RemoveAndReturn: {
+						case GridForeachResult::RemoveAndBreak: {
 							Remove((int32_t)b);
 							return;
 						}
@@ -234,7 +234,7 @@ struct Grid {
 						Remove(idx);
 						break;
 					}
-					case GridForeachResult::RemoveAndReturn: {
+					case GridForeachResult::RemoveAndBreak: {
 						Remove(idx);
 						return;
 					}
@@ -542,6 +542,50 @@ struct Grid {
 		return crIdx.y * numCols + crIdx.x;
 	}
 
+	constexpr static std::array<Vec2<int32_t>, 9> offsets9 = { Vec2<int32_t>
+		{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
+	};
+
+	// foreach target cell + round 8 = 9 cells
+	// grid.Foreach9([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	template<typename F>
+	void Foreach9(XY const& pos, F&& func) {
+		using R = xx::FuncR_t<F>;
+		auto crIdx = PosToCrIdx(pos);	
+		for (auto& offset : offsets9) {
+			auto cr = crIdx + offset;
+			if (cr.x < 0 || cr.x >= numCols || cr.y < 0 || cr.y >= numRows) continue;
+			auto cidx = CrIdxToCIdx(cr);
+			auto idx = cells[cidx];
+			while (idx >= 0) {
+				auto next = buf[idx].__grid_next;
+				if constexpr (std::is_void_v<R>) {
+					func(buf[idx]);
+				} else {
+					auto r = func(buf[idx]);
+					if constexpr (std::is_same_v<R, bool>) {
+						if (r) return;
+					} else {
+						switch (r) {
+						case GridForeachResult::Continue: break;
+						case GridForeachResult::Break: return;
+						case GridForeachResult::RemoveAndContinue:
+						{
+							Remove(idx);
+							break;
+						}
+						case GridForeachResult::RemoveAndBreak:
+						{
+							Remove(idx);
+							return;
+						}
+						}
+					}
+				}
+				idx = next;
+			}
+		}
+	}
 
 	template<typename F>
 	void ForeachByRange(SpaceGridRingDiffuseData const& sgrdd, XY const& pos, float maxDistance, F&& func) {
@@ -561,7 +605,7 @@ struct Grid {
 				CellForeach(cidx, [&](T& m)->void {
 					auto v = m.pos - pos;
 					if (v.x * v.x + v.y * v.y < rr) {
-						func(m);
+						func(m);		// todo: check func's args. send v, rr to func ?
 					}
 				});
 			}
@@ -607,7 +651,7 @@ struct Grids {
 
 	template<typename T>
 	Grid<T>& Get() const {
-		return ((Grid<T>*) & gs)[xx::TupleTypeIndex_v<T, Tup>];
+		return ((Grid<T>*) & gs)[xx::TupleTypeIndex_v<T, Tup>];		// todo:  xx::Get<T>( SimpleTuple
 	}
 
 	template<typename ...US>

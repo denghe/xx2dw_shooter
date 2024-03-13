@@ -72,6 +72,9 @@ void SceneTest2::Init() {
 	grids.MakeInit<::Tower::Arrow>(4,3);
 	grids.MakeInit<::Tower::Arrow>(5,3);
 	grids.MakeInit<::Tower::Arrow>(6,3);
+	grids.MakeInit<::Tower::Arrow>(6,4);
+	grids.MakeInit<::Tower::Arrow>(6,5);
+	grids.MakeInit<::Tower::Arrow>(6,6);
 
 
 	tasks.Add([this]()->xx::Task<> {
@@ -108,6 +111,7 @@ void SceneTest2::Update() {
 		});
 	});
 
+	enm.Update();
 }
 
 void SceneTest2::Draw() {
@@ -130,8 +134,9 @@ void SceneTest2::Draw() {
 		});
 	});
 
+	enm.Draw(camera);
 
-	auto str = xx::ToString("total monster count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
+	auto str = xx::ToString("total item count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
 
 	gLooper.DrawNode(rootNode);
@@ -160,10 +165,11 @@ namespace Enemy {
 	}
 
 	bool Monster2::Update() {
+		// todo: hit tower logic?
 		auto& tm = gSceneTest2->mapPaths[mapPathIndex].tm;
 		pointIndex += speed;
 		if (auto c = tm.GetPointCount(); pointIndex >= c) {
-			// todo
+			// todo: damage player? switch to another state? change to another monster?
 			return true;
 		}
 		gSceneTest2->grids.Get<::Enemy::Monster2>().Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
@@ -191,6 +197,7 @@ namespace Tower {
 void Arrow::Init(int32_t colIdx, int32_t rowIdx) {
 	pos.x = colIdx * gCfg.unitSize + gCfg.unitSize / 2;
 	pos.y = rowIdx * gCfg.unitSize + gCfg.unitSize / 2;
+	damage = cDamage;
 }
 
 bool Arrow::Update() {
@@ -217,6 +224,7 @@ bool Arrow::Update() {
 	}
 	return false; 
 }
+
 void Arrow::Draw() {
 	auto& camera = gSceneTest2->camera;
 	auto& q = Quad::DrawOnce(gLooper.frame_td_tower_arrow);
@@ -237,6 +245,7 @@ void Cannon::Init(int32_t colIdx, int32_t rowIdx) {
 }
 
 bool Cannon::Update() { return false; }
+
 void Cannon::Draw() {
 	auto& camera = gSceneTest2->camera;
 	auto& q = Quad::DrawOnce(gLooper.frame_td_tower_cannon);
@@ -257,27 +266,52 @@ namespace Bullet::Tower {
 void Arrow::Init(::Tower::Arrow& owner, MonsterBase& tar) {
 	damage = owner.damage;
 	deathFrameNumber = gLooper.frameNumber + (int32_t)(cTimeSpan / gDesign.frameDelay);
-	auto d = tar.pos - owner.pos;
-	radians = std::atan2(d.y, d.x);
 	radius = cRadius * cScale;
 	speed = cSpeed;
+	pos = owner.pos;
+
+	// calc target's pos
+	auto dist = Calc::Distance(owner.pos, tar.pos);
+	auto pointIndex = int(tar.pointIndex + tar.speed * (dist / cSpeed));
+	auto& tm = gSceneTest2->mapPaths[tar.mapPathIndex].tm;
+	if (auto c = tm.GetPointCount(); pointIndex >= c) {
+		pointIndex = c - 1;
+	}
+	auto tarPos = tm.GetPoint(tar.trackIndex, pointIndex);
+	auto d = tarPos - owner.pos;
+	radians = std::atan2(d.y, d.x);
 	inc.x = std::cos(radians) * speed;
 	inc.y = std::sin(radians) * speed;
-	pos = owner.pos;
 }
 
 bool Arrow::Update() {
 	// life span check
 	if (deathFrameNumber <= gLooper.frameNumber) return true;
-
-	// todo: hit check
+	
+	// hit check
+	bool death = false;
+	gSceneTest2->grids.Get<::Enemy::Monster2>().Foreach9(pos, [&](::Enemy::Monster2& o)->GridForeachResult {
+		// intersects ?
+		if (Calc::Intersects::CircleCircle<float>(
+			pos.x, pos.y, radius, o.pos.x, o.pos.y, o.radius)) {
+			death = true;
+			gSceneTest2->enm.Add(pos, pos - o.pos, {255,0,0,127}, damage);
+			o.hp -= damage;
+			if (o.hp <= 0) {
+				return GridForeachResult::RemoveAndBreak;
+			}
+			return GridForeachResult::Break;
+		}
+		return GridForeachResult::Continue;
+	});
+	if (death) return true;
 
 	// calc move pos
 	auto newPos = pos + inc;
 
 	// edge check
 	if (newPos.x < 0 || newPos.x >= gSceneTest2->mapMaxX ||
-		newPos.y < 0 || newPos.y >= gSceneTest2->mapMaxY) return false;
+		newPos.y < 0 || newPos.y >= gSceneTest2->mapMaxY) return true;
 
 	// move
 	gSceneTest2->grids.Update(*this, newPos);
