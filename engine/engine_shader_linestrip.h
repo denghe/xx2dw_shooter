@@ -36,7 +36,7 @@ void main() {
 })"sv });
 
         f = LoadGLFragmentShader({ R"(#version 300 es
-precision highp float;
+precision mediump float;
 
 in vec4 vColor;
 

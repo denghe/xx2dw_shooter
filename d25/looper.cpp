@@ -99,6 +99,8 @@ xx::Task<> Looper::MainTask() {
 	ffs.emplace_back("res/td_block.png", &frame_td_block);
 	ffs.emplace_back("res/td_platform.png", &frame_td_platform);
 	ffs.emplace_back("res/td_path.png", &frame_td_path);
+	ffs.emplace_back("res/td_tower_arrow.png", &frame_td_tower_arrow);
+	ffs.emplace_back("res/td_tower_cannon.png", &frame_td_tower_cannon);
 
 	for (auto& ff : ffs) {
 #ifdef __EMSCRIPTEN__

@@ -81,6 +81,7 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 
 	xx::Ref<Frame> frame_circle, frame_trangle;
 	xx::Ref<Frame> frame_td_block, frame_td_platform, frame_td_path;
+	xx::Ref<Frame> frame_td_tower_arrow, frame_td_tower_cannon;
 
 };
 

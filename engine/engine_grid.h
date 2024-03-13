@@ -16,6 +16,25 @@ struct GridsWeak : GridWeak {
 	uint32_t typeId;
 };
 
+struct GridWeakCount : GridWeak {
+	int32_t count{};
+};
+
+struct GridsWeakCount : GridsWeak {
+	int32_t count{};
+};
+
+namespace xx {
+	template<>
+	struct IsPod<GridWeak, void> : std::true_type {};
+	template<>
+	struct IsPod<GridsWeak, void> : std::true_type {};
+	template<>
+	struct IsPod<GridWeakCount, void> : std::true_type {};
+	template<>
+	struct IsPod<GridsWeakCount, void> : std::true_type {};
+}
+
 #pragma endregion
 
 #pragma region ItemBase
@@ -636,6 +655,21 @@ struct Grids {
 		}
 	}
 
+	template<typename T>
+	void Update(T& o, XY const& newPos) {
+		Get<T>().Update(o, newPos);
+	}
+
+	// grids.Foreach([&]<typename T>(Grid<T>&grid) { ...... });
+	template<typename F>
+	void ForeachAll(F&& func) {
+		(func(Get<TS>()), ...);
+	}
+
+
+	int32_t Count() {
+		return (Get<TS>().Count() + ...);
+	}
 	// more forward funcs?
 
 	// todo: Save Load
