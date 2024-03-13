@@ -630,7 +630,7 @@ struct Grids {
 		if constexpr (std::is_void_v<T>) {
 			auto buf = ((Grid<GridItemBase>*) & gs)[gw.typeId].buf;
 			auto ptr = (char*)buf + sizes[gw.typeId] * gw.idx;
-			return ((GridItemBase*)ptr)->version == gw.version;
+			return ((GridItemBase*)ptr)->__grid_version == gw.version;
 		} else {
 			return Get<T>().Exists(gw);
 		}

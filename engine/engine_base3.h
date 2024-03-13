@@ -45,7 +45,9 @@ struct EngineBase3 : EngineBase2 {
 #ifdef __EMSCRIPTEN__
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<xx::Ref<GLTexture>> AsyncLoadTextureFromUrl(char const* url) {
+    xx::Task<xx::Ref<GLTexture>> AsyncLoadTextureFromUrl(std::string_view url_) {
+        std::string url__(url_);
+        auto url = url__.c_str();
         if constexpr (showLog) {
             printf("LoadTextureFromUrl( %s ) : begin. nowSecs = %f\n", url, nowSecs);
         }
@@ -69,7 +71,7 @@ struct EngineBase3 : EngineBase2 {
     }
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<std::vector<xx::Ref<GLTexture>>> AsyncLoadTexturesFromUrls(std::initializer_list<char const*> urls) {
+    xx::Task<std::vector<xx::Ref<GLTexture>>> AsyncLoadTexturesFromUrls(std::initializer_list<std::string_view> urls) {
         std::vector<xx::Ref<GLTexture>> rtv;
         rtv.resize(urls.size());
         size_t counter = 0;
@@ -84,7 +86,7 @@ struct EngineBase3 : EngineBase2 {
     }
 
     template<bool showLog = false, int timeoutSeconds = 30>
-    xx::Task<xx::Ref<Frame>> AsyncLoadFrameFromUrl(char const* url) {
+    xx::Task<xx::Ref<Frame>> AsyncLoadFrameFromUrl(std::string_view url) {
         co_return Frame::Create(co_await AsyncLoadTextureFromUrl<showLog, timeoutSeconds>(url));
     }
 
@@ -149,8 +151,9 @@ struct EngineBase3 : EngineBase2 {
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "", bool loadTextures = false, bool fillExts = false) {
+    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "", bool loadTextures = false, bool fillExts = true) {
         auto map = xx::MakeRef<TMX::Map>();
+        std::string fullPath;
         // download bmx & fill
         {
             auto sd = co_await AsyncDownloadFromUrl<autoDecompress>(bmxUrl);
@@ -163,8 +166,9 @@ struct EngineBase3 : EngineBase2 {
         }
 
         if (root.empty()) {
-            if (auto&& i = bmxUrl.find_last_of("/"); i != bmxUrl.npos) {
-                root = bmxUrl.substr(0, i + 1);
+            std::string_view sv(bmxUrl);
+            if (auto&& i = sv.find_last_of("/"); i != sv.npos) {
+                root = sv.substr(0, i + 1);
             }
         }
 
