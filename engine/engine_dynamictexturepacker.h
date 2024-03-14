@@ -74,7 +74,7 @@ struct DynamicTexturePacker : Frames {
     }
 
 
-    inline static bool FillTo(std::vector<std::pair<std::string, xx::Ref<Frame>*>> const& ffs) {
+    inline static bool Pack(std::vector<std::pair<std::string, xx::Ref<Frame>*>> const& ffs) {
         std::vector<xx::Ref<Frame>> tmp;
         for (auto& ff : ffs) {
             tmp.emplace_back(*ff.second);

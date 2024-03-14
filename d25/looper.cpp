@@ -64,45 +64,45 @@ xx::Task<> Looper::MainTask() {
 	}
 
 	// batch combine textures
-	auto ok = DynamicTexturePacker<512>::FillTo(ffs);
+	auto ok = DynamicTexturePacker<512>::Pack(ffs);
 	assert(ok);
 
-	// other init
+
+	// load tiled map data. layer names:  map,  fg1, fg2,  path
+
+#ifdef __EMSCRIPTEN__
+	map_stage1 = co_await AsyncLoadTiledMapFromUrl<true>(resRoot + "stage1.bmx");
+	map_stage2 = co_await AsyncLoadTiledMapFromUrl<true>(resRoot + "stage2.bmx");
+#else
+	map_stage1 = LoadTiledMap<true>(resRoot + "stage1.bmx");
+	map_stage2 = LoadTiledMap<true>(resRoot + "stage2.bmx");
+#endif
+
+	// mapping frames to gidInfo
+	// todo
+
+	std::unordered_map<std::string, xx::Ref<Frame>*> ffm;
+	for (auto& o : ffs) {
+		ffm.emplace(o.first.substr(picRoot.size()), o.second);
+	}
+
+	for (auto& gi : map1->gidInfos) {
+		if (!gi) continue;
+		auto it = ffm.find(gi.image->source);
+		assert(it != ffm.end());
+		gi.frame = *it->second;
+	}
+
+	//MapPath::InitMapGidInfos(map2);
+
+	// phys init
 	sgrdd.Init(128, 32);
 
+	// ui cfg init
 	s9cfg.frame = frame_td_ui_border;
 	s9cfg.texScale = { 2, 2 };
 	s9cfg.center = { 1, 1, 1, 1 };
 	s9cfg.color = { 0x5f, 0x15, 0xd9, 0xff };
-
-
-	// load tiled map data
-
-#ifdef __EMSCRIPTEN__
-	map1 = co_await AsyncLoadTiledMapFromUrl<true>("res/level1.bmx");
-	map2 = co_await AsyncLoadTiledMapFromUrl<true>("res/td_1.bmx");
-#else
-	map1 = LoadTiledMap<true>("res/level1.bmx");
-	map2 = LoadTiledMap<true>("res/td_1.bmx");
-#endif
-
-	//// prepares
-
-	//for (auto& gi : map1->gidInfos) {
-	//	if (!gi) continue;
-	//	else if (gi.image->source == "tiled_block.png") gi.frame = gLooper.frame_td_block;
-	//	else if (gi.image->source == "tiled_foundation.png") gi.frame = gLooper.frame_td_platform;
-	//	else if (gi.image->source == "tiled_road.png") gi.frame = gLooper.frame_td_path;
-	//}
-
-	//for (auto& gi : map2->gidInfos) {
-	//	if (!gi) continue;
-	//	else if (gi.image->source == "td_block.png") gi.frame = gLooper.frame_td_block;
-	//	else if (gi.image->source == "td_platform.png") gi.frame = gLooper.frame_td_platform;
-	//	else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;
-	//}
-
-	//MapPath::InitMapGidInfos(map2);
 
 	// load first scene
 	co_await AsyncSwitchTo<SceneMainMenu>();
