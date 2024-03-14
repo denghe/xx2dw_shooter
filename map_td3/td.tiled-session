@@ -1,0 +1,39 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "stage1.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "cells.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 5.5,
+            "scaleInEditor": 1
+        },
+        "stage1.tmx": {
+            "scale": 2,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 451.5,
+                "y": 218.75
+            }
+        }
+    },
+    "last.imagePath": "C:/Codes/xx2dw_shooter/map_td3/pics",
+    "map.height": 13,
+    "map.lastUsedFormat": "tmx",
+    "map.width": 60,
+    "openFiles": [
+        "stage1.tmx"
+    ],
+    "project": "td.tiled-project",
+    "recentFiles": [
+        "stage1.tmx",
+        "cells.tsx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}
