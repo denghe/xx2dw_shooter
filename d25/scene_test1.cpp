@@ -36,7 +36,7 @@ bool Monster1::Update() {
 
 void Monster1::Draw() {
 	auto& camera = gSceneTest1->camera;
-	auto& q = Quad::DrawOnce(gLooper.frame_circle);
+	auto& q = Quad::DrawOnce(gLooper.frame_td_shape_circle);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = XY::Make(camera.scale) * (radius / cRadius);
@@ -53,7 +53,7 @@ void SceneTest1::Init() {
 	gSceneTest1 = this;
 
 	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 

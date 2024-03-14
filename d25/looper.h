@@ -6,83 +6,48 @@ constexpr GDesign<1280, 800, 60> gDesign;
 struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Task<> MainTask();
 
-	// for space grid  FindNearest  ForeachByRange
-	SpaceGridRingDiffuseData sgrdd;
 
-	// res
+	xx::Listi32<xx::Ref<Frame>> frames_number_outlined;
+	xx::Ref<Frame> frame_td_ui_border;
+	xx::Ref<Frame> frame_td_shape_dot;
+	xx::Ref<Frame> frame_td_ui_star;
+	xx::Ref<Frame> frame_td_ui_gem;
+	xx::Ref<Frame> frame_td_ui_gear;
+	xx::Ref<Frame> frame_td_ui_coin;
+	xx::Ref<Frame> frame_td_ui_menu;
+	xx::Ref<Frame> frame_td_ui_pause;
+	xx::Ref<Frame> frame_td_ui_run1;
+	xx::Ref<Frame> frame_td_ui_run2;
+	xx::Ref<Frame> frame_td_ui_run3;
+	xx::Ref<Frame> frame_td_ui_clock;
+	xx::Ref<Frame> frame_td_ui_aim;
+	xx::Ref<Frame> frame_td_ui_heart;
+	xx::Ref<Frame> frame_td_ui_sword;
+	xx::Ref<Frame> frame_td_cell_gold_mine;
+	xx::Ref<Frame> frame_td_icon_sun;
+	xx::Ref<Frame> frame_td_cell_water;
+	xx::Ref<Frame> frame_td_icon_coin;
+	xx::Ref<Frame> frame_td_cell_road;
+	xx::Ref<Frame> frame_td_icon_cannon3;
+	xx::Ref<Frame> frame_td_icon_cannon1;
+	xx::Ref<Frame> frame_td_icon_arrow3;
+	xx::Ref<Frame> frame_td_icon_arrow1;
+	xx::Ref<Frame> frame_td_tower_base;
+	xx::Ref<Frame> frame_td_cell_mouse_focus;
+	xx::Ref<Frame> frame_td_cell_montain;
+	xx::Ref<Frame> frame_td_cell_space;
+	xx::Ref<Frame> frame_td_cell_empty;
+	xx::Ref<Frame> frame_td_shape_trangle;
+	xx::Ref<Frame> frame_td_shape_circle;
+	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
 
-	// following code is copy from d20.txt
-	xx::List<xx::Ref<Frame>, int32_t>
-		frames_axe,
-		frames_blood_4,
-		frames_border_1,
-		frames_border_2,
-		frames_border_3,
-		frames_border_4,
-		frames_bullet,
-		frames_cheses_1,
-		frames_cheses_2,
-		frames_coin_1,
-		frames_coin_2,
-		frames_coin_3,
-		frames_creature_1,
-		frames_crucible_4,
-		frames_dagger,
-		frames_dot_1,
-		frames_explosion_12,
-		frames_explosion_1,
-		frames_explosion_9,
-		frames_eye_fire,
-		frames_firearrow,
-		frames_fireball_white,
-		frames_floor,
-		frames_gem_1,
-		frames_gem_2,
-		frames_grass,
-		frames_hammer,
-		frames_human_1,
-		frames_human_2,
-		frames_human_3,
-		frames_human_4,
-		frames_icon_book_1,
-		frames_knife,
-		frames_laser,
-		frames_lightning_2,
-		frames_mine,
-		frames_monster_1,
-		frames_monster_2,
-		frames_monster_3,
-		frames_no,
-		frames_number_drop,
-		frames_number_outlined,
-		frames_pointer,
-		frames_potion_4,
-		frames_staff,
-		frames_sword,
-		frames_symbol_1,
-		frames_symbol_2,
-		frames_wall,
-		frames_yes;
-
-	xx::Ref<Frame> frame_border_1_2322
-		, frame_border_2_4522
-		, frame_border_3_2222
-		, frame_border_4_1122
-		, frame_dot_1_22
-		, frame_no, frame_yes
-		;
-	// ...
-
-	// cfgs
-	Scale9SpriteConfig s9cfg_btn, s9cfg_panel, s9cfg_hp;
+	Scale9SpriteConfig s9cfg;
 
 	// tiled map & frames
 	xx::Ref<TMX::Map> map1, map2;
 
-	xx::Ref<Frame> frame_circle, frame_trangle;
-	xx::Ref<Frame> frame_td_block, frame_td_platform, frame_td_path;
-	xx::Ref<Frame> frame_td_tower_arrow, frame_td_tower_cannon;
-
+	// for grid  FindNearest  ForeachByRange
+	SpaceGridRingDiffuseData sgrdd;
 };
 
 extern Looper gLooper;

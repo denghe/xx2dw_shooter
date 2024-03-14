@@ -4,104 +4,57 @@
 #include "map_path.h"
 
 xx::Task<> Looper::MainTask() {
-	{
-		sgrdd.Init(128, 32);
 
-#ifdef __EMSCRIPTEN__
-		auto tp = co_await AsyncLoadTexturePackerFromUrl
-#else
-		auto tp = LoadTexturePacker
-#endif
-			("res/d20.blist");
+	// begin load / download textures
+	std::string resRoot = "map_td3/";
+	std::string picRoot = resRoot + "pics/";
 
-		// following code is copy from d20.txt
-		tp->GetToByPrefix(frames_axe, "axe_");
-		tp->GetToByPrefix(frames_blood_4, "blood_4_");
-		tp->GetToByPrefix(frames_border_1, "border_1_");
-		tp->GetToByPrefix(frames_border_2, "border_2_");
-		tp->GetToByPrefix(frames_border_3, "border_3_");
-		tp->GetToByPrefix(frames_border_4, "border_4_");
-		tp->GetToByPrefix(frames_bullet, "bullet_");
-		tp->GetToByPrefix(frames_cheses_1, "cheses_1_");
-		tp->GetToByPrefix(frames_cheses_2, "cheses_2_");
-		tp->GetToByPrefix(frames_coin_1, "coin_1_");
-		tp->GetToByPrefix(frames_coin_2, "coin_2_");
-		tp->GetToByPrefix(frames_coin_3, "coin_3_");
-		tp->GetToByPrefix(frames_creature_1, "creature_1_");
-		tp->GetToByPrefix(frames_crucible_4, "crucible_4_");
-		tp->GetToByPrefix(frames_dagger, "dagger_");
-		tp->GetToByPrefix(frames_dot_1, "dot_1_");
-		tp->GetToByPrefix(frames_explosion_12, "explosion_12_");
-		tp->GetToByPrefix(frames_explosion_1, "explosion_1_");
-		tp->GetToByPrefix(frames_explosion_9, "explosion_9_");
-		tp->GetToByPrefix(frames_eye_fire, "eye_fire_");
-		tp->GetToByPrefix(frames_firearrow, "firearrow_");
-		tp->GetToByPrefix(frames_fireball_white, "fireball_white_");
-		tp->GetToByPrefix(frames_floor, "floor_");
-		tp->GetToByPrefix(frames_gem_1, "gem_1_");
-		tp->GetToByPrefix(frames_gem_2, "gem_2_");
-		tp->GetToByPrefix(frames_grass, "grass_");
-		tp->GetToByPrefix(frames_hammer, "hammer_");
-		tp->GetToByPrefix(frames_human_1, "human_1_");
-		tp->GetToByPrefix(frames_human_2, "human_2_");
-		tp->GetToByPrefix(frames_human_3, "human_3_");
-		tp->GetToByPrefix(frames_human_4, "human_4_");
-		tp->GetToByPrefix(frames_icon_book_1, "icon_book_1_");
-		tp->GetToByPrefix(frames_knife, "knife_");
-		tp->GetToByPrefix(frames_laser, "laser_");
-		tp->GetToByPrefix(frames_lightning_2, "lightning_2_");
-		tp->GetToByPrefix(frames_mine, "mine_");
-		tp->GetToByPrefix(frames_monster_1, "monster_1_");
-		tp->GetToByPrefix(frames_monster_2, "monster_2_");
-		tp->GetToByPrefix(frames_monster_3, "monster_3_");
-		tp->GetToByPrefix(frames_no, "no_");
-		tp->GetToByPrefix(frames_number_drop, "number_drop_");
-		tp->GetToByPrefix(frames_number_outlined, "number_outlined_");
-		tp->GetToByPrefix(frames_pointer, "pointer_");
-		tp->GetToByPrefix(frames_potion_4, "potion_4_");
-		tp->GetToByPrefix(frames_staff, "staff_");
-		tp->GetToByPrefix(frames_sword, "sword_");
-		tp->GetToByPrefix(frames_symbol_1, "symbol_1_");
-		tp->GetToByPrefix(frames_symbol_2, "symbol_2_");
-		tp->GetToByPrefix(frames_wall, "wall_");
-		tp->GetToByPrefix(frames_yes, "yes_");
+	// prepare
+	frames_number_outlined.Resize(10);
+	ffs.emplace_back(picRoot + "number_outlined_0.png", &frames_number_outlined[0]);
+	ffs.emplace_back(picRoot + "number_outlined_1.png", &frames_number_outlined[1]);
+	ffs.emplace_back(picRoot + "number_outlined_2.png", &frames_number_outlined[2]);
+	ffs.emplace_back(picRoot + "number_outlined_3.png", &frames_number_outlined[3]);
+	ffs.emplace_back(picRoot + "number_outlined_4.png", &frames_number_outlined[4]);
+	ffs.emplace_back(picRoot + "number_outlined_5.png", &frames_number_outlined[5]);
+	ffs.emplace_back(picRoot + "number_outlined_6.png", &frames_number_outlined[6]);
+	ffs.emplace_back(picRoot + "number_outlined_7.png", &frames_number_outlined[7]);
+	ffs.emplace_back(picRoot + "number_outlined_8.png", &frames_number_outlined[8]);
+	ffs.emplace_back(picRoot + "number_outlined_9.png", &frames_number_outlined[9]);
 
-		frame_border_1_2322 = frames_border_1[0];
-		frame_border_2_4522 = frames_border_2[0];
-		frame_border_3_2222 = frames_border_3[0];
-		frame_border_4_1122 = frames_border_4[0];
-		frame_dot_1_22 = frames_dot_1[0];
-		frame_no = frames_no[0];
-		frame_yes = frames_yes[0];
-		// ...
-	}
+	ffs.emplace_back(picRoot + "td_ui_border.png", &frame_td_ui_border);
+	ffs.emplace_back(picRoot + "td_ui_star.png", &frame_td_ui_star);
+	ffs.emplace_back(picRoot + "td_ui_gem.png", &frame_td_ui_gem);
+	ffs.emplace_back(picRoot + "td_ui_gear.png", &frame_td_ui_gear);
+	ffs.emplace_back(picRoot + "td_ui_coin.png", &frame_td_ui_coin);
+	ffs.emplace_back(picRoot + "td_ui_menu.png", &frame_td_ui_menu);
+	ffs.emplace_back(picRoot + "td_ui_pause.png", &frame_td_ui_pause);
+	ffs.emplace_back(picRoot + "td_ui_run1.png", &frame_td_ui_run1);
+	ffs.emplace_back(picRoot + "td_ui_run2.png", &frame_td_ui_run2);
+	ffs.emplace_back(picRoot + "td_ui_run3.png", &frame_td_ui_run3);
+	ffs.emplace_back(picRoot + "td_ui_clock.png", &frame_td_ui_clock);
+	ffs.emplace_back(picRoot + "td_ui_aim.png", &frame_td_ui_aim);
+	ffs.emplace_back(picRoot + "td_ui_heart.png", &frame_td_ui_heart);
+	ffs.emplace_back(picRoot + "td_ui_sword.png", &frame_td_ui_sword);
+	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
+	ffs.emplace_back(picRoot + "td_icon_sun.png", &frame_td_icon_sun);
+	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
+	ffs.emplace_back(picRoot + "td_icon_coin.png", &frame_td_icon_coin);
+	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
+	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
+	ffs.emplace_back(picRoot + "td_icon_cannon1.png", &frame_td_icon_cannon1);
+	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
+	ffs.emplace_back(picRoot + "td_icon_arrow1.png", &frame_td_icon_arrow1);
+	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
+	ffs.emplace_back(picRoot + "td_cell_mouse_focus.png", &frame_td_cell_mouse_focus);
+	ffs.emplace_back(picRoot + "td_cell_montain.png", &frame_td_cell_montain);
+	ffs.emplace_back(picRoot + "td_cell_space.png", &frame_td_cell_space);
+	ffs.emplace_back(picRoot + "td_cell_empty.png", &frame_td_cell_empty);
+	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
+	ffs.emplace_back(picRoot + "td_shape_trangle.png", &frame_td_shape_trangle);
+	ffs.emplace_back(picRoot + "td_shape_circle.png", &frame_td_shape_circle);
 
-	s9cfg_btn.frame = frame_border_1_2322;
-	s9cfg_btn.texScale = { 2, 2 };
-	s9cfg_btn.center = { 2, 3, 2, 2 };
-	s9cfg_btn.color = { 0x5f, 0x15, 0xd9, 0xff };
-
-	s9cfg_panel.frame = frame_border_2_4522;
-	s9cfg_panel.texScale = { 2, 2 };
-	s9cfg_panel.center = { 4, 5, 2, 2 };
-	s9cfg_panel.color = RGBA8_White;
-
-	s9cfg_hp.frame = frame_border_4_1122;
-	s9cfg_hp.texScale = { 3, 1 };
-	s9cfg_hp.center = { 1, 1, 2, 2 };
-	s9cfg_hp.color = { 90,90,90,255 };
-
-
-	// load / download textures
-	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
-	ffs.emplace_back("res/circle.png", &frame_circle);
-	ffs.emplace_back("res/trangle.png", &frame_trangle);
-	ffs.emplace_back("res/td_block.png", &frame_td_block);
-	ffs.emplace_back("res/td_platform.png", &frame_td_platform);
-	ffs.emplace_back("res/td_path.png", &frame_td_path);
-	ffs.emplace_back("res/td_tower_arrow.png", &frame_td_tower_arrow);
-	ffs.emplace_back("res/td_tower_cannon.png", &frame_td_tower_cannon);
-
+	// load / download
 	for (auto& ff : ffs) {
 #ifdef __EMSCRIPTEN__
 		*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
@@ -111,8 +64,16 @@ xx::Task<> Looper::MainTask() {
 	}
 
 	// batch combine textures
-	auto ok = DynamicTexturePacker<128>::FillTo(ffs);
+	auto ok = DynamicTexturePacker<512>::FillTo(ffs);
 	assert(ok);
+
+	// other init
+	sgrdd.Init(128, 32);
+
+	s9cfg.frame = frame_td_ui_border;
+	s9cfg.texScale = { 2, 2 };
+	s9cfg.center = { 1, 1, 1, 1 };
+	s9cfg.color = { 0x5f, 0x15, 0xd9, 0xff };
 
 
 	// load tiled map data
@@ -125,24 +86,24 @@ xx::Task<> Looper::MainTask() {
 	map2 = LoadTiledMap<true>("res/td_1.bmx");
 #endif
 
-	// prepares
+	//// prepares
 
-	for (auto& gi : map1->gidInfos) {
-		if (!gi) continue;
-		else if (gi.image->source == "tiled_block.png") gi.frame = gLooper.frame_td_block;
-		else if (gi.image->source == "tiled_foundation.png") gi.frame = gLooper.frame_td_platform;
-		else if (gi.image->source == "tiled_road.png") gi.frame = gLooper.frame_td_path;
-	}
+	//for (auto& gi : map1->gidInfos) {
+	//	if (!gi) continue;
+	//	else if (gi.image->source == "tiled_block.png") gi.frame = gLooper.frame_td_block;
+	//	else if (gi.image->source == "tiled_foundation.png") gi.frame = gLooper.frame_td_platform;
+	//	else if (gi.image->source == "tiled_road.png") gi.frame = gLooper.frame_td_path;
+	//}
 
-	for (auto& gi : map2->gidInfos) {
-		if (!gi) continue;
-		else if (gi.image->source == "td_block.png") gi.frame = gLooper.frame_td_block;
-		else if (gi.image->source == "td_platform.png") gi.frame = gLooper.frame_td_platform;
-		else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;
-	}
+	//for (auto& gi : map2->gidInfos) {
+	//	if (!gi) continue;
+	//	else if (gi.image->source == "td_block.png") gi.frame = gLooper.frame_td_block;
+	//	else if (gi.image->source == "td_platform.png") gi.frame = gLooper.frame_td_platform;
+	//	else if (gi.image->source.starts_with("td_path_")) gi.frame = gLooper.frame_td_path;
+	//}
 
-	MapPath::InitMapGidInfos(map2);
+	//MapPath::InitMapGidInfos(map2);
+
 	// load first scene
-
 	co_await AsyncSwitchTo<SceneMainMenu>();
 }

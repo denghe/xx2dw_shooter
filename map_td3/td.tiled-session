@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "stage1.tmx",
+    "activeFile": "stage2.tmx",
     "expandedProjectPaths": [
         "."
     ],
@@ -13,25 +13,41 @@
             "scaleInDock": 5.5,
             "scaleInEditor": 1
         },
+        "icons.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 5.5,
+            "scaleInEditor": 1
+        },
         "stage1.tmx": {
-            "scale": 2,
-            "selectedLayer": 1,
+            "scale": 0.75,
+            "selectedLayer": 3,
             "viewCenter": {
-                "x": 451.5,
-                "y": 218.75
+                "x": 511.99999999999994,
+                "y": 365.9999999999999
+            }
+        },
+        "stage2.tmx": {
+            "scale": 3,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 626,
+                "y": 352.83333333333337
             }
         }
     },
     "last.imagePath": "C:/Codes/xx2dw_shooter/map_td3/pics",
-    "map.height": 13,
+    "map.height": 21,
     "map.lastUsedFormat": "tmx",
-    "map.width": 60,
+    "map.width": 36,
     "openFiles": [
-        "stage1.tmx"
+        "stage1.tmx",
+        "stage2.tmx"
     ],
     "project": "td.tiled-project",
     "recentFiles": [
         "stage1.tmx",
+        "stage2.tmx",
+        "icons.tsx",
         "cells.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",

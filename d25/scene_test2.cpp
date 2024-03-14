@@ -8,7 +8,7 @@ void SceneTest2::Init() {
 	gSceneTest2 = this;
 
 	rootNode.Emplace()->Init();
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg_btn, U"Back To Menu", [&]() {
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
@@ -26,34 +26,34 @@ void SceneTest2::Init() {
 
 	grids.InitAll(map->height, map->width, (int32_t)gCfg.unitSize);
 
-	// fill default frame
-	for (int i = 0, e = int(w * h); i < e; ++i) {
-		mapFrames[i] = gLooper.frame_td_path;
-	}
+	//// fill default frame
+	//for (int i = 0, e = int(w * h); i < e; ++i) {
+	//	mapFrames[i] = gLooper.frame_td_path;
+	//}
 
-	// override blocks frame
-	auto layer = map->FindLayer<TMX::Layer_Tile>("blocks");
-	for (int i = 0; i < e; ++i) {
-		auto gid = layer->gids[i];
-		auto& gi = map->gidInfos[gid];
-		auto& f = map->gidInfos[gid].frame;
-		if (f) {
-			mapFrames[i] = f;
-		}
-	}
+	//// override blocks frame
+	//auto layer = map->FindLayer<TMX::Layer_Tile>("blocks");
+	//for (int i = 0; i < e; ++i) {
+	//	auto gid = layer->gids[i];
+	//	auto& gi = map->gidInfos[gid];
+	//	auto& f = map->gidInfos[gid].frame;
+	//	if (f) {
+	//		mapFrames[i] = f;
+	//	}
+	//}
 
-	// override platforms frame
-	layer = map->FindLayer<TMX::Layer_Tile>("platforms");
-	for (int i = 0; i < e; ++i) {
-		auto gid = layer->gids[i];
-		auto& f = map->gidInfos[gid].frame;
-		if (f) {
-			mapFrames[i] = f;
+	//// override platforms frame
+	//layer = map->FindLayer<TMX::Layer_Tile>("platforms");
+	//for (int i = 0; i < e; ++i) {
+	//	auto gid = layer->gids[i];
+	//	auto& f = map->gidInfos[gid].frame;
+	//	if (f) {
+	//		mapFrames[i] = f;
 
-			// make some Tower
-			grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
-		}
-	}
+	//		// make some Tower
+	//		grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
+	//	}
+	//}
 
 	// search all layer prefix == "path" create MapPath
 	for (auto& ly : map->flatLayers) {
@@ -170,7 +170,7 @@ namespace Enemy {
 
 	void Monster2::Draw() {
 		auto& camera = gSceneTest2->camera;
-		auto& q = Quad::DrawOnce(gLooper.frame_circle);
+		auto& q = Quad::DrawOnce(gLooper.frame_td_shape_circle);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = cAnchor;
 		q.scale = XY::Make(camera.scale) * (radius / cRadius);
@@ -218,13 +218,24 @@ bool Arrow::Update() {
 
 void Arrow::Draw() {
 	auto& camera = gSceneTest2->camera;
-	auto& q = Quad::DrawOnce(gLooper.frame_td_tower_arrow);
-	q.pos = camera.ToGLPos(pos);
-	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale);
-	q.radians = 0;
-	q.colorplus = 1;
-	q.color = RGBA8_White;
+	{
+		auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = cAnchor;
+		q.scale = XY::Make(camera.scale);
+		q.radians = 0;
+		q.colorplus = 1;
+		q.color = RGBA8_White;
+	}
+	{
+		auto& q = Quad::DrawOnce(gLooper.frame_td_icon_arrow1);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = cAnchor;
+		q.scale = XY::Make(camera.scale);
+		q.radians = 0;
+		q.colorplus = 1;
+		q.color = RGBA8_White;
+	}
 }
 
 #pragma endregion
@@ -239,13 +250,24 @@ bool Cannon::Update() { return false; }
 
 void Cannon::Draw() {
 	auto& camera = gSceneTest2->camera;
-	auto& q = Quad::DrawOnce(gLooper.frame_td_tower_cannon);
-	q.pos = camera.ToGLPos(pos);
-	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale);
-	q.radians = 0;
-	q.colorplus = 1;
-	q.color = RGBA8_White;
+	{
+		auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = cAnchor;
+		q.scale = XY::Make(camera.scale);
+		q.radians = 0;
+		q.colorplus = 1;
+		q.color = RGBA8_White;
+	}
+	{
+		auto& q = Quad::DrawOnce(gLooper.frame_td_icon_cannon1);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = cAnchor;
+		q.scale = XY::Make(camera.scale);
+		q.radians = 0;
+		q.colorplus = 1;
+		q.color = RGBA8_White;
+	}
 }
 
 #pragma endregion
@@ -314,7 +336,7 @@ void Arrow::Draw() {
 	auto& camera = gSceneTest2->camera;
 	{
 		// tail
-		auto& q = Quad::DrawOnce(gLooper.frame_trangle);
+		auto& q = Quad::DrawOnce(gLooper.frame_td_shape_trangle);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 1.f };
 		q.scale = XY::Make(camera.scale) * cScale * XY { 1.f, cTailRatio };
@@ -325,7 +347,7 @@ void Arrow::Draw() {
 	}
 	{
 		// body
-		auto& q = Quad::DrawOnce(gLooper.frame_circle);
+		auto& q = Quad::DrawOnce(gLooper.frame_td_shape_circle);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = cAnchor;
 		q.scale = XY::Make(camera.scale) * cScale;
