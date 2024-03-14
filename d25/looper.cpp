@@ -68,41 +68,47 @@ xx::Task<> Looper::MainTask() {
 	assert(ok);
 
 
-	// load tiled map data. layer names:  map,  fg1, fg2,  path
+	// load stages tiled map data. layer names:  map,  fg1, fg2,  path
+	std::vector<std::string> mapStagePaths = {
+		resRoot + "stage1.bmx",
+		resRoot + "stage2.bmx"
+		// ...
+	};
 
+	for (auto& s : mapStagePaths) {
 #ifdef __EMSCRIPTEN__
-	map_stage1 = co_await AsyncLoadTiledMapFromUrl<true>(resRoot + "stage1.bmx");
-	map_stage2 = co_await AsyncLoadTiledMapFromUrl<true>(resRoot + "stage2.bmx");
+		map_stages.Emplace(co_await AsyncLoadTiledMapFromUrl<true>(s));
 #else
-	map_stage1 = LoadTiledMap<true>(resRoot + "stage1.bmx");
-	map_stage2 = LoadTiledMap<true>(resRoot + "stage2.bmx");
+		map_stages.Emplace(LoadTiledMap<true>(s));
 #endif
+	}
 
-	// mapping frames to gidInfo
-	// todo
+	// begin mapping frames to gidInfo
 
+	// list to map
 	std::unordered_map<std::string, xx::Ref<Frame>*> ffm;
 	for (auto& o : ffs) {
-		ffm.emplace(o.first.substr(picRoot.size()), o.second);
+		ffm.emplace(o.first.substr(resRoot.size()), o.second);		// format: "pics/xxxx.png"
 	}
 
-	for (auto& gi : map1->gidInfos) {
-		if (!gi) continue;
-		auto it = ffm.find(gi.image->source);
-		assert(it != ffm.end());
-		gi.frame = *it->second;
+	// fill gi.frame
+	for (auto& ms : map_stages) {
+		for (auto& gi : ms->gidInfos) {
+			if (!gi) continue;
+			auto it = ffm.find(gi.image->source);
+			assert(it != ffm.end());
+			gi.frame = *it->second;
+		}
 	}
-
-	//MapPath::InitMapGidInfos(map2);
 
 	// phys init
 	sgrdd.Init(128, 32);
 
 	// ui cfg init
 	s9cfg.frame = frame_td_ui_border;
-	s9cfg.texScale = { 2, 2 };
+	s9cfg.texScale = { 1, 1 };
 	s9cfg.center = { 1, 1, 1, 1 };
-	s9cfg.color = { 0x5f, 0x15, 0xd9, 0xff };
+	s9cfg.color = { 0x55, 0x55, 0x55, 0xff };
 
 	// load first scene
 	co_await AsyncSwitchTo<SceneMainMenu>();

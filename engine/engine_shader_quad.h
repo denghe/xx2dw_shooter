@@ -62,7 +62,7 @@ void main() {
 })"sv });
 
         f = LoadGLFragmentShader({ R"(#version 300 es
-precision mediump float;
+precision highp float;          // mediump draw border has issue
 uniform sampler2D uTex0;
 
 in vec2 vTexCoord;

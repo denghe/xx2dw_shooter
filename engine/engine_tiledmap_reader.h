@@ -220,12 +220,13 @@ namespace TMX {
 				s = sv.substr(0, i);
 				p.y = std::atof(s.c_str());
 				sv = sv.substr(i + 1);
+				out.emplace_back(p);
 			} else {
 				s = sv;
 				p.y = std::atof(s.c_str());
+				out.emplace_back(p);
 				break;
 			}
-			out.emplace_back(p);
 		}
 	}
 

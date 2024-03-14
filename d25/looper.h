@@ -44,7 +44,7 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 	Scale9SpriteConfig s9cfg;
 
 	// tiled map & frames
-	xx::Ref<TMX::Map> map_stage1, map_stage2;
+	xx::List<xx::Ref<TMX::Map>> map_stages;
 
 	// for grid  FindNearest  ForeachByRange
 	SpaceGridRingDiffuseData sgrdd;

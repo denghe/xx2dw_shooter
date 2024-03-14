@@ -7,13 +7,26 @@
 
 // single Grid item weak pointer
 struct GridWeak {
-	int32_t idx;
-	uint32_t version;
+	int32_t idx{ -1 };
+	uint32_t version{};
+
+	void Reset() {
+		idx = -1;
+		version = 0;
+	}
+	bool Empty() const {
+		return version == 0;
+	}
 };
 
 // Grids item weak pointer
 struct GridsWeak : GridWeak {
-	uint32_t typeId;
+	int32_t typeId{ -1 };
+
+	void Reset() {
+		GridWeak::Reset();
+		typeId = -1;
+	}
 };
 
 struct GridWeakCount : GridWeak {
@@ -45,9 +58,9 @@ concept Has_cTypeId = requires(T) { T::cTypeId; };
 
 // all grid item's base class
 struct GridItemBase {
-	static constexpr uint32_t cTypeId{ (uint32_t)-1 };
-	uint32_t __grid_version, typeId;
-	int32_t __grid_next, __grid_prev, __grid_idx, __grid_cidx;
+	static constexpr int32_t cTypeId{ -1 };
+	uint32_t __grid_version;
+	int32_t typeId, __grid_next, __grid_prev, __grid_idx, __grid_cidx;
 	XY pos;
 
 	GridWeak ToGridWeak() {
@@ -85,6 +98,7 @@ struct Grid {
 	uint32_t version{};
 
 	int32_t numRows{}, numCols{}, cellSize{};
+	int32_t maxX{}, maxY{};		// fill by init
 	int32_t cellsLen{};			// fill by init
 	int32_t bufFlagsLen{};		// fill by init
 
@@ -298,6 +312,8 @@ struct Grid {
 		numRows = numRows_;
 		numCols = numCols_;
 		cellSize = cellSize_;
+		maxX = cellSize_ * numCols_;
+		maxY = cellSize_ * numRows_;
 
 		cellsLen = numRows * numCols;
 		assert(cellsLen);
@@ -478,6 +494,11 @@ struct Grid {
 		return (T&)buf[gw.idx];
 	}
 
+	T* TryGet(GridWeak const& gw) const {
+		if (!Exists(gw)) return nullptr;
+		return &(T&)buf[gw.idx];
+	}
+
 	void Update(T& o, XY const& newPos) {
 		assert(o.__grid_idx >= 0);
 		assert(o.__grid_prev != o.__grid_idx);
@@ -613,6 +634,20 @@ struct Grid {
 			if (lens[i].radius > maxDistance) break;			// limit search range
 		}
 	}
+
+	T* TryGetCellItemByPos(XY const& p) {
+		if (p.x < 0 && p.x >= maxX || p.y < 0 || p.y >= maxX) return nullptr;
+		auto cidx = PosToCIdx(p);
+		auto idx = cells[cidx];
+		if (idx < 0) return nullptr;
+		return &buf[idx];
+	}
+
+	T* TryGetNext(T* item) {
+		if (!item || item->__grid_next == -1) return nullptr;
+		return &buf[item->__grid_next];
+	}
+
 	// todo: more search funcs
 
 	// todo: Save Load
@@ -690,12 +725,26 @@ struct Grids {
 
 	template<typename T = void>
 	bool Exists(GridsWeak const& gw) {
+		if (gw.version == 0 || gw.typeId == -1 || gw.idx == -1) return false;
 		if constexpr (std::is_void_v<T>) {
 			auto buf = ((Grid<GridItemBase>*) & gs)[gw.typeId].buf;
 			auto ptr = (char*)buf + sizes[gw.typeId] * gw.idx;
 			return ((GridItemBase*)ptr)->__grid_version == gw.version;
 		} else {
 			return Get<T>().Exists(gw);
+		}
+	}
+
+	template<typename T = void>
+	std::conditional_t< std::is_void_v<T>, GridItemBase*, T* > TryGetBase(GridsWeak const& gw) {
+		if (gw.version == 0 || gw.typeId == -1 || gw.idx == -1) return nullptr;
+		if constexpr (std::is_void_v<T>) {
+			auto buf = ((Grid<GridItemBase>*) & gs)[gw.typeId].buf;
+			auto ptr = (GridItemBase*)((char*)buf + sizes[gw.typeId] * gw.idx);
+			if (ptr->__grid_version != gw.version) return nullptr;
+			return ptr;
+		} else {
+			return Get<T>().TryGet(gw);
 		}
 	}
 

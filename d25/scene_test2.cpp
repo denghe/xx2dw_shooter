@@ -7,65 +7,57 @@
 void SceneTest2::Init() {
 	gSceneTest2 = this;
 
+	ringShader.Init(&gLooper);
+
 	rootNode.Emplace()->Init();
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
 	});
 
-	// ...
+	// fill map context
 
-	// fill map context. layers name: platforms blocks path1...
+	map = gLooper.map_stages[0];
+	layer = map->FindLayer<TMX::Layer_Tile>("map");
 
-	map = gLooper.map2;
 	auto w = map->width;
 	auto h = map->height;
 	auto e = int(w * h);
-	mapFrames.Resize(w * h);
 	mapMaxX = gCfg.unitSize * w;
 	mapMaxY = gCfg.unitSize * h;
 
-	grids.InitAll(map->height, map->width, (int32_t)gCfg.unitSize);
+	grids.InitAll(h, w, (int32_t)gCfg.unitSize);
 
-	//// fill default frame
-	//for (int i = 0, e = int(w * h); i < e; ++i) {
-	//	mapFrames[i] = gLooper.frame_td_path;
-	//}
+	// todo: get init tower config from map layer: fg2
+	//auto fgLayer = map->FindLayer<TMX::Layer_Tile>("fg2");
 
-	//// override blocks frame
-	//auto layer = map->FindLayer<TMX::Layer_Tile>("blocks");
-	//for (int i = 0; i < e; ++i) {
-	//	auto gid = layer->gids[i];
-	//	auto& gi = map->gidInfos[gid];
-	//	auto& f = map->gidInfos[gid].frame;
-	//	if (f) {
-	//		mapFrames[i] = f;
-	//	}
-	//}
-
-	//// override platforms frame
-	//layer = map->FindLayer<TMX::Layer_Tile>("platforms");
-	//for (int i = 0; i < e; ++i) {
-	//	auto gid = layer->gids[i];
-	//	auto& f = map->gidInfos[gid].frame;
-	//	if (f) {
-	//		mapFrames[i] = f;
-
-	//		// make some Tower
-	//		grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
-	//	}
-	//}
-
-	// search all layer prefix == "path" create MapPath
-	for (auto& ly : map->flatLayers) {
-		if (ly->name.starts_with("path")) {
-			if (ly->type == TMX::LayerTypes::TileLayer) {
-				mapPaths.Emplace().Init(map, (TMX::Layer_Tile*)ly, gCfg.unitSize);
-			} else if (ly->type == TMX::LayerTypes::ObjectLayer) {
-				mapPaths.Emplace().Init(map, (TMX::Layer_Object*)ly, gCfg.unitSize);
-			} else {
-				assert(false);
+	for (int i = 0; i < e; ++i) {
+		auto gid = layer->gids[i];
+		if (auto& gi = map->gidInfos[gid]) {
+			if (gi.frame == gLooper.frame_td_cell_space) {
+				// make some Tower
+				grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
 			}
 		}
+	}
+
+	// fill tms by layer: path
+	auto pathLayer = map->FindLayer<TMX::Layer_Object>("path");
+	tms.Reserve((int32_t)pathLayer->objects.size());
+	std::vector<CurvePoint> ps;
+	for (auto& o : pathLayer->objects) {
+		assert(o->type == TMX::ObjectTypes::Polygon);
+		auto& polygon = (xx::Ref<TMX::Object_Polygon>&)o;
+		ps.reserve(polygon->points.size());
+		for (auto& p : polygon->points) {
+			ps.emplace_back(XY{ (float)(polygon->x + p.x), (float)(polygon->y + p.y) }, 0.05f, 50);
+		}
+		auto& tm = tms.Emplace();
+		tm.totalWidth = gCfg.unitSize;
+		tm.trackCount = 11;
+		tm.pointDistance = 0.1f;
+		tm.trackMargin = tm.totalWidth / tm.trackCount;
+		tm.Init(ps);
+		ps.clear();
 	}
 
 	camera.SetScale(2.f);
@@ -74,15 +66,16 @@ void SceneTest2::Init() {
 
 
 	tasks.Add([this]()->xx::Task<> {
-		//co_await gLooper.AsyncSleep(2);
 		while (true)
 		{
-			for (size_t i = 0; i < 20; i++)
+			//for (size_t i = 0; i < 20; i++)
 			{
 				//if (grid.Count() >= gCfg.unitLimit) break;
-				grids.MakeInit<::Enemy::Monster2>(rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to), 0);
+				// rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to)
+				grids.MakeInit<::Enemy::Monster2>(60, rnd.Next<int32_t>(0, tms.len - 1));
 			}
-			co_yield 0;
+			//co_yield 0;
+			co_await gLooper.AsyncSleep(1);
 		}
 	});
 }
@@ -96,6 +89,10 @@ void SceneTest2::Update() {
 	}
 	camera.Calc();
 
+	if (gLooper.KeyDownDelay(KeyboardKeys::Escape, 0.02f)) {
+		focus.Reset();
+	}
+
 	grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
 		grid.BufForeach([](T& o)->GridForeachResult {
 			return o.Update() ? GridForeachResult::RemoveAndContinue : GridForeachResult::Continue;
@@ -108,12 +105,30 @@ void SceneTest2::Update() {
 void SceneTest2::Draw() {
 	camera.Calc();
 
+	// if mouse click ,calc focus		// todo: anim effect?
+	auto& m = gLooper.mouse;
+	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
+		auto p = camera.ToLogicPos(m.pos);
+		if (auto a = grids.Get<Tower::Arrow>().TryGetCellItemByPos(p)) {
+			assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
+			focus = a->ToGridsWeak();
+		} else if (auto c = grids.Get<Tower::Cannon>().TryGetCellItemByPos(p)) {
+			assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
+			focus = a->ToGridsWeak();
+		}
+		// ...
+	}
+
 	for (int i = 0, ie = map->height; i < ie; ++i) {
 		for (int j = 0, je = map->width; j < je; ++j) {
-			Quad().SetFrame(mapFrames[i * je + j]).SetAnchor({ 0, 1 })
-				.SetScale(camera.scale)
-				.SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i }))
-				.Draw();
+			auto gid = layer->gids[i * je + j];
+			if (auto& gi = map->gidInfos[gid]) {
+				Quad().SetFrame(gi.frame).SetAnchor({ 0, 1 })
+					.SetScale(camera.scale)
+					.SetPosition(camera.ToGLPos(XY{ 32.f * j, 32.f * i }))
+					.Draw();
+			}
+
 		}
 	}
 
@@ -127,6 +142,11 @@ void SceneTest2::Draw() {
 
 	enm.Draw(camera);
 
+	if (auto o = (ItemBase*)grids.TryGetBase(focus)) {
+		assert(o->onFocus);
+		o->onFocus(o);
+	}
+
 	auto str = xx::ToString("total item count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
 
@@ -139,16 +159,18 @@ void SceneTest2::Draw() {
 
 namespace Enemy {
 	void Monster2::Init(double hp_, int32_t mapPathIndex_) {
+		//draw = [](void* self) { ((Monster2*)self)->Draw(); };
 		hpBak = hp = hp_;
-		hp *= (double)gSceneTest2->rnd.Next<float>(0.01f, 0.99f);
+		//hp *= (double)gSceneTest2->rnd.Next<float>(0.01f, 0.99f);
 		radius = (float)std::sqrt(cRadius * cRadius / cHP * hp_);
 		mapPathIndex = mapPathIndex_;
-		auto& tm = gSceneTest2->mapPaths[mapPathIndex_].tm;
+		auto& tm = gSceneTest2->tms[mapPathIndex_];
 		assert(radius <= tm.totalWidth);
 		assert(radius >= tm.trackMargin);
-		auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
-		auto range = (tm.trackCount - numTrackCovered);
-		trackIndex = numTrackCovered / 2 + gSceneTest2->rnd.Next<int32_t>(range);
+		//auto numTrackCovered = int32_t(radius * 2 / tm.trackMargin);
+		//auto range = (tm.trackCount - numTrackCovered);
+		//trackIndex = numTrackCovered / 2 + gSceneTest2->rnd.Next<int32_t>(range);
+		trackIndex = gSceneTest2->rnd.Next<int32_t>(0, tm.trackCount - 1);
 		pointIndex = {};
 		speed = cSpeed * cRadius / radius;
 		radians = tm.GetRadians((int)pointIndex);
@@ -157,7 +179,7 @@ namespace Enemy {
 
 	bool Monster2::Update() {
 		// todo: hit tower logic?
-		auto& tm = gSceneTest2->mapPaths[mapPathIndex].tm;
+		auto& tm = gSceneTest2->tms[mapPathIndex];
 		pointIndex += speed;
 		if (auto c = tm.GetPointCount(); pointIndex >= c) {
 			// todo: damage player? switch to another state? change to another monster?
@@ -186,6 +208,8 @@ namespace Tower {
 #pragma region Arrow
 
 void Arrow::Init(int32_t colIdx, int32_t rowIdx) {
+	//draw = [](void* self) { ((Arrow*)self)->Draw(); };
+	onFocus = [](void* self) { ((Arrow*)self)->Focus(); };
 	pos.x = colIdx * gCfg.unitSize + gCfg.unitSize / 2;
 	pos.y = rowIdx * gCfg.unitSize + gCfg.unitSize / 2;
 	damage = cDamage;
@@ -198,7 +222,8 @@ bool Arrow::Update() {
 
 		// find most dangerous enemy in attack area
 		::Enemy::Monster2* tar{};
-		gSceneTest2->grids.Get<::Enemy::Monster2>().ForeachByRange(gLooper.sgrdd, pos, cAttackRange, [&](::Enemy::Monster2& o) {
+		gSceneTest2->grids.Get<::Enemy::Monster2>().ForeachByRange(gLooper.sgrdd, pos
+			, cAttackRange + gCfg.unitSize / 2, [&](::Enemy::Monster2& o) {
 			if (!tar) {
 				tar = &o;
 			} else {
@@ -238,11 +263,33 @@ void Arrow::Draw() {
 	}
 }
 
+void Arrow::Focus() {
+	auto& camera = gSceneTest2->camera;
+
+	auto& q = Quad::DrawOnce(gLooper.frame_td_cell_mouse_focus);
+	q.pos = camera.ToGLPos(pos);
+	q.anchor = cAnchor;
+	q.scale = XY::Make(camera.scale);
+	q.radians = 0;
+	q.colorplus = 1;
+	q.color = {255,0,0,255};
+	gLooper.ShaderEnd();
+
+	// switch blend to add logic?
+
+	RingInstanceData rid;
+	rid.pos = camera.ToGLPos(pos);
+	rid.color = { 255,255,255,255 };
+	rid.radius = camera.scale * cAttackRange;
+	gSceneTest2->ringShader.DrawOne(rid);
+}
+
 #pragma endregion
 
 #pragma region Cannon
 
 void Cannon::Init(int32_t colIdx, int32_t rowIdx) {
+	//draw = [](void* self) { ((Arrow*)self)->Draw(); };
 	// todo
 }
 
@@ -277,6 +324,7 @@ namespace Bullet::Tower {
 #pragma region Arrow
 
 void Arrow::Init(::Tower::Arrow& owner, MonsterBase& tar) {
+	//draw = [](void* self) { ((Arrow*)self)->Draw(); };
 	damage = owner.damage;
 	deathFrameNumber = gLooper.frameNumber + (int32_t)(cTimeSpan / gDesign.frameDelay);
 	radius = cRadius * cScale;
@@ -286,7 +334,7 @@ void Arrow::Init(::Tower::Arrow& owner, MonsterBase& tar) {
 	// calc target's pos
 	auto dist = Calc::Distance(owner.pos, tar.pos);
 	auto pointIndex = int(tar.pointIndex + tar.speed * (dist / cSpeed));
-	auto& tm = gSceneTest2->mapPaths[tar.mapPathIndex].tm;
+	auto& tm = gSceneTest2->tms[tar.mapPathIndex];
 	if (auto c = tm.GetPointCount(); pointIndex >= c) {
 		pointIndex = c - 1;
 	}
@@ -308,16 +356,20 @@ bool Arrow::Update() {
 		if (Calc::Intersects::CircleCircle<float>(
 			pos.x, pos.y, radius, o.pos.x, o.pos.y, o.radius)) {
 			death = true;
-			gSceneTest2->enm.Add(pos, pos - o.pos, {255,0,0,127}, (int32_t)damage);
+			gSceneTest2->enm.Add(pos, pos - o.pos, {255,0,0,255}, (int32_t)damage);
 			o.hp -= damage;
 			if (o.hp <= 0) {
+				// todo: play monster death effect ?
 				return GridForeachResult::RemoveAndBreak;
 			}
 			return GridForeachResult::Break;
 		}
 		return GridForeachResult::Continue;
 	});
-	if (death) return true;
+	if (death) {
+		// todo: play effect ?
+		return true;
+	}
 
 	// calc move pos
 	auto newPos = pos + inc;
@@ -362,6 +414,7 @@ void Arrow::Draw() {
 #pragma region Cannon
 
 void Cannon::Init(::Tower::Cannon& owner, MonsterBase& tar) {
+	//draw = [](void* self) { ((Cannon*)self)->Draw(); };
 	// todo
 	//maxHitCount = cMaxHitCount;
 	//hitBlackList.Reserve(maxHitCount);

@@ -17,25 +17,25 @@ struct Button : MouseEventHandlerNode {
 	xx::Shared<Scale9Sprite> bg;
 
 	// todo: scale support
-	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_) {
+	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_, float borderScale = 1.f) {
 		z = z_;
 		position = position_;
 		anchor = anchor_;
 
 		auto cornerSize = cfg_.GetCornerSize();
 		lbl = MakeChildren<Label>();
-		lbl->Init(z + 1, (cornerSize + cTextPadding) / 2, { 1,1 }, {}, RGBA8_White, txt_);
+		lbl->Init(z + 1, (cornerSize + cTextPadding) / 2, { 1, 1 }, {}, RGBA8_White, txt_);
 		size = lbl->size + cornerSize + cTextPadding;
 
 		bg = MakeChildren<Scale9Sprite>();
-		bg->Init(z, {}, {1,1}, {}, size, cfg_);
+		bg->Init(z, {}, { borderScale, borderScale }, {}, size / borderScale, cfg_);
 
 		FillTransRecursive();
 	}
 
 	template<typename F>
-	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_, F&& callback) {
-		Init(z_, position_, anchor_, cfg_, txt_);
+	void Init(int z_, XY const& position_, XY const& anchor_, Scale9SpriteConfig const& cfg_, std::u32string_view const& txt_, F&& callback, float borderScale = 1.f) {
+		Init(z_, position_, anchor_, cfg_, txt_, borderScale);
 		onClicked = std::forward<F>(callback);
 	}
 
