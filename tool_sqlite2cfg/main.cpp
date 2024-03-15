@@ -17,9 +17,7 @@ inline static std::vector<EnumData> ReadEnumTableRows(xx::SQLite::Query& q, std:
 	q.SetQuery("select id, name, desc from " + std::string(tn));
 	q.Execute([&](xx::SQLite::Reader& r)->int {
 		auto& ed = eds.emplace_back();
-		ed.id = r.ReadInt32(0);
-		ed.name = r.ReadString(1);
-		ed.desc = r.ReadString(2);
+		r.Reads(ed.id, ed.name, ed.desc);
 		return 0;
 		});
 	return eds;
