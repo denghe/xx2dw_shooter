@@ -152,6 +152,7 @@ protected:
 			auto& o = items[i].As<ItemBase>();
 			float leftHeight = lineHeight - o.h;
 			assert(leftHeight >= 0);
+			// todo: float valign support ?
 			if (o.align == VAligns::Bottom || std::abs(leftHeight) < std::numeric_limits<float>::epsilon()) {
 				o.y = y;
 			} else if (o.align == VAligns::Top) {
@@ -216,7 +217,7 @@ public:
 	RichLabel& AddPicture(xx::Ref<Quad> quad, VAligns align = VAligns::Center) {
 		assert(quad);
 		quad->anchor = {};
-		auto size = quad->Size();	// scale ?
+		auto size = quad->Size() * quad->scale;
 		auto leftWidth = width - lineX;
 		if (leftWidth < size.x) {
 			NewLine();
@@ -227,9 +228,9 @@ public:
 		return *this;
 	}
 
-	RichLabel& AddPicture(xx::Ref<Frame> frame, VAligns align = VAligns::Center) {
+	RichLabel& AddPicture(xx::Ref<Frame> frame, XY const& scale = {1,1}, VAligns align = VAligns::Center) {
 		auto quad = xx::MakeRef<Quad>();
-		quad->SetFrame(std::move(frame));
+		quad->SetFrame(std::move(frame)).SetScale(scale);
 		return AddPicture(std::move(quad), align);
 	}
 
@@ -249,7 +250,7 @@ public:
 	}
 
 	RichLabel& SetOffset(float x) {
-		assert(x > lineX);
+		//assert(x > lineX);
 		return AddSpace({ x - lineX, 0 });
 	}
 
@@ -307,7 +308,7 @@ public:
 		for (auto& p : pics) {
 			auto& t = *p;
 			auto pos = basePos + XY{ t.x * worldScale.x, t.y * worldScale.y };
-			t.quad->SetPosition(pos).SetScale(worldScale).Draw();
+			t.quad->SetPosition(pos).SetScale(p->quad->scale * worldScale).Draw();
 		}
 	}
 };
