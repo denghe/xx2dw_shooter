@@ -16,6 +16,19 @@ SQLITE_DQS=0
 SQLITE_MAX_EXPR_DEPTH=0
 
 调用示例:
+
+
+struct Column {
+    std::string name;
+    std::string type;
+    int32_t notnull{};
+};
+
+struct Table {
+    std::string name;
+    std::vector<Column> columns;
+};
+
 int main() {
     xx::SQLite::Init();
     xx::SQLite::Connection conn;
@@ -29,10 +42,33 @@ int main() {
     conn.SetPragmaJournalMode(xx::SQLite::JournalModes::WAL);           // 独立事务文件( 随机 insert 性能大幅提升 )，感觉可以无脑设置
     conn.SetPragmaLockingMode(xx::SQLite::LockingModes::Exclusive);     // 文件独占模式( 随机 insert 有一定提升 ), 视需求而定
     try {
+
+        std::vector<std::string> tableNames;
+        xx::SQLite::Query q(conn, "select name from sqlite_master where type = 'table'");
+        q.Execute([&](xx::SQLite::Reader& r)->int {
+            tableNames.push_back(r.ReadString(0));
+            return 0;
+        });
+
+        std::vector<Table> tables;
+        for (auto& tn : tableNames) {
+            q.SetQuery("PRAGMA table_info(" + tn + ")");
+            auto& t = tables.emplace_back();
+            t.name = tn;
+            q.Execute([&](xx::SQLite::Reader& r)->int {
+                auto& c = t.columns.emplace_back();
+                c.name = r.ReadString(1);
+                c.type = r.ReadString(2);
+                c.notnull = r.ReadInt32(3);
+                return 0;
+            });
+        }
+        ...
         xx::SQLite::Query qAccInsert(conn, "insert into acc(id, username, password, nickname, coin) values (?, ?, ?, ?, ?)");
         ...
         qAccInsert.SetParameters(i, upn, upn, upn, i * 100).Execute();
         auto numRows = conn.Execute<int64_t>("select count(*) from acc");
+        ...
     }
     catch (std::exception const& ex) {
         xx::CoutN("throw exception after conn.Open. ex = ", ex.what());
@@ -44,6 +80,7 @@ int main() {
 #include "sqlite3.h"
 
 namespace xx::SQLite {
+
     struct Connection;
     struct Query;
     struct Reader;
@@ -128,6 +165,17 @@ namespace xx::SQLite {
     };
     static const char *const strLockingModes[] = {
         "NORMAL", "EXCLUSIVE"
+    };
+
+    struct ColumnInfo {
+        std::string name;
+        std::string type;
+        int32_t notnull{};
+    };
+
+    struct TableInfo {
+        std::string name;
+        std::vector<ColumnInfo> columns;
     };
 
     // 查询主体
@@ -354,6 +402,12 @@ namespace xx::SQLite {
         // 会清空表数据, 并且重置自增计数. 如果存在约束, 有可能清空失败. 如果所有表里面都没有自增字段，则表 sqlite_sequence 不存在，注意传参
         void TruncateTable(char const *const &tn
             , bool has_sqlite_sequence = true);                             // DELETE FROM ?; DELETE FROM sqlite_sequence WHERE name = ?;
+
+        // 查询并返回表名数组
+        std::vector<std::string> GetTableNames();
+
+        // 查询并返回表结构
+        TableInfo GetTableInfo(std::string_view tableName);
 
         // 直接执行一个 SQL 语句
         void Call(char const *const &sql,
@@ -659,7 +713,29 @@ namespace xx::SQLite {
         Call(sqlBuilder.c_str());
     }
 
+    inline std::vector<std::string> Connection::GetTableNames() {
+        std::vector<std::string> tableNames;
+        xx::SQLite::Query q(*this, "select name from sqlite_master where type = 'table'");
+        q.Execute([&](xx::SQLite::Reader& r)->int {
+            tableNames.push_back(r.ReadString(0));
+            return 0;
+            });
+        return tableNames;
+    }
 
+    inline TableInfo Connection::GetTableInfo(std::string_view tableName) {
+        TableInfo ti;
+        ti.name = tableName;
+        Query q(*this, "PRAGMA table_info(" + ti.name + ")");
+        q.Execute([&](xx::SQLite::Reader& r)->int {
+            auto& c = ti.columns.emplace_back();
+            c.name = r.ReadString(1);
+            c.type = r.ReadString(2);
+            c.notnull = r.ReadInt32(3);
+            return 0;
+            });
+        return ti;
+    }
 
 
     /***************************************************************/

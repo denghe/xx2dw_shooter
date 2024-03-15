@@ -237,6 +237,36 @@ namespace xx {
     }
 
 
+    // __asdf__qwer_   to  AsdfQwer
+    template<bool firstCharUpperCase = true>
+    std::string ToHump(std::string_view s) {
+        std::string r;
+        if (!s.size()) return r;
+        s = s.substr(s.find_first_not_of('_'));
+        if (!s.size()) return r;
+
+        auto e = s.size();
+        r.reserve(e);
+        if constexpr (firstCharUpperCase) {
+            r.push_back(std::toupper(s[0]));
+        } else {
+            r.push_back(s[0]);
+        }
+        for (size_t i = 1; i < e; ++i) {
+            if (s[i] != '_') {
+                r.push_back(s[i]);
+            } else {
+                do {
+                    ++i;
+                    if (i >= e) return r;
+                } while (s[i] == '_');
+                r.push_back(std::toupper(s[i]));
+            }
+        }
+        return r;
+    }
+
+
     /************************************************************************************/
     // StringFuncs 继续适配各种常见数据类型
     /************************************************************************************/
@@ -281,23 +311,23 @@ namespace xx {
         }
     };
 
-    // 适配 std::string( 前后加引号 )
+    // 适配 std::string   //( 前后加引号 )
     template<typename T>
     struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<std::string, T>>> {
         static inline void Append(std::string& s, T const& in) {
-            s.push_back('\"');
+            //s.push_back('\"');
             s.append(in);
-            s.push_back('\"');
+            //s.push_back('\"');
         }
     };
 
-    // 适配 std::u32string( 前后加引号 )
+    // 适配 std::u32string
     template<typename T>
     struct StringFuncs<T, std::enable_if_t<std::is_base_of_v<std::u32string, T>>> {
         static inline void Append(std::string& s, T const& in) {
-            s.push_back('\"');
+            //s.push_back('\"');
             StringU32ToU8(s, in);
-            s.push_back('\"');
+            //s.push_back('\"');
         }
     };
 
@@ -305,9 +335,9 @@ namespace xx {
     template<>
     struct StringFuncs<std::type_info, void> {
         static inline void Append(std::string& s, std::type_info const& in) {
-            s.push_back('\"');
+            //s.push_back('\"');
             s.append(in.name());
-            s.push_back('\"');
+            //s.push_back('\"');
         }
     };
 
