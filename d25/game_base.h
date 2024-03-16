@@ -5,10 +5,14 @@ struct ItemBase : GridItemBase {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cRadius{ 16 };
 
-	// function pointer for draw on fucus
-	typedef void (*OnFocus)(void* self);
-	OnFocus onFocus{};					// onFocus = [](void* self) { ((T*)self)->Focus(); };
+    virtual void Focus() {};
 
+    ItemBase() = default;
+    ItemBase(ItemBase const&) = delete;
+    ItemBase& operator=(ItemBase const&) = delete;
+    ItemBase(ItemBase &&) = default;
+    ItemBase& operator=(ItemBase &&) = default;
+    virtual ~ItemBase() {};
 };
 
 struct MonsterBase : ItemBase {

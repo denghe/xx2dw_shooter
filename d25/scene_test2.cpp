@@ -143,8 +143,7 @@ void SceneTest2::Draw() {
 	enm.Draw(camera);
 
 	if (auto o = (ItemBase*)grids.TryGetBase(focus)) {
-		assert(o->onFocus);
-		o->onFocus(o);
+		o->Focus();
 	}
 
 	auto str = xx::ToString("total item count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
@@ -208,8 +207,6 @@ namespace Tower {
 #pragma region Arrow
 
 void Arrow::Init(int32_t colIdx, int32_t rowIdx) {
-	//draw = [](void* self) { ((Arrow*)self)->Draw(); };
-	onFocus = [](void* self) { ((Arrow*)self)->Focus(); };
 	pos.x = colIdx * gCfg.unitSize + gCfg.unitSize / 2;
 	pos.y = rowIdx * gCfg.unitSize + gCfg.unitSize / 2;
 	damage = cDamage;
@@ -275,13 +272,16 @@ void Arrow::Focus() {
 	q.color = {255,0,0,255};
 	gLooper.ShaderEnd();
 
-	// switch blend to add logic?
+	auto bak = gLooper.blend;
+	gLooper.GLBlendFunc({ GL_SRC_ALPHA, GL_ONE_MINUS_CONSTANT_COLOR, GL_FUNC_ADD });
 
 	RingInstanceData rid;
 	rid.pos = camera.ToGLPos(pos);
 	rid.color = { 255,255,255,255 };
 	rid.radius = camera.scale * cAttackRange;
 	gSceneTest2->ringShader.DrawOne(rid);
+
+	gLooper.GLBlendFunc(bak);
 }
 
 #pragma endregion

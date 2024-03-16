@@ -35,8 +35,10 @@ namespace Tower {
 		void Init(int32_t colIdx, int32_t rowIdx);
 		bool Update();
 		void Draw();
-		void Focus();
+
+		virtual void Focus() override;
 	};
+
 	struct Cannon : TowerBase {
 		static constexpr int32_t cTypeId{ 2 };
 		int32_t level{};
@@ -51,6 +53,7 @@ namespace Tower {
 
 namespace Bullet {
 	namespace Tower {
+
 		struct Arrow : BulletBase {
 			static constexpr int32_t cTypeId{ 3 };
 
@@ -65,6 +68,7 @@ namespace Bullet {
 			bool Update();
 			void Draw();
 		};
+
 		struct Cannon : BulletBase {
 			static constexpr int32_t cTypeId{ 4 };
 
@@ -81,6 +85,7 @@ namespace Bullet {
 			void Draw();
 		};
 	};
+
 	namespace Enemy {
 		// todo
 	}
@@ -90,7 +95,8 @@ struct SceneTest2 : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
 	Rnd rnd;
-	Grids<::Enemy::Monster2
+	GridsEx<ItemBase
+		, ::Enemy::Monster2
 		, ::Tower::Arrow
 		, ::Tower::Cannon
 		, ::Bullet::Tower::Arrow
