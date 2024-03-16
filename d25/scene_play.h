@@ -1,7 +1,8 @@
 ﻿#pragma once
 #include "looper.h"
 #include "cfg.h"
-#include "game_base.h"
+#include "item_base.h"
+#include "shader_ring.h"
 #include "track_manager.h"
 #include "map_path.h"
 #include "effect_number.h"

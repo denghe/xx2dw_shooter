@@ -16,5 +16,12 @@ struct Cfg {
 
 	//static constexpr XY mapSize{ float(gridNumCols * gridCellSize), float(gridNumRows * gridCellSize) };
 	//static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+
+
+
+
 };
 inline Cfg gCfg;
+
+
+// todo: sqlite cfg db -> this file content
