@@ -40,7 +40,7 @@ struct EngineBase0 {
 #endif
 
     // fill after Init()
-    float framePerSeconds{}, maxFrameDelay{ 1 };
+    float framePerSeconds{}, maxFrameDelay{ 0.1f };
     XY windowSize{}, windowSize_2{};
     XY worldMinXY{}, worldMaxXY{}, worldSize{};             // for node easy access
     void SetWindowSize(float w, float h) {

@@ -705,6 +705,34 @@ namespace TranslateControl {
         return false;
     }
 
+
+    inline bool MoveCircleIfIntersectsBox2(XY bPos, float bHalfWidth, float bHalfHeight
+        , XY& cPos, float cr) {
+
+        float bminx = bPos.x - bHalfWidth;
+        float bmaxx = bPos.x + bHalfWidth;
+        float bminy = bPos.y - bHalfHeight;
+        float bmaxy = bPos.y + bHalfHeight;
+
+        // find rect nearest point
+        XY np;
+        np.x = std::max(bminx, std::min(cPos.x, bmaxx));
+        np.y = std::max(bminy, std::min(cPos.y, bmaxy));
+
+        // calc
+        auto d = np - cPos;
+        auto mag = std::sqrt(d.x * d.x + d.y * d.y);
+        auto overlap = cr - mag;
+
+        if (!std::isnan(overlap) && overlap > 0) {
+            auto mag_1 = 1 / mag;
+            auto p = d * mag_1 * overlap;
+            cPos -= p;
+            return true;
+        }
+        return false;
+    }
+
 }
 
 /*******************************************************************************************************************************************/
