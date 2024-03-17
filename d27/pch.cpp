@@ -1,8 +1,9 @@
 #include <pch.h>
-#include <game_looper.h>
 #include <engine__pch_cpp.h>
 
-GameLooper gLooper;
+#include "looper.h"
+
+Looper gLooper;
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {
@@ -13,8 +14,8 @@ int32_t main() {
 #else
 int32_t main() {
 	gLooper.showFps = true;
-	gLooper.title = "xx2dw_d8";
+	gLooper.title = "xx2dw_d27";
 	gLooper.Init();
-	gLooper.Run();
+	gLooper.Run<false>();
 }
 #endif
