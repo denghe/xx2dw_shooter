@@ -92,7 +92,7 @@ namespace Bullet {
 	}
 }
 
-struct SceneTest2 : Scene {
+struct ScenePlay : Scene {
 	xx::Shared<Node> rootNode;
 	Camera camera;
 	Rnd rnd;
@@ -121,4 +121,4 @@ struct SceneTest2 : Scene {
 	virtual void Update() override;
 	virtual void Draw() override;
 };
-inline SceneTest2* gSceneTest2;		// init by SceneTest2::Init()
+inline ScenePlay* gScenePlay;		// init by ScenePlay::Init()

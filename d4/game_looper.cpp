@@ -19,7 +19,7 @@ xx::Task<> GameLooper::MainTask() {
 	frame_shooter = tp->Get("p");
 	xx_assert(frame_shooter);
 #ifdef __EMSCRIPTEN__
-	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/m2.bmx", "res/");	// load tiled map data
+	tiledMap = co_await AsyncLoadTiledMapFromUrl<true>("res/m2.bmx", "res/", true);	// load tiled map data
 #else
 	tiledMap = LoadTiledMap<true>("res/m2.bmx", "res/");						// load tiled map data
 #endif

@@ -92,7 +92,7 @@ struct EngineBase3 : EngineBase2 {
 
     // todo: timeout support
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<xx::Data>> AsyncDownloadFromUrl(char const* url) {
+    xx::Task<xx::Ref<xx::Data>> AsyncDownloadFromUrl(std::string url) {
         emscripten_fetch_attr_t attr;
         emscripten_fetch_attr_init(&attr);
         strcpy(attr.requestMethod, "GET");
@@ -118,7 +118,7 @@ struct EngineBase3 : EngineBase2 {
         UD ud = { &callbacked, &sd };
         attr.userData = &ud;
 
-        emscripten_fetch(&attr, url);
+        emscripten_fetch(&attr, url.c_str());
 
         while (!callbacked) {
             co_yield 0;
@@ -132,7 +132,7 @@ struct EngineBase3 : EngineBase2 {
 
     // blist == texture packer export cocos plist file's bin version, use xx2d's tools: plist 2 blist convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<TexturePacker>> AsyncLoadTexturePackerFromUrl(char const* blistUrl) {
+    xx::Task<xx::Ref<TexturePacker>> AsyncLoadTexturePackerFromUrl(std::string blistUrl) {
         auto blistData = co_await AsyncDownloadFromUrl<autoDecompress>(blistUrl);
         if (!blistData) co_return xx::Ref<TexturePacker>{};
 
@@ -151,7 +151,7 @@ struct EngineBase3 : EngineBase2 {
 
     // bmx == tiledmap editor store tmx file's bin version, use xx2d's tools: tmx 2 bmx convert
     template<bool autoDecompress = false>
-    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(char const* bmxUrl, std::string root = "", bool loadTextures = false, bool fillExts = true) {
+    xx::Task<xx::Ref<TMX::Map>> AsyncLoadTiledMapFromUrl(std::string bmxUrl, std::string root = "", bool loadTextures = false, bool fillExts = true) {
         auto map = xx::MakeRef<TMX::Map>();
         std::string fullPath;
         // download bmx & fill

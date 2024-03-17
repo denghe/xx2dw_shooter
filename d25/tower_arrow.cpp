@@ -16,7 +16,7 @@ namespace Tower {
 
 			// find most dangerous enemy in attack area
 			::Enemy::Monster2* tar{};
-			gSceneTest2->grids.Get<::Enemy::Monster2>().ForeachByRange(gLooper.sgrdd, pos
+			gScenePlay->grids.Get<::Enemy::Monster2>().ForeachByRange(gLooper.sgrdd, pos
 				, cAttackRange + gCfg.unitSize / 2, [&](::Enemy::Monster2& o) {
 					if (!tar) {
 						tar = &o;
@@ -29,14 +29,14 @@ namespace Tower {
 
 			// fire
 			if (tar) {
-				gSceneTest2->grids.MakeInit<::Bullet::Tower::Arrow>(*this, *tar);
+				gScenePlay->grids.MakeInit<::Bullet::Tower::Arrow>(*this, *tar);
 			}
 		}
 		return false;
 	}
 
 	void Arrow::Draw() {
-		auto& camera = gSceneTest2->camera;
+		auto& camera = gScenePlay->camera;
 		{
 			auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
 			q.pos = camera.ToGLPos(pos);
@@ -58,7 +58,7 @@ namespace Tower {
 	}
 
 	void Arrow::Focus() {
-		auto& camera = gSceneTest2->camera;
+		auto& camera = gScenePlay->camera;
 
 		auto& q = Quad::DrawOnce(gLooper.frame_td_cell_mouse_focus);
 		q.pos = camera.ToGLPos(pos);
@@ -76,7 +76,7 @@ namespace Tower {
 		rid.pos = camera.ToGLPos(pos);
 		rid.color = { 255,255,255,255 };
 		rid.radius = camera.scale * cAttackRange;
-		gSceneTest2->ringShader.DrawOne(rid);
+		gScenePlay->ringShader.DrawOne(rid);
 
 		gLooper.GLBlendFunc(bak);
 	}

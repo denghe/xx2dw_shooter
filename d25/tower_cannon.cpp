@@ -11,7 +11,7 @@ namespace Tower {
 	bool Cannon::Update() { return false; }
 
 	void Cannon::Draw() {
-		auto& camera = gSceneTest2->camera;
+		auto& camera = gScenePlay->camera;
 		{
 			auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
 			q.pos = camera.ToGLPos(pos);

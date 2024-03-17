@@ -14,7 +14,7 @@ namespace Bullet::Tower {
 		// calc target's pos
 		auto dist = Calc::Distance(owner.pos, tar.pos);
 		auto pointIndex = int(tar.pointIndex + tar.speed * (dist / cSpeed));
-		auto& tm = gSceneTest2->tms[tar.mapPathIndex];
+		auto& tm = gScenePlay->tms[tar.mapPathIndex];
 		if (auto c = tm.GetPointCount(); pointIndex >= c) {
 			pointIndex = c - 1;
 		}
@@ -31,12 +31,12 @@ namespace Bullet::Tower {
 
 		// hit check
 		bool death = false;
-		gSceneTest2->grids.Get<::Enemy::Monster2>().Foreach9(pos, [&](::Enemy::Monster2& o)->GridForeachResult {
+		gScenePlay->grids.Get<::Enemy::Monster2>().Foreach9(pos, [&](::Enemy::Monster2& o)->GridForeachResult {
 			// intersects ?
 			if (Calc::Intersects::CircleCircle<float>(
 				pos.x, pos.y, radius, o.pos.x, o.pos.y, o.radius)) {
 				death = true;
-				gSceneTest2->enm.Add(pos, pos - o.pos, { 255,0,0,255 }, (int32_t)damage);
+				gScenePlay->enm.Add(pos, pos - o.pos, { 255,0,0,255 }, (int32_t)damage);
 				o.hp -= damage;
 				if (o.hp <= 0) {
 					// todo: play monster death effect ?
@@ -55,17 +55,17 @@ namespace Bullet::Tower {
 		auto newPos = pos + inc;
 
 		// edge check
-		if (newPos.x < 0 || newPos.x >= gSceneTest2->mapMaxX ||
-			newPos.y < 0 || newPos.y >= gSceneTest2->mapMaxY) return true;
+		if (newPos.x < 0 || newPos.x >= gScenePlay->mapMaxX ||
+			newPos.y < 0 || newPos.y >= gScenePlay->mapMaxY) return true;
 
 		// move
-		gSceneTest2->grids.Update(*this, newPos);
+		gScenePlay->grids.Update(*this, newPos);
 
 		return false;
 	}
 
 	void Arrow::Draw() {
-		auto& camera = gSceneTest2->camera;
+		auto& camera = gScenePlay->camera;
 		{
 			// tail
 			auto& q = Quad::DrawOnce(gLooper.frame_td_shape_trangle);

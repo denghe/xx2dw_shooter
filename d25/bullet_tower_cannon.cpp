@@ -14,7 +14,7 @@ namespace Bullet::Tower {
 	bool Cannon::Update() {
 
 		//// hit check	( lambda return false mean foreach next m )
-		//gSceneTest2->grids.Get<::Enemy::Monster2>().Foreach9([&](::Enemy::Monster2& m)->bool {
+		//gScenePlay->grids.Get<::Enemy::Monster2>().Foreach9([&](::Enemy::Monster2& m)->bool {
 		//	// intersects ?
 		//	if (!Calc::Intersects::CircleCircle<float>(
 		//		pos.x, pos.y, radius, m.pos.x, m.pos.y, m.radius)) return false;

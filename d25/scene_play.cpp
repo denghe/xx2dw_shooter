@@ -2,8 +2,8 @@
 #include "scene_play.h"
 #include "scene_main_menu.h"
 
-void SceneTest2::Init() {
-	gSceneTest2 = this;
+void ScenePlay::Init() {
+	gScenePlay = this;
 
 	ringShader.Init(&gLooper);
 
@@ -82,7 +82,7 @@ void SceneTest2::Init() {
 	});
 }
 
-void SceneTest2::Update() {
+void ScenePlay::Update() {
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
@@ -104,7 +104,7 @@ void SceneTest2::Update() {
 	enm.Update();
 }
 
-void SceneTest2::Draw() {
+void ScenePlay::Draw() {
 	camera.Calc();
 
 	// if mouse click ,calc focus		// todo: anim effect?
