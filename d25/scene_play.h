@@ -4,7 +4,6 @@
 #include "item_base.h"
 #include "shader_ring.h"
 #include "track_manager.h"
-#include "map_path.h"
 #include "effect_number.h"
 #include "effect_explosion.h"
 
@@ -94,7 +93,13 @@ namespace Bullet {
 }
 
 struct ScenePlay : Scene {
+	int32_t frameNumber{};		// for increase game speed
+	int32_t gameSpeedRate{1};	// game speed
+	xx::Task<> mainTask;
+	xx::Task<> MainTask();
+
 	xx::Shared<Node> rootNode;
+
 	Camera camera;
 	Rnd rnd;
 	GridsEx<ItemBase

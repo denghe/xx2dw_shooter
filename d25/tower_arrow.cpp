@@ -11,8 +11,8 @@ namespace Tower {
 
 	bool Arrow::Update() {
 		// check cast delay
-		if (nextFireFrame < gLooper.frameNumber) {
-			nextFireFrame = gLooper.frameNumber + cFireAfterDelayFrame;
+		if (nextFireFrame < gScenePlay->frameNumber) {
+			nextFireFrame = gScenePlay->frameNumber + cFireAfterDelayFrame;
 
 			// find most dangerous enemy in attack area
 			::Enemy::Monster2* tar{};

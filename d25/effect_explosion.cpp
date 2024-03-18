@@ -23,8 +23,8 @@ namespace Effect {
 			auto speed = rnd.Next<float>(50, 200) / gDesign.fps;
 			o.inc.x = c * speed;
 			o.inc.y = s * speed;
-			o.beginFrameNumber = gLooper.frameNumber;
-			o.endFrameNumber = gLooper.frameNumber + int32_t(rnd.Next<float>(0.3f, 0.6f) * timeScale / gDesign.frameDelay);
+			o.beginFrameNumber = gScenePlay->frameNumber;
+			o.endFrameNumber = gScenePlay->frameNumber + int32_t(rnd.Next<float>(0.3f, 0.6f) * timeScale / gDesign.frameDelay);
 			o.color = { 255,255,255,255 };	// todo: rnd ?
 		}
 	}
@@ -33,7 +33,7 @@ namespace Effect {
 		auto& camera = gScenePlay->camera;
 		auto count = items.Count();
 		int32_t i = 0;
-		auto fn = gLooper.frameNumber;
+		auto fn = gScenePlay->frameNumber;
 		for (auto i = items.len - 1; i >= 0; --i) {
 			auto& o = items[i];
 			if (o.endFrameNumber <= fn) {

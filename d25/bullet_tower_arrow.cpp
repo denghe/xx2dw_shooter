@@ -6,7 +6,7 @@ namespace Bullet::Tower {
 	void Arrow::Init(::Tower::Arrow& owner, MonsterBase& tar) {
 		//draw = [](void* self) { ((Arrow*)self)->Draw(); };
 		damage = owner.damage;
-		deathFrameNumber = gLooper.frameNumber + (int32_t)(cTimeSpan / gDesign.frameDelay);
+		deathFrameNumber = gScenePlay->frameNumber + (int32_t)(cTimeSpan / gDesign.frameDelay);
 		radius = cRadius * cScale;
 		speed = cSpeed;
 		pos = owner.pos;
@@ -27,7 +27,7 @@ namespace Bullet::Tower {
 
 	bool Arrow::Update() {
 		// life span check
-		if (deathFrameNumber <= gLooper.frameNumber) return true;
+		if (deathFrameNumber <= gScenePlay->frameNumber) return true;
 
 		// hit check
 		bool death = false;

@@ -63,13 +63,23 @@ xx::Task<> Looper::MainTask() {
 	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
 
 	// load / download
+#ifdef __EMSCRIPTEN__
+	int32_t downloadCount{};
+#endif
 	for (auto& ff : ffs) {
 #ifdef __EMSCRIPTEN__
-		*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
+		tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
+			auto& ff = *pff;
+			*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
+			++downloadCount;
+		});
 #else
 		*ff.second = LoadFrame(ff.first);
 #endif
 	}
+#ifdef __EMSCRIPTEN__
+	while (downloadCount < ffs.size()) co_yield 0;
+#endif
 
 	// batch combine textures
 	auto ok = DynamicTexturePacker<512>::Pack(ffs);

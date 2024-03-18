@@ -2,14 +2,47 @@
 #include "scene_play.h"
 #include "scene_main_menu.h"
 
+xx::Task<> ScenePlay::MainTask() {
+	while (true)
+	{
+		//for (size_t i = 0; i < 20; i++)
+		{
+			//if (grid.Count() >= gCfg.unitLimit) break;
+			// rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to)
+			grids.MakeInit<::Enemy::Monster2>(60, rnd.Next<int32_t>(0, tms.len - 1));
+		}
+		
+		// sleep 1 secs
+		for (int32_t i = 0; i < (int32_t)gDesign.fps; ++i) {
+			co_yield 0;
+		}
+	}
+}
+
 void ScenePlay::Init() {
 	gScenePlay = this;
+	mainTask = MainTask();
 
 	ringShader.Init(&gLooper);
 
 	rootNode.Emplace()->Init();
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 		gLooper.DelaySwitchTo<SceneMainMenu>();
+	});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ -300, 0}, gDesign.xy8a, gLooper.s9cfg, U"pause", [&]() {
+		gameSpeedRate = 0;
+	});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ -150, 0}, gDesign.xy8a, gLooper.s9cfg, U"speed: 1", [&]() {
+		gameSpeedRate = 1;
+	});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg, U"speed: 3", [&]() {
+		gameSpeedRate = 3;
+	});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ 150, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 50", [&]() {
+		gameSpeedRate = 50;
+	});
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ 300, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 1000", [&]() {
+		gameSpeedRate = 1000;
 	});
 
 	// fill map context
@@ -68,20 +101,6 @@ void ScenePlay::Init() {
 
 	em.Init(10000);
 	enm.Init(10000);
-
-	tasks.Add([this]()->xx::Task<> {
-		while (true)
-		{
-			//for (size_t i = 0; i < 20; i++)
-			{
-				//if (grid.Count() >= gCfg.unitLimit) break;
-				// rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to)
-				grids.MakeInit<::Enemy::Monster2>(60, rnd.Next<int32_t>(0, tms.len - 1));
-			}
-			//co_yield 0;
-			co_await gLooper.AsyncSleep(1);
-		}
-	});
 }
 
 void ScenePlay::Update() {
@@ -93,18 +112,24 @@ void ScenePlay::Update() {
 	}
 	camera.Calc();
 
-	if (gLooper.KeyDownDelay(KeyboardKeys::Escape, 0.02f)) {
-		focus.Reset();
-	}
+	for (int32_t i = 0; i < gameSpeedRate; ++i) {
+		++frameNumber;
 
-	grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
-		grid.BufForeach([](T& o)->GridForeachResult {
-			return o.Update() ? GridForeachResult::RemoveAndContinue : GridForeachResult::Continue;
+		mainTask();		// gen monster
+
+		if (gLooper.KeyDownDelay(KeyboardKeys::Escape, 0.02f)) {
+			focus.Reset();
+		}
+
+		grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
+			grid.BufForeach([](T& o)->GridForeachResult {
+				return o.Update() ? GridForeachResult::RemoveAndContinue : GridForeachResult::Continue;
+				});
 		});
-	});
 
-	enm.Update();
-	em.Update();
+		enm.Update();
+		em.Update();
+	}
 }
 
 void ScenePlay::Draw() {
@@ -153,7 +178,7 @@ void ScenePlay::Draw() {
 	}
 
 	auto str = xx::ToString("total item count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
-	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
+	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 40 }, str, RGBA8_Green, { 0.5f, 1 });
 
 	gLooper.DrawNode(rootNode);
 }
