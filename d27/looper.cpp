@@ -48,7 +48,7 @@ void Looper::Draw() {
 	});
 	shapeRect->Draw();
 
-	auto str = xx::ToString("total circle count = ", shapeCircle.Count());
+	auto str = xx::ToString("The box can be dragged with the mouse. total circle count = ", shapeCircle.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
 }
 
@@ -94,6 +94,7 @@ xx::Task<> ShapeCircle::MainTask() {
 				a2 += gap;	// todo?
 				inc = XY{ std::cos(a2) * cSpeed, std::sin(a2) * cSpeed };
 			}
+			// todo: bugfix when box pos ~= circle pos
 
 			newPos -= p;
 		}
@@ -130,6 +131,28 @@ XY ShapeRect::GetNearestPoint(XY const& tar) {
 }
 
 bool ShapeRect::Update() {
+	if (!gLooper.mouseEventHandler) {
+		auto& m = gLooper.mouse;
+		auto mbs = m.btnStates[0];
+		if (lastMBState != mbs) {
+			lastMBState = mbs;
+			if (mbs) {	// mouse down
+				if (Calc::Intersects::BoxPoint(xy.from, xy.to, m.pos)) {
+					dragging = true;
+					mouseOffset = m.pos - pos;
+				}
+			} else {	// mouse up
+				dragging = false;
+			}
+		}
+		if (dragging) {
+			pos = m.pos - mouseOffset;
+			xy.from = pos - radius;
+			xy.to = pos + radius;
+		}
+	} else {
+		dragging = false;
+	}
 	return false;
 }
 

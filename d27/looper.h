@@ -3,7 +3,7 @@
 
 // circle -- box -- bounce test
 
-constexpr GDesign<1280, 800, 120> gDesign;
+constexpr GDesign<1280, 800, 240> gDesign;
 
 
 struct Shape {
@@ -24,6 +24,8 @@ struct ShapeCircle : Shape {
 
 
 struct ShapeRect : Shape {
+	bool dragging{}, lastMBState{};
+	XY mouseOffset{};
 	xx::FromTo<XY> xy;
 	XY GetNearestPoint(XY const& tar);
 	void Init();
