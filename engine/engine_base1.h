@@ -174,10 +174,14 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     std::array<uint32_t, 3> blendDefault{ GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_FUNC_ADD };
+    std::array<uint32_t, 3> blendBackup{};
     std::array<uint32_t, 3> blend{ blendDefault };
 
-    template<bool autoEndShader = true>
-    void GLBlendFunc(std::array<uint32_t, 3> args) {
+    template<bool backup = false, bool autoEndShader = true>
+    void GLBlendFunc(std::array<uint32_t, 3> const& args) {
+        if constexpr (backup) {
+            blendBackup = blendDefault;
+        }
         if (blend != args) {
             if constexpr (autoEndShader) {
                 ShaderEnd();
@@ -186,6 +190,11 @@ struct EngineBase1 : EngineBase0 {
             glBlendFunc(args[0], args[1]);
             glBlendEquation(args[2]);
         }
+    }
+
+    template<bool autoEndShader = true>
+    void GLBlendFuncRestore() {
+        GLBlendFunc<false, autoEndShader>(blendBackup);
     }
 
     /*****************************************************************************************************/
