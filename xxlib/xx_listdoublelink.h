@@ -72,6 +72,10 @@ namespace xx {
 			}
 		}
 
+		void Ensure(IndexType space) noexcept {
+			Reserve(Count() + space);
+		}
+
 		IndexAndVersion Head() const {
 			assert(head >= 0);
 			return { head, buf[head].version };
@@ -360,6 +364,9 @@ namespace xx {
 
     template<typename T, typename IndexType, typename VersionType>
     struct IsPod<ListDoubleLink<T, IndexType, VersionType>> : std::true_type {};
+
+	template<typename T>
+	using ListDoubleLinkiu32 = ListDoubleLink<T, int32_t, uint32_t>;
 }
 
 

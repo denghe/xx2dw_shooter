@@ -6,6 +6,7 @@
 #include "track_manager.h"
 #include "map_path.h"
 #include "effect_number.h"
+#include "effect_explosion.h"
 
 // tower defense 2
 
@@ -115,7 +116,10 @@ struct ScenePlay : Scene {
 
 	GridsWeak focus;
 
+	Effect::ExplosionManager em;
+
 	EffectNumberManager enm;
+
 
 	virtual void Init() override;
 	virtual void Update() override;

@@ -36,23 +36,31 @@ xx::Task<> Looper::MainTask() {
 	ffs.emplace_back(picRoot + "td_ui_aim.png", &frame_td_ui_aim);
 	ffs.emplace_back(picRoot + "td_ui_heart.png", &frame_td_ui_heart);
 	ffs.emplace_back(picRoot + "td_ui_sword.png", &frame_td_ui_sword);
-	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
+
 	ffs.emplace_back(picRoot + "td_icon_sun.png", &frame_td_icon_sun);
-	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
 	ffs.emplace_back(picRoot + "td_icon_coin.png", &frame_td_icon_coin);
-	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
-	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
 	ffs.emplace_back(picRoot + "td_icon_cannon1.png", &frame_td_icon_cannon1);
-	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
+	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
 	ffs.emplace_back(picRoot + "td_icon_arrow1.png", &frame_td_icon_arrow1);
-	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
+	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
+
+	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
+	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
+	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
 	ffs.emplace_back(picRoot + "td_cell_mouse_focus.png", &frame_td_cell_mouse_focus);
 	ffs.emplace_back(picRoot + "td_cell_montain.png", &frame_td_cell_montain);
 	ffs.emplace_back(picRoot + "td_cell_space.png", &frame_td_cell_space);
 	ffs.emplace_back(picRoot + "td_cell_empty.png", &frame_td_cell_empty);
+
+	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
+
 	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
+	ffs.emplace_back(picRoot + "td_shape_ring.png", &frame_td_shape_ring);
+	ffs.emplace_back(picRoot + "td_shape_rect.png", &frame_td_shape_rect);
 	ffs.emplace_back(picRoot + "td_shape_trangle.png", &frame_td_shape_trangle);
 	ffs.emplace_back(picRoot + "td_shape_circle.png", &frame_td_shape_circle);
+
+	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
 
 	// load / download
 	for (auto& ff : ffs) {

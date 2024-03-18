@@ -66,6 +66,8 @@ void ScenePlay::Init() {
 	camera.SetOriginal({ gCfg.unitSize * map->width / 2, gCfg.unitSize * map->height / 2 });
 	camera.SetMaxFrameSize({ (float)gCfg.unitSize, (float)gCfg.unitSize });
 
+	em.Init(10000);
+	enm.Init(10000);
 
 	tasks.Add([this]()->xx::Task<> {
 		while (true)
@@ -102,6 +104,7 @@ void ScenePlay::Update() {
 	});
 
 	enm.Update();
+	em.Update();
 }
 
 void ScenePlay::Draw() {
@@ -143,6 +146,7 @@ void ScenePlay::Draw() {
 	});
 
 	enm.Draw(camera);
+	em.Draw();
 
 	if (auto o = (ItemBase*)grids.TryGetBase(focus)) {
 		o->Focus();

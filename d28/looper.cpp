@@ -8,6 +8,7 @@ xx::Task<> Looper::MainTask() {
 	std::string picRoot = "map_td3/pics/";
 	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
 	ffs.emplace_back(picRoot + "td_ui_border.png", &frame_td_ui_border);
+	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
 	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
 	ffs.emplace_back(picRoot + "td_shape_ring.png", &frame_td_shape_ring);
 	ffs.emplace_back(picRoot + "td_shape_rect.png", &frame_td_shape_rect);

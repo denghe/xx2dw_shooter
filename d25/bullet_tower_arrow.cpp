@@ -39,7 +39,7 @@ namespace Bullet::Tower {
 				gScenePlay->enm.Add(pos, pos - o.pos, { 255,0,0,255 }, (int32_t)damage);
 				o.hp -= damage;
 				if (o.hp <= 0) {
-					// todo: play monster death effect ?
+					gScenePlay->em.Add(o.pos, cRadius, 256, 1.5f);
 					return GridForeachResult::RemoveAndBreak;
 				}
 				return GridForeachResult::Break;
@@ -47,7 +47,7 @@ namespace Bullet::Tower {
 			return GridForeachResult::Continue;
 			});
 		if (death) {
-			// todo: play effect ?
+			gScenePlay->em.Add(pos, cRadius, 8);
 			return true;
 		}
 

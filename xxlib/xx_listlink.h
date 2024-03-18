@@ -56,6 +56,10 @@ namespace xx {
 			}
 		}
 
+		void Ensure(SizeType space) noexcept {
+			Reserve(Count() + space);
+		}
+
 		//auto&& o = new (&ll.AddCore()) T( ... );
 		[[nodiscard]] T& AddCore() {
 			SizeType idx;
@@ -208,4 +212,7 @@ namespace xx {
 
     template<typename T, typename SizeType, SizeType initCap>
     struct IsPod<ListLink<T, SizeType, initCap>> : std::true_type {};
+
+	template<typename T, int32_t initCap = 64>
+	using ListLinki32 = ListLink<T, int32_t, initCap>;
 }

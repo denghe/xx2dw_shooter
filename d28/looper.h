@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include <engine.h>
 
-constexpr GDesign<1280, 800, 60> gDesign;
+constexpr GDesign<1280, 800, 360> gDesign;
 
 struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Task<> MainTask();
 
 	xx::Ref<Frame> frame_td_ui_border
+		, frame_td_effect_1
 		, frame_td_shape_dot
 		, frame_td_shape_ring
 		, frame_td_shape_rect

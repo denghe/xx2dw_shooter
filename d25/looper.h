@@ -8,8 +8,8 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 
 
 	xx::Listi32<xx::Ref<Frame>> frames_number_outlined;
+
 	xx::Ref<Frame> frame_td_ui_border;
-	xx::Ref<Frame> frame_td_shape_dot;
 	xx::Ref<Frame> frame_td_ui_star;
 	xx::Ref<Frame> frame_td_ui_gem;
 	xx::Ref<Frame> frame_td_ui_gear;
@@ -23,22 +23,32 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Ref<Frame> frame_td_ui_aim;
 	xx::Ref<Frame> frame_td_ui_heart;
 	xx::Ref<Frame> frame_td_ui_sword;
-	xx::Ref<Frame> frame_td_cell_gold_mine;
+
 	xx::Ref<Frame> frame_td_icon_sun;
-	xx::Ref<Frame> frame_td_cell_water;
 	xx::Ref<Frame> frame_td_icon_coin;
-	xx::Ref<Frame> frame_td_cell_road;
-	xx::Ref<Frame> frame_td_icon_cannon3;
 	xx::Ref<Frame> frame_td_icon_cannon1;
-	xx::Ref<Frame> frame_td_icon_arrow3;
+	xx::Ref<Frame> frame_td_icon_cannon3;
 	xx::Ref<Frame> frame_td_icon_arrow1;
-	xx::Ref<Frame> frame_td_tower_base;
+	xx::Ref<Frame> frame_td_icon_arrow3;
+
 	xx::Ref<Frame> frame_td_cell_mouse_focus;
-	xx::Ref<Frame> frame_td_cell_montain;
-	xx::Ref<Frame> frame_td_cell_space;
 	xx::Ref<Frame> frame_td_cell_empty;
+	xx::Ref<Frame> frame_td_cell_space;
+	xx::Ref<Frame> frame_td_cell_montain;
+	xx::Ref<Frame> frame_td_cell_water;
+	xx::Ref<Frame> frame_td_cell_road;
+	xx::Ref<Frame> frame_td_cell_gold_mine;
+
+	xx::Ref<Frame> frame_td_tower_base;
+
+	xx::Ref<Frame> frame_td_shape_dot;
+	xx::Ref<Frame> frame_td_shape_ring;
+	xx::Ref<Frame> frame_td_shape_rect;
 	xx::Ref<Frame> frame_td_shape_trangle;
 	xx::Ref<Frame> frame_td_shape_circle;
+
+	xx::Ref<Frame> frame_td_effect_1;
+
 	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
 
 	Scale9SpriteConfig s9cfg;
