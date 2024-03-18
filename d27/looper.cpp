@@ -64,43 +64,56 @@ void ShapeCircle::Init(XY const& pos_, float radians_) {
 
 
 xx::Task<> ShapeCircle::MainTask() {
+	// calc every frame inc value
 	XY inc{ std::cos(radians) * cSpeed, std::sin(radians) * cSpeed };
-	for (size_t i = 0; i < gDesign.fps * 4; i++) {
 
-		auto newPos = pos + inc;
+	// life span limit
+	for (int32_t i = 0; i < (int32_t)(gDesign.fps * cLifeSpan); i++) {
 
-		// find rect nearest point
-		auto np = gLooper.shapeRect->GetNearestPoint(newPos);
+		// avoid pass through
+		for (int32_t j = 0; j < cUpdateMultipleTimes; j++) {
 
-		// calc
-		auto d = np - newPos;
-		auto mag = std::sqrt(d.x * d.x + d.y * d.y);
-		auto overlap = radius - mag;
-
-		// intersect
-		if (!std::isnan(overlap) && overlap > 0) {
-			auto mag_1 = 1 / mag;
-			auto p = d * mag_1 * overlap;
-
-			// bounce
-			if (np.x == newPos.x) {
-				inc.y *= -1;
-			} else if (np.y == newPos.y) {
-				inc.x *= -1;
+			auto newPos = pos + inc;
+			auto& boxPos = gLooper.shapeRect->pos;
+			auto& xy = gLooper.shapeRect->xy;
+			if (Calc::Intersects::BoxPoint(xy.from, xy.to, newPos)) {
+				// do nothing
 			} else {
-				auto a1 = std::atan2(-inc.y, -inc.x);
-				auto a2 = std::atan2(-p.y, -p.x);
-				auto gap = RotateControl::Gap(a1, a2);
-				a2 += gap;	// todo?
-				inc = XY{ std::cos(a2) * cSpeed, std::sin(a2) * cSpeed };
+				// find rect nearest point
+				XY np{ std::max(xy.from.x, std::min(newPos.x, xy.to.x)),
+				std::max(xy.from.y, std::min(newPos.y, xy.to.y)) };
+
+				// calc
+				auto d = np - newPos;
+				auto mag = std::sqrt(d.x * d.x + d.y * d.y);
+				auto overlap = radius - mag;
+
+				// intersect
+				if (!std::isnan(overlap) && overlap > 0) {
+					auto mag_1 = 1 / mag;
+					auto p = d * mag_1 * overlap;
+
+					// bounce
+					if (np.x == newPos.x) {
+						inc.y *= -1;
+					} else if (np.y == newPos.y) {
+						inc.x *= -1;
+					} else {
+						auto a1 = std::atan2(-inc.y, -inc.x);
+						auto a2 = std::atan2(-p.y, -p.x);
+						auto gap = RotateControl::Gap(a1, a2);
+						a2 += gap;	// todo?
+						inc = XY{ std::cos(a2) * cSpeed, std::sin(a2) * cSpeed };
+					}
+
+					newPos -= p;
+				}
 			}
-			// todo: bugfix when box pos ~= circle pos
 
-			newPos -= p;
+			// assign
+			pos = newPos;
+
 		}
-
-		// assign
-		pos = newPos;
 
 		co_yield 0;
 	}

@@ -3,7 +3,7 @@
 
 // circle -- box -- bounce test
 
-constexpr GDesign<1280, 800, 240> gDesign;
+constexpr GDesign<1280, 800, 2000> gDesign;
 
 
 struct Shape {
@@ -13,7 +13,9 @@ struct Shape {
 
 
 struct ShapeCircle : Shape {
-	static constexpr float cSpeed{ 300.f / gDesign.fps };
+	static constexpr float cLifeSpan{ 0.1 };
+	static constexpr int32_t cUpdateMultipleTimes{ 1 };
+	static constexpr float cSpeed{ 30000.f / gDesign.fps / cUpdateMultipleTimes };
 	XY basePos{};
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
