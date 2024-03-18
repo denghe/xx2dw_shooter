@@ -6,16 +6,31 @@ xx::Task<> Looper::MainTask() {
 
 	ready = true;
 
-	while (true) {
-		for (float a = gPI / 4.f; a > -gPI / 4.f; a -= 0.01f * (60.f / gDesign.fps)) {
-			shapeCircle.Emplace().Emplace()->Init(a);
-			co_yield 0;
+	tasks.Add([&]()->xx::Task<> {
+		while (true) {
+			for (float a = gPI / 4.f; a > -gPI / 4.f; a -= 0.01f * (60.f / gDesign.fps)) {
+				shapeCircle.Emplace().Emplace()->Init({ -400, 0 }, a);
+				co_yield 0;
+			}
+			for (float a = -gPI / 4.f; a < gPI / 4.f; a += 0.01f * (60.f / gDesign.fps)) {
+				shapeCircle.Emplace().Emplace()->Init({ -400, 0 }, a);
+				co_yield 0;
+			}
 		}
-		for (float a = -gPI / 4.f; a < gPI / 4.f; a += 0.01f * (60.f / gDesign.fps)) {
-			shapeCircle.Emplace().Emplace()->Init(a);
-			co_yield 0;
+	});
+	tasks.Add([&]()->xx::Task<> {
+		while (true) {
+			for (float a = gPI / 4.f; a > -gPI / 4.f; a -= 0.01f * (60.f / gDesign.fps)) {
+				shapeCircle.Emplace().Emplace()->Init({ 400, 0 }, a + gPI);
+				co_yield 0;
+			}
+			for (float a = -gPI / 4.f; a < gPI / 4.f; a += 0.01f * (60.f / gDesign.fps)) {
+				shapeCircle.Emplace().Emplace()->Init({ 400, 0 }, a + gPI);
+				co_yield 0;
+			}
 		}
-	}
+	});
+	co_yield 0;
 }
 
 void Looper::Update() {
@@ -39,9 +54,9 @@ void Looper::Draw() {
 
 
 
-void ShapeCircle::Init(float radians_) {
+void ShapeCircle::Init(XY const& pos_, float radians_) {
 	mainTask = MainTask();
-	pos = { -400, 0 };
+	pos = pos_;
 	radians = radians_;
 	radius = 150;
 	mainTask();
@@ -55,7 +70,7 @@ xx::Task<> ShapeCircle::MainTask() {
 		auto newPos = pos + inc;
 
 		// find rect nearest point
-		auto np = gLooper.shapeRect->GetNearPoint(newPos);
+		auto np = gLooper.shapeRect->GetNearestPoint(newPos);
 
 		// calc
 		auto d = np - newPos;
@@ -73,7 +88,11 @@ xx::Task<> ShapeCircle::MainTask() {
 			} else if (np.y == newPos.y) {
 				inc.x *= -1;
 			} else {
-				inc = (inc / cSpeed - d * mag_1).MakeNormalize() * cSpeed;	// todo: fix
+				auto a1 = std::atan2(-inc.y, -inc.x);
+				auto a2 = std::atan2(-p.y, -p.x);
+				auto gap = RotateControl::Gap(a1, a2);
+				a2 += gap;	// todo?
+				inc = XY{ std::cos(a2) * cSpeed, std::sin(a2) * cSpeed };
 			}
 
 			newPos -= p;
@@ -99,13 +118,13 @@ void ShapeCircle::Draw() {
 
 
 void ShapeRect::Init() {
-	pos = { 200, 0 };
-	radius = 150;
+	pos = { 0, 0 };
+	radius = 80;
 	xy.from = pos - radius;
 	xy.to = pos + radius;
 }
 
-XY ShapeRect::GetNearPoint(XY const& tar) {
+XY ShapeRect::GetNearestPoint(XY const& tar) {
 	return { std::max(xy.from.x, std::min(tar.x, xy.to.x)),
 	std::max(xy.from.y, std::min(tar.y, xy.to.y)) };
 }

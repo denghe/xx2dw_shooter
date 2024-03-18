@@ -52,4 +52,6 @@ xcopy /S/Y map_td3\pics\*.* docs\map_td3\pics\
 
 xcopy /S/Y web\s26\s26.* docs
 
+xcopy /S/Y web\s27\s27.* docs
+
 xcopy /S/Y res\*.* docs\res\

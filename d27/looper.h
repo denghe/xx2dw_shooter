@@ -3,7 +3,7 @@
 
 // circle -- box -- bounce test
 
-constexpr GDesign<1280, 800, 200> gDesign;
+constexpr GDesign<1280, 800, 120> gDesign;
 
 
 struct Shape {
@@ -17,7 +17,7 @@ struct ShapeCircle : Shape {
 	XY basePos{};
 	xx::Task<> mainTask;
 	xx::Task<> MainTask();
-	void Init(float radians_);
+	void Init(XY const& pos_, float radians_);
 	bool Update();
 	void Draw();
 };
@@ -25,7 +25,7 @@ struct ShapeCircle : Shape {
 
 struct ShapeRect : Shape {
 	xx::FromTo<XY> xy;
-	XY GetNearPoint(XY const& tar);
+	XY GetNearestPoint(XY const& tar);
 	void Init();
 	bool Update();
 	void Draw();
