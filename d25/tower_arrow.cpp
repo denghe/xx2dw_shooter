@@ -7,6 +7,10 @@ namespace Tower {
 		pos.x = colIdx * gCfg.unitSize + gCfg.unitSize / 2;
 		pos.y = rowIdx * gCfg.unitSize + gCfg.unitSize / 2;
 		damage = cDamage;
+
+		// init anims
+		InitShootAnim();
+		InitFocusAnim();
 	}
 
 	bool Arrow::Update() {
@@ -30,18 +34,24 @@ namespace Tower {
 			// fire
 			if (tar) {
 				gScenePlay->grids.MakeInit<::Bullet::Tower::Arrow>(*this, *tar);
+				ResetShootAnim();	// reset shoot anim
 			}
+		}
+		
+		if (case_shootScale >= 0) {
+			StepShootAnim();		// play shoot anim
 		}
 		return false;
 	}
 
 	void Arrow::Draw() {
 		auto& camera = gScenePlay->camera;
+		auto s = XY::Make(camera.scale) /** (2.f - focusScale)*/ * shootScale;
 		{
 			auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
-			q.scale = XY::Make(camera.scale);
+			q.scale = s;
 			q.radians = 0;
 			q.colorplus = 1;
 			q.color = RGBA8_White;
@@ -50,14 +60,14 @@ namespace Tower {
 			auto& q = Quad::DrawOnce(gLooper.frame_td_icon_arrow1);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
-			q.scale = XY::Make(camera.scale);
+			q.scale = s;
 			q.radians = 0;
 			q.colorplus = 1;
 			q.color = RGBA8_White;
 		}
 	}
 
-	void Arrow::Focus() {
+	void Arrow::DrawFocus() {
 		auto& camera = gScenePlay->camera;
 
 		auto& q = Quad::DrawOnce(gLooper.frame_td_cell_mouse_focus);
@@ -75,7 +85,7 @@ namespace Tower {
 		RingInstanceData rid;
 		rid.pos = camera.ToGLPos(pos);
 		rid.color = { 255,255,255,255 };
-		rid.radius = camera.scale * cAttackRange;
+		rid.radius = camera.scale * cAttackRange * focusScale;
 		gScenePlay->ringShader.DrawOne(rid);
 
 		gLooper.GLBlendFunc(bak);

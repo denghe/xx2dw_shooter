@@ -31,20 +31,21 @@ namespace Tower {
 
 		int32_t level{};
 		double damage{};
-		int nextFireFrame{};
+		int32_t nextFireFrame{};
 
 		void Init(int32_t colIdx, int32_t rowIdx);
 		bool Update();
 		void Draw();
 
-		virtual void Focus() override;
+		virtual void DrawFocus() override;
 	};
 
 	struct Cannon : TowerBase {
 		static constexpr int32_t cTypeId{ 2 };
+
 		int32_t level{};
 		double damage{};
-		int nextFireFrame{};
+		int32_t nextFireFrame{};
 
 		void Init(int32_t colIdx, int32_t rowIdx);
 		bool Update();

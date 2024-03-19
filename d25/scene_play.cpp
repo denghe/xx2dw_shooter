@@ -23,6 +23,7 @@ void ScenePlay::Init() {
 	gScenePlay = this;
 	mainTask = MainTask();
 
+	// UI init
 	ringShader.Init(&gLooper);
 
 	rootNode.Emplace()->Init();
@@ -95,6 +96,7 @@ void ScenePlay::Init() {
 		ps.clear();
 	}
 
+	// other init
 	camera.SetScale(2.f);
 	camera.SetOriginal({ gCfg.unitSize * map->width / 2, gCfg.unitSize * map->height / 2 });
 	camera.SetMaxFrameSize({ (float)gCfg.unitSize, (float)gCfg.unitSize });
@@ -110,6 +112,7 @@ void ScenePlay::BeforeUpdate() {
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
+	// todo: get mouse getYScroll ?
 
 	// handle mouse drag map change camera original
 	if (!gLooper.mouseEventHandler) {
@@ -128,14 +131,19 @@ void ScenePlay::BeforeUpdate() {
 				if (dragging) {					// dragging end
 					dragging = false;
 				} else {						// click
+
+					// todo: if put item into ?
+
 					focus.Reset();
 					auto pos = camera.ToLogicPos(m.pos);
 					if (auto a = grids.Get<Tower::Arrow>().TryGetCellItemByPos(pos)) {
 						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
 						focus = a->ToGridsWeak();
+						a->ResetFocusAnim();
 					} else if (auto c = grids.Get<Tower::Cannon>().TryGetCellItemByPos(pos)) {
 						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
 						focus = a->ToGridsWeak();
+						a->ResetFocusAnim();
 					}
 					// ...
 					// todo: play anim when first focus?
@@ -170,10 +178,15 @@ void ScenePlay::Update() {
 		enm.Update();
 		em.Update();
 	}
+
+	// draw focus
+	if (auto o = (TowerBase*)grids.TryGetBase(focus)) {
+		o->StepFocusAnim();
+	}
 }
 
 void ScenePlay::Draw() {
-
+	// draw map
 	for (int i = 0, ie = map->height; i < ie; ++i) {
 		for (int j = 0, je = map->width; j < je; ++j) {
 			auto gid = layer->gids[i * je + j];
@@ -187,6 +200,7 @@ void ScenePlay::Draw() {
 		}
 	}
 
+	// draw items
 	grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
 		grid.BufForeach([camera = &camera](T& o)->void {
 			if (camera->InArea(o.pos)) {
@@ -195,7 +209,7 @@ void ScenePlay::Draw() {
 		});
 	});
 
-
+	// draw mouse pos
 	auto& m = gLooper.mouse;
 	auto mp = camera.ToLogicPos(m.pos);
 	auto mc = (int32_t)mp.x / (int32_t)gCfg.unitSize;
@@ -205,16 +219,21 @@ void ScenePlay::Draw() {
 		.SetPosition(camera.ToGLPos(XY{ mc * gCfg.unitSize, mr * gCfg.unitSize }))
 		.Draw();
 
-
-	enm.Draw(camera);
-	em.Draw();
-
+	// draw focus
 	if (auto o = (ItemBase*)grids.TryGetBase(focus)) {
-		o->Focus();
+		o->DrawFocus();
 	}
 
+	// draw effect numbers
+	enm.Draw(camera);
+
+	// draw explotions
+	em.Draw();
+
+	// draw info text
 	auto str = xx::ToString("total item count = ", grids.Count());// , "  total blood text count = ", enm.ens.Count());
 	gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 40 }, str, RGBA8_Green, { 0.5f, 1 });
 
+	// draw UI
 	gLooper.DrawNode(rootNode);
 }

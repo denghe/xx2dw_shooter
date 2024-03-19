@@ -5,7 +5,9 @@ struct ItemBase : GridItemBase {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cRadius{ 16 };
 
-    virtual void Focus() {};
+	virtual void DrawFocus() {};
+
+	bool IsFocus() const;
 
     ItemBase() = default;
     ItemBase(ItemBase const&) = delete;
@@ -28,6 +30,20 @@ struct MonsterBase : ItemBase {
 };
 
 struct TowerBase : ItemBase {
+	int32_t case_focusScale{};							// for focus scale anim
+	float focusScale{};									// for focus scale anim
+
+	int32_t case_shootScale{};							// for shoot scale anim
+	float shootScale{};									// for shoot scale anim
+
+	void InitFocusAnim();
+	void ResetFocusAnim();
+	void StepFocusAnim();
+
+	void InitShootAnim();
+	void ResetShootAnim();
+	void StepShootAnim();
+
 	// todo: more?
 };
 
@@ -41,4 +57,3 @@ struct BulletBase : ItemBase {
 	int32_t deathFrameNumber{};
 	// todo: more?
 };
-
