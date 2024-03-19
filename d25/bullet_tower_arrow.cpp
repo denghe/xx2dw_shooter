@@ -39,7 +39,7 @@ namespace Bullet::Tower {
 				gScenePlay->enm.Add(pos, pos - o.pos, { 255,0,0,255 }, (int32_t)damage);
 				o.hp -= damage;
 				if (o.hp <= 0) {
-					gScenePlay->em.Add(o.pos, cRadius, 256, 1.5f);
+					o.PlayDeathEffect();
 					return GridForeachResult::RemoveAndBreak;
 				}
 				return GridForeachResult::Break;

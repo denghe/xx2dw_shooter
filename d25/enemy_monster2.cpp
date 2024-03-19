@@ -44,4 +44,9 @@ namespace Enemy {
 		q.colorplus = 1;
 		q.color = { cColor.r, cColor.g, cColor.b, uint8_t(40 + 160 * (hp / hpBak)) };
 	}
+
+	void Monster2::PlayDeathEffect() {
+		// play effect
+		gScenePlay->em.Add(pos, cRadius, 256, 1.5f);
+	}
 }

@@ -18,6 +18,7 @@ namespace Enemy {
 		void Init(double hp_, int32_t mapPathIndex_);
 		bool Update();
 		void Draw();
+		void PlayDeathEffect();
 	};
 }
 
