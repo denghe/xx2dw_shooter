@@ -4,6 +4,8 @@
 #include "scene_test1.h"
 #include "scene_play.h"
 
+
+
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
 
@@ -22,7 +24,6 @@ void SceneMainMenu::Init() {
 	//rootNode->MakeChildren<Button>()->Init(3, basePos + XY{ 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg, U"stage2", [&]() {
 	//	gLooper.DelaySwitchTo<ScenePlay>();
 	//}, 3);
-
 }
 
 void SceneMainMenu::Draw() {

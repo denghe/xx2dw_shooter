@@ -31,6 +31,7 @@ file(GLOB sources
 	../glad/*.h
 	../stb/*.h
 	../glfw/include/GLFW/*.h
+	../nameof/include/*.hpp
 	../engine/*.cpp
 	../engine/*.c
 	../engine/*.hpp

@@ -431,6 +431,15 @@ namespace xx {
         SimpleTuple<TS...> others;
     };
 
+    template<typename T, typename...TS>
+    auto&& Get(xx::SimpleTuple<TS...>& t) {
+        if constexpr (std::is_same_v< decltype(t.value), T>) {
+            return t.value;
+        } else {
+            return Get<T>(t.others);
+        }
+    }
+
     /************************************************************************************/
     // 获取指定下标参数
 
