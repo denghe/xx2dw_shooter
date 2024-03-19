@@ -112,10 +112,12 @@ struct ScenePlay : Scene {
 
 	TMX::Map* map{};
 	TMX::Layer_Tile* layer{};
-	//xx::Listi32<xx::Ref<Frame>> mapFrames;
-	//xx::Listi32<MapPath> mapPaths;
 	xx::Listi32<TrackManager> tms;
 	float mapMaxX{}, mapMaxY{};
+
+	bool dragging{}, lastMBState{};
+	XY lastMousePos{}, mouseOffset{};
+
 
 	Shader_RingInstance ringShader;
 
@@ -127,6 +129,7 @@ struct ScenePlay : Scene {
 
 
 	virtual void Init() override;
+	virtual void BeforeUpdate() override;
 	virtual void Update() override;
 	virtual void Draw() override;
 };

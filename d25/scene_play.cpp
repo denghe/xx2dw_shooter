@@ -35,8 +35,8 @@ void ScenePlay::Init() {
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ -150, 0}, gDesign.xy8a, gLooper.s9cfg, U"speed: 1", [&]() {
 		gameSpeedRate = 1;
 	});
-	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg, U"speed: 3", [&]() {
-		gameSpeedRate = 3;
+	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg, U"speed: 5", [&]() {
+		gameSpeedRate = 5;
 	});
 	rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ 150, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 50", [&]() {
 		gameSpeedRate = 50;
@@ -103,15 +103,55 @@ void ScenePlay::Init() {
 	enm.Init(10000);
 }
 
-void ScenePlay::Update() {
+void ScenePlay::BeforeUpdate() {
 	// scale control
 	if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
 		camera.IncreaseScale(0.1f, 5);
 	} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
 		camera.DecreaseScale(0.1f, 0.1f);
 	}
-	camera.Calc();
 
+	// handle mouse drag map change camera original
+	if (!gLooper.mouseEventHandler) {
+		auto& m = gLooper.mouse;
+		auto mbs = m.btnStates[0];
+
+		auto mp = m.pos / camera.scale;
+		mp.x = -mp.x;
+
+		if (lastMBState != mbs) {
+			lastMBState = mbs;
+			if (mbs) {							// mouse down
+				mouseOffset = mp - camera.original;
+				lastMousePos = m.pos;
+			} else {							// mouse up
+				if (dragging) {					// dragging end
+					dragging = false;
+				} else {						// click
+					focus.Reset();
+					auto pos = camera.ToLogicPos(m.pos);
+					if (auto a = grids.Get<Tower::Arrow>().TryGetCellItemByPos(pos)) {
+						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
+						focus = a->ToGridsWeak();
+					} else if (auto c = grids.Get<Tower::Cannon>().TryGetCellItemByPos(pos)) {
+						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
+						focus = a->ToGridsWeak();
+					}
+					// ...
+					// todo: play anim when first focus?
+					// todo: clicked item bounce zoom 20% anim
+				}
+			}
+		}
+		if (mbs && lastMousePos != m.pos) {		// mouse down + moved == dragging
+			dragging = true;
+			camera.original = mp - mouseOffset;
+		}
+	}
+	camera.Calc();
+}
+
+void ScenePlay::Update() {
 	for (int32_t i = 0; i < gameSpeedRate; ++i) {
 		++frameNumber;
 
@@ -133,21 +173,6 @@ void ScenePlay::Update() {
 }
 
 void ScenePlay::Draw() {
-	camera.Calc();
-
-	// if mouse click ,calc focus		// todo: anim effect?
-	auto& m = gLooper.mouse;
-	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
-		auto p = camera.ToLogicPos(m.pos);
-		if (auto a = grids.Get<Tower::Arrow>().TryGetCellItemByPos(p)) {
-			assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
-			focus = a->ToGridsWeak();
-		} else if (auto c = grids.Get<Tower::Cannon>().TryGetCellItemByPos(p)) {
-			assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
-			focus = a->ToGridsWeak();
-		}
-		// ...
-	}
 
 	for (int i = 0, ie = map->height; i < ie; ++i) {
 		for (int j = 0, je = map->width; j < je; ++j) {
@@ -169,6 +194,17 @@ void ScenePlay::Draw() {
 			}
 		});
 	});
+
+
+	auto& m = gLooper.mouse;
+	auto mp = camera.ToLogicPos(m.pos);
+	auto mc = (int32_t)mp.x / (int32_t)gCfg.unitSize;
+	auto mr = (int32_t)mp.y / (int32_t)gCfg.unitSize;
+	Quad().SetFrame(gLooper.frame_td_cell_mouse_focus).SetAnchor({ 0, 1 })
+		.SetScale(camera.scale)
+		.SetPosition(camera.ToGLPos(XY{ mc * gCfg.unitSize, mr * gCfg.unitSize }))
+		.Draw();
+
 
 	enm.Draw(camera);
 	em.Draw();

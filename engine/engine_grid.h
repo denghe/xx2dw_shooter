@@ -636,8 +636,16 @@ struct Grid {
 	}
 
 	T* TryGetCellItemByPos(XY const& p) {
-		if (p.x < 0 && p.x >= maxX || p.y < 0 || p.y >= maxX) return nullptr;
+		if (p.x < 0 || p.x >= maxX || p.y < 0 || p.y >= maxX) return nullptr;
 		auto cidx = PosToCIdx(p);
+		auto idx = cells[cidx];
+		if (idx < 0) return nullptr;
+		return &buf[idx];
+	}
+
+	T* TryGetCellItemByCrIdx(Vec2<> crIdx) {
+		if (crIdx.x < 0 || crIdx.x >= numCols || crIdx.y < 0 || crIdx.y >= numRows) return nullptr;
+		auto cidx = CrIdxToCIdx(crIdx);
 		auto idx = cells[cidx];
 		if (idx < 0) return nullptr;
 		return &buf[idx];

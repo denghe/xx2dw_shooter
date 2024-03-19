@@ -168,6 +168,11 @@ int main() {
         if (delta > ((Derived*)this)->maxFrameDelay) {
             delta = ((Derived*)this)->maxFrameDelay;
         }
+
+        if constexpr (Has_BeforeUpdate<Derived>) {
+            ((Derived*)this)->BeforeUpdate();
+        }
+
         timePool += delta;
         while (timePool >= ((Derived*)this)->frameDelay) {
             timePool -= ((Derived*)this)->frameDelay;

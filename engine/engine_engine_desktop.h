@@ -80,6 +80,11 @@ struct Engine : EngineBase3 {
             if (delta > maxFrameDelay) {
                 delta = maxFrameDelay;
             }
+
+            if constexpr (Has_BeforeUpdate<Derived>) {
+                ((Derived*)this)->BeforeUpdate();
+            }
+
             timePool += delta;
             while (timePool >= ((Derived*)this)->frameDelay) {
                 timePool -= ((Derived*)this)->frameDelay;

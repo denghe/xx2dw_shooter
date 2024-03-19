@@ -49,6 +49,11 @@ struct EngineBase2 : EngineBase1 {
     }
 
     // default Update & Draw for scene
+    void BeforeUpdate() {
+        if (!scene) return;
+        scene->BeforeUpdate();
+    }
+
     void Update() {
         if (!scene) return;
         scene->Update();

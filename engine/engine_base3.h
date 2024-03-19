@@ -7,6 +7,7 @@
 
 template<typename T> concept Has_Init = requires(T t) { { t.Init() } -> std::same_as<void>; };
 template<typename T> concept Has_AfterInit = requires(T t) { { t.AfterInit() } -> std::same_as<void>; };
+template<typename T> concept Has_BeforeUpdate = requires(T t) { { t.BeforeUpdate() } -> std::same_as<void>; };
 template<typename T> concept Has_Update = requires(T t) { { t.Update() } -> std::same_as<void>; };
 template<typename T> concept Has_Draw = requires(T t) { { t.Draw() } -> std::same_as<void>; };
 template <typename T> concept Has_MainTask = requires(T t) { { t.MainTask() } -> std::same_as<xx::Task<>>; };
