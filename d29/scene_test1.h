@@ -1,30 +1,41 @@
 ﻿#pragma once
 #include "looper.h"
+#include "effect_explosion.h"
 
 namespace Test1 {
 
-	struct ExplosionItem {
-		XY pos{}, inc{};
-		float radians{};
-		RGBA8 color{};
-		int32_t beginFrameNumber{};
-		int32_t endFrameNumber{};
+	struct Cfg {
+		static constexpr float unitSize{ 32.f };
+		static constexpr float unitSize_2 { unitSize / 2 };
+
+		static constexpr int32_t numRows{20}, numCols{38};
+		static constexpr XY mapSize{ unitSize * numCols, unitSize * numRows };
+		static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+		static constexpr XY mapCenterPos { mapSize.x / 2.f, mapSize.y / 2.f };
 	};
-	struct ExplosionManager {
-		xx::Listi32<ExplosionItem> items;
-		void Init(int32_t cap = 10000);
-		void Add(XY const& pos_, float radius, int32_t count = 256, float timeScale = 1.f);
-		void Update();
+	inline Cfg gCfg;
+
+	struct Wall {
+		XY pos{}, size{};
+		xx::FromTo<XY> xy;
+		void Init(XY const& pos_, XY const& size_);
 		void Draw();
 	};
 
-
 	struct Scene : ::Scene {
 		xx::Shared<Node> rootNode;
+		int32_t frameNumber{};		// for increase game speed
+		int32_t gameSpeedRate{};	// game speed
 		Camera camera;
-		ExplosionManager em;
+		Rnd rnd;
+		Effect::ExplosionManager em;
+		xx::Task<> mainTask;
+		xx::Task<> MainTask();
+
+		xx::Listi32<Wall> walls;
 
 		virtual void Init() override;
+		virtual void BeforeUpdate() override;
 		virtual void Update() override;
 		virtual void Draw() override;
 	};

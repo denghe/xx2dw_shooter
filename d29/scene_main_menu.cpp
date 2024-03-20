@@ -9,7 +9,7 @@ void SceneMainMenu::Init() {
 	auto basePos = rootNode->size / 2;
 
 	auto txt = rootNode->MakeChildren<Label>();
-	txt->Init(2, basePos + XY{ 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"particle tests");
+	txt->Init(2, basePos + XY{ 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"breakout");
 
 	auto bg = rootNode->MakeChildren<Scale9Sprite>();
 	bg->Init(1, basePos + XY{ 0, 200 }, { 5, 5 }, XY{ 0.5f, 0.5f }, txt->CalcBorderSize({ 50, 20 }) / 5, gLooper.s9cfg);
