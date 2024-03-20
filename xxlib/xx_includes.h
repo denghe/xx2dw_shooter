@@ -237,3 +237,13 @@ using namespace std::chrono_literals;
 //#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
 #endif
+
+// helpers
+namespace xx {
+    enum class ForeachResult {
+        Continue,
+        Break,
+        RemoveAndContinue,
+        RemoveAndBreak
+    };
+}

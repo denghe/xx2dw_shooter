@@ -3,6 +3,8 @@
 
 // intrusive grid container
 
+// todo: replace base code to blocklist
+
 #pragma region Weak
 
 // single Grid item weak pointer
@@ -72,13 +74,6 @@ struct GridItemBase {
 	}
 };
 
-enum class GridForeachResult {
-	Continue,
-	Break,
-	RemoveAndContinue,
-	RemoveAndBreak
-};
-
 #pragma endregion
 
 #pragma region Grid
@@ -133,11 +128,11 @@ struct Grid {
 		cellFlags[fidx] &= ~bit;
 	}
 
-	// grid.CellsForeach([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	// grid.CellsForeach([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 	template<typename F>
 	void CellsForeach(F&& func) {
 		using R = xx::FuncR_t<F>;
-		static_assert(std::is_same_v<R, GridForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
+		static_assert(std::is_same_v<R, xx::ForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
 		for (int32_t i = 0; i < cellFlagsLen; ++i) {
 			if (!cellFlags[i]) continue;
 			auto b = i * sizeof(size_t) * 8;
@@ -154,13 +149,13 @@ struct Grid {
 							if (r) return;
 						} else {
 							switch (r) {
-							case GridForeachResult::Continue: break;
-							case GridForeachResult::Break: return;
-							case GridForeachResult::RemoveAndContinue: {
+							case xx::ForeachResult::Continue: break;
+							case xx::ForeachResult::Break: return;
+							case xx::ForeachResult::RemoveAndContinue: {
 								Remove(node);
 								break;
 							}
-							case GridForeachResult::RemoveAndBreak: {
+							case xx::ForeachResult::RemoveAndBreak: {
 								Remove(node);
 								return;
 							}
@@ -188,11 +183,11 @@ struct Grid {
 		bufFlags[fidx] &= ~bit;
 	}
 
-	// grid.BufForeach([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	// grid.BufForeach([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 	template<typename F>
 	void BufForeach(F&& func) {
 		using R = xx::FuncR_t<F>;
-		static_assert(std::is_same_v<R, GridForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
+		static_assert(std::is_same_v<R, xx::ForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
 		if (len <= 0) return;
 		auto bflen = (len - 1) / sizeof(size_t) + 1;
 		for (size_t i = 0; i < bflen; ++i) {
@@ -210,13 +205,13 @@ struct Grid {
 						if (r) return;
 					} else {
 						switch (r) {
-						case GridForeachResult::Continue: break;
-						case GridForeachResult::Break: return;
-						case GridForeachResult::RemoveAndContinue: {
+						case xx::ForeachResult::Continue: break;
+						case xx::ForeachResult::Break: return;
+						case xx::ForeachResult::RemoveAndContinue: {
 							Remove((int32_t)b);
 							break;
 						}
-						case GridForeachResult::RemoveAndBreak: {
+						case xx::ForeachResult::RemoveAndBreak: {
 							Remove((int32_t)b);
 							return;
 						}
@@ -227,7 +222,7 @@ struct Grid {
 		}
 	}
 
-	// grid.CellForeach([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	// grid.CellForeach([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 	template<typename F>
 	void CellForeach(int32_t cidx, F&& func) {
 		using R = xx::FuncR_t<F>;
@@ -242,13 +237,13 @@ struct Grid {
 					if (r) return;
 				} else {
 					switch (r) {
-					case GridForeachResult::Continue: break;
-					case GridForeachResult::Break: return;
-					case GridForeachResult::RemoveAndContinue: {
+					case xx::ForeachResult::Continue: break;
+					case xx::ForeachResult::Break: return;
+					case xx::ForeachResult::RemoveAndContinue: {
 						Remove(idx);
 						break;
 					}
-					case GridForeachResult::RemoveAndBreak: {
+					case xx::ForeachResult::RemoveAndBreak: {
 						Remove(idx);
 						return;
 					}
@@ -568,7 +563,7 @@ struct Grid {
 	};
 
 	// foreach target cell + round 8 = 9 cells
-	// grid.Foreach9([](T& o)->GridForeachResult { o...; return GridForeachResult::xxxxx; });
+	// grid.Foreach9([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 	template<typename F>
 	void Foreach9(XY const& pos, F&& func) {
 		using R = xx::FuncR_t<F>;
@@ -588,14 +583,14 @@ struct Grid {
 						if (r) return;
 					} else {
 						switch (r) {
-						case GridForeachResult::Continue: break;
-						case GridForeachResult::Break: return;
-						case GridForeachResult::RemoveAndContinue:
+						case xx::ForeachResult::Continue: break;
+						case xx::ForeachResult::Break: return;
+						case xx::ForeachResult::RemoveAndContinue:
 						{
 							Remove(idx);
 							break;
 						}
-						case GridForeachResult::RemoveAndBreak:
+						case xx::ForeachResult::RemoveAndBreak:
 						{
 							Remove(idx);
 							return;

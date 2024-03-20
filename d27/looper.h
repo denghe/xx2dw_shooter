@@ -13,7 +13,7 @@ struct Shape {
 
 
 struct ShapeCircle : Shape {
-	static constexpr float cLifeSpan{ 0.1 };
+	static constexpr float cLifeSpan{ 0.1f };
 	static constexpr int32_t cUpdateMultipleTimes{ 1 };
 	static constexpr float cSpeed{ 30000.f / gDesign.fps / cUpdateMultipleTimes };
 	XY basePos{};

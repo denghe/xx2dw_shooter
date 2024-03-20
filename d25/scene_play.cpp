@@ -151,8 +151,10 @@ void ScenePlay::BeforeUpdate() {
 				}
 			}
 		}
-		if (mbs && lastMousePos != m.pos) {		// mouse down + moved == dragging
+		if (mbs && Calc::DistancePow2(lastMousePos, m.pos) > 16) {		// mouse down + moved == dragging
 			dragging = true;
+		}
+		if (dragging) {
 			camera.original = mp - mouseOffset;
 		}
 	}
@@ -217,6 +219,7 @@ void ScenePlay::Draw() {
 	Quad().SetFrame(gRes.td_cell_mouse_focus).SetAnchor({ 0, 1 })
 		.SetScale(camera.scale)
 		.SetPosition(camera.ToGLPos(XY{ mc * gCfg.unitSize, mr * gCfg.unitSize }))
+		.SetColor((m.btnStates[0] && !dragging) ? RGBA8_Red: RGBA8_White)
 		.Draw();
 
 	// draw focus

@@ -2,6 +2,18 @@
 #include "looper.h"
 #include "scene_main_menu.h"
 #include "scene_test1.h"
+#include <xx_blocklist.h>
+
+struct Foo {
+	XX_BLOCK_LIST_TO_WEAK_IMPL(Foo);
+	int i{ 123 };
+};
+
+struct Bar {
+	XX_BLOCK_LIST_TO_WEAK_IMPL(Bar);
+	std::string name;
+};
+
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
@@ -18,10 +30,20 @@ void SceneMainMenu::Init() {
 		gLooper.DelaySwitchTo<Test1::Scene>();
 	}, 3);
 
-	//rootNode->MakeChildren<Button>()->Init(3, basePos + XY{ 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg, U"stage2", [&]() {
-	//	gLooper.DelaySwitchTo<ScenePlay>();
-	//}, 3);
 
+	xx::BlockList<Foo> foos;
+	auto& foo = foos.Emplace();
+	auto ptr = foo.ToWeak();
+	if (ptr) {
+		xx::CoutN("foo exists. foo.i = ", ptr().i);
+	}
+	foos.Remove(foo);
+	if (!ptr) {
+		xx::CoutN("foo does not exists.");
+	}
+
+	// todo: more test
+	// todo: BlockLists
 }
 
 void SceneMainMenu::Draw() {
