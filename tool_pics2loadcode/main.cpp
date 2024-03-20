@@ -16,60 +16,7 @@ int main() {
 		fns.emplace_back(sv);
 	}
 
-	std::string h, c;
-
-	xx::Append(h, R"#(.h:
-
-)#");
-
-	xx::Append(c, R"#(
-
-.cpp:
-
-// begin load / download textures
-std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
-std::string picRoot("put root / path here /");
-)#");
-
-	for (auto& fn : fns) {
-
-		xx::AppendFormat(h, R"#(
-xx::Ref<Frame> frame_{0};)#", fn);
-
-		xx::AppendFormat(c, R"#(
-ffs.emplace_back(picRoot + "{0}.png", &frame_{0});)#", fn);
-	}
-
-	xx::Append(c, R"#(
-
-// load / download
-#ifdef __EMSCRIPTEN__
-	int32_t downloadCount{};
-#endif
-	for (auto& ff : ffs) {
-#ifdef __EMSCRIPTEN__
-	tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
-		auto& ff = *pff;
-		*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
-		++downloadCount;
-	});
-#else
-	*ff.second = LoadFrame(ff.first);
-#endif
-}
-#ifdef __EMSCRIPTEN__
-	while (downloadCount < ffs.size()) co_yield 0;
-#endif
-
-// batch combine textures
-auto ok = DynamicTexturePacker<512>::Pack(ffs);
-assert(ok);
-
-)#");
-
-
-	// file name style: prefix _number [ _number ]
-	// group by prefix_ [ _number ]
+	// group by prefix...._number
 	std::map<std::string_view, std::vector<std::string_view>> kvs;
 	for (auto& fn : fns) {
 		std::string_view sv(fn);
@@ -81,27 +28,108 @@ assert(ok);
 		}
 	}
 
-	// gen group name frames_xxxx
+	std::string h, c;
+
+	xx::Append(h, R"#(#include <engine.h>
+
+struct ResFrames {
+	xx::Task<> AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame>*>>& ffs, std::string picRoot, int32_t texSiz = 2048);
+	xx::Task<> AsyncLoad(std::string picRoot, int32_t texSiz = 2048);
+
+)#");
+
+	for (auto& fn : fns) {
+		xx::AppendFormat(h, R"#(
+	xx::Ref<Frame> {0};)#", fn);
+	}
+
+	if (!kvs.empty()) {
+		xx::Append(h, R"#(
+)#");
+	}
+
 	for (auto&& kv : kvs) {
 		xx::AppendFormat(h, R"(
-xx::Listi32<xx::Ref<Frame>> frames_{0};)", kv.first);
+	xx::Listi32<xx::Ref<Frame>> {0}_;)", kv.first);
+	}
 
+	xx::Append(h, R"#(
+};
+)#");
+
+
+	xx::Append(c, R"#(#include "pch.h"
+#include "res_frames.h"
+
+xx::Task<> ResFrames::AsyncLoad(std::string picRoot, int32_t texSiz) {
+	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
+	co_return co_await AsyncLoad(ffs, picRoot, texSiz);
+}
+
+xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame>*>>& ffs, std::string picRoot, int32_t texSiz) {)#");
+
+	for (auto& fn : fns) {
+		xx::AppendFormat(c, R"#(
+	ffs.emplace_back(picRoot + "{0}.png", &{0});)#", fn);
+	}
+
+	xx::Append(c, R"#(
+
+	// load / download
+#ifdef __EMSCRIPTEN__
+	int32_t downloadCount{};
+#endif
+	for (auto& ff : ffs) {
+#ifdef __EMSCRIPTEN__
+		tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
+			auto& ff = *pff;
+			*ff.second = co_await EngineBase3::Instance().AsyncLoadFrameFromUrl(ff.first);
+			++downloadCount;
+		});
+#else
+		*ff.second = EngineBase3::Instance().LoadFrame(ff.first);
+#endif
+	}
+#ifdef __EMSCRIPTEN__
+	while (downloadCount < ffs.size()) co_yield 0;
+#endif
+
+	// batch combine textures
+	if (texSiz) {
+		auto ok = DynamicTexturePacker<>::Pack(ffs, texSiz);
+		assert(ok);
+	}
+)#");
+
+	if (!kvs.empty()) {
+		xx::Append(c, R"#(
+	// fill groups
+)#");
+	}
+
+	for (auto&& kv : kvs) {
 		for (auto&& s : kv.second) {
 			xx::AppendFormat(c, R"(
-frames_{0}.Add(frame_{0}_{1});)", kv.first, s);
+	{0}_.Add({0}_{1});)", kv.first, s);
 		}
 	}
 
-	// combine
-	h.append(c);
+	xx::Append(c, R"#(
+	co_return;
+}
+)#");
 
 	// save to file
-	if (int r = xx::WriteAllBytes("code.txt", h.data(), h.size())) {
-		std::cerr << "write file code.txt failed! r = " << r << std::endl;
+	if (int r = xx::WriteAllBytes("res_frames.h", h.data(), h.size())) {
+		std::cerr << "write file res_frames.h failed! r = " << r << std::endl;
+		return -1;
+	}
+	if (int r = xx::WriteAllBytes("res_frames.cpp", c.data(), c.size())) {
+		std::cerr << "write file res_frames.h failed! r = " << r << std::endl;
 		return -1;
 	}
 
-	xx::CoutFormat(R"(finished! handled {0} files! generated code.txt! press any key continue...)", fns.size());
+	xx::CoutFormat(R"(finished! handled {0} files! generated res_frames.h & cpp! press any key continue...)", fns.size());
 	std::cin.get();
 
 	return 0;

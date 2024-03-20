@@ -36,7 +36,7 @@
 //
 //void Monster1::Draw() {
 //	auto& camera = gSceneTest1->camera;
-//	auto& q = Quad::DrawOnce(gLooper.frame_td_shape_circle);
+//	auto& q = Quad::DrawOnce(gRes.td_shape_circle);
 //	q.pos = camera.ToGLPos(pos);
 //	q.anchor = cAnchor;
 //	q.scale = XY::Make(camera.scale) * (radius / cRadius);

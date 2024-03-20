@@ -13,7 +13,7 @@ namespace Tower {
 	void Cannon::Draw() {
 		auto& camera = gScenePlay->camera;
 		{
-			auto& q = Quad::DrawOnce(gLooper.frame_td_tower_base);
+			auto& q = Quad::DrawOnce(gRes.td_tower_base);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
 			q.scale = XY::Make(camera.scale);
@@ -22,7 +22,7 @@ namespace Tower {
 			q.color = RGBA8_White;
 		}
 		{
-			auto& q = Quad::DrawOnce(gLooper.frame_td_icon_cannon1);
+			auto& q = Quad::DrawOnce(gRes.td_icon_cannon1);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
 			q.scale = XY::Make(camera.scale);

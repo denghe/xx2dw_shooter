@@ -5,9 +5,9 @@
 #include <engine_quad.h>
 #include <engine_frames.h>
 
-template<int maxTextureWidthHeight_ = 4096>
+template<int32_t maxTextureWidthHeight_ = 4096>
 struct DynamicTexturePacker : Frames {
-    static constexpr int maxTextureWidthHeight = maxTextureWidthHeight_;
+    static constexpr int32_t maxTextureWidthHeight = maxTextureWidthHeight_;
 
     void Clear() {
         frames.clear();
@@ -16,7 +16,7 @@ struct DynamicTexturePacker : Frames {
     // need ogl frame env
     // return true: success
     template<bool newFrame = false>
-    bool Fill(std::vector<xx::Ref<Frame>>& subFrames) {
+    bool Fill(std::vector<xx::Ref<Frame>>& subFrames, int32_t texSiz = maxTextureWidthHeight_) {
         using namespace rect_pack_2d;
         frames.clear();
         frames.reserve(subFrames.size());
@@ -30,7 +30,7 @@ struct DynamicTexturePacker : Frames {
             rectptrs.push_back(&r);
         }
         std::vector<bin> bins;
-        if (!pack(rectptrs.data(), (int)rectptrs.size(), maxTextureWidthHeight, false, bins)) return false;
+        if (!pack(rectptrs.data(), (int32_t)rectptrs.size(), texSiz, false, bins)) return false;
 
         FrameBuffer fb(true);
         for (auto& bin : bins) {
@@ -64,23 +64,23 @@ struct DynamicTexturePacker : Frames {
         return true;
     }
 
-    bool Fill(std::vector<xx::Ref<GLTexture>> const& subTexs) {
+    bool Fill(std::vector<xx::Ref<GLTexture>> const& subTexs, int32_t texSiz = maxTextureWidthHeight_) {
         std::vector<xx::Ref<Frame>> fs;
         fs.reserve(subTexs.size());
         for (auto& t : subTexs) {
             fs.emplace_back(Frame::Create(t));
         }
-        return Fill(fs);
+        return Fill(fs, texSiz);
     }
 
 
-    inline static bool Pack(std::vector<std::pair<std::string, xx::Ref<Frame>*>> const& ffs) {
+    inline static bool Pack(std::vector<std::pair<std::string, xx::Ref<Frame>*>> const& ffs, int32_t texSiz = maxTextureWidthHeight_) {
         std::vector<xx::Ref<Frame>> tmp;
         for (auto& ff : ffs) {
             tmp.emplace_back(*ff.second);
         }
         DynamicTexturePacker dtp;
-        if (!dtp.Fill(tmp)) return false;
+        if (!dtp.Fill(tmp, texSiz)) return false;
 
         for (size_t i = 0, e = tmp.size(); i < e; ++i) {
             *ffs[i].second = tmp[i];

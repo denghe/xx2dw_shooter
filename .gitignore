@@ -4,4 +4,3 @@ cmake-build-*
 .vs
 web
 *.TMP
-/map_td3/pics/code.txt

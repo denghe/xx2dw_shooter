@@ -69,7 +69,7 @@ void ScenePlay::Init() {
 	for (int i = 0; i < e; ++i) {
 		auto gid = layer->gids[i];
 		if (auto& gi = map->gidInfos[gid]) {
-			if (gi.frame == gLooper.frame_td_cell_space) {
+			if (gi.frame == gRes.td_cell_space) {
 				// make some Tower
 				grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
 			}
@@ -214,7 +214,7 @@ void ScenePlay::Draw() {
 	auto mp = camera.ToLogicPos(m.pos);
 	auto mc = (int32_t)mp.x / (int32_t)gCfg.unitSize;
 	auto mr = (int32_t)mp.y / (int32_t)gCfg.unitSize;
-	Quad().SetFrame(gLooper.frame_td_cell_mouse_focus).SetAnchor({ 0, 1 })
+	Quad().SetFrame(gRes.td_cell_mouse_focus).SetAnchor({ 0, 1 })
 		.SetScale(camera.scale)
 		.SetPosition(camera.ToGLPos(XY{ mc * gCfg.unitSize, mr * gCfg.unitSize }))
 		.Draw();

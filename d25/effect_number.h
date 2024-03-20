@@ -34,7 +34,7 @@ struct EffectNumber  {
 
 	// pos: original position,  dist: determine move direction
 	void Init(XY const& pos_, XY const& dist_, RGBA8 color_, int value_) {
-		texId = gLooper.frames_number_outlined[0]->tex->GetValue();
+		texId = gRes.number_outlined_[0]->tex->GetValue();
 		FillBuf(value_);
 		pos = { pos_.x - cCharPixelWidth * cScale * len / 2, pos_.y };	// calculate center point
 		inc = dist_.MakeNormalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);	// calculate move frame inc with random speed
@@ -68,7 +68,7 @@ struct EffectNumber  {
 		auto basePos = camera.ToGLPos(pos);
 		auto scale = camera.scale * cScale;
 		auto widthInc = cCharPixelWidth * scale;
-		auto& fs = gLooper.frames_number_outlined;
+		auto& fs = gRes.number_outlined_;
 		for (int i = 0; i < len; ++i) {
 			auto& q = qs[i];
 			q.anchor = { 0, 0.5f };

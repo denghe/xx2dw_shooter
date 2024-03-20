@@ -48,7 +48,7 @@ namespace Effect {
 	void ExplosionManager::Draw() {
 		auto& camera = gScenePlay->camera;
 		auto count = items.len;
-		auto& f = *gLooper.frame_td_effect_1;
+		auto& f = *gRes.td_effect_1;
 		auto qs = gLooper.ShaderBegin(gLooper.shaderQuadInstance).Draw(f.tex->GetValue(), count);
 		for (auto i = 0; i < count; ++i) {
 			auto& o = items[i];

@@ -3,6 +3,8 @@
 #include "scene_main_menu.h"
 #include "map_path.h"
 
+ResFrames& gRes(gLooper.res);
+
 xx::Task<> Looper::MainTask() {
 
 	// begin load / download textures
@@ -10,90 +12,7 @@ xx::Task<> Looper::MainTask() {
 	std::string resRoot = "map_td3/";
 	std::string picRoot = resRoot + "pics/";
 
-	ffs.emplace_back(picRoot + "number_outlined_0.png", &frame_number_outlined_0);
-	ffs.emplace_back(picRoot + "number_outlined_1.png", &frame_number_outlined_1);
-	ffs.emplace_back(picRoot + "number_outlined_2.png", &frame_number_outlined_2);
-	ffs.emplace_back(picRoot + "number_outlined_3.png", &frame_number_outlined_3);
-	ffs.emplace_back(picRoot + "number_outlined_4.png", &frame_number_outlined_4);
-	ffs.emplace_back(picRoot + "number_outlined_5.png", &frame_number_outlined_5);
-	ffs.emplace_back(picRoot + "number_outlined_6.png", &frame_number_outlined_6);
-	ffs.emplace_back(picRoot + "number_outlined_7.png", &frame_number_outlined_7);
-	ffs.emplace_back(picRoot + "number_outlined_8.png", &frame_number_outlined_8);
-	ffs.emplace_back(picRoot + "number_outlined_9.png", &frame_number_outlined_9);
-	ffs.emplace_back(picRoot + "td_cell_empty.png", &frame_td_cell_empty);
-	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
-	ffs.emplace_back(picRoot + "td_cell_montain.png", &frame_td_cell_montain);
-	ffs.emplace_back(picRoot + "td_cell_mouse_focus.png", &frame_td_cell_mouse_focus);
-	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
-	ffs.emplace_back(picRoot + "td_cell_space.png", &frame_td_cell_space);
-	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
-	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
-	ffs.emplace_back(picRoot + "td_icon_arrow1.png", &frame_td_icon_arrow1);
-	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
-	ffs.emplace_back(picRoot + "td_icon_cannon1.png", &frame_td_icon_cannon1);
-	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
-	ffs.emplace_back(picRoot + "td_icon_coin.png", &frame_td_icon_coin);
-	ffs.emplace_back(picRoot + "td_icon_sun.png", &frame_td_icon_sun);
-	ffs.emplace_back(picRoot + "td_shape_block.png", &frame_td_shape_block);
-	ffs.emplace_back(picRoot + "td_shape_box.png", &frame_td_shape_box);
-	ffs.emplace_back(picRoot + "td_shape_circle.png", &frame_td_shape_circle);
-	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
-	ffs.emplace_back(picRoot + "td_shape_mask.png", &frame_td_shape_mask);
-	ffs.emplace_back(picRoot + "td_shape_rect.png", &frame_td_shape_rect);
-	ffs.emplace_back(picRoot + "td_shape_ring.png", &frame_td_shape_ring);
-	ffs.emplace_back(picRoot + "td_shape_trangle.png", &frame_td_shape_trangle);
-	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
-	ffs.emplace_back(picRoot + "td_ui_aim.png", &frame_td_ui_aim);
-	ffs.emplace_back(picRoot + "td_ui_border.png", &frame_td_ui_border);
-	ffs.emplace_back(picRoot + "td_ui_clock.png", &frame_td_ui_clock);
-	ffs.emplace_back(picRoot + "td_ui_coin.png", &frame_td_ui_coin);
-	ffs.emplace_back(picRoot + "td_ui_gear.png", &frame_td_ui_gear);
-	ffs.emplace_back(picRoot + "td_ui_gem.png", &frame_td_ui_gem);
-	ffs.emplace_back(picRoot + "td_ui_heart.png", &frame_td_ui_heart);
-	ffs.emplace_back(picRoot + "td_ui_menu.png", &frame_td_ui_menu);
-	ffs.emplace_back(picRoot + "td_ui_pause.png", &frame_td_ui_pause);
-	ffs.emplace_back(picRoot + "td_ui_run1.png", &frame_td_ui_run1);
-	ffs.emplace_back(picRoot + "td_ui_run2.png", &frame_td_ui_run2);
-	ffs.emplace_back(picRoot + "td_ui_run3.png", &frame_td_ui_run3);
-	ffs.emplace_back(picRoot + "td_ui_star.png", &frame_td_ui_star);
-	ffs.emplace_back(picRoot + "td_ui_sword.png", &frame_td_ui_sword);
-
-	// load / download
-#ifdef __EMSCRIPTEN__
-	int32_t downloadCount{};
-#endif
-	for (auto& ff : ffs) {
-#ifdef __EMSCRIPTEN__
-		tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
-			auto& ff = *pff;
-			*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
-			++downloadCount;
-			});
-#else
-		* ff.second = LoadFrame(ff.first);
-#endif
-	}
-#ifdef __EMSCRIPTEN__
-	while (downloadCount < ffs.size()) co_yield 0;
-#endif
-
-	// batch combine textures
-	auto ok = DynamicTexturePacker<512>::Pack(ffs);
-	assert(ok);
-
-
-	frames_number_outlined.Add(frame_number_outlined_0);
-	frames_number_outlined.Add(frame_number_outlined_1);
-	frames_number_outlined.Add(frame_number_outlined_2);
-	frames_number_outlined.Add(frame_number_outlined_3);
-	frames_number_outlined.Add(frame_number_outlined_4);
-	frames_number_outlined.Add(frame_number_outlined_5);
-	frames_number_outlined.Add(frame_number_outlined_6);
-	frames_number_outlined.Add(frame_number_outlined_7);
-	frames_number_outlined.Add(frame_number_outlined_8);
-	frames_number_outlined.Add(frame_number_outlined_9);
-	frames_td_effect.Add(frame_td_effect_1);
-
+	co_await res.AsyncLoad(ffs, picRoot, 1024);
 
 	// load stages tiled map data. layer names:  map,  fg1, fg2,  path
 	std::vector<std::string> mapStagePaths = {
@@ -132,7 +51,7 @@ xx::Task<> Looper::MainTask() {
 	sgrdd.Init(128, 32);
 
 	// ui cfg init
-	s9cfg.frame = frame_td_ui_border;
+	s9cfg.frame = res.td_ui_border;
 	s9cfg.texScale = { 1, 1 };
 	s9cfg.center = { 1, 1, 1, 1 };
 	s9cfg.color = { 0x55, 0x55, 0x55, 0xff };

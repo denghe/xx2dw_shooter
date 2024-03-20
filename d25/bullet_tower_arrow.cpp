@@ -68,7 +68,7 @@ namespace Bullet::Tower {
 		auto& camera = gScenePlay->camera;
 		{
 			// tail
-			auto& q = Quad::DrawOnce(gLooper.frame_td_shape_trangle);
+			auto& q = Quad::DrawOnce(gRes.td_shape_trangle);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = { 0.5f, 1.f };
 			q.scale = XY::Make(camera.scale) * cScale * XY { 1.f, cTailRatio };
@@ -79,7 +79,7 @@ namespace Bullet::Tower {
 		}
 		{
 			// body
-			auto& q = Quad::DrawOnce(gLooper.frame_td_shape_circle);
+			auto& q = Quad::DrawOnce(gRes.td_shape_circle);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
 			q.scale = XY::Make(camera.scale) * cScale;
