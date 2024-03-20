@@ -5,12 +5,15 @@
 
 xx::Task<> Looper::MainTask() {
 
+	// prepare
+	frames_number_outlined.Resize(10);
+
 	// begin load / download textures
 	std::string resRoot = "map_td3/";
 	std::string picRoot = resRoot + "pics/";
 
-	// prepare
-	frames_number_outlined.Resize(10);
+	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
+
 	ffs.emplace_back(picRoot + "number_outlined_0.png", &frames_number_outlined[0]);
 	ffs.emplace_back(picRoot + "number_outlined_1.png", &frames_number_outlined[1]);
 	ffs.emplace_back(picRoot + "number_outlined_2.png", &frames_number_outlined[2]);
