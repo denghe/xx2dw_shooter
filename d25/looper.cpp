@@ -5,65 +5,58 @@
 
 xx::Task<> Looper::MainTask() {
 
-	// prepare
-	frames_number_outlined.Resize(10);
-
 	// begin load / download textures
+	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
 	std::string resRoot = "map_td3/";
 	std::string picRoot = resRoot + "pics/";
 
-	std::vector<std::pair<std::string, xx::Ref<Frame>*>> ffs;
-
-	ffs.emplace_back(picRoot + "number_outlined_0.png", &frames_number_outlined[0]);
-	ffs.emplace_back(picRoot + "number_outlined_1.png", &frames_number_outlined[1]);
-	ffs.emplace_back(picRoot + "number_outlined_2.png", &frames_number_outlined[2]);
-	ffs.emplace_back(picRoot + "number_outlined_3.png", &frames_number_outlined[3]);
-	ffs.emplace_back(picRoot + "number_outlined_4.png", &frames_number_outlined[4]);
-	ffs.emplace_back(picRoot + "number_outlined_5.png", &frames_number_outlined[5]);
-	ffs.emplace_back(picRoot + "number_outlined_6.png", &frames_number_outlined[6]);
-	ffs.emplace_back(picRoot + "number_outlined_7.png", &frames_number_outlined[7]);
-	ffs.emplace_back(picRoot + "number_outlined_8.png", &frames_number_outlined[8]);
-	ffs.emplace_back(picRoot + "number_outlined_9.png", &frames_number_outlined[9]);
-
+	ffs.emplace_back(picRoot + "number_outlined_0.png", &frame_number_outlined_0);
+	ffs.emplace_back(picRoot + "number_outlined_1.png", &frame_number_outlined_1);
+	ffs.emplace_back(picRoot + "number_outlined_2.png", &frame_number_outlined_2);
+	ffs.emplace_back(picRoot + "number_outlined_3.png", &frame_number_outlined_3);
+	ffs.emplace_back(picRoot + "number_outlined_4.png", &frame_number_outlined_4);
+	ffs.emplace_back(picRoot + "number_outlined_5.png", &frame_number_outlined_5);
+	ffs.emplace_back(picRoot + "number_outlined_6.png", &frame_number_outlined_6);
+	ffs.emplace_back(picRoot + "number_outlined_7.png", &frame_number_outlined_7);
+	ffs.emplace_back(picRoot + "number_outlined_8.png", &frame_number_outlined_8);
+	ffs.emplace_back(picRoot + "number_outlined_9.png", &frame_number_outlined_9);
+	ffs.emplace_back(picRoot + "td_cell_empty.png", &frame_td_cell_empty);
+	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
+	ffs.emplace_back(picRoot + "td_cell_montain.png", &frame_td_cell_montain);
+	ffs.emplace_back(picRoot + "td_cell_mouse_focus.png", &frame_td_cell_mouse_focus);
+	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
+	ffs.emplace_back(picRoot + "td_cell_space.png", &frame_td_cell_space);
+	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
+	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
+	ffs.emplace_back(picRoot + "td_icon_arrow1.png", &frame_td_icon_arrow1);
+	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
+	ffs.emplace_back(picRoot + "td_icon_cannon1.png", &frame_td_icon_cannon1);
+	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
+	ffs.emplace_back(picRoot + "td_icon_coin.png", &frame_td_icon_coin);
+	ffs.emplace_back(picRoot + "td_icon_sun.png", &frame_td_icon_sun);
+	ffs.emplace_back(picRoot + "td_shape_block.png", &frame_td_shape_block);
+	ffs.emplace_back(picRoot + "td_shape_box.png", &frame_td_shape_box);
+	ffs.emplace_back(picRoot + "td_shape_circle.png", &frame_td_shape_circle);
+	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
+	ffs.emplace_back(picRoot + "td_shape_mask.png", &frame_td_shape_mask);
+	ffs.emplace_back(picRoot + "td_shape_rect.png", &frame_td_shape_rect);
+	ffs.emplace_back(picRoot + "td_shape_ring.png", &frame_td_shape_ring);
+	ffs.emplace_back(picRoot + "td_shape_trangle.png", &frame_td_shape_trangle);
+	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
+	ffs.emplace_back(picRoot + "td_ui_aim.png", &frame_td_ui_aim);
 	ffs.emplace_back(picRoot + "td_ui_border.png", &frame_td_ui_border);
-	ffs.emplace_back(picRoot + "td_ui_star.png", &frame_td_ui_star);
-	ffs.emplace_back(picRoot + "td_ui_gem.png", &frame_td_ui_gem);
-	ffs.emplace_back(picRoot + "td_ui_gear.png", &frame_td_ui_gear);
+	ffs.emplace_back(picRoot + "td_ui_clock.png", &frame_td_ui_clock);
 	ffs.emplace_back(picRoot + "td_ui_coin.png", &frame_td_ui_coin);
+	ffs.emplace_back(picRoot + "td_ui_gear.png", &frame_td_ui_gear);
+	ffs.emplace_back(picRoot + "td_ui_gem.png", &frame_td_ui_gem);
+	ffs.emplace_back(picRoot + "td_ui_heart.png", &frame_td_ui_heart);
 	ffs.emplace_back(picRoot + "td_ui_menu.png", &frame_td_ui_menu);
 	ffs.emplace_back(picRoot + "td_ui_pause.png", &frame_td_ui_pause);
 	ffs.emplace_back(picRoot + "td_ui_run1.png", &frame_td_ui_run1);
 	ffs.emplace_back(picRoot + "td_ui_run2.png", &frame_td_ui_run2);
 	ffs.emplace_back(picRoot + "td_ui_run3.png", &frame_td_ui_run3);
-	ffs.emplace_back(picRoot + "td_ui_clock.png", &frame_td_ui_clock);
-	ffs.emplace_back(picRoot + "td_ui_aim.png", &frame_td_ui_aim);
-	ffs.emplace_back(picRoot + "td_ui_heart.png", &frame_td_ui_heart);
+	ffs.emplace_back(picRoot + "td_ui_star.png", &frame_td_ui_star);
 	ffs.emplace_back(picRoot + "td_ui_sword.png", &frame_td_ui_sword);
-
-	ffs.emplace_back(picRoot + "td_icon_sun.png", &frame_td_icon_sun);
-	ffs.emplace_back(picRoot + "td_icon_coin.png", &frame_td_icon_coin);
-	ffs.emplace_back(picRoot + "td_icon_cannon1.png", &frame_td_icon_cannon1);
-	ffs.emplace_back(picRoot + "td_icon_cannon3.png", &frame_td_icon_cannon3);
-	ffs.emplace_back(picRoot + "td_icon_arrow1.png", &frame_td_icon_arrow1);
-	ffs.emplace_back(picRoot + "td_icon_arrow3.png", &frame_td_icon_arrow3);
-
-	ffs.emplace_back(picRoot + "td_cell_gold_mine.png", &frame_td_cell_gold_mine);
-	ffs.emplace_back(picRoot + "td_cell_water.png", &frame_td_cell_water);
-	ffs.emplace_back(picRoot + "td_cell_road.png", &frame_td_cell_road);
-	ffs.emplace_back(picRoot + "td_cell_mouse_focus.png", &frame_td_cell_mouse_focus);
-	ffs.emplace_back(picRoot + "td_cell_montain.png", &frame_td_cell_montain);
-	ffs.emplace_back(picRoot + "td_cell_space.png", &frame_td_cell_space);
-	ffs.emplace_back(picRoot + "td_cell_empty.png", &frame_td_cell_empty);
-
-	ffs.emplace_back(picRoot + "td_tower_base.png", &frame_td_tower_base);
-
-	ffs.emplace_back(picRoot + "td_shape_dot.png", &frame_td_shape_dot);
-	ffs.emplace_back(picRoot + "td_shape_ring.png", &frame_td_shape_ring);
-	ffs.emplace_back(picRoot + "td_shape_rect.png", &frame_td_shape_rect);
-	ffs.emplace_back(picRoot + "td_shape_trangle.png", &frame_td_shape_trangle);
-	ffs.emplace_back(picRoot + "td_shape_circle.png", &frame_td_shape_circle);
-
-	ffs.emplace_back(picRoot + "td_effect_1.png", &frame_td_effect_1);
 
 	// load / download
 #ifdef __EMSCRIPTEN__
@@ -75,9 +68,9 @@ xx::Task<> Looper::MainTask() {
 			auto& ff = *pff;
 			*ff.second = co_await AsyncLoadFrameFromUrl(ff.first);
 			++downloadCount;
-		});
+			});
 #else
-		*ff.second = LoadFrame(ff.first);
+		* ff.second = LoadFrame(ff.first);
 #endif
 	}
 #ifdef __EMSCRIPTEN__
@@ -87,6 +80,19 @@ xx::Task<> Looper::MainTask() {
 	// batch combine textures
 	auto ok = DynamicTexturePacker<512>::Pack(ffs);
 	assert(ok);
+
+
+	frames_number_outlined.Add(frame_number_outlined_0);
+	frames_number_outlined.Add(frame_number_outlined_1);
+	frames_number_outlined.Add(frame_number_outlined_2);
+	frames_number_outlined.Add(frame_number_outlined_3);
+	frames_number_outlined.Add(frame_number_outlined_4);
+	frames_number_outlined.Add(frame_number_outlined_5);
+	frames_number_outlined.Add(frame_number_outlined_6);
+	frames_number_outlined.Add(frame_number_outlined_7);
+	frames_number_outlined.Add(frame_number_outlined_8);
+	frames_number_outlined.Add(frame_number_outlined_9);
+	frames_td_effect.Add(frame_td_effect_1);
 
 
 	// load stages tiled map data. layer names:  map,  fg1, fg2,  path
