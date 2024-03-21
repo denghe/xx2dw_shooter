@@ -2,7 +2,7 @@
 #include "looper.h"
 #include "scene_main_menu.h"
 #include "scene_test1.h"
-#include <xx_blocklist.h>
+#include <xx_space.h>
 
 struct Base {
 	Base() = default;
@@ -25,44 +25,44 @@ struct Bar : Base {
 	XX_BLOCK_LIST_TO_WEAK_IMPL(Bar);
 };
 
-
-struct Level {
-	int i{};
-
-	xx::Task<> main = Main();
-	xx::Task<> Main() {
-		do {
-			play();
-			co_yield 0;
-		} while (i < 10);
-
-		xx::CoutN(i);
-
-		do {
-			score();
-			co_yield 0;
-		} while (i > 0);
-
-		xx::CoutN(i);
-	}
-
-	xx::Task<> play = Play();
-	xx::Task<> Play() {
-		while (true) {
-			++i;
-			co_yield 0;
-		}
-	}
-
-	xx::Task<> score = Score();
-	xx::Task<> Score() {
-		while (true) {
-			--i;
-			co_yield 0;
-		}
-	}
-
-};
+//
+//struct Level {
+//	int i{};
+//
+//	xx::Task<> main = Main();
+//	xx::Task<> Main() {
+//		do {
+//			play();
+//			co_yield 0;
+//		} while (i < 10);
+//
+//		xx::CoutN(i);
+//
+//		do {
+//			score();
+//			co_yield 0;
+//		} while (i > 0);
+//
+//		xx::CoutN(i);
+//	}
+//
+//	xx::Task<> play = Play();
+//	xx::Task<> Play() {
+//		while (true) {
+//			++i;
+//			co_yield 0;
+//		}
+//	}
+//
+//	xx::Task<> score = Score();
+//	xx::Task<> Score() {
+//		while (true) {
+//			--i;
+//			co_yield 0;
+//		}
+//	}
+//
+//};
 
 
 

@@ -138,20 +138,7 @@ namespace xx {
 
 		template<typename U = T, typename...Args>
 		U& Emplace(Args&&... args) {
-			int32_t index;
-			if (freeCount > 0) {
-				index = freeHead;
-				freeHead = RefNode(index).next;
-				freeCount--;
-			} else {
-				if (len == cap) {
-					Reserve();
-				}
-				index = len;
-				len++;
-			}
-			FlagSet(index);
-
+			auto index = Alloc();
 			auto& o = RefNode(index);
 			o.version = GenVersion();
 			o.next = -1;						// todo: fill ? order by create time ?
@@ -192,6 +179,23 @@ namespace xx {
 		}
 
 	protected:
+		XX_FORCE_INLINE int32_t Alloc() {
+			int32_t index;
+			if (freeCount > 0) {
+				index = freeHead;
+				freeHead = RefNode(index).next;
+				freeCount--;
+			} else {
+				if (len == cap) {
+					Reserve();
+				}
+				index = len;
+				len++;
+			}
+			FlagSet(index);
+			return index;
+		}
+
 		XX_FORCE_INLINE uint32_t GenVersion() {
 			if (version == 0xFFFFFFFFu) {
 				version = 1;
