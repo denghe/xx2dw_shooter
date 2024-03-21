@@ -814,7 +814,7 @@ struct GridsEx {
 
 	template<typename T>
 	Grid<T>& Get() const {
-		return ((Grid<T>*) & gs)[xx::TupleTypeIndex_v<T, Tup>];		// todo:  xx::Get<T>( SimpleTuple
+		return xx::Get<Grid<T>>(gs);
 	}
 
 	template<typename ...US>

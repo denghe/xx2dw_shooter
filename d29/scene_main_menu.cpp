@@ -4,14 +4,25 @@
 #include "scene_test1.h"
 #include <xx_blocklist.h>
 
-struct Foo {
-	XX_BLOCK_LIST_TO_WEAK_IMPL(Foo);
-	int i{ 123 };
+struct Base {
+	Base() = default;
+	Base(Base const&) = delete;
+	Base& operator=(Base const&) = delete;
+	virtual ~Base() {}
 };
 
-struct Bar {
-	XX_BLOCK_LIST_TO_WEAK_IMPL(Bar);
+struct Foo : Base {
+	static constexpr uint32_t cTypeId{ 0 };
+	int i{ 123 };
+
+	XX_BLOCK_LIST_TO_WEAK_IMPL(Foo);
+};
+
+struct Bar : Base {
+	static constexpr uint32_t cTypeId{ 1 };
 	std::string name;
+
+	XX_BLOCK_LIST_TO_WEAK_IMPL(Bar);
 };
 
 
@@ -37,13 +48,20 @@ void SceneMainMenu::Init() {
 	if (ptr) {
 		xx::CoutN("foo exists. foo.i = ", ptr().i);
 	}
+	foos.Foreach([](Foo& o) {
+		xx::CoutN("Foreach foo.i = ", o.i);
+	});
 	foos.Remove(foo);
 	if (!ptr) {
 		xx::CoutN("foo does not exists.");
 	}
+	foos.Foreach([](Foo& o) {
+		xx::CoutN("foo.i = ", o.i);
+	});
 
-	// todo: more test
-	// todo: BlockLists
+	xx::BlockLists<Base, xx::BlockListNodeBase, Foo, Bar> bls;
+	bls.Get<Foo>().Emplace();
+	bls.Get<Bar>().Emplace();
 }
 
 void SceneMainMenu::Draw() {
