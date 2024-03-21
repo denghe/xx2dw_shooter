@@ -254,12 +254,12 @@ namespace xx {
 			return (Node&)*container_of(pointer, Node, value);
 		}
 
-		XX_FORCE_INLINE operator bool() const noexcept {
+		XX_FORCE_INLINE bool Exists() const noexcept {
 			return pointer && version && version == RefNode().version;
 		}
 
 		XX_FORCE_INLINE T& operator()() const {
-			assert(*this);
+			assert(Exists());
 			return (T&)*pointer;
 		}
 
@@ -299,13 +299,13 @@ namespace xx {
 			return *(VersionNextIndexTypeId*)((char*)pointer - offset);
 		}
 
-		XX_FORCE_INLINE operator bool() const noexcept {
+		XX_FORCE_INLINE bool Exists() const noexcept {
 			auto& vi = RefVNIT();
 			return pointer && version && version == vi.version;
 		}
 
 		XX_FORCE_INLINE BT& operator()() const {
-			assert(*this);
+			assert(Exists());
 			return (BT&)*pointer;
 		}
 

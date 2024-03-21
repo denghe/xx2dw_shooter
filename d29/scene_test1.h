@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "looper.h"
 #include "effect_explosion.h"
+#include <xx_space.h>
 
 namespace Test1 {
 
@@ -15,10 +16,41 @@ namespace Test1 {
 	};
 	inline Cfg gCfg;
 
-	struct Wall {
-		XY pos{}, size{};
+	struct Shape {
+		XY pos{};
+	};
+
+	struct Box : Shape {
+		XY size{};
 		xx::FromTo<XY> xy;
-		void Init(XY const& pos_, XY const& size_);
+		void BoxInit(XY const& pos_, XY const& size_);
+	};
+
+	struct Block : Box {
+		int32_t hp{};
+		void Init(XY const& pos_, XY const& size_, int32_t hp_);
+		void Draw();
+	};
+
+	struct Ball : Shape {
+		float radius{};
+		XY inc{};
+		void Init(XY const& pos_, float radius_);
+		bool Update();
+		void Draw();
+	};
+
+	struct Wall {
+		xx::FromTo<Vec2<>> cidx;
+		xx::FromTo<XY> xy;
+		void Init(xx::FromTo<Vec2<>> const& cidx_);
+		void Draw();
+	};
+
+	struct Bar : Box {
+		float speed{};
+		void Init(XY const& pos_, XY const& size_, float speed_);
+		bool Update();
 		void Draw();
 	};
 
@@ -33,6 +65,8 @@ namespace Test1 {
 		xx::Task<> MainTask();
 
 		xx::Listi32<Wall> walls;
+		xx::SpaceGrid<Block> blocks;
+		xx::Listi32<Ball> balls;
 
 		virtual void Init() override;
 		virtual void BeforeUpdate() override;
