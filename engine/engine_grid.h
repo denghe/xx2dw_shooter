@@ -842,7 +842,7 @@ struct GridsEx {
 	void Remove(GridsWeak const& gw) {
 		if constexpr (std::is_void_v<T>) {
 			auto& g = ((Grid<BT>*) & gs)[gw.typeId];
-			auto& o = g.Get(gw);
+			auto& o = g.Get(gw);	// todo: test
 			g.Remove(gw);
 			deleters[gw.typeId](&o);
 		} else {

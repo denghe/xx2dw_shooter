@@ -20,10 +20,50 @@ struct Foo : Base {
 
 struct Bar : Base {
 	static constexpr uint32_t cTypeId{ 1 };
-	std::string name;
+	std::string name{ "asdf" };
 
 	XX_BLOCK_LIST_TO_WEAK_IMPL(Bar);
 };
+
+
+struct Level {
+	int i{};
+
+	xx::Task<> main = Main();
+	xx::Task<> Main() {
+		do {
+			play();
+			co_yield 0;
+		} while (i < 10);
+
+		xx::CoutN(i);
+
+		do {
+			score();
+			co_yield 0;
+		} while (i > 0);
+
+		xx::CoutN(i);
+	}
+
+	xx::Task<> play = Play();
+	xx::Task<> Play() {
+		while (true) {
+			++i;
+			co_yield 0;
+		}
+	}
+
+	xx::Task<> score = Score();
+	xx::Task<> Score() {
+		while (true) {
+			--i;
+			co_yield 0;
+		}
+	}
+
+};
+
 
 
 void SceneMainMenu::Init() {
@@ -42,26 +82,48 @@ void SceneMainMenu::Init() {
 	}, 3);
 
 
-	xx::BlockList<Foo> foos;
-	auto& foo = foos.Emplace();
-	auto ptr = foo.ToWeak();
-	if (ptr) {
-		xx::CoutN("foo exists. foo.i = ", ptr().i);
-	}
-	foos.Foreach([](Foo& o) {
-		xx::CoutN("Foreach foo.i = ", o.i);
-	});
-	foos.Remove(foo);
-	if (!ptr) {
-		xx::CoutN("foo does not exists.");
-	}
-	foos.Foreach([](Foo& o) {
-		xx::CoutN("foo.i = ", o.i);
-	});
+	//xx::BlockList<Foo> foos;
+	//auto& foo = foos.Emplace();
+	//auto ptr = foo.ToWeak();
+	//if (ptr) {
+	//	xx::CoutN("foo exists. foo.i = ", ptr().i);
+	//}
+	//foos.Foreach([](Foo& o) {
+	//	xx::CoutN("Foreach foo.i = ", o.i);
+	//});
+	//foos.Remove(foo);
+	//if (!ptr) {
+	//	xx::CoutN("foo does not exists.");
+	//}
+	//foos.Foreach([](Foo& o) {
+	//	xx::CoutN("foo.i = ", o.i);
+	//});
+
+
+	//Level level;
+	//while (!level.main.Resume()) {}
 
 	xx::BlockLists<Base, xx::BlockListNodeBase, Foo, Bar> bls;
-	bls.Get<Foo>().Emplace();
-	bls.Get<Bar>().Emplace();
+	auto& foo = bls.Get<Foo>().Emplace();
+	auto& bar = bls.Get<Bar>().Emplace();
+	auto fooPtr = xx::BlockListsWeak<Base, xx::BlockListNodeBase>::Make(foo);
+	auto barPtr = xx::BlockListsWeak<Base, xx::BlockListNodeBase>::Make(bar);
+	if (fooPtr) {
+		xx::CoutN("foo exists. foo.i = ", fooPtr.As<Foo>().i);
+	}
+	if (barPtr) {
+		xx::CoutN("bar exists. bar.name = ", barPtr.As<Bar>().name);
+	}
+	bls.Remove(foo);
+	bls.Remove(barPtr);
+	if (fooPtr) {
+		xx::CoutN("foo exists. foo.i = ", fooPtr.As<Foo>().i);
+	}
+	if (barPtr) {
+		xx::CoutN("bar exists. bar.name = ", barPtr.As<Bar>().name);
+	}
+
+
 }
 
 void SceneMainMenu::Draw() {
