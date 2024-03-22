@@ -54,10 +54,15 @@ namespace Effect {
 
 	void ExplosionManager::Draw() {
 		auto& e = EngineBase3::Instance();
+		auto& s = e.shaderQuadInstance;
 		auto count = items.len;
-		auto qs = e.ShaderBegin(e.shaderQuadInstance).Draw(frame->tex->GetValue(), count);
-		for (auto i = 0; i < count; ++i) {
-			auto& o = items[i];
+		int32_t j{};
+	LabLoop:
+		auto left = s.maxQuadNums - s.quadCount;
+		auto siz = std::min( left ? left : s.maxQuadNums, count);
+		auto qs = e.ShaderBegin(s).Draw(frame->tex->GetValue(), siz);
+		for (int32_t i = 0; i < siz; ++i) {
+			auto& o = items[j + i];
 			auto& q = qs[i];
 			q.pos = camera->ToGLPos(o.pos);
 			q.anchor = { 0.5f, 0.5f };
@@ -67,6 +72,9 @@ namespace Effect {
 			q.color = o.color;
 			q.texRect = frame->textureRect;
 		}
+		j += siz;
+		count -= siz;
+		if (count > 0) goto LabLoop;
 	}
 
 }
