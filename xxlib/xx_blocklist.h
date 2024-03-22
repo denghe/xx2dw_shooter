@@ -12,9 +12,124 @@ namespace xx {
 		T value;
 	};
 
-	// has member: static constexpr int32_t T::cTypeId 
+
 	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
+	struct BlockList;
+
+
+	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
+	struct BlockListWeak {
+		using Node = BlockNode<T>;
+		static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
+
+		T* pointer{};
+		uint32_t version{};
+
+		BlockListWeak() = default;
+		BlockListWeak(BlockListWeak const&) = default;
+		BlockListWeak& operator=(BlockListWeak const&) = default;
+		BlockListWeak(BlockListWeak &&) = default;
+		BlockListWeak& operator=(BlockListWeak &&) = default;
+
+		BlockListWeak(T const& v) {
+			operator=(v);
+		}
+		BlockListWeak& operator=(T const& v) {
+			auto& o = *container_of(&v, Node, value);
+			pointer = (T*)&v;
+			version = o.version;
+			return *this;
+		}
+
+		XX_FORCE_INLINE Node& RefNode() const {
+			return (Node&)*container_of(pointer, Node, value);
+		}
+
+		XX_FORCE_INLINE bool Exists() const noexcept {
+			return pointer && version && version == RefNode().version;
+		}
+
+		XX_FORCE_INLINE T& operator()() const {
+			assert(Exists());
+			return (T&)*pointer;
+		}
+
+		XX_FORCE_INLINE void Reset() {
+			pointer = {};
+			version = 0;
+		}
+	};
+
+
+	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
+	struct BlockListHolder {
+		using OT = BlockList<T, BlockNode>;
+		using WT = BlockListWeak<T, BlockNode>;
+
+		OT* owner{};
+		WT weak;
+
+		BlockListHolder() = default;
+		BlockListHolder(BlockListHolder const&) = default;
+		BlockListHolder& operator=(BlockListHolder const&) = default;
+		BlockListHolder(BlockListHolder&&) = default;
+		BlockListHolder& operator=(BlockListHolder&&) = default;
+
+		~BlockListHolder();
+
+		template<typename U>
+		BlockListHolder(OT& owner_, U&& u) {
+			Set(owner_, u);
+		}
+
+		XX_FORCE_INLINE BlockListHolder& Set(OT& owner_, T const& v) {
+			owner = &owner_;
+			weak = v;
+			return *this;
+		}
+
+		XX_FORCE_INLINE BlockListHolder& Set(OT& owner_, WT const& w) {
+			owner = &owner_;
+			weak = w;
+			return *this;
+		}
+
+		XX_FORCE_INLINE BlockListHolder& Set(OT& owner_) {
+			owner = &owner_;
+			return *this;
+		}
+
+		XX_FORCE_INLINE BlockListHolder& Set(T const& v) {
+			assert(owner);
+			weak = v;
+			return *this;
+		}
+
+		XX_FORCE_INLINE BlockListHolder& Set(WT const& w) {
+			assert(owner);
+			weak = w;
+			return *this;
+		}
+
+		XX_FORCE_INLINE void Reset() {
+			owner = {};
+		}
+
+		XX_FORCE_INLINE bool Exists() const noexcept {
+			return owner && weak.Exists();
+		}
+
+		XX_FORCE_INLINE T& operator()() const {
+			assert(Exists());
+			return weak();
+		}
+	};
+
+	// T has member: static constexpr int32_t cTypeId{ ?? };
+	template<typename T, template<typename...> typename BlockNode>
 	struct BlockList {
+		using HolderType = BlockListHolder<T, BlockNode>;
+		using WeakType = BlockListWeak<T, BlockNode>;
 		using Node = BlockNode<T>;
 		static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
 
@@ -47,6 +162,7 @@ namespace xx {
 			}
 		}
 
+		// .Foreach([](T& o)->xx::ForeachResult {    });
 		template<bool clearBlockFlags = false, typename F>
 		void Foreach(F&& func) {
 			using R = xx::FuncR_t<F>;
@@ -136,20 +252,36 @@ namespace xx {
 			return false;
 		}
 
-		template<typename U = T, typename...Args>
-		U& Emplace(Args&&... args) {
+		template<typename...Args>
+		T& Emplace(Args&&... args) {
 			auto index = Alloc();
 			auto& o = RefNode(index);
 			o.version = GenVersion();
 			o.next = -1;						// todo: fill ? order by create time ?
 			o.index = index;
 			o.typeId = T::cTypeId;
-			return *new (&o.value) U(std::forward<Args>(args)...);
+			return *new (&o.value) T(std::forward<Args>(args)...);
+		}
+
+		template<typename...Args>
+		WeakType WeakEmplace(Args&&... args) {
+			return { Emplace(std::forward<Args>(args)...) };
+		}
+
+		template<typename...Args>
+		HolderType HolderEmplace(Args&&... args) {
+			return { *this, Emplace(std::forward<Args>(args)...) };
 		}
 
 		void Remove(T const& v) {
 			auto p = container_of(&v, Node, value);
 			Remove(p->index);
+		}
+
+		void Remove(WeakType const& wt) {
+			if (wt.Exists()) {
+				Remove(wt.RefNode().index);
+			}
 		}
 
 		void Remove(int32_t index) {
@@ -165,7 +297,7 @@ namespace xx {
 			FlagUnset(index);
 		}
 
-		// for weak type ( wrong type: T )
+		// for unknown type ( wrong type: T )
 		void Remove(int32_t index, size_t tSiz, void(*deleter)(void*)) {
 			auto& o = *(Node*)((char*)&RefBlock(index).buf + tSiz * index);
 			deleter(&o.value);
@@ -240,39 +372,11 @@ namespace xx {
 	};
 
 
-
-	// unsafe
-	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
-	struct BlockListWeak {
-		using Node = BlockNode<T>;
-		static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
-
-		T* pointer{};
-		uint32_t version{};
-
-		XX_FORCE_INLINE Node& RefNode() const {
-			return (Node&)*container_of(pointer, Node, value);
-		}
-
-		XX_FORCE_INLINE bool Exists() const noexcept {
-			return pointer && version && version == RefNode().version;
-		}
-
-		XX_FORCE_INLINE T& operator()() const {
-			assert(Exists());
-			return (T&)*pointer;
-		}
-
-		XX_FORCE_INLINE void Reset() {
-			pointer = {};
-			version = 0;
-		}
-
-		static BlockListWeak Make(T const& v) {
-			auto& o = *container_of(&v, Node, value);
-			return { (T*)&v, o.version };
-		}
-	};
+	template<typename T, template<typename...> typename BlockNode>
+	BlockListHolder<T, BlockNode>:: ~BlockListHolder() {
+		if (!owner) return;
+		owner->Remove(weak);
+	}
 
 }
 

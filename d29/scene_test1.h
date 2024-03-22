@@ -16,11 +16,8 @@ namespace Test1 {
 	};
 	inline Cfg gCfg;
 
-	struct Shape {
+	struct Box {
 		XY pos{};
-	};
-
-	struct Box : Shape {
 		XY size{};
 		xx::FromTo<XY> xy;
 		void BoxInit(XY const& pos_, XY const& size_);
@@ -29,10 +26,12 @@ namespace Test1 {
 	struct Block : Box {
 		int32_t hp{};
 		void Init(XY const& pos_, XY const& size_, int32_t hp_);
+		bool Update();
 		void Draw();
 	};
 
-	struct Ball : Shape {
+	struct Ball {
+		XY pos{};
 		float radius{};
 		XY inc{};
 		void Init(XY const& pos_, float radius_);
@@ -54,19 +53,34 @@ namespace Test1 {
 		void Draw();
 	};
 
+	struct GlobalEffect {
+		static constexpr int32_t cTypeId{};
+		float z{};				// draw order
+		std::function<void()> draw;
+	};
+	struct ZDraw {
+		float z;
+		std::function<void()>* draw;
+	};
+
 	struct Scene : ::Scene {
 		xx::Shared<Node> rootNode;
 		int32_t frameNumber{};		// for increase game speed
 		int32_t gameSpeedRate{};	// game speed
 		Camera camera;
 		Rnd rnd;
-		Effect::ExplosionManager em;
+		Effect::ExplosionManager explosionManager;
 		xx::Task<> mainTask;
 		xx::Task<> MainTask();
 
 		xx::Listi32<Wall> walls;
 		xx::SpaceGrid<Block> blocks;
-		xx::Listi32<Ball> balls;
+		xx::ListLinki32<Ball> balls;
+		xx::BlockList<GlobalEffect> globalEffects;
+		xx::Listi32<ZDraw> zdraws;	// for sort draw
+
+		xx::Listi32<int32_t> avaliableBlockIndexs;
+		void Shuffle();
 
 		virtual void Init() override;
 		virtual void BeforeUpdate() override;

@@ -4,6 +4,17 @@
 
 namespace Test1 {
 
+	void Scene::Shuffle() {
+		auto len = avaliableBlockIndexs.len;
+		if (!len) return;
+		auto buf = avaliableBlockIndexs.buf;
+		for (int32_t i = 0, tar = 1; ++i != len; ++tar) {
+			if (int32_t offset = rnd.Next(tar); offset != tar) {
+				std::swap(buf[i], buf[offset]);
+			}
+		}
+	}
+
 	void Scene::Init() {
 		gScene = this;
 
@@ -16,40 +27,72 @@ namespace Test1 {
 		camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
 		camera.SetOriginal(gCfg.mapCenterPos);
 
-		em.Init(&frameNumber, &camera, &rnd, gRes.td_effect_1);
+		explosionManager.Init(&frameNumber, &camera, &rnd, gRes.td_effect_1);
 
 		mainTask = MainTask();
 
 		gameSpeedRate = 1;
 
+		// fill avaliableBlockIndexs
+		auto maxRowBlocksCount = gCfg.numCols - 3 - 2;
+		for (int32_t row = 2; row <= gCfg.numRows - 3; ++row) {
+			for (int32_t col = 2; col <= gCfg.numCols - 3; ++col) {
+				avaliableBlockIndexs.Emplace(maxRowBlocksCount * row + col);
+			}
+		}
+
+		// make walls
 		walls.Emplace().Init({ { 0, 0 }, { 0, gCfg.numRows - 1 } });
 		walls.Emplace().Init({ { 1, 0 }, { gCfg.numCols - 1, 0 } });
 		walls.Emplace().Init({ { gCfg.numCols - 1, 0 }, { gCfg.numCols - 1, gCfg.numRows - 1 } });
+
 	}
+
+	/******************************************************************************************************/
+	/******************************************************************************************************/
 
 	xx::Task<> Scene::MainTask() {
-		while (true) {
 
-			// todo: show Level xxxx
-			// todo: step by step create blocks
-			// todo: create bar with fade in effect
-			// 3,2,1 bar can move with mouse. bar auto shoot ball
-			// loop check if blocks empty
-			// next level
-
-
-
-			//auto pos = gCfg.mapSize_2;
-			//pos.x += gLooper.rnd.Next<float>(-gLooper.windowSize_2.x + 100, gLooper.windowSize_2.x - 100);
-			//pos.y += gLooper.rnd.Next<float>(-gLooper.windowSize_2.y + 100, gLooper.windowSize_2.y - 100);
-			//float radius = gLooper.rnd.Next<float>(16, 32);
-			//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
-			//em.Add(pos, radius, count);
-
-			//co_await gLooper.AsyncSleep(0.5f);
-			co_yield 0;
+		// show Level xxxx 3 secs
+		{
+			auto holder = globalEffects.HolderEmplace();
+			auto str = xx::ToString("Stage ", 1);
+			holder().draw = [&] {
+				gLooper.ctcDefault.Draw({ 0, 0 }, str, RGBA8_Green, { 0.5f, 0 });
+				};
+			for (int32_t e = frameNumber + int32_t(3.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
 		}
+
+		// step by step create some blocks
+		Shuffle();
+		for (int32_t i = 0
+			, e = rnd.Next<int32_t>(avaliableBlockIndexs.len / 2, avaliableBlockIndexs.len - 1)
+			; i < e; ++i) {
+
+			// todo
+		}
+		
+
+		// todo: create bar with fade in effect
+		// 3,2,1 bar can move with mouse. bar auto shoot ball
+		// loop check if blocks empty
+		// next level
+
+
+
+		//auto pos = gCfg.mapSize_2;
+		//pos.x += gLooper.rnd.Next<float>(-gLooper.windowSize_2.x + 100, gLooper.windowSize_2.x - 100);
+		//pos.y += gLooper.rnd.Next<float>(-gLooper.windowSize_2.y + 100, gLooper.windowSize_2.y - 100);
+		//float radius = gLooper.rnd.Next<float>(16, 32);
+		//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
+		//em.Add(pos, radius, count);
+
+		//co_await gLooper.AsyncSleep(0.5f);
+		co_yield 0;
 	}
+
+	/******************************************************************************************************/
+	/******************************************************************************************************/
 
 	void Scene::BeforeUpdate() {
 		// scale control
@@ -65,14 +108,22 @@ namespace Test1 {
 		for (int32_t i = 0; i < gameSpeedRate; ++i) {
 			++frameNumber;
 			mainTask();
-			for (auto i = balls.len - 1; i >= 0; --i) {
-				if (balls[i].Update()) {
-					balls.SwapRemoveAt(i);
-				}
-			}
-			em.Update();
+
+			blocks.Foreach([](Block& o)->xx::ForeachResult {
+				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
+				return xx::ForeachResult::Continue;
+				});
+
+			balls.Foreach([](Ball& o)->bool {
+				return o.Update();
+				});
+
+			explosionManager.Update();
 		}
 	}
+
+	/******************************************************************************************************/
+	/******************************************************************************************************/
 
 	void Scene::Draw() {
 
@@ -82,16 +133,29 @@ namespace Test1 {
 
 		blocks.Foreach([](Block& o) {
 			o.Draw();
-		});
+			});
 
-		for (auto& o : balls) {
+		balls.Foreach([](Ball& o) {
 			o.Draw();
+			});
+
+		explosionManager.Draw();
+
+		// draw order by z
+		if (int32_t count = globalEffects.Count()) {
+			zdraws.Reserve(count);
+			globalEffects.Foreach([&](GlobalEffect& o) {
+				zdraws.Emplace(ZDraw{ o.z, &o.draw });
+				});
+			std::sort(zdraws.buf, zdraws.buf + zdraws.len, [](auto const& a, auto const& b) {
+				return a.z < b.z;
+				});
+			for (auto& o : zdraws) {
+				(*o.draw)();
+			}
+			zdraws.Clear();
 		}
 
-
-		em.Draw();
-
-		// ...
 		//auto str = xx::ToString("total partical count = ", em.items.len);
 		//gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
 
@@ -144,6 +208,10 @@ namespace Test1 {
 	void Block::Init(XY const& pos_, XY const& size_, int32_t hp_) {
 		BoxInit(pos_, size_);
 		hp = hp_;
+	}
+
+	bool Block::Update() {
+		return false;
 	}
 
 	void Block::Draw() {
@@ -207,7 +275,7 @@ namespace Test1 {
 		//auto s = (1.f / gCfg.unitSize) * camera.scale;
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 0.5f };
-		q.scale = { size.x * s, size.y * s };
+		//q.scale = { size.x * s, size.y * s };
 		q.radians = 0;
 		q.colorplus = 1;
 		q.color = RGBA8_White;
