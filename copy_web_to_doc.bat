@@ -48,7 +48,7 @@ xcopy /S/Y web\s24\s24.* docs
 
 xcopy /S/Y web\s25\s25.* docs
 xcopy /S/Y map_td3\*.bmx docs\map_td3\
-xcopy /S/Y map_td3\pics\*.* docs\map_td3\pics\
+xcopy /S/Y map_td3\pics\*.png docs\map_td3\pics\
 
 xcopy /S/Y web\s26\s26.* docs
 
