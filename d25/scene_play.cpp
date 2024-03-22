@@ -172,8 +172,8 @@ void ScenePlay::Update() {
 		}
 
 		grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
-			grid.BufForeach([](T& o)->GridForeachResult {
-				return o.Update() ? GridForeachResult::RemoveAndContinue : GridForeachResult::Continue;
+			grid.BufForeach([](T& o)->xx::ForeachResult {
+				return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
 				});
 		});
 

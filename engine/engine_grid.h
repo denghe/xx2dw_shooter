@@ -814,7 +814,7 @@ struct GridsEx {
 
 	template<typename T>
 	Grid<T>& Get() const {
-		return xx::Get<Grid<T>>(gs);
+		return xx::Get<Grid<T>>((xx::SimpleTuple<Grid<TS>...>&)gs);
 	}
 
 	template<typename ...US>

@@ -31,7 +31,7 @@ namespace Bullet::Tower {
 
 		// hit check
 		bool death = false;
-		gScenePlay->grids.Get<::Enemy::Monster2>().Foreach9(pos, [&](::Enemy::Monster2& o)->GridForeachResult {
+		gScenePlay->grids.Get<::Enemy::Monster2>().Foreach9(pos, [&](::Enemy::Monster2& o)->xx::ForeachResult {
 			// intersects ?
 			if (Calc::Intersects::CircleCircle<float>(
 				pos.x, pos.y, radius, o.pos.x, o.pos.y, o.radius)) {
@@ -40,11 +40,11 @@ namespace Bullet::Tower {
 				o.hp -= damage;
 				if (o.hp <= 0) {
 					o.PlayDeathEffect();
-					return GridForeachResult::RemoveAndBreak;
+					return xx::ForeachResult::RemoveAndBreak;
 				}
-				return GridForeachResult::Break;
+				return xx::ForeachResult::Break;
 			}
-			return GridForeachResult::Continue;
+			return xx::ForeachResult::Continue;
 			});
 		if (death) {
 			gScenePlay->em.Add(pos, cRadius, 8);
