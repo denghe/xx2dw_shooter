@@ -59,7 +59,8 @@ namespace Test1 {
 
 	xx::Task<> Scene::MainTask_() {
 		// stage data init
-		int32_t stage = 1;
+		int32_t stage = 50;
+
 		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 1);
 
 		// begin loop
@@ -81,7 +82,7 @@ namespace Test1 {
 				auto cidx = blockIndexs[i];
 				auto pos = blocks.CIdxToCenterPos(cidx);
 				blocks.EmplaceInit(pos, gCfg.unitXYSize, 100);
-				co_await AsyncSleep(0.2f);
+				co_await AsyncSleep(0.05f);
 			}
 			// todo: create bar with fade in effect
 			co_await AsyncSleep(0.5f);
@@ -285,56 +286,29 @@ namespace Test1 {
 
 				auto newPos = pos + inc;
 
-				// todo: bounce with block( hit check )
+				// bounce with block
+				gScene->blocks.Foreach9(newPos.x, newPos.y, [&](Block& o)->xx::ForeachResult {
+					if (TranslateControl::BounceCircleIfIntersectsBox(o.xy, radius, speed, inc, newPos)) {
+						// hit
+						if (--o.hp <= 0) {	// todo: damage set
+							return xx::ForeachResult::RemoveAndContinue;
+						}
+					}
+					return xx::ForeachResult::Continue;
+				});
 
 				// bounce with wall
 				for (auto& wall : gScene->walls) {
-
-					auto& xy = wall.xy;
-					if (Calc::Intersects::BoxPoint(xy.from, xy.to, newPos)) {
-						// do nothing
-					} else {
-						// find rect nearest point
-						XY np{ std::max(xy.from.x, std::min(newPos.x, xy.to.x)),
-						std::max(xy.from.y, std::min(newPos.y, xy.to.y)) };
-
-						// calc
-						auto d = np - newPos;
-						auto mag = std::sqrt(d.x * d.x + d.y * d.y);
-						auto overlap = radius - mag;
-
-						// intersect
-						if (!std::isnan(overlap) && overlap > 0) {
-							auto mag_1 = 1 / mag;
-							auto p = d * mag_1 * overlap;
-
-							// bounce
-							if (np.x == newPos.x) {
-								inc.y *= -1;
-							} else if (np.y == newPos.y) {
-								inc.x *= -1;
-							} else {
-								auto a1 = std::atan2(-inc.y, -inc.x);
-								auto a2 = std::atan2(-p.y, -p.x);
-								auto gap = RotateControl::Gap(a1, a2);
-								a2 += gap;	// todo?
-								inc = XY{ std::cos(a2) * speed, std::sin(a2) * speed };
-							}
-
-							newPos -= p;
-						}
-					}
-
+					(void)TranslateControl::BounceCircleIfIntersectsBox(wall.xy, radius, speed, inc, newPos);
 				}
-
 				pos = newPos;
 
-
-				if (pos.x < 0 || pos.x >= gCfg.mapSize.x) co_return;
-				if (pos.y < 0 || pos.y >= gCfg.mapSize.y) co_return;
+				if (pos.x < 0 || pos.x >= gCfg.mapSize.x || pos.y < 0 || pos.y >= gCfg.mapSize.y) goto LabEnd;
 			}
 			co_yield 0;
 		}
+	LabEnd:;
+		// todo: ball fail logic ?
 	}
 
 	void Ball::Init(XY const& pos_, float radius_, float radians_, float speed_) {
@@ -373,7 +347,7 @@ namespace Test1 {
 		// todo: random shoot, mouse control
 		//if (gScene->frameNumber % 60 != 0) return false;
 
-		for (size_t i = 0; i < 100; i++) {
+		for (size_t i = 0; i < 10; i++) {
 
 			gScene->balls.Emplace().Init({ x, y - size.y / 2 }
 			, gCfg.unitSize_2

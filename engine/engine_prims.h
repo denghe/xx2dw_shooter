@@ -733,6 +733,41 @@ namespace TranslateControl {
         return false;
     }
 
+    // xy.from: min xy . to: max xy.
+    inline bool BounceCircleIfIntersectsBox(xx::FromTo<XY> const& xy, float radius, float speed, XY& inc, XY& newPos) {
+        // find rect nearest point
+        XY np{ std::max(xy.from.x, std::min(newPos.x, xy.to.x)),
+        std::max(xy.from.y, std::min(newPos.y, xy.to.y)) };
+
+        // calc
+        auto d = np - newPos;
+        auto mag = std::sqrt(d.x * d.x + d.y * d.y);
+        auto overlap = radius - mag;
+
+        // intersect
+        if (!std::isnan(overlap) && overlap > 0) {
+            auto mag_1 = 1 / mag;
+            auto p = d * mag_1 * overlap;
+
+            // bounce
+            if (np.x == newPos.x) {
+                inc.y *= -1;
+            } else if (np.y == newPos.y) {
+                inc.x *= -1;
+            } else {
+                auto a1 = std::atan2(-inc.y, -inc.x);
+                auto a2 = std::atan2(-p.y, -p.x);
+                auto gap = RotateControl::Gap(a1, a2);
+                a2 += gap;	// todo?
+                inc = XY{ std::cos(a2) * speed, std::sin(a2) * speed };
+            }
+
+            newPos -= p;
+            return true;
+        }
+        return false;
+    }
+
 }
 
 /*******************************************************************************************************************************************/

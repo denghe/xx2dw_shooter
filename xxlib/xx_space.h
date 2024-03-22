@@ -21,8 +21,8 @@ namespace xx {
 	struct SpaceXY { float x, y; };
 
 	struct SpaceRingDiffuseData {
-		xx::List<SpaceCountRadius, int32_t> lens;
-		xx::List<SpaceIndex, int32_t> idxs;
+		List<SpaceCountRadius, int32_t> lens;
+		List<SpaceIndex, int32_t> idxs;
 
 		void Init(int32_t gridNumRows, int32_t gridCellDiameter) {
 			auto step = (float)gridCellDiameter / 2;
@@ -199,7 +199,7 @@ namespace xx {
 		// .CellForeach([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 		template<typename F>
 		void CellForeach(int32_t cidx, F&& func) {
-			using R = xx::FuncR_t<F>;
+			using R = FuncR_t<F>;
 			auto idx = cells[cidx];
 			while (idx >= 0) {
 				auto& o = ST::RefNode(idx);
@@ -212,13 +212,13 @@ namespace xx {
 						if (r) return;
 					} else {
 						switch (r) {
-						case xx::ForeachResult::Continue: break;
-						case xx::ForeachResult::Break: return;
-						case xx::ForeachResult::RemoveAndContinue: {
+						case ForeachResult::Continue: break;
+						case ForeachResult::Break: return;
+						case ForeachResult::RemoveAndContinue: {
 							Remove(idx);
 							break;
 						}
-						case xx::ForeachResult::RemoveAndBreak: {
+						case ForeachResult::RemoveAndBreak: {
 							Remove(idx);
 							return;
 						}
@@ -270,7 +270,7 @@ namespace xx {
 		// .Foreach9([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
 		template<typename F>
 		void Foreach9(float x, float y, F&& func) {
-			using R = xx::FuncR_t<F>;
+			using R = FuncR_t<F>;
 			auto crIdx = PosToCrIdx(x, y);
 			for (auto offset : offsets9) {
 				auto col = crIdx.x + offset.x;
@@ -290,13 +290,13 @@ namespace xx {
 							if (r) return;
 						} else {
 							switch (r) {
-							case xx::ForeachResult::Continue: break;
-							case xx::ForeachResult::Break: return;
-							case xx::ForeachResult::RemoveAndContinue: {
+							case ForeachResult::Continue: break;
+							case ForeachResult::Break: return;
+							case ForeachResult::RemoveAndContinue: {
 								Remove(idx);
 								break;
 							}
-							case xx::ForeachResult::RemoveAndBreak: {
+							case ForeachResult::RemoveAndBreak: {
 								Remove(idx);
 								return;
 							}
