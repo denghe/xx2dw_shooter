@@ -16,7 +16,8 @@ namespace Test1 {
 		static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
 		static constexpr XY mapCenterPos { mapSize.x / 2.f, mapSize.y / 2.f };
 
-		static constexpr int32_t ballMoveStepRate{ 10 };
+		static constexpr int32_t updateMultipleTimes{ 1 };
+		static constexpr float ballSpeed{ 300.f / gDesign.fps / (float)updateMultipleTimes };
 	};
 	inline Cfg gCfg;
 

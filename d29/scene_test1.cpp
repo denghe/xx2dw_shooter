@@ -200,8 +200,8 @@ namespace Test1 {
 			zdraws.Clear();
 		}
 
-		//auto str = xx::ToString("total partical count = ", em.items.len);
-		//gLooper.ctcDefault.Draw({ 0, gLooper.windowSize_2.y - 5 }, str, RGBA8_Green, { 0.5f, 1 });
+		auto str = xx::ToString("ball count = ", balls.Count());
+		ShowText({ 0, gLooper.windowSize_2.y - 25 }, str);
 
 		gLooper.DrawNode(rootNode);
 	}
@@ -279,11 +279,57 @@ namespace Test1 {
 
 	xx::Task<> Ball::MainTask_() {
 		XY v{ std::cos(radians), std::sin(radians) };
-		auto inc = v * speed / (float)gCfg.ballMoveStepRate;
+		auto inc = v * speed / (float)gCfg.updateMultipleTimes;
 		while (true) {
-			for (int i = 0; i < gCfg.ballMoveStepRate; ++i) {
-				pos += inc;
-				// todo: hit check, bounce
+			for (int i = 0; i < gCfg.updateMultipleTimes; ++i) {
+
+				auto newPos = pos + inc;
+
+				// todo: bounce with block( hit check )
+
+				// bounce with wall
+				for (auto& wall : gScene->walls) {
+
+					auto& xy = wall.xy;
+					if (Calc::Intersects::BoxPoint(xy.from, xy.to, newPos)) {
+						// do nothing
+					} else {
+						// find rect nearest point
+						XY np{ std::max(xy.from.x, std::min(newPos.x, xy.to.x)),
+						std::max(xy.from.y, std::min(newPos.y, xy.to.y)) };
+
+						// calc
+						auto d = np - newPos;
+						auto mag = std::sqrt(d.x * d.x + d.y * d.y);
+						auto overlap = radius - mag;
+
+						// intersect
+						if (!std::isnan(overlap) && overlap > 0) {
+							auto mag_1 = 1 / mag;
+							auto p = d * mag_1 * overlap;
+
+							// bounce
+							if (np.x == newPos.x) {
+								inc.y *= -1;
+							} else if (np.y == newPos.y) {
+								inc.x *= -1;
+							} else {
+								auto a1 = std::atan2(-inc.y, -inc.x);
+								auto a2 = std::atan2(-p.y, -p.x);
+								auto gap = RotateControl::Gap(a1, a2);
+								a2 += gap;	// todo?
+								inc = XY{ std::cos(a2) * speed, std::sin(a2) * speed };
+							}
+
+							newPos -= p;
+						}
+					}
+
+				}
+
+				pos = newPos;
+
+
 				if (pos.x < 0 || pos.x >= gCfg.mapSize.x) co_return;
 				if (pos.y < 0 || pos.y >= gCfg.mapSize.y) co_return;
 			}
@@ -327,10 +373,13 @@ namespace Test1 {
 		// todo: random shoot, mouse control
 		//if (gScene->frameNumber % 60 != 0) return false;
 
-		gScene->balls.Emplace().Init({ x, y - size.y / 2 }
-		, gCfg.unitSize_2
-			, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
-			, 1);
+		for (size_t i = 0; i < 100; i++) {
+
+			gScene->balls.Emplace().Init({ x, y - size.y / 2 }
+			, gCfg.unitSize_2
+				, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
+				, gCfg.ballSpeed);
+		}
 
 		return false;
 	}
