@@ -8,6 +8,8 @@ namespace Test1 {
 	struct Cfg {
 		static constexpr float unitSize{ 32.f };
 		static constexpr float unitSize_2 { unitSize / 2 };
+		static constexpr XY unitXYSize{ unitSize, unitSize };
+		static constexpr XY unitXYSize_2 { unitSize_2, unitSize_2 };
 
 		static constexpr int32_t numRows{20}, numCols{38};
 		static constexpr XY mapSize{ unitSize * numCols, unitSize * numRows };
@@ -17,7 +19,7 @@ namespace Test1 {
 	inline Cfg gCfg;
 
 	struct Box {
-		XY pos{};
+		float x, y;
 		XY size{};
 		xx::FromTo<XY> xy;
 		void BoxInit(XY const& pos_, XY const& size_);
@@ -54,7 +56,6 @@ namespace Test1 {
 	};
 
 	struct GlobalEffect {
-		static constexpr int32_t cTypeId{};
 		float z{};				// draw order
 		std::function<void()> draw;
 	};
@@ -70,17 +71,21 @@ namespace Test1 {
 		Camera camera;
 		Rnd rnd;
 		Effect::ExplosionManager explosionManager;
-		xx::Task<> mainTask;
-		xx::Task<> MainTask();
 
 		xx::Listi32<Wall> walls;
+
 		xx::SpaceGrid<Block> blocks;
+		xx::Listi32<int32_t> blockIndexs;
+		void Shuffle();
+
 		xx::ListLinki32<Ball> balls;
+
 		xx::BlockList<GlobalEffect> globalEffects;
 		xx::Listi32<ZDraw> zdraws;	// for sort draw
+		void ShowText(XY const& pos, std::string_view const& txt);
 
-		xx::Listi32<int32_t> avaliableBlockIndexs;
-		void Shuffle();
+		xx::Task<> MainTask = MainTask_();
+		xx::Task<> MainTask_();
 
 		virtual void Init() override;
 		virtual void BeforeUpdate() override;

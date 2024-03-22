@@ -2,6 +2,9 @@
 #include "xx_list.h"
 
 namespace xx {
+	template<typename T>
+	concept Has_cTypeId = requires { typename T::cTypeId; };
+
 	struct VersionNextIndexTypeId {
 		uint32_t version;
 		int32_t next, index, typeId;
@@ -11,7 +14,6 @@ namespace xx {
 	struct BlockListNodeBase : VersionNextIndexTypeId {
 		T value;
 	};
-
 
 	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
 	struct BlockList;
@@ -179,7 +181,8 @@ namespace xx {
 					block.flags = 0;
 				}
 
-				int32_t e = i < n ? 64 : (len & 0b111111);
+				auto left = len & 0b111111;
+				int32_t e = (i < n || !left) ? 64 : left;
 				for (int32_t j = 0; j < e; ++j) {
 					auto& o = block.buf[j];
 					auto bit = uint64_t(1) << j;
@@ -259,7 +262,9 @@ namespace xx {
 			o.version = GenVersion();
 			o.next = -1;						// todo: fill ? order by create time ?
 			o.index = index;
-			o.typeId = T::cTypeId;
+			if constexpr (Has_cTypeId<T>) {
+				o.typeId = T::cTypeId;
+			}
 			return *new (&o.value) T(std::forward<Args>(args)...);
 		}
 

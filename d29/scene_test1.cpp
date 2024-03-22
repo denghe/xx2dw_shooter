@@ -5,14 +5,18 @@
 namespace Test1 {
 
 	void Scene::Shuffle() {
-		auto len = avaliableBlockIndexs.len;
+		auto len = blockIndexs.len;
 		if (!len) return;
-		auto buf = avaliableBlockIndexs.buf;
+		auto buf = blockIndexs.buf;
 		for (int32_t i = 0, tar = 1; ++i != len; ++tar) {
 			if (int32_t offset = rnd.Next(tar); offset != tar) {
 				std::swap(buf[i], buf[offset]);
 			}
 		}
+	}
+
+	void Scene::ShowText(XY const& pos, std::string_view const& txt) {
+		gLooper.ctcDefault.Draw(pos, txt, RGBA8_Green, { 0.5f, 0.5f });
 	}
 
 	void Scene::Init() {
@@ -29,15 +33,14 @@ namespace Test1 {
 
 		explosionManager.Init(&frameNumber, &camera, &rnd, gRes.td_effect_1);
 
-		mainTask = MainTask();
-
 		gameSpeedRate = 1;
 
+		blocks.Init(gCfg.numRows, gCfg.numCols, (int32_t)gCfg.unitSize);
+
 		// fill avaliableBlockIndexs
-		auto maxRowBlocksCount = gCfg.numCols - 3 - 2;
-		for (int32_t row = 2; row <= gCfg.numRows - 3; ++row) {
-			for (int32_t col = 2; col <= gCfg.numCols - 3; ++col) {
-				avaliableBlockIndexs.Emplace(maxRowBlocksCount * row + col);
+		for (int32_t row = 2; row < gCfg.numRows - 5; ++row) {
+			for (int32_t col = 2; col < gCfg.numCols - 2; ++col) {
+				blockIndexs.Emplace(gCfg.numCols * row + col);
 			}
 		}
 
@@ -45,50 +48,75 @@ namespace Test1 {
 		walls.Emplace().Init({ { 0, 0 }, { 0, gCfg.numRows - 1 } });
 		walls.Emplace().Init({ { 1, 0 }, { gCfg.numCols - 1, 0 } });
 		walls.Emplace().Init({ { gCfg.numCols - 1, 0 }, { gCfg.numCols - 1, gCfg.numRows - 1 } });
-
 	}
 
 	/******************************************************************************************************/
 	/******************************************************************************************************/
 
-	xx::Task<> Scene::MainTask() {
+	xx::Task<> Scene::MainTask_() {
 
-		// show Level xxxx 3 secs
-		{
-			auto holder = globalEffects.HolderEmplace();
-			auto str = xx::ToString("Stage ", 1);
-			holder().draw = [&] {
-				gLooper.ctcDefault.Draw({ 0, 0 }, str, RGBA8_Green, { 0.5f, 0 });
+		// stage data init
+		int32_t stage = 1;
+
+		// begin loop
+		while (true) {
+
+			// todo: read config by stage?
+
+			// show Level xxxx 1 secs
+			{
+				auto holder = globalEffects.HolderEmplace();
+				auto str = xx::ToString("Stage ", stage);
+				holder().draw = [&] {
+					ShowText({}, str);
 				};
-			for (int32_t e = frameNumber + int32_t(3.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
+				for (int32_t e = frameNumber + int32_t(1.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
+			}
+
+			// step by step create some blocks
+			Shuffle();
+			int32_t e = std::min(stage, blockIndexs.len);
+			for (int32_t i = 0; i < e; ++i) {
+				auto cidx = blockIndexs[i];
+				auto pos = blocks.CIdxToCenterPos(cidx);
+				blocks.EmplaceInit(pos, gCfg.unitXYSize, 100);
+				co_yield 0;
+			}
+
+			// todo: create bar with fade in effect
+
+			// show 3, 2, 1
+			{
+				auto holder = globalEffects.HolderEmplace();
+				int32_t n{3};
+				auto pos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 1);
+				holder().draw = [&] {
+					ShowText(camera.ToGLPos(pos), xx::ToString(n));
+				};
+				do {
+					for (int32_t e = frameNumber + int32_t(1.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
+					--n;
+				} while (n);
+			}
+
+			// wait blocks empty
+			while (blocks.Count()) {
+
+				// todo: mouse control bar. bar auto shoot ball
+				if (gLooper.mouse.Pressed(0)) {
+					blocks.Clear();	// simulate
+				}
+				co_yield 0;
+			}
+
+			// todo: show rank / score report ?
+
+			// next stage or quit ?
+			++stage;
+
+			co_yield 0;
 		}
 
-		// step by step create some blocks
-		Shuffle();
-		for (int32_t i = 0
-			, e = rnd.Next<int32_t>(avaliableBlockIndexs.len / 2, avaliableBlockIndexs.len - 1)
-			; i < e; ++i) {
-
-			// todo
-		}
-		
-
-		// todo: create bar with fade in effect
-		// 3,2,1 bar can move with mouse. bar auto shoot ball
-		// loop check if blocks empty
-		// next level
-
-
-
-		//auto pos = gCfg.mapSize_2;
-		//pos.x += gLooper.rnd.Next<float>(-gLooper.windowSize_2.x + 100, gLooper.windowSize_2.x - 100);
-		//pos.y += gLooper.rnd.Next<float>(-gLooper.windowSize_2.y + 100, gLooper.windowSize_2.y - 100);
-		//float radius = gLooper.rnd.Next<float>(16, 32);
-		//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
-		//em.Add(pos, radius, count);
-
-		//co_await gLooper.AsyncSleep(0.5f);
-		co_yield 0;
 	}
 
 	/******************************************************************************************************/
@@ -107,7 +135,8 @@ namespace Test1 {
 	void Scene::Update() {
 		for (int32_t i = 0; i < gameSpeedRate; ++i) {
 			++frameNumber;
-			mainTask();
+
+			MainTask();
 
 			blocks.Foreach([](Block& o)->xx::ForeachResult {
 				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
@@ -166,11 +195,12 @@ namespace Test1 {
 	/******************************************************************************************************/
 
 	void Box::BoxInit(XY const& pos_, XY const& size_) {
-		pos = pos_;
+		x = pos_.x;
+		y = pos_.y;
 		size = size_;
 		auto tmp = size / 2;
-		xy.from = pos - tmp;
-		xy.to = pos + tmp;
+		xy.from = pos_ - tmp;
+		xy.to = pos_ + tmp;
 	}
 
 	void Wall::Init(xx::FromTo<Vec2<>> const& cidx_) {
@@ -219,9 +249,9 @@ namespace Test1 {
 		auto& frame = gRes.td_shape_rect;
 		auto& q = Quad::DrawOnce(frame);
 		auto s = (1.f / gCfg.unitSize) * camera.scale;
-		q.pos = camera.ToGLPos(pos);
+		q.pos = camera.ToGLPos(x,y);
 		q.anchor = { 0.5f, 0.5f };
-		q.scale = { size.x * s, size.y * s };
+		q.scale = size * s;
 		q.radians = 0;
 		q.colorplus = 1;
 		q.color = RGBA8_White;
@@ -273,7 +303,7 @@ namespace Test1 {
 		auto& frame = gRes.td_shape_mask;
 		auto& q = Quad::DrawOnce(frame);
 		//auto s = (1.f / gCfg.unitSize) * camera.scale;
-		q.pos = camera.ToGLPos(pos);
+		//q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 0.5f };
 		//q.scale = { size.x * s, size.y * s };
 		q.radians = 0;
@@ -282,3 +312,15 @@ namespace Test1 {
 	}
 
 }
+
+
+
+//auto pos = gCfg.mapSize_2;
+//pos.x += gLooper.rnd.Next<float>(-gLooper.windowSize_2.x + 100, gLooper.windowSize_2.x - 100);
+//pos.y += gLooper.rnd.Next<float>(-gLooper.windowSize_2.y + 100, gLooper.windowSize_2.y - 100);
+//float radius = gLooper.rnd.Next<float>(16, 32);
+//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
+//em.Add(pos, radius, count);
+
+//co_await gLooper.AsyncSleep(0.5f);
+//co_yield 0;

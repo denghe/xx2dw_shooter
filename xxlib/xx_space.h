@@ -89,16 +89,18 @@ namespace xx {
 		}
 
 		// Emplace + Init( args ) + store inti cells[ pos ]
-		template<typename U = T, typename...Args>
-		U& EmplaceInit(Args&&...args) {
+		template<typename...Args>
+		T& EmplaceInit(Args&&...args) {
 			assert(cells);
 			auto index = ST::Alloc();
 			auto& o = ST::RefNode(index);
 			o.version = ST::GenVersion();
 			o.next = -1;
 			o.index = index;
-			o.typeId = T::cTypeId;
-			new (&o.value) U();
+			if constexpr (Has_cTypeId<T>) {
+				o.typeId = T::cTypeId;
+			}
+			new (&o.value) T();
 			o.value.Init(std::forward<Args>(args)...);
 
 			auto cidx = PosToCIdx(o.value.x, o.value.y);
@@ -110,7 +112,7 @@ namespace xx {
 			o.next = head;
 			o.prev = -1;
 			o.cidx = cidx;
-			return (U&)o.value;
+			return o.value;
 		}
 
 		XX_FORCE_INLINE int32_t PosToCIdx(float x, float y) {
@@ -241,6 +243,27 @@ namespace xx {
 		// return cell's index
 		XX_FORCE_INLINE int32_t CrIdxToCIdx(int32_t colIdx, int32_t rowIdx) {
 			return rowIdx * numCols + colIdx;
+		}
+
+		// cell's index to pos( left top corner )
+		XX_FORCE_INLINE XY CIdxToPos(int32_t cidx) {
+			assert(cidx >= 0 && cidx < cellsLen);
+			auto row = cidx / numCols;
+			auto col = cidx - row * numCols;
+			return { float(col * cellSize), float(row * cellSize) };
+		}
+
+		// cell's index to cell center pos
+		XX_FORCE_INLINE XY CIdxToCenterPos(int32_t cidx) {
+			return CIdxToPos(cidx) + float(cellSize) / 2;
+		}
+
+		XX_FORCE_INLINE XY CrIdxToPos(int32_t colIdx, int32_t rowIdx) {
+			return CIdxToPos(rowIdx * numCols + colIdx);
+		}
+
+		XX_FORCE_INLINE XY CrIdxToCenterPos(int32_t colIdx, int32_t rowIdx) {
+			return CIdxToCenterPos(rowIdx * numCols + colIdx);
 		}
 
 		// foreach target cell + round 8 = 9 cells

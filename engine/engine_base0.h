@@ -20,6 +20,11 @@ enum class MouseEvents : int {
 struct Mouse {
     XY pos{};
     std::array<bool, 16> btnStates{};
+
+    bool Pressed(int32_t n) const {
+        return btnStates[n];
+    }
+
     //MouseEvents event{};
     //void* eventHandler{};
     //void ClearEvent() { event = MouseEvents::Unknown; }
