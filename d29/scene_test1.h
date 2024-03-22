@@ -15,6 +15,8 @@ namespace Test1 {
 		static constexpr XY mapSize{ unitSize * numCols, unitSize * numRows };
 		static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
 		static constexpr XY mapCenterPos { mapSize.x / 2.f, mapSize.y / 2.f };
+
+		static constexpr int32_t ballMoveStepRate{ 10 };
 	};
 	inline Cfg gCfg;
 
@@ -34,9 +36,10 @@ namespace Test1 {
 
 	struct Ball {
 		XY pos{};
-		float radius{};
-		XY inc{};
-		void Init(XY const& pos_, float radius_);
+		float radius{}, radians{}, speed{};
+		xx::Task<> MainTask = MainTask_();
+		xx::Task<> MainTask_();
+		void Init(XY const& pos_, float radius_, float radians_, float speed_);
 		bool Update();
 		void Draw();
 	};
@@ -61,29 +64,34 @@ namespace Test1 {
 	};
 	struct ZDraw {
 		float z;
-		std::function<void()>* draw;
+		std::reference_wrapper<std::function<void()>> draw;
 	};
 
 	struct Scene : ::Scene {
 		xx::Shared<Node> rootNode;
-		int32_t frameNumber{};		// for increase game speed
-		int32_t gameSpeedRate{};	// game speed
+		int32_t gameSpeedRate{};
+		int32_t frameNumber{};
 		Camera camera;
 		Rnd rnd;
-		Effect::ExplosionManager explosionManager;
 
 		xx::Listi32<Wall> walls;
 
 		xx::SpaceGrid<Block> blocks;
 		xx::Listi32<int32_t> blockIndexs;
-		void Shuffle();
 
-		xx::ListLinki32<Ball> balls;
+		xx::BlockList<Ball> balls;
+
+		xx::Shared<Bar> bar;
+
+		Effect::ExplosionManager explosionManager;
 
 		xx::BlockList<GlobalEffect> globalEffects;
-		xx::Listi32<ZDraw> zdraws;	// for sort draw
+		xx::Listi32<ZDraw> zdraws;	// for sort
+
+		void ShuffleBlockIndexs();
 		void ShowText(XY const& pos, std::string_view const& txt);
 
+		xx::Task<> AsyncSleep(float secs);
 		xx::Task<> MainTask = MainTask_();
 		xx::Task<> MainTask_();
 

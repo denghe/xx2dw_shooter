@@ -4,7 +4,7 @@
 
 namespace Test1 {
 
-	void Scene::Shuffle() {
+	void Scene::ShuffleBlockIndexs() {
 		auto len = blockIndexs.len;
 		if (!len) return;
 		auto buf = blockIndexs.buf;
@@ -53,70 +53,80 @@ namespace Test1 {
 	/******************************************************************************************************/
 	/******************************************************************************************************/
 
-	xx::Task<> Scene::MainTask_() {
+	xx::Task<> Scene::AsyncSleep(float secs) {
+		for (int32_t e = frameNumber + int32_t(secs / gDesign.frameDelay); frameNumber < e;) co_yield 0;
+	}
 
+	xx::Task<> Scene::MainTask_() {
 		// stage data init
 		int32_t stage = 1;
+		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 1);
 
 		// begin loop
 		while (true) {
-
 			// todo: read config by stage?
-
 			// show Level xxxx 1 secs
 			{
 				auto holder = globalEffects.HolderEmplace();
 				auto str = xx::ToString("Stage ", stage);
 				holder().draw = [&] {
 					ShowText({}, str);
-				};
-				for (int32_t e = frameNumber + int32_t(1.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
+					};
+				co_await AsyncSleep(1);
 			}
-
 			// step by step create some blocks
-			Shuffle();
+			ShuffleBlockIndexs();
 			int32_t e = std::min(stage, blockIndexs.len);
 			for (int32_t i = 0; i < e; ++i) {
 				auto cidx = blockIndexs[i];
 				auto pos = blocks.CIdxToCenterPos(cidx);
 				blocks.EmplaceInit(pos, gCfg.unitXYSize, 100);
-				co_yield 0;
+				co_await AsyncSleep(0.2f);
 			}
-
 			// todo: create bar with fade in effect
+			co_await AsyncSleep(0.5f);
+			bar.Emplace()->Init(barBornPos, XY{200, 20}, 3000);
 
 			// show 3, 2, 1
 			{
+				co_await AsyncSleep(0.5f);
 				auto holder = globalEffects.HolderEmplace();
-				int32_t n{3};
-				auto pos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 1);
+				int32_t n{ 3 };
 				holder().draw = [&] {
-					ShowText(camera.ToGLPos(pos), xx::ToString(n));
-				};
-				do {
-					for (int32_t e = frameNumber + int32_t(1.f / gDesign.frameDelay); frameNumber < e;) co_yield 0;
-					--n;
-				} while (n);
+					ShowText(camera.ToGLPos(barBornPos) - XY{ 0, -25 }, xx::ToString(n));
+					};
+				for (; n > 0; --n) {
+					co_await AsyncSleep(1);
+				}
 			}
-
 			// wait blocks empty
 			while (blocks.Count()) {
 
-				// todo: mouse control bar. bar auto shoot ball
+				// mouse control bar. bar auto shoot ball
+				bar->Update();
+
+				// GM command
 				if (gLooper.mouse.Pressed(0)) {
-					blocks.Clear();	// simulate
+					blocks.Clear();
 				}
+
 				co_yield 0;
 			}
-
+			// show Clear 1 secs
+			{
+				auto holder = globalEffects.HolderEmplace();
+				holder().draw = [&] {
+					ShowText({}, "Clear!");
+				};
+				co_await AsyncSleep(1);
+			}
 			// todo: show rank / score report ?
-
+			// todo: bar fade out?
+			bar.Reset();
 			// next stage or quit ?
 			++stage;
-
 			co_yield 0;
 		}
-
 	}
 
 	/******************************************************************************************************/
@@ -141,11 +151,12 @@ namespace Test1 {
 			blocks.Foreach([](Block& o)->xx::ForeachResult {
 				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
 				return xx::ForeachResult::Continue;
-				});
+			});
 
-			balls.Foreach([](Ball& o)->bool {
-				return o.Update();
-				});
+			balls.Foreach([](Ball& o)->xx::ForeachResult {
+				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
+				return xx::ForeachResult::Continue;
+			});
 
 			explosionManager.Update();
 		}
@@ -158,6 +169,10 @@ namespace Test1 {
 
 		for (auto& o : walls) {
 			o.Draw();
+		}
+
+		if (bar) {
+			bar->Draw();
 		}
 
 		blocks.Foreach([](Block& o) {
@@ -174,13 +189,13 @@ namespace Test1 {
 		if (int32_t count = globalEffects.Count()) {
 			zdraws.Reserve(count);
 			globalEffects.Foreach([&](GlobalEffect& o) {
-				zdraws.Emplace(ZDraw{ o.z, &o.draw });
+				zdraws.Emplace(ZDraw{ o.z, o.draw });
 				});
 			std::sort(zdraws.buf, zdraws.buf + zdraws.len, [](auto const& a, auto const& b) {
 				return a.z < b.z;
 				});
 			for (auto& o : zdraws) {
-				(*o.draw)();
+				o.draw();
 			}
 			zdraws.Clear();
 		}
@@ -249,7 +264,7 @@ namespace Test1 {
 		auto& frame = gRes.td_shape_rect;
 		auto& q = Quad::DrawOnce(frame);
 		auto s = (1.f / gCfg.unitSize) * camera.scale;
-		q.pos = camera.ToGLPos(x,y);
+		q.pos = camera.ToGLPos(x, y);
 		q.anchor = { 0.5f, 0.5f };
 		q.scale = size * s;
 		q.radians = 0;
@@ -262,15 +277,29 @@ namespace Test1 {
 	/******************************************************************************************************/
 	/******************************************************************************************************/
 
-	void Ball::Init(XY const& pos_, float radius_) {
+	xx::Task<> Ball::MainTask_() {
+		XY v{ std::cos(radians), std::sin(radians) };
+		auto inc = v * speed / (float)gCfg.ballMoveStepRate;
+		while (true) {
+			for (int i = 0; i < gCfg.ballMoveStepRate; ++i) {
+				pos += inc;
+				// todo: hit check, bounce
+				if (pos.x < 0 || pos.x >= gCfg.mapSize.x) co_return;
+				if (pos.y < 0 || pos.y >= gCfg.mapSize.y) co_return;
+			}
+			co_yield 0;
+		}
+	}
+
+	void Ball::Init(XY const& pos_, float radius_, float radians_, float speed_) {
 		pos = pos_;
 		radius = radius_;
-		// todo: init inc
+		radians = radians_;
+		speed = speed_;
 	}
 
 	bool Ball::Update() {
-		// todo: pos += inc. bounce with wall, bar logic. hit check
-		return false;
+		return MainTask.Resume();
 	}
 
 	void Ball::Draw() {
@@ -291,10 +320,18 @@ namespace Test1 {
 
 	void Bar::Init(XY const& pos_, XY const& size_, float speed_) {
 		BoxInit(pos_, size_);
-
+		speed = speed_;
 	}
 
 	bool Bar::Update() {
+		// todo: random shoot, mouse control
+		//if (gScene->frameNumber % 60 != 0) return false;
+
+		gScene->balls.Emplace().Init({ x, y - size.y / 2 }
+		, gCfg.unitSize_2
+			, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
+			, 1);
+
 		return false;
 	}
 
@@ -302,10 +339,10 @@ namespace Test1 {
 		auto& camera = gScene->camera;
 		auto& frame = gRes.td_shape_mask;
 		auto& q = Quad::DrawOnce(frame);
-		//auto s = (1.f / gCfg.unitSize) * camera.scale;
-		//q.pos = camera.ToGLPos(pos);
+		auto s = (1.f / gCfg.unitSize) * camera.scale;
+		q.pos = camera.ToGLPos(x, y);
 		q.anchor = { 0.5f, 0.5f };
-		//q.scale = { size.x * s, size.y * s };
+		q.scale = { size.x * s, size.y * s };
 		q.radians = 0;
 		q.colorplus = 1;
 		q.color = RGBA8_White;
