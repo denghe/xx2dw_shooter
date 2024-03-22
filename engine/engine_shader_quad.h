@@ -18,7 +18,7 @@ struct Shader_QuadInstance : Shader {
     GLVertexArrays va;
     GLBuffer vb, ib;
 
-    static constexpr int32_t maxQuadNums{ 200000 };
+    static constexpr int32_t maxQuadNums{ 500000 };
     GLuint lastTextureId{};
     std::unique_ptr<QuadInstanceData[]> quadInstanceDatas = std::make_unique<QuadInstanceData[]>(maxQuadNums);
     int32_t quadCount{};

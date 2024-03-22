@@ -11,18 +11,25 @@ namespace Test1 {
 		static constexpr XY unitXYSize{ unitSize, unitSize };
 		static constexpr XY unitXYSize_2 { unitSize_2, unitSize_2 };
 
-		static constexpr int32_t numRows{20}, numCols{38};
+		static constexpr int32_t numRows{24}, numCols{39};
 		static constexpr XY mapSize{ unitSize * numCols, unitSize * numRows };
 		static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
 		static constexpr XY mapCenterPos { mapSize.x / 2.f, mapSize.y / 2.f };
 
-		static constexpr int32_t updateMultipleTimes{ 1 };
-		static constexpr float ballSpeed{ 300.f / gDesign.fps / (float)updateMultipleTimes };
+		static constexpr int32_t updateMultipleTimes{ 10 };
+		static constexpr float ballSpeed{ 1500.f / gDesign.fps / (float)updateMultipleTimes };
+
+		static constexpr int32_t defaultGameSpeedRate{ 1 };
 	};
 	inline Cfg gCfg;
 
 	struct Box {
+		union {
+		struct {
 		float x, y;
+		};
+		XY pos;
+		};
 		XY size{};
 		xx::FromTo<XY> xy;
 		void BoxInit(XY const& pos_, XY const& size_);

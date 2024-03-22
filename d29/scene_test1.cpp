@@ -26,14 +26,30 @@ namespace Test1 {
 		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 			gLooper.DelaySwitchTo<SceneMainMenu>();
 			});
+		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ -300, 0 }, gDesign.xy8a, gLooper.s9cfg, U"pause", [&]() {
+			gameSpeedRate = 0;
+			});
+		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ -150, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 1", [&]() {
+			gameSpeedRate = 1;
+			});
+		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m, gDesign.xy8a, gLooper.s9cfg, U"speed: 5", [&]() {
+			gameSpeedRate = 5;
+			});
+		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ 150, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 20", [&]() {
+			gameSpeedRate = 20;
+			});
+		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy8m + XY{ 300, 0 }, gDesign.xy8a, gLooper.s9cfg, U"speed: 50", [&]() {
+			gameSpeedRate = 50;
+			});
+
 
 		camera.SetScale(1.f);
 		camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
-		camera.SetOriginal(gCfg.mapCenterPos);
+		camera.SetOriginal(gCfg.mapCenterPos - XY{ 0, gCfg.unitSize });
 
 		explosionManager.Init(&frameNumber, &camera, &rnd, gRes.td_effect_1);
 
-		gameSpeedRate = 1;
+		gameSpeedRate = gCfg.defaultGameSpeedRate;
 
 		blocks.Init(gCfg.numRows, gCfg.numCols, (int32_t)gCfg.unitSize);
 
@@ -45,9 +61,9 @@ namespace Test1 {
 		}
 
 		// make walls
-		walls.Emplace().Init({ { 0, 0 }, { 0, gCfg.numRows - 1 } });
-		walls.Emplace().Init({ { 1, 0 }, { gCfg.numCols - 1, 0 } });
-		walls.Emplace().Init({ { gCfg.numCols - 1, 0 }, { gCfg.numCols - 1, gCfg.numRows - 1 } });
+		walls.Emplace().Init({ { 0, 0 }, { 0, gCfg.numRows - 2 } });
+		walls.Emplace().Init({ { 1, 0 }, { gCfg.numCols - 2, 0 } });
+		walls.Emplace().Init({ { gCfg.numCols - 1, 0 }, { gCfg.numCols - 1, gCfg.numRows - 2 } });
 	}
 
 	/******************************************************************************************************/
@@ -61,7 +77,7 @@ namespace Test1 {
 		// stage data init
 		int32_t stage = 50;
 
-		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 1);
+		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 2);
 
 		// begin loop
 		while (true) {
@@ -201,8 +217,8 @@ namespace Test1 {
 			zdraws.Clear();
 		}
 
-		auto str = xx::ToString("ball count = ", balls.Count());
-		ShowText({ 0, gLooper.windowSize_2.y - 25 }, str);
+		auto str = xx::ToString("ball count = ", balls.Count(), " particle count = ", explosionManager.items.Count());
+		ShowText({ 0, gLooper.windowSize_2.y - 55 }, str);
 
 		gLooper.DrawNode(rootNode);
 	}
@@ -211,8 +227,7 @@ namespace Test1 {
 	/******************************************************************************************************/
 
 	void Box::BoxInit(XY const& pos_, XY const& size_) {
-		x = pos_.x;
-		y = pos_.y;
+		pos = pos_;
 		size = size_;
 		auto tmp = size / 2;
 		xy.from = pos_ - tmp;
@@ -242,7 +257,7 @@ namespace Test1 {
 				q.scale = { camera.scale, camera.scale };
 				q.radians = 0;
 				q.colorplus = 1;
-				q.color = RGBA8_White;
+				q.color = { 255,255,255,127 };
 				q.texRect.data = frame.textureRect.data;
 			}
 		}
@@ -265,12 +280,12 @@ namespace Test1 {
 		auto& frame = gRes.td_shape_rect;
 		auto& q = Quad::DrawOnce(frame);
 		auto s = (1.f / gCfg.unitSize) * camera.scale;
-		q.pos = camera.ToGLPos(x, y);
+		q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 0.5f };
 		q.scale = size * s;
 		q.radians = 0;
 		q.colorplus = 1;
-		q.color = RGBA8_White;
+		q.color = { 255,255,255,127 };
 
 		// todo: draw hp number ?
 	}
@@ -280,7 +295,7 @@ namespace Test1 {
 
 	xx::Task<> Ball::MainTask_() {
 		XY v{ std::cos(radians), std::sin(radians) };
-		auto inc = v * speed / (float)gCfg.updateMultipleTimes;
+		auto inc = v * speed;
 		while (true) {
 			for (int i = 0; i < gCfg.updateMultipleTimes; ++i) {
 
@@ -289,21 +304,31 @@ namespace Test1 {
 				// bounce with block
 				gScene->blocks.Foreach9(newPos.x, newPos.y, [&](Block& o)->xx::ForeachResult {
 					if (TranslateControl::BounceCircleIfIntersectsBox(o.xy, radius, speed, inc, newPos)) {
-						// hit
-						if (--o.hp <= 0) {	// todo: damage set
+						// hit	// todo: damage set
+						if (--o.hp <= 0) {
+							gScene->explosionManager.Add(o.pos, gCfg.unitSize, 5000, 3, true);
 							return xx::ForeachResult::RemoveAndContinue;
+						} else {
+							gScene->explosionManager.Add(o.pos, gCfg.unitSize_2, 8, 0.25f);
 						}
 					}
 					return xx::ForeachResult::Continue;
 				});
 
+				// bounce with bar	// todo
+				if (gScene->bar) {
+					(void)TranslateControl::BounceCircleIfIntersectsBox(gScene->bar->xy, radius, speed, inc, newPos);
+				}
+
 				// bounce with wall
 				for (auto& wall : gScene->walls) {
 					(void)TranslateControl::BounceCircleIfIntersectsBox(wall.xy, radius, speed, inc, newPos);
 				}
-				pos = newPos;
 
-				if (pos.x < 0 || pos.x >= gCfg.mapSize.x || pos.y < 0 || pos.y >= gCfg.mapSize.y) goto LabEnd;
+				if (newPos.x < gCfg.unitSize_2 || newPos.x >= gCfg.mapSize.x - gCfg.unitSize_2
+					|| newPos.y < gCfg.unitSize_2 || newPos.y >= gCfg.mapSize.y - gCfg.unitSize_2) goto LabEnd;
+
+				pos = newPos;
 			}
 			co_yield 0;
 		}
@@ -332,7 +357,7 @@ namespace Test1 {
 		q.scale = { s, s };
 		q.radians = 0;
 		q.colorplus = 1;
-		q.color = RGBA8_White;
+		q.color = {255,255,255,127};
 	}
 
 	/******************************************************************************************************/
@@ -349,7 +374,7 @@ namespace Test1 {
 
 		for (size_t i = 0; i < 10; i++) {
 
-			gScene->balls.Emplace().Init({ x, y - size.y / 2 }
+			gScene->balls.Emplace().Init({ x, y - size.y / 2 - gCfg.unitSize_2 }
 			, gCfg.unitSize_2
 				, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
 				, gCfg.ballSpeed);
@@ -363,24 +388,12 @@ namespace Test1 {
 		auto& frame = gRes.td_shape_mask;
 		auto& q = Quad::DrawOnce(frame);
 		auto s = (1.f / gCfg.unitSize) * camera.scale;
-		q.pos = camera.ToGLPos(x, y);
+		q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 0.5f };
-		q.scale = { size.x * s, size.y * s };
+		q.scale = size * s;
 		q.radians = 0;
 		q.colorplus = 1;
-		q.color = RGBA8_White;
+		q.color = { 255,255,255,127 };
 	}
 
 }
-
-
-
-//auto pos = gCfg.mapSize_2;
-//pos.x += gLooper.rnd.Next<float>(-gLooper.windowSize_2.x + 100, gLooper.windowSize_2.x - 100);
-//pos.y += gLooper.rnd.Next<float>(-gLooper.windowSize_2.y + 100, gLooper.windowSize_2.y - 100);
-//float radius = gLooper.rnd.Next<float>(16, 32);
-//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
-//em.Add(pos, radius, count);
-
-//co_await gLooper.AsyncSleep(0.5f);
-//co_yield 0;

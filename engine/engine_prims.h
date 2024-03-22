@@ -745,7 +745,7 @@ namespace TranslateControl {
         auto overlap = radius - mag;
 
         // intersect
-        if (!std::isnan(overlap) && overlap > 0) {
+        if (overlap > 0 && mag != 0.f) {
             auto mag_1 = 1 / mag;
             auto p = d * mag_1 * overlap;
 

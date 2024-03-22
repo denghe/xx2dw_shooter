@@ -12,7 +12,7 @@ namespace Effect {
 		items.Reserve(cap);
 	}
 
-	void ExplosionManager::Add(XY const& pos_, float radius, int32_t count, float timeScale) {
+	void ExplosionManager::Add(XY const& pos_, float radius, int32_t count, float timeScale, bool rndRadians) {
 		items.Reserve(items.Count() + 16);
 
 		for (int32_t i = 0; i < count; i++) {
@@ -21,9 +21,14 @@ namespace Effect {
 			auto a = rnd->Next<float>(gNPI, gPI);
 			auto c = std::cos(a);
 			auto s = std::sin(a);
-			o.radians = a;
 			o.pos.x = pos_.x + c * r;
 			o.pos.y = pos_.y + s * r;
+			if (rndRadians) {
+				a = rnd->Next<float>(gNPI, gPI);
+				c = std::cos(a);
+				s = std::sin(a);
+			}
+			o.radians = a;
 			auto speed = rnd->Next<float>(50, 200) / gDesign.fps;
 			o.inc.x = c * speed;
 			o.inc.y = s * speed;

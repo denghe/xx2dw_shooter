@@ -20,7 +20,7 @@ namespace Effect {
 		xx::Listi32<ExplosionItem> items;
 
 		void Init(int32_t* frameNumber_, Camera* camera_, Rnd* rnd_, xx::Ref<Frame> frame_, RGBA8 color_ = RGBA8_White, int32_t cap = 10000);
-		void Add(XY const& pos_, float radius, int32_t count = 256, float timeScale = 1.f);
+		void Add(XY const& pos_, float radius, int32_t count = 256, float timeScale = 1.f, bool rndRadians = false);
 		void Update();
 		void Draw();
 	};
