@@ -49,3 +49,6 @@ add_subdirectory(s24)
 add_subdirectory(s25)
 add_subdirectory(s26)
 add_subdirectory(s27)
+add_subdirectory(s28)
+add_subdirectory(s29)
+
