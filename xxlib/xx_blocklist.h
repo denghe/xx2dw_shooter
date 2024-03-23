@@ -165,7 +165,7 @@ namespace xx {
 		}
 
 		// .Foreach([](T& o)->xx::ForeachResult {    });
-		template<bool clearBlockFlags = false, typename F>
+		template<bool callByClear = false, typename F>
 		void Foreach(F&& func) {
 			using R = xx::FuncR_t<F>;
 			static_assert(std::is_same_v<R, ForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
@@ -174,12 +174,8 @@ namespace xx {
 			for (int32_t i = 0, n = blocks.len - 1; i <= n; ++i) {
 
 				auto& block = *blocks[i];
-				auto flags = block.flags;
+				auto& flags = block.flags;
 				if (!flags) continue;
-				if constexpr (clearBlockFlags) {		// for Clear
-					static_assert(std::is_void_v<R>);
-					block.flags = 0;
-				}
 
 				auto left = len & 0b111111;
 				int32_t e = (i < n || !left) ? 64 : left;
@@ -194,6 +190,12 @@ namespace xx {
 
 					if constexpr (std::is_void_v<R>) {
 						func(o.value);
+						if constexpr (callByClear) {
+							o.version = 0;
+							o.next = -1;
+							o.index = -1;
+							o.typeId = -1;
+						}
 					} else {
 						auto r = func(o.value);
 						if constexpr (std::is_same_v<R, bool>) {
@@ -213,6 +215,10 @@ namespace xx {
 							}
 						}
 					}
+				}
+				if constexpr (callByClear) {
+					static_assert(std::is_void_v<R>);
+					flags = 0;
 				}
 			}
 		}
@@ -264,6 +270,8 @@ namespace xx {
 			o.index = index;
 			if constexpr (Has_cTypeId<T>) {
 				o.typeId = T::cTypeId;
+			} else {
+				o.typeId = -1;
 			}
 			return *new (&o.value) T(std::forward<Args>(args)...);
 		}

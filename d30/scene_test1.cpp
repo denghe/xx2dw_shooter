@@ -139,16 +139,7 @@ namespace Test1 {
 			}
 			// todo: show rank / score report ?
 			// todo: bar fade out?
-			// todo: clear all balls?
 			bar.Reset();
-
-			balls.Foreach([&](Ball& o) {
-				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 200, 2);
-			});
-			balls.Clear();
-
-			co_await AsyncSleep(1);
-
 			// next stage or quit ?
 			++stage;
 			co_yield 0;

@@ -5,14 +5,14 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(name d29)
+set(name d30)
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#add_definitions(-DDISABLE_ENGINE_AUDIO)
+add_definitions(-DDISABLE_ENGINE_AUDIO)
 
 include_directories(
 	./
