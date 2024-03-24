@@ -127,9 +127,7 @@ namespace xx {
     /*************************************************************************************************************************/
 
     struct Tasks {
-        using Container = BlockList<xx::Task<>>;
-        using WeakType = Container::WeakType;
-        Container tasks;
+        BlockList<xx::Task<>> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }
@@ -145,10 +143,12 @@ namespace xx {
 
         // T: Task<> or callable
         template<typename T>
-        WeakType Add(T &&t) {
+        BlockListVI Add(T &&t) {
             if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)
                 if (t) return {};
-                return tasks.Emplace(std::forward<T>(t));
+                BlockListVI vi;
+                tasks.EmplaceVI(vi, std::forward<T>(t));
+                return vi;
             } else {
                 return Add([](T t) -> Task<> {
                     if constexpr (std::is_convertible_v<Task<>, FuncR_t<T>>) {
@@ -163,7 +163,7 @@ namespace xx {
 
         // resume once
         int32_t operator()() {
-            tasks.Foreach([&](xx::Task<>& o)->ForeachResult {
+            tasks.ForeachLink([&](xx::Task<>& o)->ForeachResult {
                 return o.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
             });
             return tasks.Count();
@@ -172,7 +172,7 @@ namespace xx {
 
     struct TaskGuard {
         Tasks* ptr;
-        Tasks::WeakType weak;
+        BlockListVI weak;
 
         TaskGuard() : ptr(nullptr) {};
         TaskGuard(TaskGuard const&) = delete;
@@ -217,7 +217,7 @@ namespace xx {
         }
 
         operator bool() const {
-            return ptr && weak.Exists();
+            return ptr && ptr->tasks.Exists(weak);
         }
     };
 

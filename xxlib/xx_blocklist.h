@@ -2,27 +2,35 @@
 #include "xx_list.h"
 
 namespace xx {
-	template<typename T>
-	concept Has_cTypeId = requires { typename T::cTypeId; };
 
-	struct VersionNextIndexTypeId {
+	struct BlockListNodeBase {
 		uint32_t version;
-		int32_t next, index, typeId;
+		int32_t next, prev, index;
+	};
+
+	struct BlockListVI {
+		uint32_t version{};
+		int32_t index{ -1 };
+
+		void Reset() {
+			version = {};
+			index = -1;
+		}
+
+		bool operator==(BlockListVI const& o) const {
+			return index == o.index && version == o.version;
+		}
 	};
 
 	template<typename T>
-	struct BlockListNodeBase : VersionNextIndexTypeId {
+	struct BlockListNode : BlockListNodeBase {
 		T value;
 	};
 
-	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
-	struct BlockList;
-
-
-	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
+	template<typename T, template<typename...> typename BlockNode = BlockListNode>
 	struct BlockListWeak {
 		using Node = BlockNode<T>;
-		static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
+		static_assert(std::is_base_of_v<BlockListNodeBase, Node>);
 
 		T* pointer{};
 		uint32_t version{};
@@ -62,8 +70,11 @@ namespace xx {
 		}
 	};
 
+	template<typename T, template<typename...> typename BlockNode = BlockListNode>
+	struct BlockList;
 
-	template<typename T, template<typename...> typename BlockNode = BlockListNodeBase>
+
+	template<typename T, template<typename...> typename BlockNode = BlockListNode>
 	struct BlockListHolder {
 		using OT = BlockList<T, BlockNode>;
 		using WT = BlockListWeak<T, BlockNode>;
@@ -133,7 +144,7 @@ namespace xx {
 		using HolderType = BlockListHolder<T, BlockNode>;
 		using WeakType = BlockListWeak<T, BlockNode>;
 		using Node = BlockNode<T>;
-		static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
+		static_assert(std::is_base_of_v<BlockListNodeBase, Node>);
 
 		struct Block {
 			uint64_t flags;
@@ -146,29 +157,27 @@ namespace xx {
 		BlockList(BlockList&& o) {
 			operator=(std::move(o));
 		}
+
 		BlockList& operator=(BlockList&& o) {
 			std::swap(blocks, o.blocks);
 			std::swap(cap, o.cap);
 			std::swap(len, o.len);
 			std::swap(freeHead, o.freeHead);
 			std::swap(freeCount, o.freeCount);
+			std::swap(head, o.head);
+			std::swap(tail, o.tail);
 			std::swap(version, o.version);
 			return *this;
 		}
+
 		~BlockList() {
-			Foreach([](T& v) {
-				v.~T();
-				});
-			for (auto& o : blocks) {
-				::free(o);
-			}
+			Clear<true, true>();
 		}
 
+		// .Foreach([](T& o)->void {    });
 		// .Foreach([](T& o)->xx::ForeachResult {    });
 		template<bool callByClear = false, typename F>
 		void Foreach(F&& func) {
-			using R = xx::FuncR_t<F>;
-			static_assert(std::is_same_v<R, ForeachResult> || std::is_same_v<R, bool> || std::is_void_v<R>);
 			if (len <= 0) return;
 
 			for (int32_t i = 0, n = blocks.len - 1; i <= n; ++i) {
@@ -188,52 +197,90 @@ namespace xx {
 					}
 					assert(o.version);
 
-					if constexpr (std::is_void_v<R>) {
+					if constexpr (std::is_void_v<decltype(func(o.value))>) {
 						func(o.value);
 						if constexpr (callByClear) {
 							o.version = 0;
 							o.next = -1;
+							o.prev = -1;
 							o.index = -1;
-							o.typeId = -1;
 						}
 					} else {
 						auto r = func(o.value);
-						if constexpr (std::is_same_v<R, bool>) {
-							if (r) return;
-						} else {
-							switch (r) {
-							case ForeachResult::Continue: break;
-							case ForeachResult::RemoveAndContinue: {
-								Remove(o.index);
-								break;
-							}
-							case ForeachResult::Break: return;
-							case ForeachResult::RemoveAndBreak: {
-								Remove(o.index);
-								return;
-							}
-							}
+						switch (r) {
+						case ForeachResult::Continue: break;
+						case ForeachResult::RemoveAndContinue: {
+							Remove(o.index);
+							break;
+						}
+						case ForeachResult::Break: return;
+						case ForeachResult::RemoveAndBreak: {
+							Remove(o.index);
+							return;
+						}
 						}
 					}
 				}
 				if constexpr (callByClear) {
-					static_assert(std::is_void_v<R>);
 					flags = 0;
 				}
 			}
 		}
 
-		// todo: shrink
+		template<bool fromHead = true, typename F>
+		void ForeachLink(F&& func, int32_t beginIdx = -1) {
+			if (beginIdx == -1) {
+				if constexpr (fromHead) {
+					beginIdx = head;
+				} else {
+					beginIdx = tail;
+				}
+			}
+			for (int32_t n, idx = beginIdx; idx != -1;) {
+				auto& o = RefNode(idx);
+				auto r = func(o.value);
+				if constexpr (fromHead) {
+					n = o.next;
+				} else {
+					n = o.prev;
+				}
+				switch (r) {
+				case ForeachResult::Continue: goto LabContinue;
+				case ForeachResult::RemoveAndContinue:
+					Free(idx, o);
+					goto LabContinue;
+				case ForeachResult::Break: return;
+				case ForeachResult::RemoveAndBreak:
+					Free(idx, o);
+					return;
+				}
+			LabContinue:
+				idx = n;
+			}
+		}
 
-		template<bool resetVersion = false>
+		template<bool freeBuf = false, bool resetVersion = false>
 		void Clear() {
-			if (!Count()) return;
-			Foreach<true>([](T& v) {
-				v.~T();
-			});
-			len = 0;
-			freeHead = -1;
+			if (!cap) return;
+			if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
+				while (head >= 0) {
+					auto& o = RefNode(head);
+					o.value.~T();
+					head = o.next;
+				}
+			}
+			if constexpr (freeBuf) {
+				for (auto& o : blocks) {
+					::free(o);
+				}
+				blocks.Clear(true);
+				cap = 0;
+			}
+
+			head = tail = freeHead = -1;
 			freeCount = 0;
+			len = 0;
+
 			if constexpr (resetVersion) {
 				version = 0;
 			}
@@ -261,19 +308,56 @@ namespace xx {
 			return false;
 		}
 
-		template<typename...Args>
-		T& Emplace(Args&&... args) {
+		XX_FORCE_INLINE bool Exists(BlockListVI const& vi) const {
+			if (!vi.version || vi.index < 0 || vi.index >= len) return false;
+			return RefNode(vi.index).version == vi.version;
+		}
+
+		XX_FORCE_INLINE T* TryGet(BlockListVI const& vi) const {
+			if (!vi.version || vi.index < 0 || vi.index >= len) return false;
+			auto& o = RefNode(vi.index);
+			return o.version == vi.version ? &o.value : nullptr;
+		}
+
+		template<bool appendToTail = true, typename...Args>
+		T& EmplaceVI(BlockListVI& vi, Args&&... args) {
 			auto index = Alloc();
 			auto& o = RefNode(index);
-			o.version = GenVersion();
-			o.next = -1;						// todo: fill ? order by create time ?
-			o.index = index;
-			if constexpr (Has_cTypeId<T>) {
-				o.typeId = T::cTypeId;
+
+			vi.index = index;
+			vi.version = o.version = GenVersion();
+			if constexpr (appendToTail) {
+				o.prev = tail;
+				o.next = -1;
+
+				if (tail >= 0) {
+					RefNode(tail).next = index;
+					tail = index;
+				} else {
+					assert(head == -1);
+					head = tail = index;
+				}
 			} else {
-				o.typeId = -1;
+				o.prev = -1;
+				o.next = head;
+
+				if (head >= 0) {
+					RefNode(head).prev = index;
+					head = index;
+				} else {
+					assert(head == -1);
+					head = tail = index;
+				}
 			}
+			o.index = index;
+
 			return *new (&o.value) T(std::forward<Args>(args)...);
+		}
+
+		template<bool appendToTail = true, typename...Args>
+		T& Emplace(Args&&... args) {
+			BlockListVI vi;
+			return EmplaceVI<appendToTail>(vi, std::forward<Args>(args)...);
 		}
 
 		template<typename...Args>
@@ -297,30 +381,22 @@ namespace xx {
 			}
 		}
 
+		void Remove(BlockListVI const& vi) {
+			if (!vi.version || vi.index < 0 || vi.index >= Count()) return;
+			auto& o = RefNode(vi.index);
+			if (o.version != vi.version) return;
+			Free(vi.index, o);
+		}
+
 		void Remove(int32_t index) {
 			auto& o = RefNode(index);
-			assert(o.version);
-			o.value.~T();
-			o.version = 0;
-			o.next = freeHead;
-			o.index = -1;
-			o.typeId = -1;
-			freeHead = index;
-			++freeCount;
-			FlagUnset(index);
+			Free(index, o);
 		}
 
 		// for unknown type ( wrong type: T )
 		void Remove(int32_t index, size_t tSiz, void(*deleter)(void*)) {
 			auto& o = *(Node*)((char*)&RefBlock(index).buf + tSiz * index);
-			deleter(&o.value);
-			o.version = 0;
-			o.next = freeHead;
-			o.index = -1;
-			o.typeId = -1;
-			freeHead = index;
-			++freeCount;
-			FlagUnset(index);
+			Free<true>(index, o, deleter);
 		}
 
 	protected:
@@ -339,6 +415,39 @@ namespace xx {
 			}
 			FlagSet(index);
 			return index;
+		}
+
+		template<bool useDeleter = false>
+		XX_FORCE_INLINE void Free(int32_t index, Node& o, void(*deleter)(void*) = {}) {
+			if constexpr (useDeleter) {
+				deleter(&o.value);
+			} else {
+				o.value.~T();
+			}
+
+			auto prev = o.prev;
+			auto next = o.next;
+			if (index == head) {
+				head = next;
+			}
+			if (index == tail) {
+				tail = prev;
+			}
+			if (prev >= 0) {
+				RefNode(prev).next = next;
+			}
+			if (next >= 0) {
+				RefNode(next).prev = prev;
+			}
+
+			assert(o.version);
+			o.version = 0;
+			o.next = freeHead;
+			o.index = -1;
+			o.prev = -1;
+			freeHead = index;
+			++freeCount;
+			FlagUnset(index);
 		}
 
 		XX_FORCE_INLINE uint32_t GenVersion() {
@@ -360,8 +469,15 @@ namespace xx {
 			assert(index >= 0 && index < cap);
 			return *blocks[(uint32_t&)index >> 6];
 		}
+		XX_FORCE_INLINE Block const& RefBlock(int32_t index) const {
+			assert(index >= 0 && index < cap);
+			return *blocks[(uint32_t&)index >> 6];
+		}
 
 		XX_FORCE_INLINE Node& RefNode(int32_t index) {
+			return RefBlock(index).buf[index & 0b111111];
+		}
+		XX_FORCE_INLINE Node const& RefNode(int32_t index) const {
 			return RefBlock(index).buf[index & 0b111111];
 		}
 
@@ -380,7 +496,7 @@ namespace xx {
 		}
 
 		xx::Listi32<Block*> blocks;
-		int32_t cap{}, len{}, freeHead{ -1 }, freeCount{};
+		int32_t cap{}, len{}, freeHead{ -1 }, freeCount{}, head{ -1 }, tail{ -1 };
 		uint32_t version{};
 	};
 
@@ -393,12 +509,17 @@ namespace xx {
 
 }
 
+
+
+
+
+
 ///*
 //struct Foo {
 //	XX_BLOCK_LIST_TO_WEAK_IMPL_FOR_T(Foo);
 //*/
 //#define XX_BLOCK_LIST_TO_WEAK_IMPL(T) \
-//template<template<typename...> typename BlockNode = xx::BlockListNodeBase>	\
+//template<template<typename...> typename BlockNode = xx::BlockListNode>	\
 //xx::BlockListWeak<Foo, BlockNode> ToWeak() {	\
 //	return xx::BlockListWeak<Foo, BlockNode>::Make(*this);	\
 //}
@@ -406,14 +527,14 @@ namespace xx {
 //
 //namespace xx {
 //
-//	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase>
+//	template<typename BT, template<typename...> typename BlockNode = BlockListNode>
 //	struct BlockListsWeak {
 //		BT* pointer{};
 //		uint32_t offset{};
 //		uint32_t version{};
 //
-//		XX_FORCE_INLINE VersionNextIndexTypeId& RefVNIT() const {
-//			return *(VersionNextIndexTypeId*)((char*)pointer - offset);
+//		XX_FORCE_INLINE BlockListNodeBase& RefVNIT() const {
+//			return *(BlockListNodeBase*)((char*)pointer - offset);
 //		}
 //
 //		XX_FORCE_INLINE bool Exists() const noexcept {
@@ -435,7 +556,7 @@ namespace xx {
 //		template<std::derived_from<BT> T>
 //		static BlockListsWeak Make(T const& v) {
 //			using Node = BlockNode<T>;
-//			static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
+//			static_assert(std::is_base_of_v<BlockListNodeBase, Node>);
 //
 //			auto o = container_of(&v, Node, value);
 //			auto b = &(BT&)v;
@@ -450,7 +571,7 @@ namespace xx {
 //		}
 //	};
 //
-//	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase, std::derived_from<BT>...TS>
+//	template<typename BT, template<typename...> typename BlockNode = BlockListNode, std::derived_from<BT>...TS>
 //	struct BlockLists {
 //		using Tup = std::tuple<TS...>;
 //		static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };

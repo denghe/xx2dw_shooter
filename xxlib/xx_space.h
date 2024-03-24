@@ -3,7 +3,7 @@
 
 namespace xx {
 	template<typename T>
-	struct SpaceNode : VersionNextIndexTypeId {
+	struct SpaceNode : BlockListNodeBase {
 		int32_t prev, cidx;
 		T value;
 	};
