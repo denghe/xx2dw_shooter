@@ -5,6 +5,8 @@
 #include <xx_string.h>
 #include <xx_data_shared.h>
 #include <xx_file.h>
+#include <xx_listlink.h>
+#include <xx_listdoublelink.h>
 #include <nameof.hpp>
 
 /*

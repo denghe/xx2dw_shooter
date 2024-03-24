@@ -67,6 +67,60 @@ namespace Test1 {
 		walls.Emplace().Init({ { 0, 0 }, { 0, gCfg.numRows - 2 } });
 		walls.Emplace().Init({ { 1, 0 }, { gCfg.numCols - 2, 0 } });
 		walls.Emplace().Init({ { gCfg.numCols - 1, 0 }, { gCfg.numCols - 1, gCfg.numRows - 2 } });
+
+		// set event handlers
+
+		onBarBorn = [this](Bar& bar) {
+			auto w = xx::WeakFromThis(&bar);
+			gScene->eventTasks.Add(
+				[w]()->bool { return w; }, 
+				[this, b = &bar]()->xx::Task<> {
+					while (true) {
+						// shoot ball every ? seconds
+						auto& ball = balls.Emplace();
+						ball.Init({ b->x, b->y - b->size.y / 2 - gCfg.unitSize_2 }
+							, gCfg.unitSize_2
+							, gScene->rnd.Next<float>(gCfg.barShootAngle.from, gCfg.barShootAngle.to)
+							, gCfg.ballSpeed
+							, {255,0,0,127}
+						);
+						onBallBorn(ball);
+
+						co_await AsyncSleep(1.f);
+					}
+				}
+			);
+		};
+
+		onBallBorn = [this](Ball& ball) {
+			xx::BlockListWeak<Ball> w(ball);
+			gScene->eventTasks.Add(
+				[w]()->bool { return w.Exists(); },
+				[this, b = &ball]()->xx::Task<> {
+					while(true) {
+						// 1 ball -> 2 balls every ? seconds
+						co_await AsyncSleep(1);
+
+						auto& o = balls.Emplace();
+						o.Init({ b->x, b->y }
+							, gCfg.unitSize_2
+							, gScene->rnd.Next<float>(gNPI, gPI)
+							, gCfg.ballSpeed);
+						onBallBorn(o);
+					}
+				}
+			);
+		};
+
+		//onBallDead = 
+
+		onBallHitBlock = [this](Ball& ball, Block& block) {
+			explosionManager.Add(ball.pos, gCfg.unitSize_2, 8, 0.25f);
+		};
+
+		onBallKillBlock = [this](Ball& ball, Block& block) {
+			explosionManager.Add(block.pos, gCfg.unitSize, 5000, 3, true);
+		};
 	}
 
 	/******************************************************************************************************/
@@ -146,7 +200,7 @@ namespace Test1 {
 
 				bar->Update();
 
-				conditionActions();
+				eventTasks();
 
 				co_yield 0;
 			}
@@ -172,7 +226,7 @@ namespace Test1 {
 			/********************************************************************/
 			// clear all balls
 			balls.Foreach([&](Ball& o) {
-				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 200, 2);
+				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 50, 2);
 			});
 			balls.Clear();
 
@@ -337,10 +391,10 @@ namespace Test1 {
 					if (TranslateControl::BounceCircleIfIntersectsBox(o.xy, radius, speed, inc, newPos)) {
 						// hit	// todo: damage set
 						if (--o.hp <= 0) {
-							gScene->explosionManager.Add(o.pos, gCfg.unitSize, 5000, 3, true);
+							gScene->onBallKillBlock(*this, o);
 							return FR::RemoveAndContinue;
 						} else {
-							gScene->explosionManager.Add(o.pos, gCfg.unitSize_2, 8, 0.25f);
+							gScene->onBallHitBlock(*this, o);
 						}
 					}
 					return FR::Continue;
@@ -364,14 +418,15 @@ namespace Test1 {
 			co_yield 0;
 		}
 	LabEnd:;
-		// todo: ball fail logic ?
+		gScene->onBallDead(*this);
 	}
 
-	void Ball::Init(XY const& pos_, float radius_, float radians_, float speed_) {
+	void Ball::Init(XY const& pos_, float radius_, float radians_, float speed_, RGBA8 color_) {
 		pos = pos_;
 		radius = radius_;
 		radians = radians_;
 		speed = speed_;
+		color = color_;
 	}
 
 	bool Ball::Update() {
@@ -388,7 +443,7 @@ namespace Test1 {
 		q.scale = { s, s };
 		q.radians = 0;
 		q.colorplus = 1;
-		q.color = {255,255,255,127};
+		q.color = color;
 	}
 
 	/******************************************************************************************************/
@@ -398,19 +453,7 @@ namespace Test1 {
 		BoxInit(pos_, size_);
 		speed = speed_;
 
-		gScene->conditionActions.Add([]()->xx::Task<> {
-			while (gScene->bar) {
-				auto& b = *gScene->bar;
-				// random shoot
-				//for (size_t i = 0; i < 10; i++) {
-					gScene->balls.Emplace().Init({ b.x, b.y - b.size.y / 2 - gCfg.unitSize_2 }
-						, gCfg.unitSize_2
-						, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
-						, gCfg.ballSpeed);
-				//}
-				co_yield 0;
-			}
-		});
+		gScene->onBarBorn(*this);
 	}
 
 	bool Bar::Update() {

@@ -1,8 +1,7 @@
 ﻿#pragma once
 #include "xx_time.h"
 #include "xx_list.h"
-#include "xx_listlink.h"
-#include "xx_listdoublelink.h"
+#include "xx_blocklist.h"
 #include "xx_ptr.h"
 
 namespace xx {
@@ -128,8 +127,8 @@ namespace xx {
     /*************************************************************************************************************************/
 
     struct Tasks {
-        using Container = ListDoubleLink<xx::Task<>, int32_t, uint32_t>;
-        using IndexAndVersion = Container::IndexAndVersion;
+        using Container = BlockList<xx::Task<>>;
+        using WeakType = Container::WeakType;
         Container tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
@@ -146,35 +145,26 @@ namespace xx {
 
         // T: Task<> or callable
         template<typename T>
-        IndexAndVersion Add(T &&t) {
+        WeakType Add(T &&t) {
             if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)
                 if (t) return {};
-                tasks.Emplace(std::forward<T>(t));
-                return tasks.Tail();
+                return tasks.Emplace(std::forward<T>(t));
             } else {
-                using R = FuncR_t<T>;
-                if constexpr (std::is_convertible_v<Task<>, R>) {       // []()->xx::Task<>{}
-                    tasks.Emplace(t());
-                    return tasks.Tail();
-                } else {
-                    return Add([](T t) -> Task<> {                      // [](){}
-                        t();
+                return Add([](T t) -> Task<> {
+                    if constexpr (std::is_convertible_v<Task<>, FuncR_t<T>>) {
+                        co_await t();                                   // [...]()->xx::Task<>{}
+                    } else {
+                        t();                                            // [...](){}
                         co_return;
-                    }(std::forward<T>(t)));
-                }
-            }
-        }
-
-        void RemoveOldest() {
-            if (tasks.head != -1) {
-                tasks.Remove(tasks.head);
+                    }
+                }(std::forward<T>(t)));
             }
         }
 
         // resume once
         int32_t operator()() {
-            tasks.Foreach([&](auto& o)->bool {
-                return o.Resume();
+            tasks.Foreach([&](xx::Task<>& o)->ForeachResult {
+                return o.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
             });
             return tasks.Count();
         }
@@ -182,7 +172,7 @@ namespace xx {
 
     struct TaskGuard {
         Tasks* ptr;
-        Tasks::IndexAndVersion iv;
+        Tasks::WeakType weak;
 
         TaskGuard() : ptr(nullptr) {};
         TaskGuard(TaskGuard const&) = delete;
@@ -190,19 +180,19 @@ namespace xx {
 
         TaskGuard(TaskGuard && o) noexcept {
             ptr = o.ptr;
-            iv = o.iv;
-            o.ptr = nullptr;
-            o.iv = {};
+            weak = o.weak;
+            o.ptr = {};
+            o.weak.Reset();
         }
         TaskGuard& operator=(TaskGuard &&o) noexcept {
             std::swap(ptr, o.ptr);
-            std::swap(iv, o.iv);
+            std::swap(weak, o.weak);
             return *this;
         }
 
         XX_FORCE_INLINE void Clear() {
             if (ptr) {
-                ptr->tasks.Remove(iv);
+                ptr->tasks.Remove(weak);
                 ptr = {};
             }
         }
@@ -215,7 +205,7 @@ namespace xx {
         void operator()(Tasks& tasks, T &&t) {
             Clear();
             ptr = &tasks;
-            iv = tasks.Add([](T tt, Tasks*& p) -> Task<> {
+            weak = tasks.Add([](T tt, Tasks*& p) -> Task<> {
                 if constexpr (std::is_convertible_v<Task<>, T>) {
                     assert(!tt);
                     co_await tt;
@@ -227,14 +217,14 @@ namespace xx {
         }
 
         operator bool() const {
-            return !!ptr;
+            return ptr && weak.Exists();
         }
     };
 
-    // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder>
+    // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
     template<typename Cond>
     struct CondTasks {
-        ListLink<std::pair<Cond, Task<>>, int32_t> tasks;
+        BlockList<std::pair<Cond, Task<>>> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }
@@ -253,29 +243,44 @@ namespace xx {
         void Add(W&& w, T&& t) {
             if constexpr (std::is_convertible_v<Task<>, T>) {
                 if (t) return;
-                if constexpr (IsOptional_v<Cond>) {
-                    tasks.Emplace(std::pair<Cond, Task<>>{Cond{}, std::forward<T>(t)});
-                } else {
-                    tasks.Emplace(std::forward<T>(t));
-                }
+                tasks.Emplace(std::forward<W>(w), std::forward<T>(t));
             } else {
                 Add(std::forward<W>(w), [](T t) -> Task<> {
-                    co_await t();
+                    if constexpr (std::is_convertible_v<Task<>, FuncR_t<T>>) {
+                        co_await t();                                   // [...]()->xx::Task<>{}
+                    } else {
+                        t();                                            // [...](){}
+                        co_return;
+                    }
                 }(std::forward<T>(t)));
             }
         }
+
         template<typename T>
         void Add(T&& t) {
+            if constexpr (xx::IsFunction_v<Cond>) {
+                assert(false);
+            }
             Add(Cond{}, std::forward<T>(t));
         }
 
         // resume once
         int32_t operator()() {
-            tasks.Foreach([&](auto& o)->bool{
+            tasks.Foreach([&](std::pair<Cond, Task<>>& o)->ForeachResult {
                 if constexpr(IsOptional_v<Cond>) {
-                    if (o.first.has_value()) return !o.first.value() || o.second.Resume();
-                    else return o.second.Resume();
-                } else return !o.first || o.second.Resume();
+                    if (o.first.has_value()) return (!o.first.value() || o.second.Resume()) ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                    else return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                } else if constexpr (std::is_invocable_v<Cond>) {
+                    if (o.first()) {
+                        if (o.second) return ForeachResult::RemoveAndContinue;
+                        return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                    } else return o.second ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                } else {
+                    if (o.first) {
+                        if (o.second) return ForeachResult::RemoveAndContinue;
+                        return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                    } else return o.second ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                }
             });
             return this->tasks.Count();
         }

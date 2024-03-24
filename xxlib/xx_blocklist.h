@@ -203,11 +203,11 @@ namespace xx {
 						} else {
 							switch (r) {
 							case ForeachResult::Continue: break;
-							case ForeachResult::Break: return;
 							case ForeachResult::RemoveAndContinue: {
 								Remove(o.index);
 								break;
 							}
+							case ForeachResult::Break: return;
 							case ForeachResult::RemoveAndBreak: {
 								Remove(o.index);
 								return;
@@ -393,113 +393,113 @@ namespace xx {
 
 }
 
-/*
-struct Foo {
-	XX_BLOCK_LIST_TO_WEAK_IMPL_FOR_T(Foo);
-*/
-#define XX_BLOCK_LIST_TO_WEAK_IMPL(T) \
-template<template<typename...> typename BlockNode = xx::BlockListNodeBase>	\
-xx::BlockListWeak<Foo, BlockNode> ToWeak() {	\
-	return xx::BlockListWeak<Foo, BlockNode>::Make(*this);	\
-}
-
-
-namespace xx {
-
-	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase>
-	struct BlockListsWeak {
-		BT* pointer{};
-		uint32_t offset{};
-		uint32_t version{};
-
-		XX_FORCE_INLINE VersionNextIndexTypeId& RefVNIT() const {
-			return *(VersionNextIndexTypeId*)((char*)pointer - offset);
-		}
-
-		XX_FORCE_INLINE bool Exists() const noexcept {
-			auto& vi = RefVNIT();
-			return pointer && version && version == vi.version;
-		}
-
-		XX_FORCE_INLINE BT& operator()() const {
-			assert(Exists());
-			return (BT&)*pointer;
-		}
-
-		XX_FORCE_INLINE void Reset() {
-			pointer = {};
-			offset = 0;
-			version = 0;
-		}
-
-		template<std::derived_from<BT> T>
-		static BlockListsWeak Make(T const& v) {
-			using Node = BlockNode<T>;
-			static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
-
-			auto o = container_of(&v, Node, value);
-			auto b = &(BT&)v;
-			return { b, uint32_t((char*)b - (char*)o), o->version };
-		}
-
-		template<std::derived_from<BT> T>
-		T& As() const {
-			auto& bt = (*this)();
-			assert(dynamic_cast<T*>(&bt) == static_cast<T*>(&bt));
-			return (T&)bt;
-		}
-	};
-
-	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase, std::derived_from<BT>...TS>
-	struct BlockLists {
-		using Tup = std::tuple<TS...>;
-		static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };
-		static constexpr std::array<size_t, sizeof...(TS)> is{ TS::cTypeId... };
-		static_assert(ts == is);
-
-		// container
-		xx::SimpleTuple<BlockList<TS, BlockNode>...> bls;
-		static_assert(sizeof(bls.value) * sizeof...(TS) == sizeof(bls));
-
-		// for Weak
-		static constexpr std::array<size_t, sizeof...(TS)> sizes{ sizeof(TS)... };
-		typedef void(*Deleter)(void*);
-		std::array<Deleter, sizeof...(TS)> deleters;
-
-		BlockLists() {
-			ForEachType<Tup>([&]<typename T>() {
-				deleters[xx::TupleTypeIndex_v<T, Tup>] = [](void* o) { ((T*)o)->~T(); };
-			});
-		}
-		BlockLists(BlockLists const&) = delete;
-		BlockLists& operator=(BlockLists const&) = delete;
-
-		template<typename T>
-		BlockList<T, BlockNode>& Get() {
-			return xx::Get<BlockList<T, BlockNode>>(bls);
-		}
-
-		template<typename T>
-		BlockList<T, BlockNode> const& Get() const {
-			return xx::Get<BlockList<T, BlockNode>>(bls);
-		}
-
-		template<typename T>
-		void Remove(T const& v) {
-			Get<T>().Remove(v);
-		}
-
-		BlockList<BT, BlockNode>& Get(int32_t index) {
-			return ((BlockList<BT, BlockNode>*)&bls.value)[index];
-		}
-
-		void Remove(BlockListsWeak<BT, BlockNode> const& w) {
-			if (!w.pointer || !w.version) return;
-			auto& vnit = w.RefVNIT();
-			if (w.version != vnit.version) return;
-			Get(vnit.typeId).Remove(vnit.index, sizes[vnit.typeId], deleters[vnit.typeId]);
-		}
-
-	};
-
-}
+///*
+//struct Foo {
+//	XX_BLOCK_LIST_TO_WEAK_IMPL_FOR_T(Foo);
+//*/
+//#define XX_BLOCK_LIST_TO_WEAK_IMPL(T) \
+//template<template<typename...> typename BlockNode = xx::BlockListNodeBase>	\
+//xx::BlockListWeak<Foo, BlockNode> ToWeak() {	\
+//	return xx::BlockListWeak<Foo, BlockNode>::Make(*this);	\
+//}
+//
+//
+//namespace xx {
+//
+//	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase>
+//	struct BlockListsWeak {
+//		BT* pointer{};
+//		uint32_t offset{};
+//		uint32_t version{};
+//
+//		XX_FORCE_INLINE VersionNextIndexTypeId& RefVNIT() const {
+//			return *(VersionNextIndexTypeId*)((char*)pointer - offset);
+//		}
+//
+//		XX_FORCE_INLINE bool Exists() const noexcept {
+//			auto& vi = RefVNIT();
+//			return pointer && version && version == vi.version;
+//		}
+//
+//		XX_FORCE_INLINE BT& operator()() const {
+//			assert(Exists());
+//			return (BT&)*pointer;
+//		}
+//
+//		XX_FORCE_INLINE void Reset() {
+//			pointer = {};
+//			offset = 0;
+//			version = 0;
+//		}
+//
+//		template<std::derived_from<BT> T>
+//		static BlockListsWeak Make(T const& v) {
+//			using Node = BlockNode<T>;
+//			static_assert(std::is_base_of_v<VersionNextIndexTypeId, Node>);
+//
+//			auto o = container_of(&v, Node, value);
+//			auto b = &(BT&)v;
+//			return { b, uint32_t((char*)b - (char*)o), o->version };
+//		}
+//
+//		template<std::derived_from<BT> T>
+//		T& As() const {
+//			auto& bt = (*this)();
+//			assert(dynamic_cast<T*>(&bt) == static_cast<T*>(&bt));
+//			return (T&)bt;
+//		}
+//	};
+//
+//	template<typename BT, template<typename...> typename BlockNode = BlockListNodeBase, std::derived_from<BT>...TS>
+//	struct BlockLists {
+//		using Tup = std::tuple<TS...>;
+//		static constexpr std::array<size_t, sizeof...(TS)> ts{ xx::TupleTypeIndex_v<TS, Tup>... };
+//		static constexpr std::array<size_t, sizeof...(TS)> is{ TS::cTypeId... };
+//		static_assert(ts == is);
+//
+//		// container
+//		xx::SimpleTuple<BlockList<TS, BlockNode>...> bls;
+//		static_assert(sizeof(bls.value) * sizeof...(TS) == sizeof(bls));
+//
+//		// for Weak
+//		static constexpr std::array<size_t, sizeof...(TS)> sizes{ sizeof(TS)... };
+//		typedef void(*Deleter)(void*);
+//		std::array<Deleter, sizeof...(TS)> deleters;
+//
+//		BlockLists() {
+//			ForEachType<Tup>([&]<typename T>() {
+//				deleters[xx::TupleTypeIndex_v<T, Tup>] = [](void* o) { ((T*)o)->~T(); };
+//			});
+//		}
+//		BlockLists(BlockLists const&) = delete;
+//		BlockLists& operator=(BlockLists const&) = delete;
+//
+//		template<typename T>
+//		BlockList<T, BlockNode>& Get() {
+//			return xx::Get<BlockList<T, BlockNode>>(bls);
+//		}
+//
+//		template<typename T>
+//		BlockList<T, BlockNode> const& Get() const {
+//			return xx::Get<BlockList<T, BlockNode>>(bls);
+//		}
+//
+//		template<typename T>
+//		void Remove(T const& v) {
+//			Get<T>().Remove(v);
+//		}
+//
+//		BlockList<BT, BlockNode>& Get(int32_t index) {
+//			return ((BlockList<BT, BlockNode>*)&bls.value)[index];
+//		}
+//
+//		void Remove(BlockListsWeak<BT, BlockNode> const& w) {
+//			if (!w.pointer || !w.version) return;
+//			auto& vnit = w.RefVNIT();
+//			if (w.version != vnit.version) return;
+//			Get(vnit.typeId).Remove(vnit.index, sizes[vnit.typeId], deleters[vnit.typeId]);
+//		}
+//
+//	};
+//
+//}

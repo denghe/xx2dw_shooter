@@ -242,8 +242,8 @@ using namespace std::chrono_literals;
 namespace xx {
     enum class ForeachResult {
         Continue,
-        Break,
         RemoveAndContinue,
+        Break,
         RemoveAndBreak
     };
 }
