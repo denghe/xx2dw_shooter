@@ -3,6 +3,7 @@
 #include "scene_main_menu.h"
 
 namespace Test1 {
+	using FR = xx::ForeachResult;
 
 	void Scene::ShuffleBlockIndexs() {
 		auto len = blockIndexs.len;
@@ -22,6 +23,7 @@ namespace Test1 {
 	void Scene::Init() {
 		gScene = this;
 
+		// UI menu init
 		rootNode.Emplace()->Init();
 		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 			gLooper.DelaySwitchTo<SceneMainMenu>();
@@ -42,11 +44,12 @@ namespace Test1 {
 			gameSpeedRate = 50;
 			});
 
-
+		// camera init
 		camera.SetScale(1.f);
 		camera.SetMaxFrameSize({ gCfg.unitSize, gCfg.unitSize });
 		camera.SetOriginal(gCfg.mapCenterPos - XY{ 0, gCfg.unitSize });
 
+		// other inits
 		explosionManager.Init(&frameNumber, &camera, &rnd, gRes.td_effect_1);
 
 		gameSpeedRate = gCfg.defaultGameSpeedRate;
@@ -74,14 +77,19 @@ namespace Test1 {
 	}
 
 	xx::Task<> Scene::MainTask_() {
+		/********************************************************************/
 		// stage data init
+		// todo: read config by stage?
+
 		int32_t stage = 50;
 
 		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 2);
 
+		/********************************************************************/
 		// begin loop
 		while (true) {
-			// todo: read config by stage?
+
+			/********************************************************************/
 			// show Level xxxx 1 secs
 			{
 				auto holder = globalEffects.HolderEmplace();
@@ -91,6 +99,8 @@ namespace Test1 {
 					};
 				co_await AsyncSleep(1);
 			}
+
+			/********************************************************************/
 			// step by step create some blocks
 			ShuffleBlockIndexs();
 			int32_t e = std::min(stage, blockIndexs.len);
@@ -100,10 +110,13 @@ namespace Test1 {
 				blocks.EmplaceInit(pos, gCfg.unitXYSize, 100);
 				co_await AsyncSleep(0.05f);
 			}
+
+			/********************************************************************/
 			// todo: create bar with fade in effect
 			co_await AsyncSleep(0.5f);
 			bar.Emplace()->Init(barBornPos, XY{200, 20}, 3000);
 
+			/********************************************************************/
 			// show 3, 2, 1
 			{
 				co_await AsyncSleep(0.5f);
@@ -116,19 +129,29 @@ namespace Test1 {
 					co_await AsyncSleep(1);
 				}
 			}
-			// wait blocks empty
+
+			/********************************************************************/
+			// wait blocks empty && logic life cycle updates
 			while (blocks.Count()) {
 
-				// mouse control bar. bar auto shoot ball
+				blocks.Foreach([](Block& o)->FR {
+					if (o.Update()) return FR::RemoveAndContinue;
+					return FR::Continue;
+				});
+
+				balls.Foreach([](Ball& o)->FR {
+					if (o.Update()) return FR::RemoveAndContinue;
+					return FR::Continue;
+				});
+
 				bar->Update();
 
-				// GM command
-				if (gLooper.mouse.Pressed(0)) {
-					blocks.Clear();
-				}
+				conditionActions();
 
 				co_yield 0;
 			}
+
+			/********************************************************************/
 			// show Clear 1 secs
 			{
 				auto holder = globalEffects.HolderEmplace();
@@ -137,18 +160,27 @@ namespace Test1 {
 				};
 				co_await AsyncSleep(1);
 			}
+
+			/********************************************************************/
 			// todo: show rank / score report ?
+
+
+			/********************************************************************/
 			// todo: bar fade out?
 			bar.Reset();
 
+			/********************************************************************/
 			// clear all balls
 			balls.Foreach([&](Ball& o) {
 				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 200, 2);
 			});
 			balls.Clear();
 
+			/********************************************************************/
+			// wait effect run
 			co_await AsyncSleep(1);
 
+			/********************************************************************/
 			// next stage or quit ?
 			++stage;
 			co_yield 0;
@@ -173,16 +205,6 @@ namespace Test1 {
 			++frameNumber;
 
 			MainTask();
-
-			blocks.Foreach([](Block& o)->xx::ForeachResult {
-				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
-				return xx::ForeachResult::Continue;
-			});
-
-			balls.Foreach([](Ball& o)->xx::ForeachResult {
-				if (o.Update()) return xx::ForeachResult::RemoveAndContinue;
-				return xx::ForeachResult::Continue;
-			});
 
 			explosionManager.Update();
 		}
@@ -311,17 +333,17 @@ namespace Test1 {
 				auto newPos = pos + inc;
 
 				// bounce with block
-				gScene->blocks.Foreach9(newPos.x, newPos.y, [&](Block& o)->xx::ForeachResult {
+				gScene->blocks.Foreach9(newPos.x, newPos.y, [&](Block& o)->FR {
 					if (TranslateControl::BounceCircleIfIntersectsBox(o.xy, radius, speed, inc, newPos)) {
 						// hit	// todo: damage set
 						if (--o.hp <= 0) {
 							gScene->explosionManager.Add(o.pos, gCfg.unitSize, 5000, 3, true);
-							return xx::ForeachResult::RemoveAndContinue;
+							return FR::RemoveAndContinue;
 						} else {
 							gScene->explosionManager.Add(o.pos, gCfg.unitSize_2, 8, 0.25f);
 						}
 					}
-					return xx::ForeachResult::Continue;
+					return FR::Continue;
 				});
 
 				// bounce with bar	// todo
@@ -375,11 +397,23 @@ namespace Test1 {
 	void Bar::Init(XY const& pos_, XY const& size_, float speed_) {
 		BoxInit(pos_, size_);
 		speed = speed_;
+
+		gScene->conditionActions.Add([]()->xx::Task<> {
+			while (gScene->bar) {
+				auto& b = *gScene->bar;
+				// random shoot
+				//for (size_t i = 0; i < 10; i++) {
+					gScene->balls.Emplace().Init({ b.x, b.y - b.size.y / 2 - gCfg.unitSize_2 }
+						, gCfg.unitSize_2
+						, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
+						, gCfg.ballSpeed);
+				//}
+				co_yield 0;
+			}
+		});
 	}
 
 	bool Bar::Update() {
-		//if (gScene->frameNumber % 60 != 0) return false;
-
 		// calculate tar pos with size, edge limit
 		auto sx2 = size.x / 2;
 		xx::FromTo<float> xrange{ gCfg.barSpaceX.from + sx2, gCfg.barSpaceX.to - sx2 };
@@ -411,15 +445,6 @@ namespace Test1 {
 		}
 		xy.from.x = x - sx2;
 		xy.to.x = x + sx2;
-		
-		// random shoot
-		//for (size_t i = 0; i < 10; i++) {
-
-			gScene->balls.Emplace().Init({ x, y - size.y / 2 - gCfg.unitSize_2 }
-			, gCfg.unitSize_2
-				, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
-				, gCfg.ballSpeed);
-		//}
 
 		return false;
 	}

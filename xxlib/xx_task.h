@@ -147,14 +147,21 @@ namespace xx {
         // T: Task<> or callable
         template<typename T>
         IndexAndVersion Add(T &&t) {
-            if constexpr (std::is_convertible_v<Task<>, T>) {
+            if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)
                 if (t) return {};
                 tasks.Emplace(std::forward<T>(t));
                 return tasks.Tail();
             } else {
-                return Add([](T t) -> Task<> {
-                    co_await t();
-                }(std::forward<T>(t)));
+                using R = FuncR_t<T>;
+                if constexpr (std::is_convertible_v<Task<>, R>) {       // []()->xx::Task<>{}
+                    tasks.Emplace(t());
+                    return tasks.Tail();
+                } else {
+                    return Add([](T t) -> Task<> {                      // [](){}
+                        t();
+                        co_return;
+                    }(std::forward<T>(t)));
+                }
             }
         }
 

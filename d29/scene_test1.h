@@ -68,6 +68,7 @@ namespace Test1 {
 		void Draw();
 	};
 
+
 	struct GlobalEffect {
 		float z{};				// draw order
 		std::function<void()> draw;
@@ -76,6 +77,11 @@ namespace Test1 {
 		float z;
 		std::reference_wrapper<std::function<void()>> draw;
 	};
+
+
+	// todo: sound
+
+	// todo: condition + action
 
 	struct Scene : ::Scene {
 		xx::Shared<Node> rootNode;
@@ -97,6 +103,8 @@ namespace Test1 {
 
 		xx::BlockList<GlobalEffect> globalEffects;
 		xx::Listi32<ZDraw> zdraws;	// for sort
+
+		xx::Tasks conditionActions;
 
 		void ShuffleBlockIndexs();
 		void ShowText(XY const& pos, std::string_view const& txt);
