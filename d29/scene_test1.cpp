@@ -139,9 +139,9 @@ namespace Test1 {
 			}
 			// todo: show rank / score report ?
 			// todo: bar fade out?
-			// todo: clear all balls?
 			bar.Reset();
 
+			// clear all balls
 			balls.Foreach([&](Ball& o) {
 				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 200, 2);
 			});
@@ -378,16 +378,48 @@ namespace Test1 {
 	}
 
 	bool Bar::Update() {
-		// todo: random shoot, mouse control
 		//if (gScene->frameNumber % 60 != 0) return false;
 
-		for (size_t i = 0; i < 10; i++) {
+		// calculate tar pos with size, edge limit
+		auto sx2 = size.x / 2;
+		xx::FromTo<float> xrange{ gCfg.barSpaceX.from + sx2, gCfg.barSpaceX.to - sx2 };
+		if (xrange.from >= xrange.to) {
+			x = gCfg.mapCenterPos.x;
+		} else {
+			// mouse control
+			auto p = gScene->camera.ToLogicPos(gLooper.mouse.pos).x;
+			if (p > xrange.to) p = xrange.to;
+			else if (p < xrange.from) p = xrange.from;
+
+			if (p > x) {
+				auto d = p - x;
+				if (d <= gCfg.barSpeed) {
+					x = p;
+				} else {
+					x += gCfg.barSpeed;
+				}
+			} else if (p < x) {
+				auto d = x - p;
+				if (d <= gCfg.barSpeed) {
+					x = p;
+				} else {
+					x -= gCfg.barSpeed;
+				}
+			} else {
+				// do nothing
+			}
+		}
+		xy.from.x = x - sx2;
+		xy.to.x = x + sx2;
+		
+		// random shoot
+		//for (size_t i = 0; i < 10; i++) {
 
 			gScene->balls.Emplace().Init({ x, y - size.y / 2 - gCfg.unitSize_2 }
 			, gCfg.unitSize_2
 				, gScene->rnd.Next<float>(gNPI + 0.1f, -0.1f)
 				, gCfg.ballSpeed);
-		}
+		//}
 
 		return false;
 	}

@@ -18,6 +18,8 @@ namespace Test1 {
 
 		static constexpr int32_t updateMultipleTimes{ 10 };
 		static constexpr float ballSpeed{ 1500.f / gDesign.fps / (float)updateMultipleTimes };
+		static constexpr xx::FromTo<float> barSpaceX{ unitSize, mapSize.x - unitSize };
+		static constexpr float barSpeed{ 3000.f / gDesign.fps };
 
 		static constexpr int32_t defaultGameSpeedRate{ 1 };
 	};
