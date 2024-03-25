@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "scene_test1.h"
 #include "scene_main_menu.h"
+#include "xx_blocklink.h"
 
 namespace Test1 {
 
@@ -11,33 +12,32 @@ namespace Test1 {
 		rootNode.Emplace()->Init();
 		rootNode->MakeChildren<Button>()->Init(1, gDesign.xy7m, gDesign.xy7a, gLooper.s9cfg, U"Back To Menu", [&]() {
 			gLooper.DelaySwitchTo<SceneMainMenu>();
-			});
+			}, 3);
 
 
+		//Rnd rnd;
+		//int64_t counter{};
+		//xx::BlockList<xx::Task<>> tasks;
+		//auto secs = xx::NowEpochSeconds();
+		//for (size_t i = 0; i < 1000000; i++) {
+		//	tasks.Emplace(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
+		//		for (int i = 0, e = rnd.Next(100, 1000);
+		//			i < e;
+		//			i++) {
+		//			++counter;
+		//			co_yield 0;
+		//		}
+		//		})(rnd, counter));
+		//}
+		//do {
+		//	tasks.Foreach([](auto& o)->xx::ForeachResult {
+		//	//tasks.ForeachLink([](auto& o)->xx::ForeachResult {
+		//		return o.Resume() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
+		//	});
+		//} while (tasks.Count());
 
-		Rnd rnd;
-		int64_t counter{};
-		xx::BlockList<xx::Task<>> tasks;
-		auto secs = xx::NowEpochSeconds();
-		for (size_t i = 0; i < 1000000; i++) {
-			tasks.Emplace(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
-				for (int i = 0, e = rnd.Next(100, 1000);
-					i < e;
-					i++) {
-					++counter;
-					co_yield 0;
-				}
-				})(rnd, counter));
-		}
-		do {
-			//tasks.ForeachEx([](auto& o)->xx::ForeachResult {
-			tasks.ForeachLink([](auto& o)->xx::ForeachResult {
-				return o.Resume() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
-			});
-		} while (tasks.Count());
-
-		xx::CoutN(xx::NowEpochSeconds(secs));
-		xx::CoutN(counter);
+		//xx::CoutN(xx::NowEpochSeconds(secs));
+		//xx::CoutN(counter);
 	}
 
 	void Scene::BeforeUpdate() {

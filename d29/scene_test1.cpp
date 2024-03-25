@@ -93,7 +93,7 @@ namespace Test1 {
 		};
 
 		onBallBorn = [this](Ball& ball) {
-			xx::BlockListWeak<Ball> w(ball);
+			decltype(balls)::WeakType w(ball);
 			gScene->eventTasks.Add(
 				[w]()->bool { return w.Exists(); },
 				[this, b = &ball]()->xx::Task<> {

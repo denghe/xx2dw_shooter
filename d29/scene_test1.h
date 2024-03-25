@@ -99,13 +99,13 @@ namespace Test1 {
 		xx::SpaceGrid<Block> blocks;
 		xx::Listi32<int32_t> blockIndexs;
 
-		xx::BlockList<Ball> balls;
+		xx::BlockLink<Ball> balls;
 
 		xx::Shared<Bar> bar;
 
 		Effect::ExplosionManager explosionManager;
 
-		xx::BlockList<GlobalEffect> globalEffects;
+		xx::BlockLink<GlobalEffect> globalEffects;
 		xx::Listi32<ZDraw> zdraws;	// for sort
 
 

@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "xx_time.h"
-#include "xx_list.h"
-#include "xx_blocklist.h"
+#include "xx_blocklink.h"
 #include "xx_ptr.h"
 
 namespace xx {
@@ -127,7 +126,7 @@ namespace xx {
     /*************************************************************************************************************************/
 
     struct Tasks {
-        BlockList<xx::Task<>> tasks;
+        BlockLink<xx::Task<>> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }
@@ -143,12 +142,10 @@ namespace xx {
 
         // T: Task<> or callable
         template<typename T>
-        BlockListVI Add(T &&t) {
+        BlockLinkVI Add(T &&t) {
             if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)
                 if (t) return {};
-                BlockListVI vi;
-                tasks.EmplaceVI(vi, std::forward<T>(t));
-                return vi;
+                return (BlockLinkVI)tasks.EmplaceNode(std::forward<T>(t));
             } else {
                 return Add([](T t) -> Task<> {
                     if constexpr (std::is_convertible_v<Task<>, FuncR_t<T>>) {
@@ -163,7 +160,7 @@ namespace xx {
 
         // resume once
         int32_t operator()() {
-            tasks.ForeachLink([&](xx::Task<>& o)->ForeachResult {
+            tasks.Foreach([&](xx::Task<>& o)->ForeachResult {
                 return o.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
             });
             return tasks.Count();
@@ -172,7 +169,7 @@ namespace xx {
 
     struct TaskGuard {
         Tasks* ptr;
-        BlockListVI weak;
+        BlockLinkVI vi;
 
         TaskGuard() : ptr(nullptr) {};
         TaskGuard(TaskGuard const&) = delete;
@@ -180,19 +177,19 @@ namespace xx {
 
         TaskGuard(TaskGuard && o) noexcept {
             ptr = o.ptr;
-            weak = o.weak;
+            vi = o.vi;
             o.ptr = {};
-            o.weak.Reset();
+            o.vi = {};
         }
         TaskGuard& operator=(TaskGuard &&o) noexcept {
             std::swap(ptr, o.ptr);
-            std::swap(weak, o.weak);
+            std::swap(vi, o.vi);
             return *this;
         }
 
         XX_FORCE_INLINE void Clear() {
             if (ptr) {
-                ptr->tasks.Remove(weak);
+                ptr->tasks.Remove(vi);
                 ptr = {};
             }
         }
@@ -205,26 +202,18 @@ namespace xx {
         void operator()(Tasks& tasks, T &&t) {
             Clear();
             ptr = &tasks;
-            weak = tasks.Add([](T tt, Tasks*& p) -> Task<> {
-                if constexpr (std::is_convertible_v<Task<>, T>) {
-                    assert(!tt);
-                    co_await tt;
-                } else {
-                    co_await tt();
-                }
-                p = {};
-            }(std::forward<T>(t), ptr));
+            vi = tasks.Add(std::forward<T>(t));
         }
 
         operator bool() const {
-            return ptr && ptr->tasks.Exists(weak);
+            return ptr && ptr->tasks.TryGet(vi);
         }
     };
 
     // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
     template<typename Cond>
     struct CondTasks {
-        BlockList<std::pair<Cond, Task<>>> tasks;
+        BlockLink<std::pair<Cond, Task<>>> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }

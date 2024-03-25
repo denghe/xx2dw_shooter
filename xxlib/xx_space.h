@@ -1,15 +1,12 @@
 ﻿#pragma once
-#include "xx_blocklist.h"
+#include "xx_blocklink.h"
 
 namespace xx {
 	template<typename T>
-	struct SpaceNode : BlockListNodeBase {
-		int32_t prev, cidx;
+	struct SpaceNode : BlockLinkVI {
+		int32_t nex, pre, cidx;
 		T value;
 	};
-
-	template<typename T>
-	using SpaceWeak = BlockListWeak<T, SpaceNode>;
 
 	struct SpaceCountRadius { int32_t count; float radius; };
 	union SpaceIndex { 
@@ -51,21 +48,24 @@ namespace xx {
 	};
 
 	// requires
-	// T has member: static constexpr int32_t cTypeId 
 	// T has member: float x, y
 	template<typename T>
-	struct SpaceGrid : protected BlockList<T, SpaceNode> {
-		using ST = BlockList<T, SpaceNode>;
+	struct SpaceGrid : protected BlockLink<T, SpaceNode> {
+		using ST = BlockLink<T, SpaceNode>;
 		using ST::ST;
 		using Node = SpaceNode<T>;
 
 		using ST::Count;
 		using ST::Foreach;
+		using ST::Reserve;
+		using ST::TryGet;
 
 		int32_t numRows{}, numCols{}, cellSize{};
 		int32_t maxX{}, maxY{};
+	protected:
 		int32_t cellsLen{};
 		std::unique_ptr<int32_t[]> cells;
+	public:
 
 		void Init(int32_t numRows_, int32_t numCols_, int32_t cellSize_) {
 			assert(!cells);
@@ -81,129 +81,116 @@ namespace xx {
 			memset(cells.get(), -1, sizeof(int32_t) * cellsLen);	// -1 mean empty
 		}
 
-		template<bool resetVersion = false>
+		template<bool freeBuf = false, bool resetVersion = false>
 		void Clear() {
 			if (!cells) return;
-			ST::template Clear<resetVersion>();
+			ST::template Clear<freeBuf, resetVersion>();
 			memset(cells.get(), -1, sizeof(int32_t) * cellsLen);
 		}
 
-		// Emplace + Init( args ) + store inti cells[ pos ]
+		// Emplace + Init( args ) + cells[ pos ] = o
 		template<typename...Args>
-		T& EmplaceInit(Args&&...args) {
+		Node& EmplaceNodeInit(Args&&...args) {
 			assert(cells);
-			auto index = ST::Alloc();
-			auto& o = ST::RefNode(index);
-			o.version = ST::GenVersion();
-			o.next = -1;
-			o.index = index;
-			if constexpr (Has_cTypeId<T>) {
-				o.typeId = T::cTypeId;
-			}
-			new (&o.value) T();
+			auto& o = ST::EmplaceCore();
 			o.value.Init(std::forward<Args>(args)...);
 
 			auto cidx = PosToCIdx(o.value.x, o.value.y);
 			auto head = cells[cidx];	// backup
 			if (head >= 0) {
-				ST::RefNode(head).prev = index;
+				ST::RefNode(head).pre = o.index;
 			}
-			cells[cidx] = index;			// assign new
-			o.next = head;
-			o.prev = -1;
+			cells[cidx] = o.index;			// assign new
+			o.nex = head;
+			o.pre = -1;
 			o.cidx = cidx;
-			return o.value;
+			return o;
 		}
 
-		XX_FORCE_INLINE int32_t PosToCIdx(float x, float y) {
-			assert(x >= 0 && x < cellSize * numCols);
-			assert(y >= 0 && y < cellSize * numRows);
-			auto c = int32_t(x) / cellSize;
-			auto r = int32_t(y) / cellSize;
-			return r * numCols + c;
+		template<typename...Args>
+		T& EmplaceInit(Args&&...args) {
+			return EmplaceNodeInit(std::forward<Args>(args)...).value;
 		}
 
-		void Remove(int32_t index) {
-			auto& o = ST::RefNode(index);
-			assert(o.version);
-			assert(o.prev != o.index && o.next != o.index && o.version && o.cidx >= 0 && o.index == index);
+	protected:
+		XX_FORCE_INLINE void Free(Node& o) {
+			assert(o.version < -1);
+			assert(o.pre != o.index && o.nex != o.index && o.cidx >= 0);
 
-			if (index == cells[o.cidx]) {
-				cells[o.cidx] = o.next;
+			if (o.index == cells[o.cidx]) {
+				cells[o.cidx] = o.nex;
 			}
-			if (o.prev >= 0) {
-				ST::RefNode(o.prev).next = o.next;
+			if (o.pre >= 0) {
+				ST::RefNode(o.pre).nex = o.nex;
 			}
-			if (o.next >= 0) {
-				ST::RefNode(o.next).prev = o.prev;
+			if (o.nex >= 0) {
+				ST::RefNode(o.nex).pre = o.pre;
 			}
+			//o.pre = -1;
+			//o.cidx = -1;
 
-			//o.typeId = -1;
-			//o.index = -1;
-			o.prev = -1;
-			o.cidx = -1;
-			o.version = 0;
-			o.next = ST::freeHead;
-			o.value.~T();
-			ST::freeHead = index;
-			++ST::freeCount;
-			ST::FlagUnset(index);
+			ST::Free(o);
 		}
+	public:
 
 		void Remove(T const& v) {
-			auto& o = *container_of(&v, Node, value);
-			Remove(o.index);
+			auto o = container_of(&v, Node, value);
+			Free(o);
 		}
 
-		void Remove(SpaceWeak<T> const& w) {
-			if (!w.Exists()) return;
-			Remove(w.RefNode().index);
+		bool Remove(BlockLinkVI const& vi) {
+			if (vi.version >= -1 || vi.index < 0 || vi.index >= this->len) return false;
+			auto& o = ST::RefNode(vi.index);
+			if (o.version != vi.version) return false;
+			Free(o);
+			return true;
 		}
 
 		void Update(T& v) {
 			auto& o = *container_of(&v, Node, value);
 			assert(o.index >= 0);
-			assert(o.prev != o.index);
-			assert(o.next != o.index);
+			assert(o.pre != o.index);
+			assert(o.nex != o.index);
 			auto cidx = PosToCIdx(v.x, v.y);
 			if (cidx == o.cidx) return;				// no change
 
 			// unlink
-			if (o.index != cells[o.cidx]) {			// isn't header
-				ST::RefNode(o.prev).next = o.next;
-				if (o.next >= 0) {
-					ST::RefNode(o.next).prev = o.prev;
-					//o.next = -1;
+			if (o.index != cells[o.cidx]) {			// isn't head
+				ST::RefNode(o.pre).nex = o.nex;
+				if (o.nex >= 0) {
+					ST::RefNode(o.nex).pre = o.pre;
+					//o.nex = -1;
 				}
-				//o.prev = -1;
-			} else {
-				assert(o.prev == -1);
-				cells[o.cidx] = o.next;
-				if (o.next >= 0) {
-					ST::RefNode(o.next).prev = -1;
-					//o.next = -1;
+				//o.pre = -1;
+			} else {								// is head
+				assert(o.pre == -1);
+				cells[o.cidx] = o.nex;
+				if (o.nex >= 0) {
+					ST::RefNode(o.nex).pre = -1;
+					//o.nex = -1;
 				}
 			}
 			//o.cidx = -1;
 
 			// relink
 			if (cells[cidx] >= 0) {
-				ST::RefNode(cells[cidx]).prev = o.index;
+				ST::RefNode(cells[cidx]).pre = o.index;
 			}
-			o.next = cells[cidx];
-			o.prev = -1;
+			o.nex = cells[cidx];
+			o.pre = -1;
 			cells[cidx] = o.index;
 			o.cidx = cidx;
 		}
 
-		// .CellForeach([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
-		template<typename F>
-		void CellForeach(int32_t cidx, F&& func) {
-			using R = FuncR_t<F>;
+		// .Foreach([](T& o)->void {    });
+		// .Foreach([](T& o)->xx::ForeachResult {    });
+		// return is Break or RemoveAndBreak
+		template<typename F, typename R = std::invoke_result_t<F, T&>>
+		XX_FORCE_INLINE bool Foreach(int32_t cidx, F&& func) {
 			auto idx = cells[cidx];
 			while (idx >= 0) {
 				auto& o = ST::RefNode(idx);
-				auto next = o.next;
+				auto nex = o.nex;
 				if constexpr (std::is_void_v<R>) {
 					func(o.value);
 				} else {
@@ -213,25 +200,28 @@ namespace xx {
 					} else {
 						switch (r) {
 						case ForeachResult::Continue: break;
-						case ForeachResult::Break: return;
-						case ForeachResult::RemoveAndContinue: {
-							Remove(idx);
+						case ForeachResult::RemoveAndContinue:
+							Free(o);
 							break;
-						}
-						case ForeachResult::RemoveAndBreak: {
-							Remove(idx);
-							return;
-						}
+						case ForeachResult::Break: return true;
+						case ForeachResult::RemoveAndBreak:
+							Free(o);
+							return true;
 						}
 					}
 				}
-				idx = next;
+				idx = nex;
 			}
+			return false;
 		}
 
-		constexpr static std::array<SpaceIndex, 9> offsets9 = { SpaceIndex
-			{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
-		};
+		XX_FORCE_INLINE int32_t PosToCIdx(float x, float y) {
+			assert(x >= 0 && x < cellSize * numCols);
+			assert(y >= 0 && y < cellSize * numRows);
+			auto c = int32_t(x) / cellSize;
+			auto r = int32_t(y) / cellSize;
+			return r * numCols + c;
+		}
 
 		// return x: col index   y: row index
 		XX_FORCE_INLINE SpaceIndex PosToCrIdx(float x, float y) {
@@ -266,11 +256,15 @@ namespace xx {
 			return CIdxToCenterPos(rowIdx * numCols + colIdx);
 		}
 
+		constexpr static std::array<SpaceIndex, 9> offsets9 = { SpaceIndex
+			{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
+		};
+
 		// foreach target cell + round 8 = 9 cells
-		// .Foreach9([](T& o)->xx::ForeachResult { o...; return xx::ForeachResult::xxxxx; });
-		template<typename F>
+		// .Foreach9([](T& o)->void {    });
+		// .Foreach9([](T& o)->xx::ForeachResult {    });
+		template<typename F, typename R = std::invoke_result_t<F, T&>>
 		void Foreach9(float x, float y, F&& func) {
-			using R = FuncR_t<F>;
 			auto crIdx = PosToCrIdx(x, y);
 			for (auto offset : offsets9) {
 				auto col = crIdx.x + offset.x;
@@ -278,10 +272,11 @@ namespace xx {
 				auto row = crIdx.y + offset.y;
 				if (row < 0 || row >= numRows) continue;
 				auto cidx = CrIdxToCIdx(col, row);
+
 				auto idx = cells[cidx];
 				while (idx >= 0) {
 					auto& o = ST::RefNode(idx);
-					auto next = o.next;
+					auto nex = o.nex;
 					if constexpr (std::is_void_v<R>) {
 						func(o.value);
 					} else {
@@ -291,24 +286,22 @@ namespace xx {
 						} else {
 							switch (r) {
 							case ForeachResult::Continue: break;
-							case ForeachResult::Break: return;
-							case ForeachResult::RemoveAndContinue: {
-								Remove(idx);
+							case ForeachResult::RemoveAndContinue:
+								Free(o);
 								break;
-							}
-							case ForeachResult::RemoveAndBreak: {
-								Remove(idx);
+							case ForeachResult::Break: return;
+							case ForeachResult::RemoveAndBreak:
+								Free(o);
 								return;
-							}
 							}
 						}
 					}
-					idx = next;
+					idx = nex;
 				}
 			}
 		}
 
-		template<typename F>
+		template<typename F, typename R = std::invoke_result_t<F, T&>>
 		void ForeachByRange(SpaceRingDiffuseData const& d, XY const& pos, float maxDistance, F&& func) {
 			auto crIdx = PosToCrIdx(pos);					// calc grid col row index
 			float rr = maxDistance * maxDistance;
@@ -326,17 +319,31 @@ namespace xx {
 					auto row = crIdx.y + offset.y;
 					if (row < 0 || row >= numRows) continue;
 					auto cidx = CrIdxToCIdx(col, row);
-					CellForeach(cidx, [&](T& m)->void {
+
+					Foreach(cidx, [&](T& m)->void {
 						auto v = m.pos - pos;
 						if (v.x * v.x + v.y * v.y < rr) {
 							func(m);		// todo: check func's args. send v, rr to func ?
 						}
 					});
+
 				}
 
 				if (lens[i].radius > maxDistance) break;			// limit search range
 			}
 		}
+
+
+		//void Remove(SpaceWeak<T> const& w) {
+		//	if (!w.Exists()) return;
+		//	Remove(w.RefNode().index);
+		//}
+
+		//void Remove(int32_t index) {
+		//	auto& o = ST::RefNode(index);
+		//	Remove(o);
+		//}
+
 
 	};
 
