@@ -196,7 +196,7 @@ namespace xx {
 				} else {
 					auto r = func(o.value);
 					if constexpr (std::is_same_v<R, bool>) {
-						if (r) return;
+						if (r) return true;
 					} else {
 						switch (r) {
 						case ForeachResult::Continue: break;
