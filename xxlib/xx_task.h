@@ -167,6 +167,9 @@ namespace xx {
         }
     };
 
+    /*************************************************************************************************************************/
+    /*************************************************************************************************************************/
+
     struct TaskGuard {
         Tasks* ptr;
         BlockLinkVI vi;
@@ -209,6 +212,9 @@ namespace xx {
             return ptr && ptr->tasks.TryGet(vi);
         }
     };
+
+    /*************************************************************************************************************************/
+    /*************************************************************************************************************************/
 
     // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
     template<typename Cond>
@@ -261,14 +267,12 @@ namespace xx {
                     else return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
                 } else if constexpr (std::is_invocable_v<Cond>) {
                     if (o.first()) {
-                        if (o.second) return ForeachResult::RemoveAndContinue;
                         return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
-                    } else return o.second ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                    } else return ForeachResult::RemoveAndContinue;
                 } else {
                     if (o.first) {
-                        if (o.second) return ForeachResult::RemoveAndContinue;
                         return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
-                    } else return o.second ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
+                    } else ForeachResult::RemoveAndContinue;
                 }
             });
             return this->tasks.Count();

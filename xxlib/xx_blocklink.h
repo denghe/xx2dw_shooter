@@ -237,7 +237,7 @@ namespace xx {
 					auto& o = block.buf[j];
 					auto bit = uint64_t(1) << j;
 					if ((flags & bit) == 0) {
-						assert(o.version >= -1);
+						assert(o.version >= -2);
 						continue;
 					}
 					assert(o.version < -2);
@@ -315,7 +315,7 @@ namespace xx {
 		}
 
 		XX_FORCE_INLINE Node<T>* TryGet(BlockLinkVI const& vi) const {
-			if (vi.version >= -1 || vi.index < 0 || vi.index >= this->len) return nullptr;
+			if (vi.version >= -2 || vi.index < 0 || vi.index >= this->len) return nullptr;
 			auto& o = RefNode(vi.index);
 			return o.version == vi.version ? (Node<T>*)&o : nullptr;
 		}
@@ -326,7 +326,7 @@ namespace xx {
 		}
 
 		bool Remove(BlockLinkVI const& vi) {
-			if (vi.version >= -1 || vi.index < 0 || vi.index >= this->len) return false;
+			if (vi.version >= -2 || vi.index < 0 || vi.index >= this->len) return false;
 			auto& o = RefNode(vi.index);
 			if (o.version != vi.version) return false;
 			Free(o);
