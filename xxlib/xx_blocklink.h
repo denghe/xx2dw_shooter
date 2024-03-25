@@ -196,7 +196,6 @@ namespace xx {
 
 		template<bool freeBuf = false, bool resetVersion = false>
 		void Clear() {
-			if (!this->cap) return;
 			if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
 				Foreach<true>([](auto&) {});
 			}
@@ -245,6 +244,7 @@ namespace xx {
 
 					if constexpr (callByClear) {
 						o.value.~T();
+						o.version = -2;		// for weak check
 					} else if constexpr (std::is_void_v<R>) {
 						func(o.value);
 					} else {
