@@ -395,7 +395,7 @@ void Monster1::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_coin_2[0]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale) * scale;
+	q.scale = camera.scale * scale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_White;

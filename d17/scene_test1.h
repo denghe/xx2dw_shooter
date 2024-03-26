@@ -39,7 +39,7 @@ struct Bag : Item {
 
 	xx::Weak<BagItem>& RefCell(int rowIdx_, int colIdx_) const;
 	XY GetDrawSize() const;
-	Vec2<> PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
+	XYi PosToCellIndex(XY const& pos_) const;	// out of range: return -1, -1
 	xx::Weak<BagItem> GetItemByPos(XY const& pos_) const;
 	void Sort();
 

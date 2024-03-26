@@ -137,7 +137,8 @@ namespace Test1 {
 
 		int32_t stage = 50;
 
-		auto barBornPos = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 2);
+		auto barBornPos_ = blocks.CrIdxToCenterPos(gCfg.numCols / 2, gCfg.numRows - 2);
+		XY barBornPos{ barBornPos_.x, barBornPos_.y };
 
 		/********************************************************************/
 		// begin loop
@@ -188,12 +189,12 @@ namespace Test1 {
 			// wait blocks empty && logic life cycle updates
 			while (blocks.Count()) {
 
-				blocks.Foreach([](Block& o)->FR {
+				blocks.ForeachFlags([](Block& o)->FR {
 					if (o.Update()) return FR::RemoveAndContinue;
 					return FR::Continue;
 				});
 
-				balls.Foreach([](Ball& o)->FR {
+				balls.ForeachFlags<false>([](Ball& o)->FR {
 					if (o.Update()) return FR::RemoveAndContinue;
 					return FR::Continue;
 				});
@@ -225,7 +226,7 @@ namespace Test1 {
 
 			/********************************************************************/
 			// clear all balls
-			balls.Foreach([&](Ball& o) {
+			balls.ForeachFlags([&](Ball& o) {
 				gScene->explosionManager.Add(o.pos, gCfg.unitSize, 50, 2);
 			});
 			balls.Clear();
@@ -277,11 +278,11 @@ namespace Test1 {
 			bar->Draw();
 		}
 
-		blocks.Foreach([](Block& o) {
+		blocks.ForeachFlags([](Block& o) {
 			o.Draw();
 			});
 
-		balls.Foreach([](Ball& o) {
+		balls.ForeachFlags([](Ball& o) {
 			o.Draw();
 			});
 
@@ -290,7 +291,7 @@ namespace Test1 {
 		// draw order by z
 		if (int32_t count = globalEffects.Count()) {
 			zdraws.Reserve(count);
-			globalEffects.Foreach([&](GlobalEffect& o) {
+			globalEffects.ForeachFlags([&](GlobalEffect& o) {
 				zdraws.Emplace(ZDraw{ o.z, o.draw });
 				});
 			std::sort(zdraws.buf, zdraws.buf + zdraws.len, [](auto const& a, auto const& b) {
@@ -319,12 +320,12 @@ namespace Test1 {
 		xy.to = pos_ + tmp;
 	}
 
-	void Wall::Init(xx::FromTo<Vec2<>> const& cidx_) {
+	void Wall::Init(xx::FromTo<XYi> const& cidx_) {
 		cidx = cidx_;
 		assert(cidx.to.x >= cidx.from.x);
 		assert(cidx.to.y >= cidx.from.y);
-		xy.from = cidx_.from.As<float>() * gCfg.unitSize;
-		xy.to = cidx_.to.As<float>() * gCfg.unitSize + gCfg.unitSize;
+		xy.from = cidx_.from * gCfg.unitSize;
+		xy.to = cidx_.to * gCfg.unitSize + gCfg.unitSize;
 	}
 
 	void Wall::Draw() {
@@ -387,7 +388,7 @@ namespace Test1 {
 				auto newPos = pos + inc;
 
 				// bounce with block
-				gScene->blocks.Foreach9(newPos.x, newPos.y, [&](Block& o)->FR {
+				gScene->blocks.Foreach9(newPos, [&](Block& o)->FR {
 					if (TranslateControl::BounceCircleIfIntersectsBox(o.xy, radius, speed, inc, newPos)) {
 						// hit	// todo: damage set
 						if (--o.hp <= 0) {

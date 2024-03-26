@@ -1,198 +1,15 @@
 ﻿#pragma once
 #include <engine_includes.h>
+#include <xx_xy.h>
 
 inline static constexpr float gPI{ (float)M_PI }, gNPI{ -gPI }, g2PI{ gPI * 2 }, gPI_2{gPI / 2};
 
-template<typename T>
-concept HasFieldXY = requires { T::x; T::y; };
-
-template<typename T>
-concept IsArithmetic = std::is_arithmetic_v<T>;
-
-template<typename T = int32_t>
-struct Vec2 {
-    using ElementType = T;
-    T x, y;
-
-    // -x
-    Vec2 operator-() const {
-        return { -x, -y };
-    }
-
-    // + - * /
-    Vec2 operator+(HasFieldXY auto const& v) const {
-        return { T(x + v.x), T(y + v.y) };
-    }
-    Vec2 operator-(HasFieldXY auto const& v) const {
-        return { T(x - v.x), T(y - v.y) };
-    }
-    Vec2 operator*(HasFieldXY auto const& v) const {
-        return { T(x * v.x), T(y * v.y) };
-    }
-    Vec2 operator/(HasFieldXY auto const& v) const {
-        return { T(x / v.x), T(y / v.y) };
-    }
-
-    Vec2 operator+(IsArithmetic auto v) const {
-        return { T(x + v), T(y + v) };
-    }
-    Vec2 operator-(IsArithmetic auto v) const {
-        return { T(x - v), T(y - v) };
-    }
-    Vec2 operator*(IsArithmetic auto v) const {
-        return { T(x * v), T(y * v) };
-    }
-    Vec2 operator/(IsArithmetic auto v) const {
-        return { T(x / v), T(y / v) };
-    }
-
-    // += -= *= /=
-    Vec2& operator+=(HasFieldXY auto const& v) {
-        x = T(x + v.x);
-        y = T(y + v.y);
-        return *this;
-    }
-    Vec2& operator-=(HasFieldXY auto const& v) {
-        x = T(x - v.x);
-        y = T(y - v.y);
-        return *this;
-    }
-    Vec2& operator*=(HasFieldXY auto const& v) {
-        x = T(x * v.x);
-        y = T(y * v.y);
-        return *this;
-    }
-    Vec2& operator/=(HasFieldXY auto const& v) {
-        x = T(x / v.x);
-        y = T(y / v.y);
-        return *this;
-    }
-
-    Vec2& operator+=(IsArithmetic auto v) {
-        x = T(x + v);
-        y = T(y + v);
-        return *this;
-    }
-    Vec2 operator-=(IsArithmetic auto v) {
-        x = T(x - v);
-        y = T(y - v);
-        return *this;
-    }
-    Vec2& operator*=(IsArithmetic auto v) {
-        x = T(x * v);
-        y = T(y * v);
-        return *this;
-    }
-    Vec2 operator/=(IsArithmetic auto v) {
-        x = T(x / v);
-        y = T(y / v);
-        return *this;
-    }
-
-    // == !=
-    bool operator==(HasFieldXY auto const& v) const {
-        return x == v.x && y == v.y;
-    }
-    bool operator!=(HasFieldXY auto const& v) const {
-        return x != v.x || y != v.y;
-    }
-
-    static Vec2 Make(IsArithmetic auto vx, IsArithmetic auto vy) {
-        return { T(vx), T(vy) };
-    }
-
-    static Vec2 Make(IsArithmetic auto v) {
-        return { T(v), T(v) };
-    }
-
-    Vec2 MakeAdd(HasFieldXY auto const& v) const {
-        return { T(x + v.x), T(y + v.y) };
-    }
-
-    Vec2 MakeAdd(IsArithmetic auto vx, IsArithmetic auto vy) const {
-        return { T(x + vx), T(y + vy) };
-    }
-
-    void Set(HasFieldXY auto const& v) {
-        x = T(v.x);
-        y = T(v.y);
-    }
-
-    template<typename U = float>
-    auto As() const -> Vec2<U> {
-        return { (U)x, (U)y };
-    }
-
-    bool IsZero() const {
-        if constexpr (std::is_floating_point_v<T>) return (std::abs(x) < std::numeric_limits<T>::epsilon()) && (std::abs(y) < std::numeric_limits<T>::epsilon());
-        else return x == T{} && y == T{};
-    }
-
-    bool IsZeroSimple() const {
-        return x == T{} && y == T{};
-    }
-
-    void Clear() {
-        x = {};
-        y = {};
-    }
-
-    template<typename U = float>
-    Vec2& Normalize() {
-        auto v = std::sqrt(U(x * x + y * y));
-        x = T(x / v);
-        y = T(y / v);
-        return *this;
-    }
-    template<typename R = T, typename U = float>
-    auto MakeNormalize() const -> Vec2<R> {
-        auto v = std::sqrt(U(x * x + y * y));
-        return { R(x / v), R(y / v) };
-    }
-
-    Vec2& FlipY() {
-        y = -y;
-        return *this;
-    }
-    template<typename R = T>
-    auto MakeFlipY() const -> Vec2<R> {
-        return { R(x), R(-y) };
-    }
-};
-
-template<typename T>
-struct IsVec2 : std::false_type {};
-template<typename T>
-struct IsVec2<Vec2<T>> : std::true_type {};
-template<typename T>
-struct IsVec2<Vec2<T>&> : std::true_type {};
-template<typename T>
-struct IsVec2<Vec2<T> const&> : std::true_type {};
-template<typename T>
-constexpr bool IsVec2_v = IsVec2<T>::value;
-
-namespace xx {
-    template<typename T>
-    struct DataFuncs<T, std::enable_if_t<IsVec2_v<T>>> {
-        template<bool needReserve = true>
-        static inline void Write(Data& d, T const& in) {
-            d.Write<needReserve>(in.x, in.y);
-        }
-        static inline int Read(Data_r& d, T& out) {
-            return d.Read(out.x, out.y);
-        }
-    };
-
-    template<typename T>
-    struct StringFuncs<Vec2<T>, void> {
-        static inline void Append(std::string& s, Vec2<T> const& in) {
-            ::xx::Append(s, in.x, ", ", in.y);
-        }
-    };
-}
-
 // pos
-using XY = Vec2<float>;
+using XYi = xx::XYi;
+using XYu = xx::XYu;
+using XYf = xx::XYf;
+using XYd = xx::XYd;
+using XY = xx::XY;
 
 // texture uv mapping pos
 struct UV {
@@ -249,10 +66,10 @@ struct RGBA {
         return { r - v.r, g - v.g, b - v.b, a - v.a };
     }
 
-    RGBA operator*(IsArithmetic auto v) const {
+    RGBA operator*(xx::IsArithmetic auto v) const {
         return { r * v, g * v, b * v, a * v };
     }
-    RGBA operator/(IsArithmetic auto v) const {
+    RGBA operator/(xx::IsArithmetic auto v) const {
         return { r / v, g / v, b / v, a / v };
     }
 

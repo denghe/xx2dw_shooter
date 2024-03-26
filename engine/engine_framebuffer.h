@@ -20,7 +20,7 @@ struct FrameBuffer {
         return *this;
     }
 
-    inline static xx::Ref<GLTexture> MakeTexture(Vec2<uint32_t> const& wh, bool hasAlpha = true) {
+    inline static xx::Ref<GLTexture> MakeTexture(XYu const& wh, bool hasAlpha = true) {
         return xx::MakeRef<GLTexture>(GLTexture::Create(wh.x, wh.y, hasAlpha));
     }
 
@@ -32,7 +32,7 @@ struct FrameBuffer {
     }
 
     template<typename Func>
-    xx::Ref<GLTexture> Draw(Vec2<uint32_t> const& wh, bool hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
+    xx::Ref<GLTexture> Draw(XYu const& wh, bool hasAlpha, std::optional<RGBA8> const& c, Func&& func) {
         auto t = MakeTexture(wh, hasAlpha);
         DrawTo(t, c, std::forward<Func>(func));
         return t;

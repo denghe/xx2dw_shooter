@@ -71,7 +71,7 @@ xx::Task<> Monster1::MainLogic() {
 		// calc neighbor cross force
 		XY combineForce{};										// for move vector
 		int numCross{}, limit = 8;
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto p = gGridBasePos + pos;						// convert pos to grid coordinate
 		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
 		_sgc->Foreach9(crIdx, [&](MonsterBase* m) {
 			if (m == this) return false;						// skip self
@@ -101,7 +101,7 @@ xx::Task<> Monster1::MainLogic() {
 				auto r = gEngine->rnd.Next<float>(float(M_PI * 2));
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 			} else {
-				newPos += combineForce.MakeNormalize() * cSpeed;
+				newPos += combineForce.Normalize() * cSpeed;
 			}
 		} else {
 			if (dd > cSpeed * cSpeed) {							// follow shooter directly

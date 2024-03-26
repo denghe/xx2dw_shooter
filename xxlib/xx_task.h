@@ -126,7 +126,7 @@ namespace xx {
     /*************************************************************************************************************************/
 
     struct Tasks {
-        BlockLink<xx::Task<>> tasks;
+        BlockLink<xx::Task<>, BlockLinkVINPT> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }
@@ -160,7 +160,7 @@ namespace xx {
 
         // resume once
         int32_t operator()() {
-            tasks.Foreach([&](xx::Task<>& o)->ForeachResult {
+            tasks.ForeachLink([&](xx::Task<>& o)->ForeachResult {
                 return o.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
             });
             return tasks.Count();
@@ -219,7 +219,7 @@ namespace xx {
     // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
     template<typename Cond>
     struct CondTasks {
-        BlockLink<std::pair<Cond, Task<>>> tasks;
+        BlockLink<std::pair<Cond, Task<>>, BlockLinkVINPT> tasks;
         void Clear() { tasks.Clear(); }
         int32_t Count() const { return tasks.Count(); }
         bool Empty() const { return !tasks.Count(); }
@@ -261,7 +261,7 @@ namespace xx {
 
         // resume once
         int32_t operator()() {
-            tasks.Foreach([&](std::pair<Cond, Task<>>& o)->ForeachResult {
+            tasks.ForeachLink([&](std::pair<Cond, Task<>>& o)->ForeachResult {
                 if constexpr(IsOptional_v<Cond>) {
                     if (o.first.has_value()) return (!o.first.value() || o.second.Resume()) ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;
                     else return o.second.Resume() ? ForeachResult::RemoveAndContinue : ForeachResult::Continue;

@@ -16,7 +16,7 @@ namespace Tower {
 			auto& q = Quad::DrawOnce(gRes.td_tower_base);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
-			q.scale = XY::Make(camera.scale);
+			q.scale = camera.scale;
 			q.radians = 0;
 			q.colorplus = 1;
 			q.color = RGBA8_White;
@@ -25,7 +25,7 @@ namespace Tower {
 			auto& q = Quad::DrawOnce(gRes.td_icon_cannon1);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
-			q.scale = XY::Make(camera.scale);
+			q.scale = camera.scale;
 			q.radians = 0;
 			q.colorplus = 1;
 			q.color = RGBA8_White;

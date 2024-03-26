@@ -2,7 +2,7 @@
 #include "game_looper.h"
 
 struct Pumpkin : CircleObj {
-	static constexpr Vec2<> cSize{ 16, 24 };
+	static constexpr XYi cSize{ 16, 24 };
 	static constexpr int cRadius{ (cSize.x + (cSize.x % 2 == 0 ? 0 : 1)) / 2 };
 	//static constexpr float cScale{ 1 };
 	static constexpr float cSpeed{ 3 };
@@ -11,7 +11,7 @@ struct Pumpkin : CircleObj {
 
 	float frameIndex{};
 
-	void Init(Vec2<> const& pos_) {
+	void Init(XYi const& pos_) {
 		radius = cRadius;
 		frameIndex = gEngine->rnd.Next<float>(cFrameMaxIndex - 0.1f);
 		pos = pos_;
@@ -53,7 +53,7 @@ struct Pumpkin : CircleObj {
 					auto r = gEngine->rnd.Next<float>(float(M_PI * 2));
 					newPos += (XY{ std::cos(r), std::sin(r) } + XY{ 0, 0.1f }) * cSpeed;
 				} else {																// move by v
-					newPos += (combineForce.MakeNormalize() + XY{ 0, 0.1f }) * cSpeed;
+					newPos += (combineForce.Normalize() + XY{ 0, 0.1f }) * cSpeed;
 				}
 			}
 
@@ -71,7 +71,7 @@ struct Pumpkin : CircleObj {
 			//		auto r = gEngine->rnd.Next<float>(M_PI * 2);
 			//		newPos += XY{ std::cos(r), std::sin(r) } *cSpeed * 3;
 			//	} else {
-			//		newPos += combineForce.MakeNormalize() * cSpeed;
+			//		newPos += combineForce.Normalize() * cSpeed;
 			//	}
 			//} else {
 			//	if (dd > cSpeed * cSpeed) {							// follow shooter directly

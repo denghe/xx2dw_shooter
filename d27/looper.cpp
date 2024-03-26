@@ -170,7 +170,7 @@ bool ShapeRect::Update() {
 }
 
 void ShapeRect::Draw() {
-	LineStrip().FillBoxPoints({}, XY::Make(radius*2))
+	LineStrip().FillBoxPoints({}, radius * 2)
 		.SetPosition(pos)
 		.Draw();
 }

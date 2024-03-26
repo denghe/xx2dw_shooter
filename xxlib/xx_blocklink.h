@@ -57,7 +57,7 @@ namespace xx {
 
 	template<typename T, template<typename...> typename Node>
 	struct BlockLinkWeak {
-		static_assert(HasMember_version<Node<T>>);
+		//static_assert(HasMember_version<Node<T>>);
 
 		T* pointer{};
 		int32_t version{ -2 };
@@ -85,6 +85,9 @@ namespace xx {
 		XX_FORCE_INLINE bool Exists() const noexcept {
 			return pointer && version < -2 && version == RefNode().version;
 		}
+		XX_FORCE_INLINE operator bool() const noexcept {
+			return Exists();
+		}
 
 		XX_FORCE_INLINE T& operator()() const {
 			assert(Exists());
@@ -98,7 +101,7 @@ namespace xx {
 	};
 
 
-	template<typename T, template<typename...> typename Node, bool isDoubleLink = HasMember_prev<Node<T>>&& HasMember_next<Node<T>>>
+	template<typename T, template<typename...> typename Node, bool isDoubleLink = HasMember_prev<Node<T>>&& HasMember_next<Node<T>>, bool enableFlags = !isDoubleLink>
 	struct BlockLink;
 
 	template<typename T, template<typename...> typename Node>
@@ -165,15 +168,23 @@ namespace xx {
 		}
 	};
 
+	template<typename NT>
+	struct BlockLinkBlock {
+		std::array<NT, 64> buf;
+	};
 
-	template<typename T, template<typename...> typename Node = BlockLinkVINPT, bool isDoubleLink>
+	template<typename NT>
+	struct BlockLinkBlockWithFlags {
+		uint64_t flags;
+		std::array<NT, 64> buf;
+	};
+
+
+	template<typename T, template<typename...> typename Node = BlockLinkVIT, bool isDoubleLink, bool enableFlags>
 	struct BlockLink : std::conditional_t<isDoubleLink, BlockLinkBase_VINP, BlockLinkBase_VI> {
-		static_assert(HasMember_version<Node<T>>&& HasMember_index<Node<T>>);
-
-		struct Block {
-			uint64_t flags;
-			std::array<Node<T>, 64> buf;
-		};
+		static_assert(HasMember_version<Node<T>>);
+		static_assert(HasMember_index<Node<T>>);
+		using Block = std::conditional_t<isDoubleLink, BlockLinkBlock<Node<T>>, BlockLinkBlockWithFlags<Node<T>>>;
 
 		using HolderType = BlockLinkHolder<T, Node>;
 		using WeakType = BlockLinkWeak<T, Node>;
@@ -197,7 +208,11 @@ namespace xx {
 		template<bool freeBuf = false, bool resetVersion = false>
 		void Clear() {
 			if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
-				Foreach<true>([](auto&) {});
+				if constexpr (isDoubleLink) {
+					ForeachLink([](auto&) { return ForeachResult::RemoveAndContinue; });
+				} else {
+					ForeachFlags<true>([](auto&){});
+				}
 			}
 			if constexpr (freeBuf) {
 				for (auto& o : this->blocks) {
@@ -219,10 +234,11 @@ namespace xx {
 			}
 		}
 
+		// foreach by flags
 		// .Foreach([](T& o)->void {    });
 		// .Foreach([](T& o)->xx::ForeachResult {    });
 		template<bool callByClear = false, typename F, typename R = std::invoke_result_t<F, T&>>
-		void Foreach(F&& func) {
+		void ForeachFlags(F&& func) requires enableFlags {
 			if (this->len <= 0) return;
 
 			for (int32_t i = 0, n = this->blocks.len - 1; i <= n; ++i) {
@@ -267,8 +283,11 @@ namespace xx {
 			}
 		}
 
+		// foreach by head / tail link
+		// .Foreach([](T& o)->void {    });
+		// .Foreach([](T& o)->xx::ForeachResult {    });
 		template<bool fromHead = true, typename F, typename R = std::invoke_result_t<F, T&>>
-		void ForeachLink(F&& func, int32_t beginIdx = -1) {
+		void ForeachLink(F&& func, int32_t beginIdx = -1) requires isDoubleLink {
 			if (beginIdx == -1) {
 				if constexpr (fromHead) {
 					beginIdx = this->head;
@@ -384,7 +403,7 @@ namespace xx {
 		}
 
 		template<bool value = true>
-		XX_FORCE_INLINE void FlagSet(int32_t index) {
+		XX_FORCE_INLINE void FlagSet(int32_t index) requires enableFlags {
 			auto& block = RefBlock(index);
 			auto bit = uint64_t(1) << (index & 0b111111);
 			if constexpr (value) {
@@ -400,7 +419,9 @@ namespace xx {
 			auto len = this->blocks.len;
 			this->cap += 64;
 			auto b = (Block*)this->blocks.Emplace(malloc(sizeof(Block)));
-			b->flags = 0;
+			if constexpr (!isDoubleLink) {
+				b->flags = 0;
+			}
 			for (int32_t i = 0; i < 64; ++i) {
 				b->buf[i].index = 64 * len + i;
 			}
@@ -419,7 +440,9 @@ namespace xx {
 				index = this->len;
 				this->len++;
 			}
-			FlagSet(index);
+			if constexpr (!isDoubleLink) {
+				FlagSet(index);
+			}
 			return index;
 		}
 
@@ -451,7 +474,9 @@ namespace xx {
 			o.version = this->freeHead;
 			this->freeHead = index;
 			++this->freeCount;
-			FlagSet<false>(index);
+			if constexpr (!isDoubleLink) {
+				FlagSet<false>(index);
+			}
 		}
 
 		template<bool appendToTail = true, typename...Args>
@@ -489,24 +514,6 @@ namespace xx {
 			new (&o.value) T(std::forward<Args>(args)...);
 			return o;
 		}
-
-
-
-		//XX_FORCE_INLINE bool Exists(int32_t index) const {
-		//	if (index < 0 || index >= this->len) return false;
-		//	auto& o = RefNode(index);
-		//	if (o.version < -2) {
-		//		assert(o.index == index);
-		//		return true;
-		//	}
-		//	return false;
-		//}
-
-		//void Remove(int32_t index) {
-		//	auto& o = RefNode(index);
-		//	Free(o);
-		//}
-
 
 		//// for unknown type ( wrong type: T )
 		//void Remove(int32_t index, size_t tSiz, void(*deleter)(void*)) {

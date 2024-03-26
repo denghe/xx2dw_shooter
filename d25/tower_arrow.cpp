@@ -46,7 +46,7 @@ namespace Tower {
 
 	void Arrow::Draw() {
 		auto& camera = gScenePlay->camera;
-		auto s = XY::Make(camera.scale) * (2.f - focusScale) * shootScale;
+		auto s = camera.scale * (2.f - focusScale) * shootScale;
 		{
 			auto& q = Quad::DrawOnce(gRes.td_tower_base);
 			q.pos = camera.ToGLPos(pos);
@@ -73,7 +73,7 @@ namespace Tower {
 		auto& q = Quad::DrawOnce(gRes.td_cell_mouse_focus);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = cAnchor;
-		q.scale = XY::Make(camera.scale);
+		q.scale = camera.scale;
 		q.radians = 0;
 		q.colorplus = 1;
 		q.color = { 255,0,0,255 };

@@ -10,7 +10,7 @@
 static constexpr GDesign<1024, 768> gDesign;
 static constexpr float gScale = 4;	// scale texture
 static constexpr int32_t gGridCellDiameter = 16, gGridNumCols = 256, gGridNumRows = 256;
-static constexpr Vec2<int32_t> gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
+static constexpr XYi gGridBasePos{ gGridCellDiameter * gGridNumCols / 2, gGridCellDiameter * gGridNumRows / 2 };
 static constexpr float gSQ = 0.70710678f;
 
 struct ObjBase : Quad, xx::Tasks {
@@ -98,7 +98,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	}
 
 	MonsterBase* FindNeighborMonster(XY const& pos, float radius) {
-		auto p = gGridBasePos.MakeAdd(pos);
+		auto p = gGridBasePos + pos;
 		auto crIdx = sgc.PosToCrIdx(p);
 		MonsterBase* r{};
 		sgc.Foreach9(crIdx, [&](MonsterBase* m)->bool {
@@ -116,7 +116,7 @@ struct GameLooper : Engine<GameLooper>, decltype(gDesign) {
 	}
 
 	MonsterBase* FindNearestMonster(XY const& pos, float maxDistance) {
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto p = gGridBasePos + pos;						// convert pos to grid coordinate
 		auto crIdx = sgc.PosToCrIdx(p);							// calc grid col row index
 
 		float minVxxyy = maxDistance * maxDistance;

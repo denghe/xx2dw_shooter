@@ -142,7 +142,7 @@ void GameLooper::Draw() {
 	for (int y = minY; y < maxY; ++y) {
 		for (int x = minX; x < maxX; ++x) {
 			if (auto&& info = tm.GetGidInfo(layerBG, y, x)) {
-				q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
+				q.SetPosition(basePos + XY(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
 			}
 		}
 	}
@@ -151,7 +151,7 @@ void GameLooper::Draw() {
 	//for (int y = minY; y < maxTreeY; ++y) {
 	//	for (int x = minX; x < maxX; ++x) {
 	//		if (auto&& info = tm.GetGidInfo(layerTrees, y, x)) {
-	//			q.SetPosition(basePos + XY::Make(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
+	//			q.SetPosition(basePos + XY(x, -y) * scaledTileSize).SetFrame(info->GetFrame()).Draw();
 	//		}
 	//	}
 	//}
@@ -208,7 +208,7 @@ void GameLooper::Draw() {
 
 
 MonsterBase* GameLooper::FindNeighborMonster(XY const& pos, float radius) {
-	auto p = gGridBasePos.MakeAdd(pos);
+	auto p = gGridBasePos + pos;
 	auto crIdx = sgcMonsters.PosToCrIdx(p);
 	MonsterBase* r{};
 	sgcMonsters.Foreach9(crIdx, [&](MonsterBase* m)->bool {
@@ -226,7 +226,7 @@ MonsterBase* GameLooper::FindNeighborMonster(XY const& pos, float radius) {
 }
 
 MonsterBase* GameLooper::FindNearestMonster(XY const& pos, float maxDistance) {
-	auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+	auto p = gGridBasePos + pos;						// convert pos to grid coordinate
 	auto crIdx = sgcMonsters.PosToCrIdx(p);					// calc grid col row index
 
 	float minVxxyy = maxDistance * maxDistance;

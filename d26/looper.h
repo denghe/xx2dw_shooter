@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <engine.h>
+#include <xx_space.h>
 
 constexpr GDesign<1280, 800, 60> gDesign;
 
@@ -76,7 +77,7 @@ struct Looper : Engine<Looper>, decltype(gDesign) {
 	xx::Listi32<xx::Ref<Frame>> frames_snake;
 
 	// for space grid  FindNearest  ForeachByRange
-	SpaceGridRingDiffuseData sgrdd;
+	xx::SpaceRingDiffuseData sgrdd;
 };
 
 extern Looper gLooper;

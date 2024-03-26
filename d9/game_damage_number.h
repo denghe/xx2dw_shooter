@@ -56,7 +56,7 @@ struct DamageNumber : Drawable {
 	xx::Task<> MainLogic_() {
 		// move away
 		float ds{ cMoveDurationSeconds };
-		auto inc = d.MakeNormalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
+		auto inc = d.Normalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);
 		for (int i = 0; i < cMoveDurationSeconds / gDesign.frameDelay; ++i) {
 			pos += inc;
 			co_yield 0;

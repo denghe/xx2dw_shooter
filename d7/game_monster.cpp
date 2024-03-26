@@ -64,7 +64,7 @@ xx::Task<> Monster_Dragon_BabyWhite::MainLogic_() {
 				auto r = gEngine->rnd.Next<float>(float(M_PI * 2));
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 			} else {
-				newPos += combineForce.MakeNormalize() * cSpeed;
+				newPos += combineForce.Normalize() * cSpeed;
 			}
 		} else {
 			if (dd > cSpeed * cSpeed) {							// follow shooter directly

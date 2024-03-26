@@ -1,12 +1,13 @@
 ﻿#pragma once
 #include "looper.h"
+#include <xx_space.h>
 
 // d15 logic but use grid container
 
 struct SceneTest1;
 inline static SceneTest1* gSceneTest1;		// fill by SceneTest1::Init()
 
-struct SnakeBody : GridItemBase {
+struct SnakeBody {
 	static constexpr int cTypeId{ 0 };
 
 	static constexpr float cScale{ 1 };
@@ -15,15 +16,21 @@ struct SnakeBody : GridItemBase {
 	static constexpr float cDistance{ 10.f };
 	static constexpr float cMinRadians{ g2PI / 32.f };
 
+	union {
+		struct {
+			float x, y;
+		};
+		XY pos;
+	};
 	int32_t lineNumber{};
 	bool isTail{};
-	GridWeak head, prev;
+	xx::SpaceWeak<SnakeBody> head, prev;
 	float radians{};
 	XY hPos;
 
 	XY GenRndPos(float radius, float safeRadius);
 
-	void Init(XY const& pos_, GridWeak head_, GridWeak prev_, bool isTail_ = false);
+	void Init(XY const& pos_, xx::SpaceWeak<SnakeBody> head_, xx::SpaceWeak<SnakeBody> prev_, bool isTail_ = false);
 	bool Update();
 	int UpdateCore();
 	void Draw();
@@ -34,7 +41,7 @@ struct SceneTest1 : Scene {
 
 	Camera camera;
 	Rnd rnd;
-	Grid<SnakeBody> grid;
+	xx::SpaceGrid<SnakeBody> grid;
 
 	void CreateSnake(XY const& headPos, int len);
 

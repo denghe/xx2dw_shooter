@@ -3,12 +3,12 @@
 
 struct Room : Obj {
 	int numRows{}, numCols{};
-	Vec2<> pos, floorMinXY, floorMaxXY;						// pos: left top
+	XYi pos, floorMinXY, floorMaxXY;						// pos: left top
 
 	xx::List<int, int32_t> floors;
 	xx::List<Wall, int32_t> walls;
 
-	void Init(Vec2<> const& pos_, int numRows_, int numCols_) {
+	void Init(XYi const& pos_, int numRows_, int numCols_) {
 		numRows = numRows_;
 		numCols = numCols_;
 		pos = pos_;
@@ -39,27 +39,27 @@ struct Room : Obj {
 			if (x == 0) fi = 6;
 			else if (x < xe) fi = 7;
 			else fi = 8;
-			walls.Emplace().Init(Vec2<>{ pos.x + x * gCellSize.x, pos.y } + gCellSize / 2, gCellSize, fi);
+			walls.Emplace().Init(XYi{ pos.x + x * gCellSize.x, pos.y } + gCellSize / 2, gCellSize, fi);
 		}
 
 		for (int y = 1; y <= ye - 1; ++y) {
 			int posY = pos.y + y * gCellSize.y;
-			walls.Emplace().Init(Vec2<>{ pos.x, posY } + gCellSize / 2, gCellSize, 3);
-			walls.Emplace().Init(Vec2<>{ pos.x + xe * gCellSize.x, posY } + gCellSize / 2, gCellSize, 5);
+			walls.Emplace().Init(XYi{ pos.x, posY } + gCellSize / 2, gCellSize, 3);
+			walls.Emplace().Init(XYi{ pos.x + xe * gCellSize.x, posY } + gCellSize / 2, gCellSize, 5);
 		}
 
 		for (int x = 0; x <= xe; ++x) {
 			if (x == 0) fi = 0;
 			else if (x < xe) fi = 1;
 			else fi = 2;
-			walls.Emplace().Init(Vec2<>{ pos.x + x * gCellSize.x, pos.y + ye * gCellSize.y } + gCellSize / 2, gCellSize, fi);
+			walls.Emplace().Init(XYi{ pos.x + x * gCellSize.x, pos.y + ye * gCellSize.y } + gCellSize / 2, gCellSize, fi);
 		}
 	}
 
 	// MoveTo ? sync wall's pos ?
 
-	Vec2<> GetCenterPos() {
-		return pos.MakeAdd(numCols * gCellSize.x / 2, numRows * gCellSize.y / 2);
+	XYi GetCenterPos() {
+		return pos + XYi(numCols * gCellSize.x / 2, numRows * gCellSize.y / 2);
 	}
 	
 	void Draw() const override {

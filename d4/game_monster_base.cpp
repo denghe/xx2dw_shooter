@@ -5,11 +5,11 @@ void MonsterBase::RemoveFromOwner() {
 }
 
 void MonsterBase::GridInit() {
-	SGCAdd(gLooper.sgcMonsters, gGridBasePos.MakeAdd(pos));
+	SGCAdd(gLooper.sgcMonsters, gGridBasePos + pos);
 }
 
 void MonsterBase::GridUpdate() {
-	SGCUpdate(gGridBasePos.MakeAdd(pos));
+	SGCUpdate(gGridBasePos + pos);
 }
 
 MonsterBase::~MonsterBase() {

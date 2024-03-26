@@ -547,18 +547,18 @@ struct Grid {
 	}
 
 	// return x: col index   y: row index
-	XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY const& pos) {
+	XX_FORCE_INLINE XYi PosToCrIdx(XY const& pos) {
 		assert(pos.x >= 0 && pos.x < cellSize * numCols);
 		assert(pos.y >= 0 && pos.y < cellSize * numRows);
 		return { int32_t(pos.x) / cellSize, int32_t(pos.y) / cellSize };
 	}
 
 	// return cell's index
-	XX_FORCE_INLINE int32_t CrIdxToCIdx(Vec2<int32_t> const& crIdx) {
+	XX_FORCE_INLINE int32_t CrIdxToCIdx(XYi const& crIdx) {
 		return crIdx.y * numCols + crIdx.x;
 	}
 
-	constexpr static std::array<Vec2<int32_t>, 9> offsets9 = { Vec2<int32_t>
+	constexpr static std::array<XYi, 9> offsets9 = { XYi
 		{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
 	};
 
@@ -638,7 +638,7 @@ struct Grid {
 		return &buf[idx];
 	}
 
-	T* TryGetCellItemByCrIdx(Vec2<> crIdx) {
+	T* TryGetCellItemByCrIdx(XYi crIdx) {
 		if (crIdx.x < 0 || crIdx.x >= numCols || crIdx.y < 0 || crIdx.y >= numRows) return nullptr;
 		auto cidx = CrIdxToCIdx(crIdx);
 		auto idx = cells[cidx];

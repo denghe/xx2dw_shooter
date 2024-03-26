@@ -66,7 +66,7 @@ namespace Effect {
 			auto& q = qs[i];
 			q.pos = camera->ToGLPos(o.pos);
 			q.anchor = { 0.5f, 0.5f };
-			q.scale = XY::Make(camera->scale);
+			q.scale = camera->scale;
 			q.radians = o.radians;
 			q.colorplus = 1;
 			q.color = o.color;

@@ -10,7 +10,7 @@ constexpr std::array<std::string_view, (size_t)MoveTips::__end> MoveTips_txt{
 
 struct MapPath {
 	xx::Listi32<xx::FromTo<MoveTips>> mapMoveTips;
-	Vec2<> beginCRIdx{ -1,-1 }, endCRIdx{ -1,-1 };
+	XYi beginCRIdx{ -1,-1 }, endCRIdx{ -1,-1 };
 	std::string_view name;
 	TrackManager tm;
 

@@ -39,7 +39,7 @@
 //	auto& q = Quad::DrawOnce(gRes.td_shape_circle);
 //	q.pos = camera.ToGLPos(pos);
 //	q.anchor = cAnchor;
-//	q.scale = XY::Make(camera.scale) * (radius / cRadius);
+//	q.scale = camera.scale * (radius / cRadius);
 //	q.radians = radians;
 //	q.colorplus = 1;
 //	q.color = { cColor.r, cColor.g, cColor.b, uint8_t(40 + 160 * (hp / hpBak)) };

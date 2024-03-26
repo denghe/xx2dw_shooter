@@ -42,7 +42,7 @@ struct Room {
 	XY GetMaxXY() const;
 	bool Intersects(Room const& o) const;
 
-	void Init(Vec2<> const& pos_, Vec2<> const& size_);
+	void Init(XYi const& pos_, XYi const& size_);
 	void Draw();
 	xx::Task<> mainLogic{ MainLogic() };
 	xx::Task<> MainLogic();

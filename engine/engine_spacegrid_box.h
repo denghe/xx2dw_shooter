@@ -2,7 +2,7 @@
 #include <engine_prims.h>
 
 // space grid index system for AABB bounding box. coordinate (0, 0) at left-top, +x = right, +y = buttom
-template<typename Item, typename XY_t = Vec2<int32_t>>
+template<typename Item, typename XY_t = XYi>
 struct SpaceGridAB;
 
 template<typename T>
@@ -13,12 +13,12 @@ struct SpaceGridABItemCellInfo {
 };
 
 // for inherit
-template<typename Derived, typename XY_t = Vec2<int32_t>>
+template<typename Derived, typename XY_t = XYi>
 struct SpaceGridABItem {
 	using SGABCoveredCellInfo = SpaceGridABItemCellInfo<Derived>;
 	SpaceGridAB<Derived, XY_t>* _sgab{};
 	XY_t _sgabPos, _sgabRadius, _sgabMin, _sgabMax;	// for Add & Update calc covered cells
-	Vec2<int32_t> _sgabCRIdxFrom, _sgabCRIdxTo;	// backup for Update speed up
+	XYi _sgabCRIdxFrom, _sgabCRIdxTo;	// backup for Update speed up
 	std::vector<SGABCoveredCellInfo> _sgabCoveredCellInfos;	// todo: change to custom single buf container ?
 	size_t _sgabFlag{};	// avoid duplication when Foreach
 
@@ -65,7 +65,7 @@ template<typename Item, typename XY_t>
 struct SpaceGridAB {
 	using ItemCellInfo = SpaceGridABItemCellInfo<Item>;
 	using VT = XY_t::ElementType;
-	Vec2<int32_t> cellSize;
+	XYi cellSize;
 	XY_t max, max_2;
 	int32_t numRows{}, numCols{};
 	int32_t numItems{}, numActives{};	// for easy check & stat

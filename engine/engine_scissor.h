@@ -25,7 +25,7 @@ protected:
 		eb.ShaderEnd();
 		bakBlend = eb.blend;
 		eb.GLBlendFunc(eb.blendDefault);
-		Vec2<GLsizei> wp{ GLsizei(eb.windowSize_2.x + x), GLsizei(eb.windowSize_2.y + y) };
+		xx::X_Y<GLsizei> wp{ GLsizei(eb.windowSize_2.x + x), GLsizei(eb.windowSize_2.y + y) };
 		glScissor(wp.x, wp.y, (GLsizei)w, (GLsizei)h);
 		glEnable(GL_SCISSOR_TEST);
 	}
@@ -43,7 +43,7 @@ protected:
 		eb.ShaderEnd();
 		bakWndSiz = eb.windowSize;
 		bakBlend = eb.blend;
-		Vec2<GLsizei> wp{ GLsizei(eb.windowSize_2.x + x), GLsizei(eb.windowSize_2.y + y) };
+		xx::X_Y<GLsizei> wp{ GLsizei(eb.windowSize_2.x + x), GLsizei(eb.windowSize_2.y + y) };
 		eb.SetWindowSize(w, h);
 		eb.GLBlendFunc(eb.blendDefault);
 		glViewport(wp.x, wp.y, (GLsizei)w, (GLsizei)h);

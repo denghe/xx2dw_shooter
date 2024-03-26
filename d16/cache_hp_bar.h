@@ -8,10 +8,10 @@
 
 template<uint32_t width_, uint32_t height_>
 struct Cache_HpBar : protected DynamicTexturePacker<> {
-	static constexpr Vec2<uint32_t> cPadding{ 1, 1 };	// border width
-	static constexpr Vec2<uint32_t> cSpacing{ 1, 1 };
+	static constexpr XYu cPadding{ 1, 1 };	// border width
+	static constexpr XYu cSpacing{ 1, 1 };
 
-	static constexpr Vec2<uint32_t> cTextureSize{ width_ + cPadding.x + cSpacing.x, height_ + cPadding.y + cSpacing.y };
+	static constexpr XYu cTextureSize{ width_ + cPadding.x + cSpacing.x, height_ + cPadding.y + cSpacing.y };
 
 	static constexpr XY cBackgroundSize{ float(width_ + cPadding.x), float(height_ + cPadding.y) };
 	static constexpr XY cBloodSize{ float(width_), float(height_) };

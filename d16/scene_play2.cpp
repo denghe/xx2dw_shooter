@@ -70,7 +70,7 @@ void BornMask::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frame_no);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = anchor;
-	q.scale = XY::Make(camera.scale) * scale;
+	q.scale = camera.scale * scale;
 	q.radians = 0;
 	q.colorplus = 1;
 	q.color = { 255, 255, 255, 255 };
@@ -768,7 +768,7 @@ void ScenePlay2::Draw() {
 				auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
 				sgcPhysItems.ForeachWithoutBreak(idx, [&](ScenePhysItem* o) {
 					LineStrip()
-						.FillCirclePoints({}, o->radius, o->radians, 20, XY::Make(camera.scale * o->scale.x))
+						.FillCirclePoints({}, o->radius, o->radians, 20, camera.scale * o->scale.x)
 						.SetPosition(camera.ToGLPos(o->pos))
 						.Draw();
 					});
@@ -776,7 +776,7 @@ void ScenePlay2::Draw() {
 		}
 		if (human) {
 			LineStrip()
-				.FillCirclePoints({}, human->radius, human->radians, 20, XY::Make(camera.scale* human->scale.x))
+				.FillCirclePoints({}, human->radius, human->radians, 20, camera.scale* human->scale.x)
 				.SetPosition(camera.ToGLPos(human->pos))
 				.Draw();
 		}

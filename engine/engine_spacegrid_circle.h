@@ -2,11 +2,11 @@
 #include <engine_spacegrid_ringdiffuse.h>
 
 // space grid index system for circle
-template<typename Item, typename XY_t = Vec2<int32_t>>
+template<typename Item, typename XY_t = XYi>
 struct SpaceGridC;
 
 // for inherit
-template<typename Derived, typename XY_t = Vec2<int32_t>>
+template<typename Derived, typename XY_t = XYi>
 struct SpaceGridCItem {
     SpaceGridC<Derived, XY_t> *_sgc{};
     Derived *_sgcPrev{}, *_sgcNext{};
@@ -157,14 +157,14 @@ struct SpaceGridC {
     }
 
     // return x: col index   y: row index
-    XX_FORCE_INLINE Vec2<int32_t> PosToCrIdx(XY_t const& pos) {
+    XX_FORCE_INLINE XYi PosToCrIdx(XY_t const& pos) {
         assert(pos.x >= 0 && pos.x < maxX);
         assert(pos.y >= 0 && pos.y < maxY);
         return { int32_t(pos.x / maxDiameter), int32_t(pos.y / maxDiameter) };
     }
     
     // return cell's index
-    XX_FORCE_INLINE int32_t CrIdxToCellIdx(Vec2<int32_t> const& crIdx) {
+    XX_FORCE_INLINE int32_t CrIdxToCellIdx(XYi const& crIdx) {
         return crIdx.y * numCols + crIdx.x;
     }
     
@@ -203,14 +203,14 @@ struct SpaceGridC {
         }
     }
 
-    constexpr static std::array<Vec2<int32_t>, 9> offsets9 = {
-        Vec2<int32_t>{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
+    constexpr static std::array<XYi, 9> offsets9 = {
+        XYi{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
     };
 
     // find target cell + round 8 = 9 cells. return true: break
     // F == [&](Item* o)->bool { ... return false; }
     template<typename F>
-    void Foreach9(Vec2<int32_t> const& crIdx, F&& f) {
+    void Foreach9(XYi const& crIdx, F&& f) {
         for (auto& offset : offsets9) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offset);
             if (cellIndex < 0 || cellIndex >= cells.size()) continue;   // todo: fix
@@ -229,7 +229,7 @@ struct SpaceGridC {
     // find target cell + ring diffuse cells. return true: break
     // F == [&](Item* o)->bool { ... return false; }
     template<typename F>
-    void ForeachCells(Vec2<int32_t> const& crIdx, Vec2<int32_t> const* offsets, int size, F&& f) {
+    void ForeachCells(XYi const& crIdx, XYi const* offsets, int size, F&& f) {
         for (int i = 0; i < size; ++i) {
             auto cellIndex = CrIdxToCellIdx(crIdx + offsets[i]);
             if (cellIndex < 0 || cellIndex >= cells.size()) continue;   // todo: fix

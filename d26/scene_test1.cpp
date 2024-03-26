@@ -5,7 +5,7 @@
 
 #pragma region SnakeBody
 
-void SnakeBody::Init(XY const& pos_, GridWeak head_, GridWeak prev_, bool isTail_) {
+void SnakeBody::Init(XY const& pos_, xx::SpaceWeak<SnakeBody> head_, xx::SpaceWeak<SnakeBody> prev_, bool isTail_) {
 	head = head_;
 	prev = prev_;
 	isTail = isTail_;
@@ -36,15 +36,16 @@ int SnakeBody::UpdateCore() {
 	auto& grid = gSceneTest1->grid;
 	COR_BEGIN
 	// is body: follow prev
-	while (grid.Exists(prev)) {
+	while (prev) {
 		{
-			auto& p = grid.Get(prev);
+			auto& p = prev();
 			auto hPos = p.pos;
 			auto v = hPos - pos;
 			auto distance = std::sqrt(v.x * v.x + v.y * v.y);
 			if (auto d = distance - cDistance; d > 0) {
 				auto inc = v / distance * std::min(d, cSpeed);
-				grid.Update(*this, pos + inc);
+				pos += inc;
+				grid.Update(*this);
 			}
 		}
 		COR_YIELD
@@ -59,9 +60,11 @@ int SnakeBody::UpdateCore() {
 				RotateControl::Step(radians, r, cMinRadians);
 				XY inc{ std::cos(radians), std::sin(radians) };
 				if (v.x * v.x + v.y * v.y > cSpeed * cSpeed) {
-					grid.Update(*this, pos + inc * cSpeed);
+					pos += inc * cSpeed;
+					grid.Update(*this);
 				} else {
-					grid.Update(*this, hPos);
+					pos = hPos;
+					grid.Update(*this);
 					break;
 				}
 			}
@@ -78,7 +81,7 @@ bool SnakeBody::Update() {
 void SnakeBody::Draw() {
 	auto& grid = gSceneTest1->grid;
 	int idx;
-	if (grid.Exists(prev)) {
+	if (prev) {
 		if (isTail) idx = 2;
 		else idx = 1;
 	} else {
@@ -87,7 +90,7 @@ void SnakeBody::Draw() {
 	auto& q = Quad::DrawOnce(gLooper.frames_snake[idx]);
 	q.pos = gSceneTest1->camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = XY::Make(gSceneTest1->camera.scale) * cScale;
+	q.scale = gSceneTest1->camera.scale * cScale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_White;
@@ -98,16 +101,16 @@ void SnakeBody::Draw() {
 #pragma region SceneTest1
 
 void SceneTest1::CreateSnake(XY const& headPos, int len) {
-	auto& h = grid.MakeInit(headPos, GridWeak{}, GridWeak{}, false);
+	auto& h = grid.EmplaceInit(headPos, xx::SpaceWeak<SnakeBody>{}, xx::SpaceWeak<SnakeBody>{}, false);
 	h.radians = -gPI / 2;
-	auto hgw = h.ToGridWeak();
+	xx::SpaceWeak<SnakeBody> hgw(h);
 	auto gw = hgw;
 	for (int i = 0; i < len; i++) {
-		auto& o = grid.Get(gw);
-		gw = grid.MakeInit(o.pos + XY{ 0, o.cDistance }, hgw, gw).ToGridWeak();
+		auto& o = gw();
+		gw = grid.EmplaceInit(o.pos + XY{ 0, o.cDistance }, hgw, gw);
 	}
-	auto& o = grid.Get(gw);
-	grid.MakeInit(o.pos + XY{ 0, o.cDistance }, hgw, gw, true);
+	auto& o = gw();
+	grid.EmplaceInit(o.pos + XY{ 0, o.cDistance }, hgw, gw, true);
 }
 
 void SceneTest1::Init() {
@@ -161,15 +164,15 @@ void SceneTest1::Update() {
 	auto& m = gLooper.mouse;
 	if (m.btnStates[0] && !gLooper.mouseEventHandler) {
 		auto p = camera.ToLogicPos(m.pos);
-		grid.ForeachByRange(gLooper.sgrdd, p, gCfg.mouseHitRange, [&](SnakeBody& o) {
-			if (grid.Exists(o.prev)) {
-				grid.Get(o.prev).isTail = true;
+		grid.ForeachByRange(gLooper.sgrdd, {p.x, p.y}, gCfg.mouseHitRange, [&](SnakeBody& o) {
+			if (o.prev) {
+				o.prev().isTail = true;
 			}
 			grid.Remove(o);
 		});
 	}
 
-	grid.BufForeach([](SnakeBody& o)->void {
+	grid.ForeachFlags([](SnakeBody& o)->void {
 		o.Update();
 	});
 }
@@ -177,28 +180,11 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
-#if 1
-	grid.BufForeach([](SnakeBody& o)->void {
+	grid.ForeachFlags([](SnakeBody& o)->void {
 		o.Draw();
 	});
-#else
-	// fill phys items to iys order by row & cut by cell pos
-	int32_t rowFrom, rowTo, colFrom, colTo;
-	camera.FillRowColIdxRange(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize,
-		rowFrom, rowTo, colFrom, colTo);
-	auto& iys = im.iys;
-	for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
-		for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
-			auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
-			sgcPhysItems.ForeachWithoutBreak(idx, [&](PhysSceneItem* o) {
-				iys.Emplace(o, o->posY);
-				});
-		}
-	}
-	im.Draw(camera);
-#endif
 
-	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, XY::Make(camera.scale))
+	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, camera.scale)
 		.SetPosition(gLooper.mouse.pos)
 		.Draw();
 

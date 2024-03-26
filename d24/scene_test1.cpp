@@ -18,7 +18,7 @@ void BigMonster::Draw() {
 	auto& q = Quad::DrawOnce(gLooper.frame_circle);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale) * scale;
+	q.scale = camera.scale * scale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_Blue;
@@ -118,7 +118,7 @@ void Bullet::Draw() {
 		auto& q = Quad::DrawOnce(gLooper.frame_trangle);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = { 0.5f, 1.f };
-		q.scale = XY::Make(camera.scale) * scale * XY { 1.f, speed / cSpeed.from * tailRatio };
+		q.scale = camera.scale * scale * XY { 1.f, speed / cSpeed.from * tailRatio };
 		q.radians = radians + gPI / 2;
 		q.colorplus = 1;
 		q.color = RGBA8_White;
@@ -129,7 +129,7 @@ void Bullet::Draw() {
 		auto& q = Quad::DrawOnce(gLooper.frame_circle);
 		q.pos = camera.ToGLPos(pos);
 		q.anchor = cAnchor;
-		q.scale = XY::Make(camera.scale) * scale;
+		q.scale = camera.scale * scale;
 		q.radians = radians;
 		q.colorplus = 1;
 		q.color = RGBA8_White;

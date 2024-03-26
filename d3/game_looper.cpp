@@ -30,7 +30,7 @@ xx::Task<> GameLooper::MainTask() {
 	rooms.Emplace().Emplace()->Init({}, numRows, numCols);
 
 	for (int i = 0; i < numPumpkins; ++i) {
-		Vec2<> p{ rnd.Next<int>(rooms[0]->floorMinXY.x, rooms[0]->floorMaxXY.x)
+		XYi p{ rnd.Next<int>(rooms[0]->floorMinXY.x, rooms[0]->floorMaxXY.x)
 		, rnd.Next<int>(rooms[0]->floorMinXY.y, rooms[0]->floorMaxXY.y) };
 		pumpkins.Emplace().Emplace()->Init(p);
 	}

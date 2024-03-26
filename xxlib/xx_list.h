@@ -84,7 +84,7 @@ namespace xx {
 			buf = newBuf;
 		}
 
-
+		template<bool fillVal = false, int val = 0>
 		void Resize(SizeType len_) noexcept {
 			if (len_ == len) return;
 			else if (len_ < len) {
@@ -95,9 +95,11 @@ namespace xx {
 			else {	// len_ > len
 				Reserve(len_);
 				if constexpr (!(std::is_standard_layout_v<T> && std::is_trivial_v<T>)) {
-					for (SizeType i = this->len; i < len_; ++i) {
+					for (SizeType i = len; i < len_; ++i) {
 						new (buf + i) T();
 					}
+				} else if constexpr(fillVal) {
+					memset(buf + len, val, (len_ - len) * sizeof(T));
 				}
 			}
 			len = len_;

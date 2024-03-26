@@ -8,12 +8,12 @@ namespace Test1 {
 	struct Cfg {
 		static constexpr float unitSize{ 32.f };
 		static constexpr float unitSize_2 { unitSize / 2 };
-		static constexpr XY unitXYSize{ unitSize, unitSize };
-		static constexpr XY unitXYSize_2 { unitSize_2, unitSize_2 };
+		static constexpr XY unitXYSize{ unitSize };
+		static constexpr XY unitXYSize_2 { unitSize_2 };
 
 		static constexpr int32_t numRows{24}, numCols{39};
 		static constexpr XY mapSize{ unitSize * numCols, unitSize * numRows };
-		static constexpr XY mapSize_2{ mapSize.x / 2, mapSize.y / 2 };
+		static constexpr XY mapSize_2{ mapSize / 2 };
 		static constexpr XY mapCenterPos { mapSize.x / 2.f, mapSize.y / 2.f };
 
 		static constexpr int32_t updateMultipleTimes{ 10 };
@@ -31,7 +31,7 @@ namespace Test1 {
 		struct {
 		float x, y;
 		};
-		XY pos;
+		XY pos{};
 		};
 		XY size{};
 		xx::FromTo<XY> xy;
@@ -62,9 +62,9 @@ namespace Test1 {
 	};
 
 	struct Wall {
-		xx::FromTo<Vec2<>> cidx;
+		xx::FromTo<XYi> cidx;
 		xx::FromTo<XY> xy;
-		void Init(xx::FromTo<Vec2<>> const& cidx_);
+		void Init(xx::FromTo<XYi> const& cidx_);
 		void Draw();
 	};
 

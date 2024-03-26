@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "xx_blocklink.h"
+#include "xx_xy.h"
 
 namespace xx {
 	template<typename T>
@@ -9,35 +10,32 @@ namespace xx {
 	};
 
 	struct SpaceCountRadius { int32_t count; float radius; };
-	union SpaceIndex { 
-		struct {
-		int32_t x, y;
-		};
-		uint64_t data{};
-	};
-	struct SpaceXY { float x, y; };
 
 	struct SpaceRingDiffuseData {
-		List<SpaceCountRadius, int32_t> lens;
-		List<SpaceIndex, int32_t> idxs;
+		Listi32<SpaceCountRadius> lens;
+		Listi32<XYi> idxs;
 
-		void Init(int32_t gridNumRows, int32_t gridCellDiameter) {
-			auto step = (float)gridCellDiameter / 2;
+		void Init(int32_t crCount, int32_t cSize) {
+			auto step = (float)cSize / 2;
 			lens.Emplace(0, 0.f);
-			SpaceIndex lastIdx{};
+			XYi lastIdx{};
 			idxs.Add(lastIdx);
-			std::unordered_set<uint64_t> idxset;    // avoid duplicate
-			for (float r = step; r < gridCellDiameter * gridNumRows; r += step) {
+			Listi32<char> idxflags;
+			idxflags.Resize<true>(crCount * crCount);
+			for (float r = step; r < cSize * crCount; r += step) {
 				auto c = 2 * M_PI * r;
 				if (c < step) continue;
 				auto lenBak = idxs.len;
 				auto astep = float(M_PI * 2 * (step / c) / 10);
-				auto rd = r / gridCellDiameter;
+				auto rd = r / cSize;
 				for (float a = astep; a < M_PI * 2; a += astep) {
-					SpaceIndex idx{ int32_t(rd * cos(a)), int32_t(rd * sin(a)) };
-					if (lastIdx.data != idx.data && idxset.insert(idx.data).second) {
-						idxs.Add(idx);
-						lastIdx = idx;
+					XYi idx{ int32_t(rd * cos(a)), int32_t(rd * sin(a)) };
+					if (lastIdx != idx) {
+						if (auto i = idx.y * crCount + idx.x; !idxflags[i]) {
+							idxflags[i] = 1;
+							idxs.Add(idx);
+							lastIdx = idx;
+						}
 					}
 				}
 				if (idxs.len > lenBak) {
@@ -47,8 +45,11 @@ namespace xx {
 		}
 	};
 
+	template<typename T>
+	using SpaceWeak = BlockLinkWeak<T, SpaceNode>;
+
 	// requires
-	// T has member: float x, y
+	// T has member: XY pos
 	template<typename T>
 	struct SpaceGrid : protected BlockLink<T, SpaceNode> {
 		using ST = BlockLink<T, SpaceNode>;
@@ -56,7 +57,7 @@ namespace xx {
 		using Node = SpaceNode<T>;
 
 		using ST::Count;
-		using ST::Foreach;
+		using ST::ForeachFlags;
 		using ST::Reserve;
 		using ST::TryGet;
 
@@ -95,7 +96,7 @@ namespace xx {
 			auto& o = ST::EmplaceCore();
 			o.value.Init(std::forward<Args>(args)...);
 
-			auto cidx = PosToCIdx(o.value.x, o.value.y);
+			auto cidx = PosToCIdx(o.value.pos);
 			auto head = cells[cidx];	// backup
 			if (head >= 0) {
 				ST::RefNode(head).pre = o.index;
@@ -135,7 +136,7 @@ namespace xx {
 
 		void Remove(T const& v) {
 			auto o = container_of(&v, Node, value);
-			Free(o);
+			Free(*o);
 		}
 
 		bool Remove(BlockLinkVI const& vi) {
@@ -151,7 +152,7 @@ namespace xx {
 			assert(o.index >= 0);
 			assert(o.pre != o.index);
 			assert(o.nex != o.index);
-			auto cidx = PosToCIdx(v.x, v.y);
+			auto cidx = PosToCIdx(v.pos);
 			if (cidx == o.cidx) return;				// no change
 
 			// unlink
@@ -186,7 +187,7 @@ namespace xx {
 		// .Foreach([](T& o)->xx::ForeachResult {    });
 		// return is Break or RemoveAndBreak
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
-		XX_FORCE_INLINE bool Foreach(int32_t cidx, F&& func) {
+		XX_FORCE_INLINE bool ForeachCell(int32_t cidx, F&& func) {
 			auto idx = cells[cidx];
 			while (idx >= 0) {
 				auto& o = ST::RefNode(idx);
@@ -215,28 +216,28 @@ namespace xx {
 			return false;
 		}
 
-		XX_FORCE_INLINE int32_t PosToCIdx(float x, float y) {
-			assert(x >= 0 && x < cellSize * numCols);
-			assert(y >= 0 && y < cellSize * numRows);
-			auto c = int32_t(x) / cellSize;
-			auto r = int32_t(y) / cellSize;
+		XX_FORCE_INLINE int32_t PosToCIdx(XYf const& p) {
+			assert(p.x >= 0 && p.x < cellSize * numCols);
+			assert(p.y >= 0 && p.y < cellSize * numRows);
+			auto c = int32_t(p.x) / cellSize;
+			auto r = int32_t(p.y) / cellSize;
 			return r * numCols + c;
 		}
 
 		// return x: col index   y: row index
-		XX_FORCE_INLINE SpaceIndex PosToCrIdx(float x, float y) {
-			assert(x >= 0 && x < cellSize * numCols);
-			assert(y >= 0 && y < cellSize * numRows);
-			return { int32_t(x) / cellSize, int32_t(y) / cellSize };
+		XX_FORCE_INLINE XYi PosToCrIdx(XYf const& p) {
+			assert(p.x >= 0 && p.x < cellSize * numCols);
+			assert(p.y >= 0 && p.y < cellSize * numRows);
+			return { int32_t(p.x) / cellSize, int32_t(p.y) / cellSize };
 		}
 
 		// return cell's index
-		XX_FORCE_INLINE int32_t CrIdxToCIdx(int32_t colIdx, int32_t rowIdx) {
-			return rowIdx * numCols + colIdx;
+		XX_FORCE_INLINE int32_t CrIdxToCIdx(XYi const& crIdx) {
+			return crIdx.y * numCols + crIdx.x;
 		}
 
 		// cell's index to pos( left top corner )
-		XX_FORCE_INLINE XY CIdxToPos(int32_t cidx) {
+		XX_FORCE_INLINE XYf CIdxToPos(int32_t cidx) {
 			assert(cidx >= 0 && cidx < cellsLen);
 			auto row = cidx / numCols;
 			auto col = cidx - row * numCols;
@@ -244,19 +245,19 @@ namespace xx {
 		}
 
 		// cell's index to cell center pos
-		XX_FORCE_INLINE XY CIdxToCenterPos(int32_t cidx) {
+		XX_FORCE_INLINE XYf CIdxToCenterPos(int32_t cidx) {
 			return CIdxToPos(cidx) + float(cellSize) / 2;
 		}
 
-		XX_FORCE_INLINE XY CrIdxToPos(int32_t colIdx, int32_t rowIdx) {
+		XX_FORCE_INLINE XYf CrIdxToPos(int32_t colIdx, int32_t rowIdx) {
 			return CIdxToPos(rowIdx * numCols + colIdx);
 		}
 
-		XX_FORCE_INLINE XY CrIdxToCenterPos(int32_t colIdx, int32_t rowIdx) {
+		XX_FORCE_INLINE XYf CrIdxToCenterPos(int32_t colIdx, int32_t rowIdx) {
 			return CIdxToCenterPos(rowIdx * numCols + colIdx);
 		}
 
-		constexpr static std::array<SpaceIndex, 9> offsets9 = { SpaceIndex
+		constexpr static std::array<XYi, 9> offsets9 = { XYi
 			{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
 		};
 
@@ -264,14 +265,13 @@ namespace xx {
 		// .Foreach9([](T& o)->void {    });
 		// .Foreach9([](T& o)->xx::ForeachResult {    });
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
-		void Foreach9(float x, float y, F&& func) {
-			auto crIdx = PosToCrIdx(x, y);
+		void Foreach9(XYf const& pos, F&& func) {
+			auto crIdxBase = PosToCrIdx(pos);
 			for (auto offset : offsets9) {
-				auto col = crIdx.x + offset.x;
-				if (col < 0 || col >= numCols) continue;
-				auto row = crIdx.y + offset.y;
-				if (row < 0 || row >= numRows) continue;
-				auto cidx = CrIdxToCIdx(col, row);
+				auto crIdx = crIdxBase + offset;
+				if (crIdx.x < 0 || crIdx.x >= numCols) continue;
+				if (crIdx.y < 0 || crIdx.y >= numRows) continue;
+				auto cidx = CrIdxToCIdx(crIdx);
 
 				auto idx = cells[cidx];
 				while (idx >= 0) {
@@ -302,8 +302,8 @@ namespace xx {
 		}
 
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
-		void ForeachByRange(SpaceRingDiffuseData const& d, XY const& pos, float maxDistance, F&& func) {
-			auto crIdx = PosToCrIdx(pos);					// calc grid col row index
+		void ForeachByRange(SpaceRingDiffuseData const& d, XYf const& pos, float maxDistance, F&& func) {
+			auto crIdx = PosToCrIdx(pos);			// calc grid col row index
 			float rr = maxDistance * maxDistance;
 			auto& lens = d.lens;
 			auto& idxs = d.idxs;
@@ -318,9 +318,9 @@ namespace xx {
 					if (col < 0 || col >= numCols) continue;
 					auto row = crIdx.y + offset.y;
 					if (row < 0 || row >= numRows) continue;
-					auto cidx = CrIdxToCIdx(col, row);
+					auto cidx = CrIdxToCIdx({ col, row });
 
-					Foreach(cidx, [&](T& m)->void {
+					ForeachCell(cidx, [&](T& m)->void {
 						auto v = m.pos - pos;
 						if (v.x * v.x + v.y * v.y < rr) {
 							func(m);		// todo: check func's args. send v, rr to func ?

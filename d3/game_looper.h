@@ -3,9 +3,9 @@
 
 constexpr GDesign<1280, 720, 60> gDesign;
 
-static constexpr Vec2<> gCellSize{ 16, 16 };
+static constexpr XYi gCellSize{ 16, 16 };
 static constexpr int32_t gGridNumCols = 128, gGridNumRows = 128;
-static constexpr Vec2<> gGridBasePos{ gCellSize.x * gGridNumCols / 2, gCellSize.y * gGridNumRows / 2 };
+static constexpr XYi gGridBasePos{ gCellSize.x * gGridNumCols / 2, gCellSize.y * gGridNumRows / 2 };
 
 struct Obj;
 struct BoxObj;

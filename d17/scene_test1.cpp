@@ -7,8 +7,8 @@ XY Bag::GetDrawSize() const {
 	return cellSize * XY{ (float)numCols, (float)numRows };
 }
 
-Vec2<> Bag::PosToCellIndex(XY const& pos_) const {
-	Vec2<> r{ -1, -1 };
+XYi Bag::PosToCellIndex(XY const& pos_) const {
+	XYi r{ -1, -1 };
 	auto siz = GetDrawSize();
 	auto bPos = pos - anchor * siz;
 	auto p = pos_ - basePos;

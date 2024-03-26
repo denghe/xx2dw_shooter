@@ -22,7 +22,7 @@ struct SVContent : Node {
 
 // todo: support mouse click , drag  move  delete item
 struct SVContentBag : Node {
-	static constexpr Vec2<> itemSize{ 16, 16 };	// todo: padding
+	static constexpr XYi itemSize{ 16, 16 };	// todo: padding
 	static constexpr XY itemSizef{ (float)itemSize.x, (float)itemSize.y };
 
 	ScrollView* sv{};

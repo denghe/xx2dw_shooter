@@ -71,7 +71,7 @@ namespace Bullet::Tower {
 			auto& q = Quad::DrawOnce(gRes.td_shape_trangle);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = { 0.5f, 1.f };
-			q.scale = XY::Make(camera.scale) * cScale * XY { 1.f, cTailRatio };
+			q.scale = camera.scale * cScale * XY{ 1.f, cTailRatio };
 			q.radians = radians + gPI / 2;
 			q.colorplus = 1;
 			q.color = RGBA8_White;
@@ -82,7 +82,7 @@ namespace Bullet::Tower {
 			auto& q = Quad::DrawOnce(gRes.td_shape_circle);
 			q.pos = camera.ToGLPos(pos);
 			q.anchor = cAnchor;
-			q.scale = XY::Make(camera.scale) * cScale;
+			q.scale = camera.scale * cScale;
 			q.radians = radians;
 			q.colorplus = 1;
 			q.color = RGBA8_White;

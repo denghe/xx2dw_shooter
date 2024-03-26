@@ -37,7 +37,7 @@ struct EffectNumber  {
 		texId = gLooper.frames_number_outlined[0]->tex->GetValue();
 		FillBuf(value_);
 		pos = { pos_.x - cCharPixelWidth * cScale * len / 2, pos_.y };	// calculate center point
-		inc = dist_.MakeNormalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);	// calculate move frame inc with random speed
+		inc = dist_.Normalize() * gEngine->rnd.Next<float>(cMoveSpeedMin, cMoveSpeedMax);	// calculate move frame inc with random speed
 		color = color_;
 	}
 

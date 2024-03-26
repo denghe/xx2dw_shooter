@@ -32,7 +32,7 @@ xx::Task<> Monster1::MainLogic() {
 		// calc neighbor cross force
 		XY combineForce{};										// for move vector
 		int numCross{}, limit = 8;
-		auto p = gGridBasePos.MakeAdd(pos);						// convert pos to grid coordinate
+		auto p = gGridBasePos + pos;						// convert pos to grid coordinate
 		auto crIdx = _sgc->PosToCrIdx(p);						// calc grid col row index
 		_sgc->Foreach9(crIdx, [&](MonsterBase* m) {
 			if (m == this) return false;						// skip self
@@ -66,7 +66,7 @@ xx::Task<> Monster1::MainLogic() {
 				newPos += XY{ std::cos(r), std::sin(r) } * cSpeed * 3;
 				//printf("r = %f   pos = %f %f   newPos = %f %f\n", r, pos.x, pos.y, newPos.x, newPos.y);
 			} else {
-				newPos += combineForce.MakeNormalize() * cSpeed;
+				newPos += combineForce.Normalize() * cSpeed;
 				//printf("pos = %f %f   newPos = %f %f\n", pos.x, pos.y, newPos.x, newPos.y);
 			}
 			//newPos += XY{ -0.5f, 0.34f };	// fix group effect	  todo: change calc step to update

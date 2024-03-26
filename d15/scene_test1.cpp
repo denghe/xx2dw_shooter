@@ -137,7 +137,7 @@ void SnakeBody::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_creature_1[96]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale) * cScale;
+	q.scale = camera.scale * cScale;
 	q.radians = 0;	// fixed radians
 	q.colorplus = 1;
 	q.color = c;
@@ -152,7 +152,7 @@ void SnakeBody::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_snake[idx]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = cAnchor;
-	q.scale = XY::Make(camera.scale) * cScale;
+	q.scale = camera.scale * cScale;
 	q.radians = radians;//0;	// fixed radians
 	q.colorplus = 1;
 	q.color = RGBA8_White;
@@ -257,7 +257,7 @@ void SceneTest1::Draw() {
 	im.Draw(camera);
 #endif
 
-	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, XY::Make(camera.scale))
+	LineStrip().FillCirclePoints({}, gCfg.mouseHitRange, {}, 100, camera.scale)
 		.SetPosition(gLooper.mouse.pos)
 		.Draw();
 

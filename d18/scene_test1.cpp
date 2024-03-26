@@ -29,7 +29,7 @@ void TailCell::Draw(Camera const& camera) {
 	auto& q = Quad::DrawOnce(gLooper.frames_mine[0]);
 	q.pos = camera.ToGLPos(pos);
 	q.anchor = {0.5f, 0.5f};
-	q.scale = XY::Make(camera.scale * tail->scale);
+	q.scale = camera.scale * tail->scale;
 	q.radians = radians;
 	q.colorplus = 1;
 	q.color = RGBA8_White;

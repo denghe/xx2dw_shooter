@@ -19,10 +19,10 @@ xx::Task<> GameLooper::MainTask() {
 	// make random size rooms
 	for (int i = 0; i < 1000; ++i) {
 
-		Vec2<> pos{ rnd.Next<int>(-gMaxRoomWidth_2, gMaxRoomWidth_2)
+		XYi pos{ rnd.Next<int>(-gMaxRoomWidth_2, gMaxRoomWidth_2)
 			, rnd.Next<int>(-gMaxRoomHeight_2, gMaxRoomHeight_2) };
 
-		Vec2<> size{ rnd.Next<int>(3, 20), rnd.Next<int>(3, 15) };
+		XYi size{ rnd.Next<int>(3, 20), rnd.Next<int>(3, 15) };
 
 		auto&& room = rooms.Emplace().Emplace();
 		room->Init(pos, size);
@@ -61,7 +61,7 @@ void GameLooper::Draw() {
 /*****************************************************************************************************/
 /*****************************************************************************************************/
 
-void Room::Init(Vec2<> const& pos_, Vec2<> const& size_) {
+void Room::Init(XYi const& pos_, XYi const& size_) {
 	pos = pos_.As<float>();
 	size = size_.As<float>();
 
@@ -140,7 +140,7 @@ xx::Task<> Room::MainLogic() {
 
 		if (numCross) {
 			gLooper.hasCross = true;
-			pos += combineForce.MakeNormalize();
+			pos += combineForce.Normalize();
 		}
 
 		co_yield 0;

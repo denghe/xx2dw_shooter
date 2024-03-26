@@ -2,7 +2,7 @@
 #include "game_looper.h"
 
 struct Wall : BoxObj {
-	void Init(Vec2<> const& pos, Vec2<> const& size, int frameIndex) {
+	void Init(XYi const& pos, XYi const& size, int frameIndex) {
 		
 		SGABAdd(gLooper.sgabWalls, pos, size);
 

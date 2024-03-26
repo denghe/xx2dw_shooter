@@ -73,7 +73,7 @@ struct MagicWeapon : Sprite {
 					d = tarPos - pos;
 					dd = d.x * d.x + d.y * d.y;
 					if (dd > speed * speed) {
-						pos += d.MakeNormalize() * speed;
+						pos += d.Normalize() * speed;
 					} else {
 						pos = tarPos;
 						break;
@@ -100,7 +100,7 @@ struct MagicWeapon : Sprite {
 					}
 				}
 			} else {											// be close the owner
-				pos += d.MakeNormalize() * speed;
+				pos += d.Normalize() * speed;
 				if (speed < cSpeedMax) {
 					speed += cSpeedInc;
 				}
@@ -117,7 +117,7 @@ struct MagicWeapon : Sprite {
 				pos = tarPos;
 				co_return;
 			} else {
-				pos += d.MakeNormalize() * speed;
+				pos += d.Normalize() * speed;
 			}
 			co_yield 0;
 		}

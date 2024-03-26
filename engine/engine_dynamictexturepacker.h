@@ -34,8 +34,8 @@ struct DynamicTexturePacker : Frames {
 
         FrameBuffer fb(true);
         for (auto& bin : bins) {
-            Vec2<> wh{ xx::Round2n(bin.size.w), xx::Round2n(bin.size.h) };
-            auto t = FrameBuffer::MakeTexture(wh.As<uint32_t>());
+            XYi wh{ xx::Round2n(bin.size.w), xx::Round2n(bin.size.h) };
+            auto t = FrameBuffer::MakeTexture(wh);
             XY basePos{ -wh.x / 2.f, wh.y / 2.f };
             Quad q;
             q.SetAnchor({ 0, 1 });
