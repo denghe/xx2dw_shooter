@@ -5,7 +5,7 @@
 template<typename Derived>
 struct Engine : EngineBase3 {
 
-    Engine() {
+    void EngineInit() {
 
         // EM_BOOL OnKeyXXXXXXXXXXX(EmscriptenKeyboardEvent const& e) { return EM_TRUE; }
 
@@ -152,6 +152,7 @@ struct Engine : EngineBase3 {
 
     /*
 int main() {
+    gLooper.EngineInit();
     emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
         return ???????????????.JsLoopCallback(ms);
     }, nullptr);

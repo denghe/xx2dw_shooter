@@ -350,7 +350,7 @@ var za,
       }
       return !1;
     },
-    ga: (a, b, c) => {
+    ba: (a, b, c) => {
       a = N(a);
       if (!a) return -4;
       a.width = b;
@@ -362,7 +362,7 @@ var za,
     ja: (a, b, c, d) => Ga(a, b, c, d, 5, "mousedown"),
     ha: (a, b, c, d) => Ga(a, b, c, d, 8, "mousemove"),
     ia: (a, b, c, d) => Ga(a, b, c, d, 6, "mouseup"),
-    fa: (a, b) => {
+    aa: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -383,7 +383,7 @@ var za,
       a = N(a);
       return !a || b.Ja ? 0 : Ka(a, b);
     },
-    ea: a => {
+    $: a => {
       var _La;
       La = Ia[a];
       e.Na = W = (_La = La) === null || _La === void 0 ? void 0 : _La.Ga;
@@ -409,15 +409,15 @@ var za,
       z[d >> 2] = f;
       return 0;
     },
-    ca: a => W.activeTexture(a),
-    D: (a, b) => {
+    ga: a => W.activeTexture(a),
+    x: (a, b) => {
       W.attachShader(Q[a], T[b]);
     },
     c: (a, b) => {
       35051 == a ? W.Ba = b : 35052 == a && (W.xa = b);
       W.bindBuffer(a, P[b]);
     },
-    x: (a, b) => {
+    B: (a, b) => {
       W.bindFramebuffer(a, R[b]);
     },
     b: (a, b) => {
@@ -426,17 +426,17 @@ var za,
     i: a => {
       W.bindVertexArray(U[a]);
     },
-    m: a => W.blendEquation(a),
-    n: (a, b) => W.blendFunc(a, b),
-    k: (a, b, c, d) => {
+    o: a => W.blendEquation(a),
+    p: (a, b) => W.blendFunc(a, b),
+    j: (a, b, c, d) => {
       c && b ? W.bufferData(a, w, d, c, b) : W.bufferData(a, b, d);
     },
-    v: a => W.clear(a),
-    w: (a, b, c, d) => W.clearColor(a, b, c, d),
-    W: a => {
+    D: a => W.clear(a),
+    E: (a, b, c, d) => W.clearColor(a, b, c, d),
+    T: a => {
       W.compileShader(T[a]);
     },
-    $: () => {
+    Z: () => {
       var a = V(Q),
         b = W.createProgram();
       b.name = a;
@@ -445,7 +445,7 @@ var za,
       Q[a] = b;
       return a;
     },
-    Y: a => {
+    V: a => {
       var b = V(T);
       T[b] = W.createShader(a);
       return b;
@@ -457,14 +457,14 @@ var za,
         f && (W.deleteBuffer(f), f.name = 0, P[d] = null, d == W.Ba && (W.Ba = 0), d == W.xa && (W.xa = 0));
       }
     },
-    z: (a, b) => {
+    F: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
           f = R[d];
         f && (W.deleteFramebuffer(f), f.name = 0, R[d] = null);
       }
     },
-    j: a => {
+    k: a => {
       if (a) {
         var b = Q[a];
         b && (W.deleteProgram(b), b.name = 0, Q[a] = null);
@@ -476,53 +476,53 @@ var za,
         b && (W.deleteShader(b), T[a] = null);
       }
     },
-    T: (a, b) => {
+    Y: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2],
           f = S[d];
         f && (W.deleteTexture(f), f.name = 0, S[d] = null);
       }
     },
-    H: (a, b) => {
+    I: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         W.deleteVertexArray(U[d]);
         U[d] = null;
       }
     },
-    I: a => W.disable(a),
-    C: (a, b, c, d) => {
+    A: a => W.disable(a),
+    z: (a, b, c, d) => {
       W.drawArraysInstanced(a, b, c, d);
     },
-    aa: (a, b, c, d) => {
+    ea: (a, b, c, d) => {
       W.drawElements(a, b, c, d);
     },
-    da: a => W.enable(a),
+    _: a => W.enable(a),
     e: a => {
       W.enableVertexAttribArray(a);
     },
-    Q: (a, b, c, d, f) => {
+    ca: (a, b, c, d, f) => {
       W.framebufferTexture2D(a, b, c, S[d], f);
     },
-    p: (a, b) => {
+    n: (a, b) => {
       X(a, b, "createBuffer", P);
     },
-    U: (a, b) => {
+    R: (a, b) => {
       X(a, b, "createFramebuffer", R);
     },
     l: (a, b) => {
       X(a, b, "createTexture", S);
     },
-    E: (a, b) => {
+    y: (a, b) => {
       X(a, b, "createVertexArray", U);
     },
     g: (a, b) => W.getAttribLocation(Q[a], H(b)),
-    Z: (a, b, c, d) => {
+    W: (a, b, c, d) => {
       a = W.getProgramInfoLog(Q[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    B: (a, b, c) => {
+    w: (a, b, c) => {
       if (c && !(a >= Ha)) if (a = Q[a], 35716 == b) y[c >> 2] = W.getProgramInfoLog(a).length + 1;else if (35719 == b) {
         if (!a.wa) for (b = 0; b < W.getProgramParameter(a, 35718); ++b) a.wa = Math.max(a.wa, W.getActiveUniform(a, b).name.length + 1);
         y[c >> 2] = a.wa;
@@ -534,15 +534,15 @@ var za,
         y[c >> 2] = a.va;
       } else y[c >> 2] = W.getProgramParameter(a, b);
     },
-    V: (a, b, c, d) => {
+    S: (a, b, c, d) => {
       a = W.getShaderInfoLog(T[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
     },
-    A: (a, b, c) => {
+    v: (a, b, c) => {
       c && (35716 == b ? (a = W.getShaderInfoLog(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : 35720 == b ? (a = W.getShaderSource(T[a]), y[c >> 2] = a ? a.length + 1 : 0) : y[c >> 2] = W.getShaderParameter(T[a], b));
     },
-    t: (a, b) => {
+    s: (a, b) => {
       b = H(b);
       if (a = Q[a]) {
         var c = a,
@@ -569,17 +569,17 @@ var za,
       }
       return -1;
     },
-    _: a => {
+    X: a => {
       a = Q[a];
       W.linkProgram(a);
       a.ta = 0;
       a.Fa = {};
     },
-    X: (a, b, c, d) => {
+    U: (a, b, c, d) => {
       for (var f = "", l = 0; l < b; ++l) f += H(z[c + 4 * l >> 2], d ? z[d + 4 * l >> 2] : void 0);
       W.shaderSource(T[a], f);
     },
-    y: (a, b, c, d, f, l, g, n, m) => {
+    C: (a, b, c, d, f, l, g, n, m) => {
       if (W.xa) W.texImage2D(a, b, c, d, f, l, g, n, m);else if (m) {
         var p = n - 5120;
         p = 0 == p ? ca : 1 == p ? w : 2 == p ? x : 4 == p ? y : 6 == p ? ea : 5 == p || 28922 == p || 28520 == p || 30779 == p || 30782 == p ? z : da;
@@ -587,25 +587,25 @@ var za,
       } else W.texImage2D(a, b, c, d, f, l, g, n, null);
     },
     a: (a, b, c) => W.texParameteri(a, b, c),
-    ba: (a, b) => {
+    fa: (a, b) => {
       W.uniform1i(Pa(a), b);
     },
-    F: (a, b, c) => {
+    G: (a, b, c) => {
       W.uniform2f(Pa(a), b, c);
     },
-    G: a => {
+    H: a => {
       a = Q[a];
       W.useProgram(a);
       W.Ia = a;
     },
-    o: (a, b) => {
+    m: (a, b) => {
       W.vertexAttribDivisor(a, b);
     },
     f: (a, b, c, d, f, l) => {
       W.vertexAttribPointer(a, b, c, !!d, f, l);
     },
-    s: (a, b, c, d) => W.viewport(a, b, c, d),
-    S: function (a, b, c, d) {
+    t: (a, b, c, d) => W.viewport(a, b, c, d),
+    Q: function (a, b, c, d) {
       var f = document.createElement("canvas");
       f.width = b;
       f.height = c;
@@ -627,7 +627,7 @@ var za,
       };
       f.src = H(b);
     },
-    R: function (a, b) {
+    da: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

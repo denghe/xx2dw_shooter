@@ -6,6 +6,7 @@ GameLooper gLooper;
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {
+	gLooper.EngineInit();
 	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
 		return gLooper.JsLoopCallback(ms);
 		}, nullptr);

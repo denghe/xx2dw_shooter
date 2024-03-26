@@ -2,8 +2,13 @@
 #include "looper.h"
 #include "scene_test1.h"
 
-xx::Task<> Looper::MainTask() {
+void Looper::AfterInit() {
 	sgrdd.Init(128, 32);
+}
+
+xx::Task<> Looper::MainTask() {
+	//sgrdd.Init(128, 32);
+	xx::CoutN(sgrdd.lens.len);
 
 	{
 #ifdef __EMSCRIPTEN__

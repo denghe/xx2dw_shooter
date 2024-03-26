@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    ha: (a, b, c) => {
+    da: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    ga: (a, b) => {
+    ca: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Oa ? 0 : mb(a, b);
     },
-    fa: a => {
+    ba: a => {
       var _nb;
       nb = ib[a];
       g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    da: a => Y.activeTexture(a),
+    ha: a => Y.activeTexture(a),
     B: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -760,10 +760,10 @@ var Y,
     },
     I: a => Y.clear(a),
     J: (a, b, c, d) => Y.clearColor(a, b, c, d),
-    X: a => {
+    W: a => {
       Y.compileShader(X[a]);
     },
-    aa: () => {
+    $: () => {
       var a = jb(V),
         b = Y.createProgram();
       b.name = a;
@@ -772,7 +772,7 @@ var Y,
       V[a] = b;
       return a;
     },
-    Z: a => {
+    Y: a => {
       var b = jb(X);
       X[b] = Y.createShader(a);
       return b;
@@ -810,21 +810,21 @@ var Y,
         f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    F: (a, b) => {
+    G: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         Y.deleteVertexArray(hb[d]);
         hb[d] = null;
       }
     },
-    G: a => Y.disable(a),
+    D: a => Y.disable(a),
     H: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    ba: (a, b, c, d) => {
+    fa: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    ea: a => Y.enable(a),
+    aa: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
@@ -844,7 +844,7 @@ var Y,
       kb(a, b, "createVertexArray", hb);
     },
     h: (a, b) => Y.getAttribLocation(V[a], G(b)),
-    _: (a, b, c, d) => {
+    Z: (a, b, c, d) => {
       a = Y.getProgramInfoLog(V[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
@@ -861,7 +861,7 @@ var Y,
         y[c >> 2] = a.za;
       } else y[c >> 2] = Y.getProgramParameter(a, b);
     },
-    W: (a, b, c, d) => {
+    V: (a, b, c, d) => {
       a = Y.getShaderInfoLog(X[a]);
       b = 0 < b && d ? O(a, d, b) : 0;
       c && (y[c >> 2] = b);
@@ -896,13 +896,13 @@ var Y,
       }
       return -1;
     },
-    $: a => {
+    _: a => {
       a = V[a];
       Y.linkProgram(a);
       a.xa = 0;
       a.Ja = {};
     },
-    Y: (a, b, c, d) => {
+    X: (a, b, c, d) => {
       for (var f = "", k = 0; k < b; ++k) f += G(A[c + 4 * k >> 2], d ? A[d + 4 * k >> 2] : void 0);
       Y.shaderSource(X[a], f);
     },
@@ -914,13 +914,13 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ca: (a, b) => {
+    ga: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
-    D: (a, b, c) => {
+    E: (a, b, c) => {
       Y.uniform2f(rb(a), b, c);
     },
-    E: a => {
+    F: a => {
       a = V[a];
       Y.useProgram(a);
       Y.Na = a;
@@ -932,7 +932,7 @@ var Y,
       Y.vertexAttribPointer(a, b, c, !!d, f, k);
     },
     w: (a, b, c, d) => Y.viewport(a, b, c, d),
-    V: function (a, b, c, d) {
+    U: function (a, b, c, d) {
       var f = document.createElement("canvas");
       f.width = b;
       f.height = c;
@@ -954,7 +954,7 @@ var Y,
       };
       f.src = G(b);
     },
-    U: function (a, b) {
+    ea: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);
