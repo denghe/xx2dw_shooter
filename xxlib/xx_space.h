@@ -185,7 +185,8 @@ namespace xx {
 			o.cidx = cidx;
 		}
 
-		// .Foreach([](T& o)->void {    });
+		// .Foreach9([](T& o)->void {  all  });
+		// .Foreach([](T& o)->bool {  break  });
 		// .Foreach([](T& o)->xx::ForeachResult {    });
 		// return is Break or RemoveAndBreak
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
@@ -264,7 +265,8 @@ namespace xx {
 		};
 
 		// foreach target cell + round 8 = 9 cells
-		// .Foreach9([](T& o)->void {    });
+		// .Foreach9([](T& o)->void {  all  });
+		// .Foreach([](T& o)->bool {  break  });
 		// .Foreach9([](T& o)->xx::ForeachResult {    });
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
 		void Foreach9(XYf const& pos, F&& func) {
@@ -303,6 +305,7 @@ namespace xx {
 			}
 		}
 
+		// can't break
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
 		void ForeachByRange(SpaceRingDiffuseData const& d, XYf const& pos, float maxDistance, F&& func) {
 			auto crIdx = PosToCrIdx(pos);			// calc grid col row index
