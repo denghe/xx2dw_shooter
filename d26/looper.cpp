@@ -2,10 +2,12 @@
 #include "looper.h"
 #include "scene_test1.h"
 
+void Looper::AfterInit() {
+	sgrdd.Init(128, 32);
+}
+
 xx::Task<> Looper::MainTask() {
 	{
-		sgrdd.Init(128, 32);
-
 #ifdef __EMSCRIPTEN__
 		auto tp = co_await AsyncLoadTexturePackerFromUrl
 #else
@@ -110,7 +112,6 @@ xx::Task<> Looper::MainTask() {
 	for (auto& o : tmp) {
 		frames_snake.Add(o);
 	}
-
 
 
 	// load first scene

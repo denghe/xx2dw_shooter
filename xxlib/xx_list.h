@@ -106,19 +106,19 @@ namespace xx {
 		}
 
 		T const& operator[](SizeType idx) const noexcept {
-			assert(idx < len);
+			assert(idx >= 0 && idx < len);
 			return buf[idx];
 		}
 		T& operator[](SizeType idx) noexcept {
-			assert(idx < len);
+			assert(idx >= 0 && idx < len);
 			return buf[idx];
 		}
 		T const& At(SizeType idx) const noexcept {
-			xx_assert(idx < len);
+			xx_assert(idx >= 0 && idx < len);
 			return buf[idx];
 		}
 		T& At(SizeType idx) noexcept {
-			xx_assert(idx < len);
+			xx_assert(idx >= 0 && idx < len);
 			return buf[idx];
 		}
 
@@ -167,7 +167,7 @@ namespace xx {
 		}
 
 		void RemoveAt(SizeType idx) noexcept {
-			assert(idx < len);
+			assert(idx >= 0 && idx < len);
 			--len;
 			if constexpr (IsPod_v<T>) {
 				buf[idx].~T();
@@ -182,7 +182,7 @@ namespace xx {
 		}
 
         void SwapRemoveAt(SizeType idx) noexcept {
-			assert(idx < len);
+			assert(idx >= 0 && idx < len);
 			buf[idx].~T();
 			--len;
 			if (len != idx) {

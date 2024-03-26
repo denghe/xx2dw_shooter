@@ -21,7 +21,9 @@ namespace xx {
 			XYi lastIdx{};
 			idxs.Add(lastIdx);
 			Listi32<char> idxflags;
-			idxflags.Resize<true>(crCount * crCount);
+			auto n = crCount * 2;
+			idxflags.Resize<true, 0>(n * n);
+			XYi center{ n / 2, n / 2 };
 			for (float r = step; r < cSize * crCount; r += step) {
 				auto c = 2 * M_PI * r;
 				if (c < step) continue;
@@ -29,9 +31,9 @@ namespace xx {
 				auto astep = float(M_PI * 2 * (step / c) / 10);
 				auto rd = r / cSize;
 				for (float a = astep; a < M_PI * 2; a += astep) {
-					XYi idx{ int32_t(rd * cos(a)), int32_t(rd * sin(a)) };
+					XYi idx{ rd * cos(a), rd * sin(a) };
 					if (lastIdx != idx) {
-						if (auto i = idx.y * crCount + idx.x; !idxflags[i]) {
+						if (auto i = (center.y + idx.y) * crCount + (center.x + idx.x); !idxflags[i]) {
 							idxflags[i] = 1;
 							idxs.Add(idx);
 							lastIdx = idx;
