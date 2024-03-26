@@ -7,7 +7,7 @@
 #include "effect_number.h"
 #include "effect_explosion.h"
 
-// tower defense 2
+// tower defense
 
 namespace Enemy {
 	struct Monster2 : MonsterBase {
@@ -104,7 +104,7 @@ struct ScenePlay : Scene {
 
 	Camera camera;
 	Rnd rnd;
-	GridsEx<ItemBase
+	xx::SpaceGrids<ItemBase
 		, ::Enemy::Monster2
 		, ::Tower::Arrow
 		, ::Tower::Cannon
@@ -123,7 +123,7 @@ struct ScenePlay : Scene {
 
 	Shader_RingInstance ringShader;
 
-	GridsWeak focus;
+	xx::SpacesWeak<ItemBase> focus;
 
 	Effect::ExplosionManager em;
 

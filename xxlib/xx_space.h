@@ -52,11 +52,10 @@ namespace xx {
 
 	// requires
 	// T has member: XY pos
-	template<typename T>
-	struct SpaceGrid : protected BlockLink<T, SpaceNode> {
-		using ST = BlockLink<T, SpaceNode>;
+	template<typename T, typename ST = BlockLink<T, SpaceNode>>
+	struct SpaceGrid : protected ST {
 		using ST::ST;
-		using Node = SpaceNode<T>;
+		using NodeType = typename ST::NodeType;
 
 		using ST::Count;
 		using ST::ForeachFlags;
@@ -93,7 +92,7 @@ namespace xx {
 
 		// Emplace + Init( args ) + cells[ pos ] = o
 		template<typename...Args>
-		Node& EmplaceNodeInit(Args&&...args) {
+		NodeType& EmplaceNodeInit(Args&&...args) {
 			assert(cells);
 			auto& o = ST::EmplaceCore();
 			o.value.Init(std::forward<Args>(args)...);
@@ -116,8 +115,7 @@ namespace xx {
 		}
 
 	protected:
-		XX_FORCE_INLINE void Free(Node& o) {
-			assert(o.version < -1);
+		XX_FORCE_INLINE void Free(NodeType& o) {
 			assert(o.pre != o.index && o.nex != o.index && o.cidx >= 0);
 
 			if (o.index == cells[o.cidx]) {
@@ -137,12 +135,12 @@ namespace xx {
 	public:
 
 		void Remove(T const& v) {
-			auto o = container_of(&v, Node, value);
+			auto o = container_of(&v, NodeType, value);
 			Free(*o);
 		}
 
 		bool Remove(BlockLinkVI const& vi) {
-			if (vi.version >= -1 || vi.index < 0 || vi.index >= this->len) return false;
+			if (vi.version >= -2 || vi.index < 0 || vi.index >= this->len) return false;
 			auto& o = ST::RefNode(vi.index);
 			if (o.version != vi.version) return false;
 			Free(o);
@@ -150,7 +148,7 @@ namespace xx {
 		}
 
 		void Update(T& v) {
-			auto& o = *container_of(&v, Node, value);
+			auto& o = *container_of(&v, NodeType, value);
 			assert(o.index >= 0);
 			assert(o.pre != o.index);
 			assert(o.nex != o.index);
@@ -260,6 +258,14 @@ namespace xx {
 			return CIdxToCenterPos(rowIdx * numCols + colIdx);
 		}
 
+		T* TryGetCellItemByPos(XY const& p) {
+			if (p.x < 0 || p.x >= maxX || p.y < 0 || p.y >= maxX) return nullptr;
+			auto cidx = PosToCIdx(p);
+			auto idx = cells[cidx];
+			if (idx < 0) return nullptr;
+			return &ST::RefNode(idx).value;
+		}
+
 		constexpr static std::array<XYi, 9> offsets9 = { XYi
 			{0, 0}, {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}
 		};
@@ -333,18 +339,6 @@ namespace xx {
 				if (lens[i].radius > maxDistance) break;			// limit search range
 			}
 		}
-
-
-		//void Remove(SpaceWeak<T> const& w) {
-		//	if (!w.Exists()) return;
-		//	Remove(w.RefNode().index);
-		//}
-
-		//void Remove(int32_t index) {
-		//	auto& o = ST::RefNode(index);
-		//	Remove(o);
-		//}
-
 
 	};
 

@@ -59,7 +59,8 @@ namespace Bullet::Tower {
 			newPos.y < 0 || newPos.y >= gScenePlay->mapMaxY) return true;
 
 		// move
-		gScenePlay->grids.Update(*this, newPos);
+		pos = newPos;
+		gScenePlay->grids.Update(*this);
 
 		return false;
 	}

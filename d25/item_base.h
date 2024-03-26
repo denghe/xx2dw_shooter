@@ -1,9 +1,12 @@
 ﻿#pragma once
 #include "looper.h"
+#include "xx_spaces.h"
 
-struct ItemBase : GridItemBase {
+struct ItemBase {
 	static constexpr XY cAnchor{ 0.5f, 0.5f };
 	static constexpr float cRadius{ 16 };
+
+	XY pos;
 
 	virtual void DrawFocus() {};
 

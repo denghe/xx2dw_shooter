@@ -29,7 +29,8 @@ namespace Enemy {
 			// todo: damage player? switch to another state? change to another monster?
 			return true;
 		}
-		gScenePlay->grids.Get<::Enemy::Monster2>().Update(*this, tm.GetPoint(trackIndex, (int)pointIndex));
+		pos = tm.GetPoint(trackIndex, (int)pointIndex);
+		gScenePlay->grids.Update(*this);
 		radians = tm.GetRadians((int)pointIndex);
 		return false;
 	}

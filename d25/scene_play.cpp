@@ -9,7 +9,7 @@ xx::Task<> ScenePlay::MainTask() {
 		{
 			//if (grid.Count() >= gCfg.unitLimit) break;
 			// rnd.Next<double>(gCfg.hpRange2.from, gCfg.hpRange2.to)
-			grids.MakeInit<::Enemy::Monster2>(60, rnd.Next<int32_t>(0, tms.len - 1));
+			grids.EmplaceInit<::Enemy::Monster2>(60, rnd.Next<int32_t>(0, tms.len - 1));
 		}
 		
 		// sleep 1 secs
@@ -71,7 +71,7 @@ void ScenePlay::Init() {
 		if (auto& gi = map->gidInfos[gid]) {
 			if (gi.frame == gRes.td_cell_space) {
 				// make some Tower
-				grids.MakeInit<::Tower::Arrow>(i - i / w * w, i / w);
+				grids.EmplaceInit<::Tower::Arrow>(i - i / w * w, i / w);
 			}
 		}
 	}
@@ -137,12 +137,12 @@ void ScenePlay::BeforeUpdate() {
 					focus.Reset();
 					auto pos = camera.ToLogicPos(m.pos);
 					if (auto a = grids.Get<Tower::Arrow>().TryGetCellItemByPos(pos)) {
-						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
-						focus = a->ToGridsWeak();
+						focus = *a;
+						assert(focus && focus.RefNodeBase().nex == -1 && focus.RefNodeBase().pre == -1);// logic ensure 1 cell 1 item
 						a->ResetFocusAnim();
 					} else if (auto c = grids.Get<Tower::Cannon>().TryGetCellItemByPos(pos)) {
-						assert(a->__grid_next == -1);				// logic ensure 1 cell 1 item
-						focus = a->ToGridsWeak();
+						focus = *a;
+						assert(focus && focus.RefNodeBase().nex == -1 && focus.RefNodeBase().pre == -1);// logic ensure 1 cell 1 item
 						a->ResetFocusAnim();
 					}
 					// ...
@@ -171,8 +171,8 @@ void ScenePlay::Update() {
 			focus.Reset();
 		}
 
-		grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
-			grid.BufForeach([](T& o)->xx::ForeachResult {
+		grids.Foreach([&]<typename T>( decltype(grids)::SG<T>& grid) {
+			grid.ForeachFlags([](T& o)->xx::ForeachResult {
 				return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
 				});
 		});
@@ -182,8 +182,8 @@ void ScenePlay::Update() {
 	}
 
 	// draw focus
-	if (auto o = (TowerBase*)grids.TryGetBase(focus)) {
-		o->StepFocusAnim();
+	if (focus) {
+		focus.As<TowerBase>().StepFocusAnim();
 	}
 }
 
@@ -203,8 +203,8 @@ void ScenePlay::Draw() {
 	}
 
 	// draw items
-	grids.ForeachAll([&]<typename T>(Grid<T>&grid) {
-		grid.BufForeach([camera = &camera](T& o)->void {
+	grids.Foreach([&]<typename T>( decltype(grids)::SG<T>& grid) {
+		grid.ForeachFlags([camera = &camera](T& o)->void {
 			if (camera->InArea(o.pos)) {
 				o.Draw();
 			}
@@ -223,8 +223,8 @@ void ScenePlay::Draw() {
 		.Draw();
 
 	// draw focus
-	if (auto o = (ItemBase*)grids.TryGetBase(focus)) {
-		o->DrawFocus();
+	if (focus) {
+		focus().DrawFocus();
 	}
 
 	// draw effect numbers

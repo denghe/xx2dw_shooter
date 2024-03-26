@@ -2,8 +2,10 @@
 #include "scene_play.h"
 
 bool ItemBase::IsFocus() const {
-	auto& f = gScenePlay->focus;
-	return f.typeId == this->typeId && f.idx == this->__grid_idx && f.version == this->__grid_version;
+	if (auto& f = gScenePlay->focus; f) {
+		return f.pointer == this;
+	}
+	return false;
 }
 
 void TowerBase::InitFocusAnim() {

@@ -33,7 +33,7 @@ namespace Tower {
 
 			// fire
 			if (tar) {
-				gScenePlay->grids.MakeInit<::Bullet::Tower::Arrow>(*this, *tar);
+				gScenePlay->grids.Get<::Bullet::Tower::Arrow>().EmplaceInit(*this, *tar);
 				ResetShootAnim();	// reset shoot anim
 			}
 		}

@@ -3,8 +3,11 @@
 
 namespace xx {
 
-	template <class T> concept HasMember_version = requires(T) { T::version; };
+	template <class T> concept HasMember_version = requires(T) { T::version; };		// todo: more detail check?
 	template <class T> concept HasMember_index = requires(T) { T::index; };
+
+	template <class T> concept HasMember_typeId = requires(T) { T::typeId; };
+	template <class T> concept HasMemberType_cTypeId = requires(T) { T::cTypeId; };
 
 	struct BlockLinkVI {
 		int32_t version{ -2 }, index{ -1 };
@@ -182,8 +185,12 @@ namespace xx {
 
 	template<typename T, template<typename...> typename Node = BlockLinkVIT, bool isDoubleLink, bool enableFlags>
 	struct BlockLink : std::conditional_t<isDoubleLink, BlockLinkBase_VINP, BlockLinkBase_VI> {
+		using NodeType = Node<T>;
+
 		static_assert(HasMember_version<Node<T>>);
 		static_assert(HasMember_index<Node<T>>);
+		static_assert(!HasMember_typeId<Node<T>> || HasMemberType_cTypeId<T>);
+
 		using Block = std::conditional_t<isDoubleLink, BlockLinkBlock<Node<T>>, BlockLinkBlockWithFlags<Node<T>>>;
 
 		using HolderType = BlockLinkHolder<T, Node>;
@@ -361,6 +368,12 @@ namespace xx {
 			}
 		}
 
+		// for unknown type ( wrong type: T )
+		void RemoveEx(int32_t index, size_t tSiz, void(*deleter)(void*)) {
+			auto& o = *(Node*)((char*)&RefBlock(index).buf + tSiz * index);
+			Free<true>(o, deleter);
+		}
+
 		template<bool appendToTail = true, typename...Args>
 		Node<T>& EmplaceNode(Args&&... args) {
 			return EmplaceCore<appendToTail>(std::forward<Args>(args)...);
@@ -424,26 +437,10 @@ namespace xx {
 			}
 			for (int32_t i = 0; i < 64; ++i) {
 				b->buf[i].index = 64 * len + i;
-			}
-		}
-
-		XX_FORCE_INLINE int32_t Alloc() {
-			int32_t index;
-			if (this->freeCount > 0) {
-				index = this->freeHead;
-				this->freeHead = RefNode(index).version;
-				this->freeCount--;
-			} else {
-				if (this->len == this->cap) {
-					Reserve();
+				if constexpr (HasMember_typeId<Node<T>>) {
+					b->buf[i].typeId = T::cTypeId;
 				}
-				index = this->len;
-				this->len++;
 			}
-			if constexpr (!isDoubleLink) {
-				FlagSet(index);
-			}
-			return index;
 		}
 
 		template<bool useDeleter = false>
@@ -481,7 +478,22 @@ namespace xx {
 
 		template<bool appendToTail = true, typename...Args>
 		XX_FORCE_INLINE Node<T>& EmplaceCore(Args&&... args) {
-			auto index = Alloc();
+			int32_t index;
+			if (this->freeCount > 0) {
+				index = this->freeHead;
+				this->freeHead = RefNode(index).version;
+				this->freeCount--;
+			} else {
+				if (this->len == this->cap) {
+					Reserve();
+				}
+				index = this->len;
+				this->len++;
+			}
+			if constexpr (!isDoubleLink) {
+				FlagSet(index);
+			}
+
 			auto& o = RefNode(index);
 			o.version = GenVersion();
 
@@ -514,12 +526,6 @@ namespace xx {
 			new (&o.value) T(std::forward<Args>(args)...);
 			return o;
 		}
-
-		//// for unknown type ( wrong type: T )
-		//void Remove(int32_t index, size_t tSiz, void(*deleter)(void*)) {
-		//	auto& o = *(Node*)((char*)&RefBlock(index).buf + tSiz * index);
-		//	Free<true>(o, deleter);
-		//}
 
 	};
 
