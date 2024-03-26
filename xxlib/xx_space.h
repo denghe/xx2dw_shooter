@@ -31,7 +31,7 @@ namespace xx {
 				auto astep = float(M_PI * 2 * (step / c) / 10);
 				auto rd = r / cSize;
 				for (float a = astep; a < M_PI * 2; a += astep) {
-					XYi idx{ rd * cos(a), rd * sin(a) };
+					XYi idx{ rd * std::cos(a), rd * std::sin(a) };
 					if (lastIdx != idx) {
 						if (auto i = (center.y + idx.y) * crCount + (center.x + idx.x); !idxflags[i]) {
 							idxflags[i] = 1;
@@ -308,7 +308,7 @@ namespace xx {
 		// can't break
 		template<typename F, typename R = std::invoke_result_t<F, T&>>
 		void ForeachByRange(SpaceRingDiffuseData const& d, XYf const& pos, float maxDistance, F&& func) {
-			auto crIdx = PosToCrIdx(pos);			// calc grid col row index
+			auto crIdxBase = PosToCrIdx(pos);			// calc grid col row index
 			float rr = maxDistance * maxDistance;
 			auto& lens = d.lens;
 			auto& idxs = d.idxs;
@@ -318,20 +318,16 @@ namespace xx {
 				auto size = lens[i].count - lens[i - 1].count;
 
 				for (int j = 0; j < size; ++j) {
-					auto& offset = offsets[j];
-					auto col = crIdx.x + offset.x;
-					if (col < 0 || col >= numCols) continue;
-					auto row = crIdx.y + offset.y;
-					if (row < 0 || row >= numRows) continue;
-					auto cidx = CrIdxToCIdx({ col, row });
-
+					auto crIdx = crIdxBase + offsets[j];
+					if (crIdx.x < 0 || crIdx.x >= numCols) continue;
+					if (crIdx.y < 0 || crIdx.y >= numRows) continue;
+					auto cidx = CrIdxToCIdx(crIdx);
 					ForeachCell(cidx, [&](T& m)->void {
 						auto v = m.pos - pos;
 						if (v.x * v.x + v.y * v.y < rr) {
 							func(m);		// todo: check func's args. send v, rr to func ?
 						}
 					});
-
 				}
 
 				if (lens[i].radius > maxDistance) break;			// limit search range
