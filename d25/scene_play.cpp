@@ -172,7 +172,7 @@ void ScenePlay::Update() {
 		}
 
 		grids.Foreach([&]<typename T>( decltype(grids)::SG<T>& grid) {
-			grid.ForeachFlags([](T& o)->xx::ForeachResult {
+			grid.Foreach([](T& o)->xx::ForeachResult {
 				return o.Update() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
 				});
 		});
@@ -204,7 +204,7 @@ void ScenePlay::Draw() {
 
 	// draw items
 	grids.Foreach([&]<typename T>( decltype(grids)::SG<T>& grid) {
-		grid.ForeachFlags([camera = &camera](T& o)->void {
+		grid.Foreach([camera = &camera](T& o)->void {
 			if (camera->InArea(o.pos)) {
 				o.Draw();
 			}

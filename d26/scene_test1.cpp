@@ -172,7 +172,7 @@ void SceneTest1::Update() {
 		});
 	}
 
-	grid.ForeachFlags([](SnakeBody& o)->void {
+	grid.Foreach([](SnakeBody& o)->void {
 		o.Update();
 	});
 }
@@ -180,7 +180,7 @@ void SceneTest1::Update() {
 void SceneTest1::Draw() {
 	camera.Calc();
 
-	grid.ForeachFlags([](SnakeBody& o)->void {
+	grid.Foreach([](SnakeBody& o)->void {
 		o.Draw();
 	});
 

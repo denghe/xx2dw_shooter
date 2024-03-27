@@ -368,12 +368,6 @@ namespace xx {
 			}
 		}
 
-		// for unknown type ( wrong type: T )
-		void RemoveEx(int32_t index, size_t tSiz, void(*deleter)(void*)) {
-			auto& o = *(Node*)((char*)&RefBlock(index).buf + tSiz * index);
-			Free<true>(o, deleter);
-		}
-
 		template<bool appendToTail = true, typename...Args>
 		Node<T>& EmplaceNode(Args&&... args) {
 			return EmplaceCore<appendToTail>(std::forward<Args>(args)...);

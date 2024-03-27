@@ -58,7 +58,6 @@ namespace xx {
 		using NodeType = typename ST::NodeType;
 
 		using ST::Count;
-		using ST::ForeachFlags;
 		using ST::Reserve;
 		using ST::TryGet;
 
@@ -181,6 +180,49 @@ namespace xx {
 			o.pre = -1;
 			cells[cidx] = o.index;
 			o.cidx = cidx;
+		}
+
+		// foreach by flags ( copy ForeachFlags to here )
+		// .Foreach([](T& o)->void {    });
+		// .Foreach([](T& o)->xx::ForeachResult {    });
+		template<typename F, typename R = std::invoke_result_t<F, T&>>
+		void Foreach(F&& func) {
+			if (ST::len <= 0) return;
+
+			for (int32_t i = 0, n = ST::blocks.len - 1; i <= n; ++i) {
+
+				auto& block = *(typename ST::Block*)ST::blocks[i];
+				auto& flags = block.flags;
+				if (!flags) continue;
+
+				auto left = ST::len & 0b111111;
+				int32_t e = (i < n || !left) ? 64 : left;
+				for (int32_t j = 0; j < e; ++j) {
+					auto& o = block.buf[j];
+					auto bit = uint64_t(1) << j;
+					if ((flags & bit) == 0) {
+						assert(o.version >= -2);
+						continue;
+					}
+					assert(o.version < -2);
+
+					if constexpr (std::is_void_v<R>) {
+						func(o.value);
+					} else {
+						auto r = func(o.value);
+						switch (r) {
+						case ForeachResult::Continue: break;
+						case ForeachResult::RemoveAndContinue:
+							Free(o);
+							break;
+						case ForeachResult::Break: return;
+						case ForeachResult::RemoveAndBreak:
+							Free(o);
+							return;
+						}
+					}
+				}
+			}
 		}
 
 		// .Foreach9([](T& o)->void {  all  });

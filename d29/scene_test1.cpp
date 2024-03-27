@@ -189,7 +189,7 @@ namespace Test1 {
 			// wait blocks empty && logic life cycle updates
 			while (blocks.Count()) {
 
-				blocks.ForeachFlags([](Block& o)->FR {
+				blocks.Foreach([](Block& o)->FR {
 					if (o.Update()) return FR::RemoveAndContinue;
 					return FR::Continue;
 				});
@@ -278,7 +278,7 @@ namespace Test1 {
 			bar->Draw();
 		}
 
-		blocks.ForeachFlags([](Block& o) {
+		blocks.Foreach([](Block& o) {
 			o.Draw();
 			});
 

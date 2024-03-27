@@ -147,6 +147,7 @@ namespace xx {
 			Get<T>().Remove(o);
 		}
 
+		// todo: test
 		void Remove(SpacesWeak<BT> const& w) {
 			if (!w.pointer || w.version >= -2) return;
 			auto& o = w.RefNodeBase();
