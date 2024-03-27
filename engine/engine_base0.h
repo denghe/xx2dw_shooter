@@ -7,7 +7,6 @@
 #include <engine_spacegrid_box.h>
 #include <engine_spacegrid_circle.h>
 #include <engine_spacegrid_ringdiffuse.h>
-#include <engine_grid.h>
 #include <engine_zstd.h>
 #ifndef DISABLE_ENGINE_AUDIO
 #include <engine_audio.h>

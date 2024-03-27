@@ -5,7 +5,6 @@
 
 namespace Test1 {
 
-
 	void Scene::Init() {
 		gScene = this;
 
@@ -14,30 +13,6 @@ namespace Test1 {
 			gLooper.DelaySwitchTo<SceneMainMenu>();
 			}, 3);
 
-
-		//Rnd rnd;
-		//int64_t counter{};
-		//xx::BlockList<xx::Task<>> tasks;
-		//auto secs = xx::NowEpochSeconds();
-		//for (size_t i = 0; i < 1000000; i++) {
-		//	tasks.Emplace(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
-		//		for (int i = 0, e = rnd.Next(100, 1000);
-		//			i < e;
-		//			i++) {
-		//			++counter;
-		//			co_yield 0;
-		//		}
-		//		})(rnd, counter));
-		//}
-		//do {
-		//	tasks.Foreach([](auto& o)->xx::ForeachResult {
-		//	//tasks.ForeachLink([](auto& o)->xx::ForeachResult {
-		//		return o.Resume() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
-		//	});
-		//} while (tasks.Count());
-
-		//xx::CoutN(xx::NowEpochSeconds(secs));
-		//xx::CoutN(counter);
 	}
 
 	void Scene::BeforeUpdate() {
@@ -59,85 +34,3 @@ namespace Test1 {
 	}
 
 }
-
-/*
-result: 8.8 ~ 9.x secs
-
-		Rnd rnd;
-		int64_t counter{};
-		std::list<xx::Task<>> tasks;
-		auto secs = xx::NowEpochSeconds();
-		for (size_t i = 0; i < 1000000; i++) {
-			tasks.emplace_back(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
-				for (int i = 0, e = rnd.Next(100, 1000);
-					i < e;
-					i++) {
-					++counter;
-					co_yield 0;
-				}
-				})(rnd, counter));
-		}
-		do {
-			for (auto iter = tasks.begin(); iter != tasks.end(); ) {
-				if (iter->Resume()) {
-					iter = tasks.erase(iter);
-				} else {
-					++iter;
-				}
-			}
-		} while (!tasks.empty());
-
-		xx::CoutN(xx::NowEpochSeconds(secs));
-		xx::CoutN(counter);
-
-result: 5.9 ~ 6.3 secs
-
-		Rnd rnd;
-		int64_t counter{};
-		xx::Listi32<xx::Task<>> tasks;
-		auto secs = xx::NowEpochSeconds();
-		for (size_t i = 0; i < 1000000; i++) {
-			tasks.Emplace(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
-				for (int i = 0, e = rnd.Next(100, 1000); i < e; i++) {
-					++counter;
-					co_yield 0;
-				}
-				})(rnd, counter));
-		}
-		do {
-			for (int i = tasks.len - 1; i >= 0; --i) {
-				if (tasks[i].Resume()) {
-					tasks.SwapRemoveAt(i);
-				}
-			}
-		} while (!tasks.Empty());
-
-		xx::CoutN(xx::NowEpochSeconds(secs));
-		xx::CoutN(counter);
-
-
-result: 7.5 ~ 7.8 secs
-
-		Rnd rnd;
-		int64_t counter{};
-		xx::BlockList<xx::Task<>> tasks;
-		auto secs = xx::NowEpochSeconds();
-		for (size_t i = 0; i < 1000000; i++) {
-			tasks.Emplace(([](Rnd& rnd, int64_t& counter)->xx::Task<> {
-				for (int i = 0, e = rnd.Next(100, 1000);
-					i < e;
-					i++) {
-					++counter;
-					co_yield 0;
-				}
-			})(rnd, counter));
-		}
-		do {
-			tasks.ForeachEx([](auto& o)->xx::ForeachResult {
-				return o.Resume() ? xx::ForeachResult::RemoveAndContinue : xx::ForeachResult::Continue;
-			});
-		} while (tasks.Count());
-
-		xx::CoutN(xx::NowEpochSeconds(secs));
-		xx::CoutN(counter);
-*/

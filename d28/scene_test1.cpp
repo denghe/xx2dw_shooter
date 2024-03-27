@@ -25,7 +25,7 @@ namespace Test1 {
 				float radius = gLooper.rnd.Next<float>(16, 32);
 				//int32_t count = gLooper.rnd.Next<int32_t>(64, 512);
 				int32_t count = 1024;
-				em.Add(pos, radius, count);
+				em.Add(pos, radius, count, 2.f, gLooper.rnd.Next<bool>());
 
 				//co_await gLooper.AsyncSleep(0.5f);
 				co_yield 0;
