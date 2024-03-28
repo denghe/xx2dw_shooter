@@ -22,8 +22,8 @@ namespace xx {
 	};
 
 	struct BlockLinkBase_VI {
-		xx::Listi32<void*> blocks;
-		int32_t cap{}, len{}, freeHead{ -1 }, freeCount{}, version{ -2 };
+		Listi32<void*> blocks;
+		int32_t cap{}, len{}, freeHead{ -1 }, freeCount{}, version{ -2 }, dummy{};
 
 		void Swap(BlockLinkBase_VI& o) {
 			std::swap(this->blocks, o.blocks);

@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "xx_blocklink.h"
+#include "xx_tinylist.h"
 #include "xx_xy.h"
 
 namespace xx {
@@ -18,7 +19,7 @@ namespace xx {
 	struct SpaceABNode : BlockLinkVI {
 		using CellType = SpaceABCell<T>;
 		xx::FromTo<XYi> crIdx;
-		std::vector<CellType> cs;	// todo: replace to int[] ? int[0] store len
+		TinyList<CellType> cs;
 		uint32_t flag;
 		T value;
 
@@ -42,7 +43,7 @@ namespace xx {
 		using ST::Reserve;
 		using ST::TryGet;
 
-		int32_t numRows{}, numCols{}, cellsLen{};
+		int32_t numRows{}, numCols{};// dummy == cellsLen
 		XYi cellSize{}, max{};
 	protected:
 		std::unique_ptr<CellType* []> cells;
@@ -58,16 +59,16 @@ namespace xx {
 			max.x = cellSize_.x * numCols_;
 			max.y = cellSize_.y * numRows_;
 
-			cellsLen = numRows * numCols;
-			cells = std::make_unique<CellType * []>(cellsLen);
-			memset(cells.get(), 0, sizeof(CellType*) * cellsLen);
+			ST::dummy = numRows * numCols;
+			cells = std::make_unique<CellType * []>(ST::dummy);
+			memset(cells.get(), 0, sizeof(CellType*) * ST::dummy);
 		}
 
 		template<bool freeBuf = false, bool resetVersion = false>
 		void Clear() {
 			if (!cells) return;
 			ST::template Clear<freeBuf, resetVersion>();
-			memset(cells.get(), 0, sizeof(CellType*) * cellsLen);
+			memset(cells.get(), 0, sizeof(CellType*) * ST::dummy);
 		}
 
 		static int32_t CalcNumCoveredCells(xx::FromTo<XYi> const& crIdx) {
@@ -94,12 +95,16 @@ namespace xx {
 
 			// link
 			std::construct_at(&o.cs);
-			o.cs.reserve(numCoveredCells);
+			o.cs.Reserve(numCoveredCells);
 			for (auto row = crIdx.from.y; row <= crIdx.to.y; row++) {
 				for (auto col = crIdx.from.x; col <= crIdx.to.x; col++) {
 					int32_t cidx = row * numCols + col;
 					auto& head = cells[cidx];
-					auto& c = o.cs.emplace_back(CellType{ &o, cidx, nullptr, head });
+					auto& c = o.cs.Emplace();
+					c.self = &o;
+					c.cidx = cidx;
+					c.prev = nullptr;
+					c.next = head;
 					if (head) {
 						head->prev = &c;
 					}
@@ -118,7 +123,7 @@ namespace xx {
 
 	protected:
 		XX_FORCE_INLINE void Free(NodeType& o) {
-			assert(o.cs.size());
+			assert(o.cs.Len());
 
 			// unlink
 			for (auto& c : o.cs) {
@@ -162,7 +167,7 @@ namespace xx {
 			xx::FromTo<XYi> crIdx{ ab.from / cellSize, ab.to / cellSize };
 			if (memcmp(&crIdx, &o.crIdx, sizeof(crIdx)) == 0) {
 				auto numCoveredCells = CalcNumCoveredCells(crIdx);
-				assert(numCoveredCells == o.cs.size());
+				assert(numCoveredCells == o.cs.Len());
 				return;	// no change
 			}
 			o.crIdx = crIdx;
@@ -181,14 +186,18 @@ namespace xx {
 					}
 				}
 			}
-			o.cs.clear();
+			o.cs.Clear();
 
 			// link
 			for (auto row = crIdx.from.y; row <= crIdx.to.y; row++) {
 				for (auto col = crIdx.from.x; col <= crIdx.to.x; col++) {
 					int32_t cidx = row * numCols + col;
 					auto& head = cells[cidx];
-					auto& c = o.cs.emplace_back(CellType{ &o, cidx, nullptr, head });
+					auto& c = o.cs.Emplace();
+					c.self = &o;
+					c.cidx = cidx;
+					c.prev = nullptr;
+					c.next = head;
 					if (head) {
 						head->prev = &c;
 					}
