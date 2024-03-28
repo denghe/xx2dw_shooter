@@ -216,7 +216,7 @@ namespace xx {
     /*************************************************************************************************************************/
     /*************************************************************************************************************************/
 
-    // Cond == Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
+    // Cond ( Condition ): Weak<T> / WeakHolder or std::optional<Weak<T> / WeakHolder> / bool func()
     template<typename Cond>
     struct CondTasks {
         BlockLink<std::pair<Cond, Task<>>, BlockLinkVINPT> tasks;
@@ -233,14 +233,15 @@ namespace xx {
             tasks.Reserve(cap);
         }
 
-        // F: Task<> or callable
-        template<typename W, typename T>
-        void Add(W&& w, T&& t) {
+        // C: Condition
+        // T: Task<> or callable
+        template<typename C, typename T>
+        void Add(C&& c, T&& t) {
             if constexpr (std::is_convertible_v<Task<>, T>) {
                 if (t) return;
-                tasks.Emplace(std::forward<W>(w), std::forward<T>(t));
+                tasks.Emplace(std::forward<C>(c), std::forward<T>(t));
             } else {
-                Add(std::forward<W>(w), [](T t) -> Task<> {
+                Add(std::forward<C>(c), [](T t) -> Task<> {
                     if constexpr (std::is_convertible_v<Task<>, FuncR_t<T>>) {
                         co_await t();                                   // [...]()->xx::Task<>{}
                     } else {

@@ -62,7 +62,7 @@ namespace xx {
 		using ST::TryGet;
 
 		int32_t numRows{}, numCols{}, cellSize{};
-		int32_t maxX{}, maxY{};
+		XYi max{};
 	protected:
 		int32_t cellsLen{};
 		std::unique_ptr<int32_t[]> cells;
@@ -74,8 +74,8 @@ namespace xx {
 			numRows = numRows_;
 			numCols = numCols_;
 			cellSize = cellSize_;
-			maxX = cellSize_ * numCols_;
-			maxY = cellSize_ * numRows_;
+			max.x = cellSize_ * numCols_;
+			max.y = cellSize_ * numRows_;
 
 			cellsLen = numRows * numCols;
 			cells = std::make_unique<int32_t[]>(cellsLen);
@@ -301,7 +301,7 @@ namespace xx {
 		}
 
 		T* TryGetCellItemByPos(XY const& p) {
-			if (p.x < 0 || p.x >= maxX || p.y < 0 || p.y >= maxX) return nullptr;
+			if (p.x < 0 || p.x >= max.x || p.y < 0 || p.y >= max.y) return nullptr;
 			auto cidx = PosToCIdx(p);
 			auto idx = cells[cidx];
 			if (idx < 0) return nullptr;
