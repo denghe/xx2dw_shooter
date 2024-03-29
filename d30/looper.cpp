@@ -4,21 +4,6 @@
 
 ResFrames& gRes(gLooper.res);
 
-void Looper::ImGuiInit() {
-	auto&& io = ImGui::GetIO();
-	io.Fonts->ClearFonts();
-
-	//ImFontConfig cfg;
-	//cfg.SizePixels = 26.f;
-	//auto&& imfnt = io.Fonts->AddFontDefault(&cfg);
-	auto&& imfnt = io.Fonts->AddFontFromFileTTF("c:/windows/fonts/simhei.ttf", 24, {}, io.Fonts->GetGlyphRangesChineseFull());
-
-	io.Fonts->Build();
-	io.FontDefault = imfnt;
-
-	io.IniFilename = nullptr;
-}
-
 xx::Task<> Looper::MainTask() {
 
 	// begin load / download textures

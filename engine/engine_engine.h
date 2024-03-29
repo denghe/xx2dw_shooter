@@ -127,6 +127,8 @@ struct Engine : EngineBase3 {
         mouseEventHandlers.Init(128, 128, (int)this->windowSize.x * 2, (int)this->windowSize.y * 2);
 
         GLInit();
+        // todo: remap event handler
+        GLInit2();
 
         if constexpr(Has_AfterInit<Derived>) {
             ((Derived*)this)->AfterInit();
@@ -144,10 +146,6 @@ struct Engine : EngineBase3 {
         if constexpr (Has_DrawTask<Derived>) {
             drawTask = ((Derived*)this)->DrawTask();
         }
-
-#ifndef DISABLE_ENGINE_AUDIO
-        audio.Init();
-#endif
     }
 
     /*
@@ -182,9 +180,6 @@ int main() {
             if constexpr(Has_Update<Derived>) {
                 ((Derived*)this)->Update();
             }
-#ifndef DISABLE_ENGINE_AUDIO
-            audio.Update();
-#endif
             tasks();
         }
 

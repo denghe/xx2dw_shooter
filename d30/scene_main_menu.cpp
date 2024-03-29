@@ -20,7 +20,14 @@ struct Foo {
 };
 
 
+void SceneMainMenu::ImGuiUpdate() {
+	if (showDemoWindow) {
+		ImGui::ShowDemoWindow(&showDemoWindow);
+	}
+}
+
 void SceneMainMenu::Init() {
+	gLooper.imguiUpdate = [this] { this->ImGuiUpdate(); };
 
 	xx::SpaceABGrid<Foo> sg;
 	sg.Init(10, 10, 10);
@@ -40,24 +47,11 @@ void SceneMainMenu::Init() {
 	sg.Remove(f);
 	xx::CoutN("w exists? ", !!w);
 
-
-
-
-	//rootNode.Emplace()->Init();
-
-	//auto basePos = rootNode->size / 2;
-
-	//auto txt = rootNode->MakeChildren<Label>();
-	//txt->Init(2, basePos + XY{ 0, 200 }, { 3, 3 }, { 0.5f, 0.5f }, RGBA8_White, U"astar tests");
-
-	//auto bg = rootNode->MakeChildren<Scale9Sprite>();
-	//bg->Init(1, basePos + XY{ 0, 200 }, { 5, 5 }, XY{ 0.5f, 0.5f }, txt->CalcBorderSize({ 50, 20 }) / 5, gLooper.s9cfg);
-
-	//rootNode->MakeChildren<Button>()->Init(3, basePos + XY{ 0, 0 }, { 0.5f, 0.5f }, gLooper.s9cfg, U"test1", [&]() {
-	//	gLooper.DelaySwitchTo<Test1::Scene>();
-	//}, 3);
 }
 
 void SceneMainMenu::Draw() {
-	//gLooper.DrawNode(rootNode);
-};
+}
+
+SceneMainMenu::~SceneMainMenu() {
+	gLooper.imguiUpdate = {};
+}

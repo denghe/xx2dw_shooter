@@ -22,18 +22,9 @@ struct Engine : EngineBase3 {
         this->SetWindowSize(((Derived*)this)->width, ((Derived*)this)->height);
         mouseEventHandlers.Init(128, 128, (int)this->windowSize.x * 2, (int)this->windowSize.y * 2);
 
-        if constexpr (Has_ImGuiInit<Derived>) {
-            this->imguiInit = [this] { ((Derived*)this)->ImGuiInit(); };
-        }
-        if constexpr (Has_ImGuiUpdate<Derived>) {
-            this->imguiUpdate = [this] { ((Derived*)this)->ImGuiUpdate(); };
-        }
-        if constexpr (Has_ImGuiDeinit<Derived>) {
-            this->imGuiDeinit = [this] { ((Derived*)this)->ImGuiDeinit(); };
-        }
-
         GLInit();
 
+        // todo: remap event handler
         if constexpr (Has_OnMouseDown<Derived> || Has_OnMouseUp<Derived>) {
             static_assert(Has_OnMouseDown<Derived> && Has_OnMouseUp<Derived>);
 
@@ -52,6 +43,8 @@ struct Engine : EngineBase3 {
             });
         }
 
+        GLInit2();
+
         if constexpr (Has_AfterInit<Derived>) {
             ((Derived*)this)->AfterInit();
         }
@@ -68,10 +61,6 @@ struct Engine : EngineBase3 {
         if constexpr (Has_DrawTask<Derived>) {
             drawTask = ((Derived*)this)->DrawTask();
         }
-
-#ifndef DISABLE_ENGINE_AUDIO
-        audio.Init();
-#endif
     }
 
     template<bool powerSaveMode = true>
@@ -103,9 +92,6 @@ struct Engine : EngineBase3 {
                 if constexpr (Has_Update<Derived>) {
                     ((Derived*)this)->Update();
                 }
-#ifndef DISABLE_ENGINE_AUDIO
-                audio.Update();
-#endif
                 tasks();
             }
 

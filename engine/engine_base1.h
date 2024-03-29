@@ -22,17 +22,14 @@ struct EngineBase1 : EngineBase0 {
     // ... more
 
 #ifdef ENABLE_ENGINE_IMGUI
-    std::function<void()> imguiInit{ [] {} }, imguiDeinit{ [] {} }, imguiUpdate{};
+    std::function<void()> imguiUpdate{};
 #endif
 
 #ifndef __EMSCRIPTEN__
     std::string title = "unnamed title( Init() set title please )";  // fill at Init()
     GLFWwindow* wnd{};
     ~EngineBase1() {
-
 #ifdef ENABLE_ENGINE_IMGUI
-        imguiDeinit();
-
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -58,7 +55,7 @@ struct EngineBase1 : EngineBase0 {
         glfwSetErrorCallback([](int error, const char* description) {
             xx::CoutN("glfwSetErrorCallback error = ", error, " description = ", description);
             xx_assert(false);
-        });
+            });
         xx_assert(glfwInit());
 
         glfwDefaultWindowHints();
@@ -79,30 +76,36 @@ struct EngineBase1 : EngineBase0 {
                 EngineBase1::Instance().OnKeyDown(EmscriptenKeyboardEvent{ .which = (unsigned long)key });
             }
             // else action == 2
-        });
+            });
 
-        //glfwSetCharCallback(wnd, [](GLFWwindow* wnd, unsigned int key) {
-        //    xx::engine.kbdInputs.push_back(key);
-        //});
+        glfwSetCharCallback(wnd, [](GLFWwindow* wnd, unsigned int key) {
+            // todo
+            });
 
-        //glfwSetScrollCallback(wnd, MouseScrollCallback);
-        //glfwSetCursorEnterCallback(wnd, CursorEnterCallback);
+        glfwSetScrollCallback(wnd, [](GLFWwindow* window, double xoffset, double yoffset) {
+            // todo
+            });
+        glfwSetCursorEnterCallback(wnd, [](GLFWwindow* window, int entered) {
+            // todo
+            });
 
         glfwSetCursorPosCallback(wnd, [](GLFWwindow* wnd, double x, double y) {
-            EngineBase1::Instance().OnMouseMove(EmscriptenMouseEvent{ .targetX = (long)x, .targetY = (long)y });
-        });
+            EngineBase1::Instance().OnMouseMove_(EmscriptenMouseEvent{ .targetX = (long)x, .targetY = (long)y });
+            });
 
         glfwSetMouseButtonCallback(wnd, [](GLFWwindow* wnd, int button, int action, int mods) {
             // mods 0b 0011 win alt ctrl shift
             // action 1: down  0: up
             // button: MouseButtons enum
             if (action) {
-                EngineBase1::Instance().OnMouseDown(EmscriptenMouseEvent{ .button = (uint16_t)button });
+                EngineBase1::Instance().OnMouseDown_(EmscriptenMouseEvent{ .button = (uint16_t)button });
             } else {
-                EngineBase1::Instance().OnMouseUp(EmscriptenMouseEvent{ .button = (uint16_t)button });
+                EngineBase1::Instance().OnMouseUp_(EmscriptenMouseEvent{ .button = (uint16_t)button });
             }
-        });
+            });
+    }
 
+    void GLInit2() {
         glfwSetFramebufferSizeCallback(wnd, [](GLFWwindow* wnd, int w, int h) {
             gEngine->SetWindowSize((float)w, (float)h);
         });
@@ -138,19 +141,39 @@ struct EngineBase1 : EngineBase0 {
         // ... more
 
 #ifdef ENABLE_ENGINE_IMGUI
+        // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        ImGuiIO& io = ImGui::GetIO();// (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
         //ImGui::StyleColorsLight();
         // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)wnd, true);
+        ImGui_ImplGlfw_InitForOpenGL(wnd, true);
         ImGui_ImplOpenGL3_Init("#version 300 es");
 
-        imguiInit();
+        //auto&& io = ImGui::GetIO();
+        io.Fonts->ClearFonts();
+
+#if 0
+        ImFontConfig cfg;
+        cfg.SizePixels = 26.f;
+        auto&& imfnt = io.Fonts->AddFontDefault(&cfg);
+#else	
+        // todo: search system font path
+        auto&& imfnt = io.Fonts->AddFontFromFileTTF("c:/windows/fonts/simhei.ttf", 24, {}, io.Fonts->GetGlyphRangesChineseFull());
+#endif
+
+        io.Fonts->Build();
+        io.FontDefault = imfnt;
+
+        io.IniFilename = nullptr;
+#endif
+
+#ifndef DISABLE_ENGINE_AUDIO
+        audio.Init();
 #endif
     }
 
@@ -188,6 +211,7 @@ struct EngineBase1 : EngineBase0 {
 
         Shader::ClearCounter();
     }
+
     XX_FORCE_INLINE void GLUpdateEnd() {
         ShaderEnd();
 
@@ -197,6 +221,10 @@ struct EngineBase1 : EngineBase0 {
                 ImGui_ImplOpenGL3_RenderDrawData(d);
             }
         }
+#endif
+
+#ifndef DISABLE_ENGINE_AUDIO
+        audio.Update();
 #endif
     }
 
@@ -330,7 +358,7 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
 
-    EM_BOOL OnMouseDown(EmscriptenMouseEvent const& e) {
+    EM_BOOL OnMouseDown_(EmscriptenMouseEvent const& e) {
         touchMode = false;
         mouse.btnStates[e.button] = true;	// mouse left btn == 0, right btn == 2( js )
         assert(!mouseEventHandler);
@@ -347,7 +375,7 @@ struct EngineBase1 : EngineBase0 {
         return EM_TRUE;
     }
 
-    EM_BOOL OnMouseMove(EmscriptenMouseEvent const& e) {
+    EM_BOOL OnMouseMove_(EmscriptenMouseEvent const& e) {
         mouse.pos = { (float)e.targetX - windowSize_2.x, windowSize.y - (float)e.targetY - windowSize_2.y };
         if (mouseEventHandler) {
             mouseEventHandler->OnMouseMove();
@@ -366,7 +394,7 @@ struct EngineBase1 : EngineBase0 {
         return EM_TRUE;
     }
 
-    EM_BOOL OnMouseUp(EmscriptenMouseEvent const& e) {
+    EM_BOOL OnMouseUp_(EmscriptenMouseEvent const& e) {
         mouse.btnStates[e.button] = false;
         if (mouseEventHandler) {
             mouseEventHandler->OnMouseUp();
