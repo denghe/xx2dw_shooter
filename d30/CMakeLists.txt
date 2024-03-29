@@ -12,10 +12,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions(-DDISABLE_ENGINE_AUDIO)
+#add_definitions(-DDISABLE_ENGINE_AUDIO)
+add_definitions(-DENABLE_ENGINE_IMGUI)
 
 include_directories(
 	./
+	../imgui
+	../imgui/backends
 	../miniaudio
 	../nameof/include
 	../zstd/lib
@@ -69,7 +72,9 @@ SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
 SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
 add_subdirectory(../glfw glfw)
 
-target_link_libraries(${name} glfw libzstd_static)
+add_subdirectory(../imgui_cmake_desktop imgui)
+
+target_link_libraries(${name} glfw libzstd_static imgui)
 
 if(MSVC)
 

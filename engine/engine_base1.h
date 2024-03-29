@@ -1,14 +1,18 @@
 ﻿#pragma once
 #include <engine_base0.h>
-#include <engine_opengl.h>
-#include <engine_shader.h>
-#include <engine_shader_quad.h>
-#include <engine_shader_linestrip.h>
 #include <engine_frame.h>
-#include <engine_texturepacker.h>
-#include <engine_tiledmap_sede.h>
 #include <engine_node.h>
 #include <engine_node_derived.h>
+#include <engine_opengl.h>
+#include <engine_shader.h>
+#include <engine_shader_linestrip.h>
+#include <engine_shader_quad.h>
+#include <engine_texturepacker.h>
+#include <engine_tiledmap_sede.h>
+#ifdef ENABLE_ENGINE_IMGUI
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#endif
 
 struct EngineBase1 : EngineBase0 {
     XX_FORCE_INLINE static EngineBase1& Instance() { return *(EngineBase1*)gEngine; }
@@ -17,10 +21,23 @@ struct EngineBase1 : EngineBase0 {
     Shader_LineStrip shaderLineStrip;
     // ... more
 
+#ifdef ENABLE_ENGINE_IMGUI
+    std::function<void()> imguiInit{ [] {} }, imguiDeinit{ [] {} }, imguiUpdate{};
+#endif
+
 #ifndef __EMSCRIPTEN__
     std::string title = "unnamed title( Init() set title please )";  // fill at Init()
     GLFWwindow* wnd{};
     ~EngineBase1() {
+
+#ifdef ENABLE_ENGINE_IMGUI
+        imguiDeinit();
+
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+#endif
+
         glfwDestroyWindow(wnd);
         wnd = {};
         glfwTerminate();
@@ -119,6 +136,22 @@ struct EngineBase1 : EngineBase0 {
         shaderQuadInstance.Init(this);
         shaderLineStrip.Init(this);
         // ... more
+
+#ifdef ENABLE_ENGINE_IMGUI
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+        //ImGui::StyleColorsLight();
+        // Setup Platform/Renderer backends
+        ImGui_ImplGlfw_InitForOpenGL((GLFWwindow*)wnd, true);
+        ImGui_ImplOpenGL3_Init("#version 300 es");
+
+        imguiInit();
+#endif
     }
 
     XX_FORCE_INLINE void GLViewport() {
@@ -137,6 +170,16 @@ struct EngineBase1 : EngineBase0 {
     /*****************************************************************************************************/
 
     XX_FORCE_INLINE void GLUpdateBegin() {
+#ifdef ENABLE_ENGINE_IMGUI
+        if (imguiUpdate) {
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            imguiUpdate();
+            ImGui::Render();
+        }
+#endif
+
         GLViewport();
         GLClear(clearColor);
         blend = blendDefault;
@@ -147,6 +190,14 @@ struct EngineBase1 : EngineBase0 {
     }
     XX_FORCE_INLINE void GLUpdateEnd() {
         ShaderEnd();
+
+#ifdef ENABLE_ENGINE_IMGUI
+        if (imguiUpdate) {
+            if (auto d = ImGui::GetDrawData()) {
+                ImGui_ImplOpenGL3_RenderDrawData(d);
+            }
+        }
+#endif
     }
 
     /*****************************************************************************************************/

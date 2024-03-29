@@ -43,7 +43,6 @@ void SceneMainMenu::Init() {
 
 
 
-
 	//rootNode.Emplace()->Init();
 
 	//auto basePos = rootNode->size / 2;

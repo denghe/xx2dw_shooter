@@ -1,5 +1,6 @@
 #pragma once
 #include "xx_typetraits.h"
+#pragma warning(disable: 4200)
 
 namespace xx {
 
