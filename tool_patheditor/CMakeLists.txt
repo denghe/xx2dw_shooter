@@ -5,7 +5,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(name d30)
+set(name tool_patheditor)
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_definitions(-DDISABLE_ENGINE_AUDIO)
-#add_definitions(-DENABLE_ENGINE_IMGUI)
+add_definitions(-DENABLE_ENGINE_IMGUI)
 
 include_directories(
 	./
@@ -31,6 +31,7 @@ include_directories(
 )
 
 file(GLOB sources
+	../nameof/include/*.hpp
 	../glad/*.h
 	../stb/*.h
 	../glfw/include/GLFW/*.h
@@ -42,7 +43,6 @@ file(GLOB sources
 	../xxlib/*.c
 	../xxlib/*.hpp
 	../xxlib/*.h
-	../xxlib/*.natvis
 	../3rd/*.cpp
 	../3rd/*.c
 	../3rd/*.hpp
@@ -72,7 +72,9 @@ SET(GLFW_BUILD_TESTS OFF CACHE BOOL "GLFW_BUILD_TESTS" FORCE)
 SET(GLFW_INSTALL OFF CACHE BOOL "GLFW_INSTALL" FORCE)
 add_subdirectory(../glfw glfw)
 
-target_link_libraries(${name} glfw libzstd_static)
+add_subdirectory(../imgui_cmake_desktop imgui)
+
+target_link_libraries(${name} glfw libzstd_static imgui)
 
 if(MSVC)
 
@@ -99,7 +101,7 @@ if(MSVC)
 		PRIVATE $<$<PLATFORM_ID:Windows>:/MP${Biogears_BUILD_PARALLEL_LEVEL}>
 	)
 
-	set_target_properties(${name} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/..")
+	set_target_properties(${name} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/../res")
 
 	set_source_files_properties(pch.cpp PROPERTIES COMPILE_FLAGS "/Ycpch.h")
 	target_compile_options(${name} PRIVATE $<$<PLATFORM_ID:Windows>:/Yupch.h>)

@@ -19,15 +19,7 @@ struct Foo {
 	}
 };
 
-
-void SceneMainMenu::ImGuiUpdate() {
-	if (showDemoWindow) {
-		ImGui::ShowDemoWindow(&showDemoWindow);
-	}
-}
-
 void SceneMainMenu::Init() {
-	gLooper.imguiUpdate = [this] { this->ImGuiUpdate(); };
 
 	xx::SpaceABGrid<Foo> sg;
 	sg.Init(10, 10, 10);
@@ -47,11 +39,9 @@ void SceneMainMenu::Init() {
 	sg.Remove(f);
 	xx::CoutN("w exists? ", !!w);
 
+	// todo: more test
+
 }
 
 void SceneMainMenu::Draw() {
-}
-
-SceneMainMenu::~SceneMainMenu() {
-	gLooper.imguiUpdate = {};
 }
