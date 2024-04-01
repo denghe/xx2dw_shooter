@@ -6,6 +6,7 @@ namespace Test1 {
 	using FR = xx::ForeachResult;
 
 	struct Cfg {
+		static constexpr int32_t numMaxPets{ 10000 };
 		static constexpr int32_t unitSizei{ 32 };
 		static constexpr float unitSizef{ (float)unitSizei };
 		static constexpr float _1_unitSizef{ 1.f / unitSizef };
@@ -14,6 +15,7 @@ namespace Test1 {
 		static constexpr int32_t numGridRows{ 128 };
 		static constexpr XY mapSize{ numGridCols * unitSizei, numGridRows * unitSizei };
 		static constexpr XY mapSize_2{ mapSize / 2 };
+		static constexpr int32_t petIndexRotateStep{ 1000 };
 	};
 	inline Cfg gCfg;
 
@@ -28,6 +30,7 @@ namespace Test1 {
 
 	struct Hero : Base {
 		static constexpr int32_t cTypeId{ 0 };
+		float petPosIndex{};
 		void Init(XY const& pos_);
 		xx::Task<> UpdateLogic = UpdateLogic_();
 		xx::Task<> UpdateLogic_();
@@ -37,9 +40,9 @@ namespace Test1 {
 
 	struct Pet : Base {
 		static constexpr int32_t cTypeId{ 1 };
-		xx::SpaceWeak<Hero> owner;
-		int32_t index{};							// map to owner.petsPos
-		void Init(Hero& owner_, int32_t index_);
+		xx::SpaceWeak<Hero> ownerWeak;
+		int32_t petIndex{};
+		void Init(Hero& owner_, int32_t petIndex_);
 		int32_t Update();
 		virtual void Draw() override;
 	};
@@ -55,7 +58,7 @@ namespace Test1 {
 	struct Scene : ::Scene {
 		SGS grids;
 		xx::Listi32<Base*> bases;	// for draw order by y
-		xx::Listi32<XY> petsPos;
+		xx::Listi32<xx::Listi32<XY>> petsPoss;
 		Camera camera;
 		xx::Shared<Node> rootNode;
 

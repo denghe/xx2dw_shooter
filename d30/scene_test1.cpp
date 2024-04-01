@@ -24,16 +24,18 @@ namespace Test1 {
 		//	petsPos.Emplace(gLooper.srdd.idxs[i]);
 		//}
 
-		{
-			int32_t n = 10000;
+		for (int32_t j = 0; j < gCfg.petIndexRotateStep; j++) {
+			auto& petsPos = petsPoss.Emplace();
+			int32_t n = gCfg.numMaxPets;
 			auto radius = 1.5f;
 			while (true) {
 				auto radians = std::asin(0.5f / radius) * 2;
 				auto step = (int32_t)std::floor(g2PI / radians);
 				auto inc = g2PI / step;
+				auto jinc = inc / gCfg.petIndexRotateStep;
 				for (int32_t i = 0; i < step; ++i) {
-					auto a = inc * i;
-					petsPos.Emplace(Calc::RotatePoint({ radius, 0 }, a));
+					auto a = inc * i + jinc * j;
+					petsPos.Emplace(Calc::RotatePoint({radius, 0}, a));
 					if (--n <= 0) goto LabEnd;
 				}
 				radius += 1.f;
@@ -107,19 +109,24 @@ namespace Test1 {
 
 	xx::Task<> Hero::UpdateLogic_() {
 		int32_t n = 0;
-		for (int32_t i = 0, e = gScene->petsPos.len; i < e; ++i) {
+		for (int32_t i = 0; i < gCfg.numMaxPets; ++i) {
 			gScene->grids.Get<Pet>().EmplaceInit(*this, i);
 			if (++n == 100) {
 				n = 0;
 				co_yield 0;
 			}
 		}
+
 		while (true) {
 			co_yield 0;
 		}
 	}
 
 	int Hero::Update() {
+		petPosIndex += 10;
+		if (petPosIndex >= (float)gCfg.petIndexRotateStep) {
+			petPosIndex -= (float)gCfg.petIndexRotateStep;
+		}
 		return UpdateLogic();
 	}
 
@@ -127,14 +134,18 @@ namespace Test1 {
 		BaseDraw(gRes.egg_blue);
 	}
 
-	void Pet::Init(Hero& owner_, int32_t index_) {
-		owner = owner_;
-		index = index_;
+	void Pet::Init(Hero& owner_, int32_t petIndex_) {
+		ownerWeak = owner_;
+		petIndex = petIndex_;
 		radius = gCfg.unitSize_2f;
-		pos = owner_.pos + gScene->petsPos[index_] * radius * 2;
+		pos = owner_.pos + gScene->petsPoss[(int32_t)owner_.petPosIndex][petIndex_] * radius * 1.5;
 	}
 
 	int Pet::Update() {
+		if (ownerWeak) {
+			auto& owner = ownerWeak();
+			pos = owner.pos + gScene->petsPoss[(int32_t)owner.petPosIndex][petIndex] * radius * 1.5;
+		}
 		return 0;
 	}
 
