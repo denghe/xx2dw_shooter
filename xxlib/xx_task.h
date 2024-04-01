@@ -115,8 +115,9 @@ namespace xx {
             }
         }
         operator bool() const { return /*!coro ||*/ coro.done(); }
-        void operator()() { Run<true>(); }
         bool Resume() { Run<true>(); return coro.done(); }
+        bool operator()() { Run<true>();return coro.done(); }
+        void RunAll() { Run<true>(); }
     };
 
     template<typename R>

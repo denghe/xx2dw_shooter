@@ -16,6 +16,9 @@ xx::Task<> Looper::MainTask() {
 	s9cfg.center = { 1, 1, 1, 1 };
 	s9cfg.color = { 0x55, 0x55, 0x55, 0xff };
 
+	// space data init
+	srdd.Init(128, 32);
+
 	// load first scene
 	co_await AsyncSwitchTo<SceneMainMenu>();
 }
