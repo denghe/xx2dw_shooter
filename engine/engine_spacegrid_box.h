@@ -100,11 +100,11 @@ struct SpaceGridAB {
 		// calc covered cells
 		auto crIdxFrom = c->_sgabMin.template As<int32_t>() / cellSize;
 		auto crIdxTo = c->_sgabMax.template As<int32_t>() / cellSize;
-		auto numCoveredCells = (crIdxTo.x - crIdxFrom.x + 1) * (crIdxTo.y - crIdxFrom.y + 1);
+		auto numMaxCoveredCells = (crIdxTo.x - crIdxFrom.x + 2) * (crIdxTo.y - crIdxFrom.y + 2);
 
 		// link
 		auto& ccis = c->_sgabCoveredCellInfos;
-		ccis.reserve(numCoveredCells);
+		ccis.reserve(numMaxCoveredCells);
 		for (auto rIdx = crIdxFrom.y; rIdx <= crIdxTo.y; rIdx++) {
 			for (auto cIdx = crIdxFrom.x; cIdx <= crIdxTo.x; cIdx++) {
 				size_t idx = rIdx * numCols + cIdx;

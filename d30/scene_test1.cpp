@@ -4,7 +4,6 @@
 #include "xx_blocklink.h"
 
 namespace Test1 {
-
 	void Scene::Init() {
 		gScene = this;
 
@@ -14,9 +13,14 @@ namespace Test1 {
 			}, 3);
 
 		// init camera
-		camera.SetMaxFrameSize({ 50, 50 });
-		camera.SetOriginal(gLooper.windowSize_2);
-		camera.SetScale(2.f);
+		camera.SetMaxFrameSize(gCfg.unitSizef);
+		camera.SetOriginal(gCfg.mapSize_2);
+		camera.SetScale(1.f);
+
+		// init grids & data
+		grids.InitAll(gCfg.numGridRows, gCfg.numGridCols, gCfg.unitSizei);
+
+		grids.Get<Hero>().EmplaceInit();
 	}
 
 	void Scene::BeforeUpdate() {
@@ -30,11 +34,77 @@ namespace Test1 {
 	}
 
 	void Scene::Update() {
+		grids.Foreach([&]<typename T>(SGS::SG<T>& grid) {
+			grid.Foreach([](auto& o)->FR {
+				return o.Update() ? FR::RemoveAndContinue : FR::Continue;
+			});
+		});
 	}
 
 	void Scene::Draw() {
+		camera.Calc();
+
+		grids.Foreach([&]<typename T>(SGS::SG<T>&grid) {
+			grid.Foreach([&](auto& o) {
+				if (camera.InArea(o.pos)) {
+					bases.Emplace(&o);
+				}
+			});
+		});
+		bases.StdSort([](Base* a, Base* b) { return a->pos.y < b->pos.y; });
+		for (auto& o : bases) {
+			o->Draw();
+		}
+		bases.Clear();
 
 		gLooper.DrawNode(rootNode);
+	}
+
+
+
+
+	// todo: more args
+	XX_FORCE_INLINE QuadInstanceData& Base::BaseDraw() {
+		auto& camera = gScene->camera;
+		auto& q = Quad::DrawOnce(gRes.egg_blue);
+		q.pos = camera.ToGLPos(pos);
+		q.anchor = { 0.5f, 0.5f };			// todo set by res
+		q.scale = camera.scale * radius * gCfg._1_unitSizef;
+		q.radians = 0;
+		q.colorplus = 1;
+		q.color = { 255, 255, 255, 255 };
+		return q;
+	}
+
+
+
+	void Hero::Init() {
+		pos = gCfg.mapSize_2;
+		radius = gCfg.unitSizef;
+	}
+
+	int Hero::Update() {
+		return 0;
+	}
+
+	void Hero::Draw() {
+		BaseDraw();
+	}
+
+	int Pet::Update() {
+		return 0;
+	}
+
+	void Pet::Draw() {
+		BaseDraw();
+	}
+
+	int Monster::Update() {
+		return 0;
+	}
+
+	void Monster::Draw() {
+		BaseDraw();
 	}
 
 }
