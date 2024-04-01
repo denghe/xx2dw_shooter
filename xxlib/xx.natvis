@@ -47,4 +47,18 @@
 		</Expand>
 	</Type>
 
+	<Type Name="xx::TinyList&lt;*&gt;">
+		<DisplayString Condition="core == nullptr">nil</DisplayString>
+		<DisplayString Condition="core != nullptr &amp;&amp; core-&gt;cap &gt; 0 &amp;&amp; core-&gt;len == 0">empty</DisplayString>
+		<DisplayString Condition="core != nullptr &amp;&amp; core-&gt;cap &gt; 0 &amp;&amp; core-&gt;len &gt; 0">len = {core-&gt;len}</DisplayString>
+		<Expand>
+			<Item Name="[len]" ExcludeView="simple">core-&gt;len</Item>
+			<Item Name="[cap]" ExcludeView="simple">core-&gt;cap</Item>
+			<ArrayItems>
+				<Size>core-&gt;len</Size>
+				<ValuePointer>core-&gt;buf</ValuePointer>
+			</ArrayItems>
+		</Expand>
+	</Type>
+
 </AutoVisualizer>

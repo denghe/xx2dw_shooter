@@ -13,16 +13,20 @@ namespace Test1 {
 			gLooper.DelaySwitchTo<SceneMainMenu>();
 			}, 3);
 
+		// init camera
+		camera.SetMaxFrameSize({ 50, 50 });
+		camera.SetOriginal(gLooper.windowSize_2);
+		camera.SetScale(2.f);
 	}
 
 	void Scene::BeforeUpdate() {
-		//// scale control
-		//if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
-		//	camera.IncreaseScale(0.1f, 5);
-		//} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
-		//	camera.DecreaseScale(0.1f, 0.1f);
-		//}
-		//camera.Calc();
+		// scale control
+		if (gLooper.KeyDownDelay(KeyboardKeys::Z, 0.02f)) {
+			camera.IncreaseScale(0.1f, 5);
+		} else if (gLooper.KeyDownDelay(KeyboardKeys::X, 0.02f)) {
+			camera.DecreaseScale(0.1f, 0.1f);
+		}
+		camera.Calc();
 	}
 
 	void Scene::Update() {

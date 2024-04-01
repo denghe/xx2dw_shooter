@@ -71,10 +71,6 @@ namespace xx {
 			memset(cells.get(), 0, sizeof(CellType*) * ST::dummy);
 		}
 
-		static int32_t CalcNumCoveredCells(xx::FromTo<XYi> const& crIdx) {
-			return (crIdx.to.x - crIdx.from.x + 1) * (crIdx.to.y - crIdx.from.y + 1);
-		}
-
 		// Emplace + Init( args ) + cells[?] = o.cs[?] ...
 		template<typename...Args>
 		NodeType& EmplaceNodeInit(Args&&...args) {
@@ -88,14 +84,14 @@ namespace xx {
 			assert(ab.from.x >= 0 && ab.to.x < max.x);
 			assert(ab.from.y >= 0 && ab.to.y < max.y);
 
-			// calc covered cells
+			// calc covered cells( max value )
 			xx::FromTo<XYi> crIdx{ ab.from / cellSize, ab.to / cellSize };
 			o.crIdx = crIdx;
-			auto numCoveredCells = CalcNumCoveredCells(crIdx);
+			auto numReserve = (crIdx.to.x - crIdx.from.x + 2) * (crIdx.to.y - crIdx.from.y + 2);
 
 			// link
 			std::construct_at(&o.cs);
-			o.cs.Reserve(numCoveredCells);
+			o.cs.Reserve(numReserve);
 			for (auto row = crIdx.from.y; row <= crIdx.to.y; row++) {
 				for (auto col = crIdx.from.x; col <= crIdx.to.x; col++) {
 					int32_t cidx = row * numCols + col;
@@ -165,11 +161,7 @@ namespace xx {
 			// calc covered cells
 			auto& ab = v.aabb;
 			xx::FromTo<XYi> crIdx{ ab.from / cellSize, ab.to / cellSize };
-			if (memcmp(&crIdx, &o.crIdx, sizeof(crIdx)) == 0) {
-				auto numCoveredCells = CalcNumCoveredCells(crIdx);
-				assert(numCoveredCells == o.cs.Len());
-				return;	// no change
-			}
+			if (memcmp(&crIdx, &o.crIdx, sizeof(crIdx)) == 0) return;	// no change
 			o.crIdx = crIdx;
 
 			// unlink
@@ -214,17 +206,18 @@ namespace xx {
 			auto c = cells[crIdx.y * numCols + crIdx.x];
 			while (c) {
 				auto next = c->next;
-				auto& ab = *c->self->value.aabb;
+				auto& v = c->self->value;
+				auto& ab = v.aabb;
 				if (!(ab.to.x < p.x || p.x < ab.from.x || ab.to.y < p.y || p.y < ab.from.y)) {
-					func(c->value);
+					func(v);
 				}
 				c = next;
 			}
 		}
 
 		void ClearResults() {
-			for (auto& o : results) {
-				o->flag = 0;
+			for (auto v : results) {
+				container_of(v, NodeType, value)->flag = 0;
 			}
 			results.Clear();
 		}
@@ -254,12 +247,13 @@ namespace xx {
 					for (auto cIdx = crIdx.from.x; cIdx <= crIdx.to.x; cIdx++) {
 						auto c = cells[rIdx * numCols + cIdx];
 						while (c) {
-							auto&& s = c->self;
-							auto& sab = s->value.aabb;
+							auto s = c->self;
+							auto& v = s->value;
+							auto& sab = v.aabb;
 							if (!(sab.to.x < ab.from.x || ab.to.x < sab.from.x || sab.to.y < ab.from.y || ab.to.y < sab.from.y)) {
 								if (!s->flag) {
 									s->flag = 1;
-									results.push_back(s);
+									results.Emplace(&v);
 								}
 								if constexpr (enableLimit) {
 									if (--*limit == 0) break;
@@ -277,12 +271,13 @@ namespace xx {
 				auto cIdx = crIdx.from.x;
 				auto c = cells[rIdx * numCols + cIdx];
 				while (c) {
-					auto&& s = c->self;
-					auto& sab = s->value.aabb;
+					auto s = c->self;
+					auto& v = s->value;
+					auto& sab = v.aabb;
 					if (sab.to.x > ab.from.x && sab.to.y > ab.from.y) {
 						if (!s->flag) {
 							s->flag = 1;
-							results.push_back(s);
+							results.Emplace(&v);
 						}
 						if constexpr (enableLimit) {
 							if (--*limit == 0) break;
@@ -295,12 +290,13 @@ namespace xx {
 				for (++cIdx; cIdx < crIdx.to.x; cIdx++) {
 					c = cells[rIdx * numCols + cIdx];
 					while (c) {
-						auto&& s = c->self;
-						auto& sab = s->value.aabb;
+						auto s = c->self;
+						auto& v = s->value;
+						auto& sab = v.aabb;
 						if (sab.to.y > ab.from.y) {
 							if (!s->flag) {
 								s->flag = 1;
-								results.push_back(s);
+								results.Emplace(&v);
 							}
 							if constexpr (enableLimit) {
 								if (--*limit == 0) break;
@@ -314,12 +310,13 @@ namespace xx {
 				if (cIdx == crIdx.to.x) {
 					auto c = cells[rIdx * numCols + cIdx];
 					while (c) {
-						auto&& s = c->self;
-						auto& sab = s->value.aabb;
+						auto s = c->self;
+						auto& v = s->value;
+						auto& sab = v.aabb;
 						if (sab.from.x < ab.to.x && sab.to.y > ab.from.y) {
 							if (!s->flag) {
 								s->flag = 1;
-								results.push_back(s);
+								results.Emplace(&v);
 							}
 							if constexpr (enableLimit) {
 								if (--*limit == 0) break;
@@ -336,12 +333,13 @@ namespace xx {
 					cIdx = crIdx.from.x;
 					c = cells[rIdx * numCols + cIdx];
 					while (c) {
-						auto&& s = c->self;
-						auto& sab = s->value.aabb;
+						auto s = c->self;
+						auto& v = s->value;
+						auto& sab = v.aabb;
 						if (sab.to.x > ab.from.x) {
 							if (!s->flag) {
 								s->flag = 1;
-								results.push_back(s);
+								results.Emplace(&v);
 							}
 							if constexpr (enableLimit) {
 								if (--*limit == 0) break;
@@ -354,10 +352,10 @@ namespace xx {
 					for (; cIdx < crIdx.to.x; cIdx++) {
 						c = cells[rIdx * numCols + cIdx];
 						while (c) {
-							auto&& s = c->self;
+							auto s = c->self;
 							if (!s->flag) {
 								s->flag = 1;
-								results.push_back(s);
+								results.Emplace(&s->value);
 							}
 							if constexpr (enableLimit) {
 								if (--*limit == 0) break;
@@ -370,12 +368,13 @@ namespace xx {
 					if (cIdx == crIdx.to.x) {
 						auto c = cells[rIdx * numCols + cIdx];
 						while (c) {
-							auto&& s = c->self;
-							auto& sab = s->value.aabb;
+							auto s = c->self;
+							auto& v = s->value;
+							auto& sab = v.aabb;
 							if (sab.from.x < ab.to.x) {
 								if (!s->flag) {
 									s->flag = 1;
-									results.push_back(s);
+									results.Emplace(&v);
 								}
 								if constexpr (enableLimit) {
 									if (--*limit == 0) break;
@@ -393,12 +392,13 @@ namespace xx {
 					cIdx = crIdx.from.x;
 					c = cells[rIdx * numCols + cIdx];
 					while (c) {
-						auto&& s = c->self;
-						auto& sab = s->value.aabb;
+						auto s = c->self;
+						auto& v = s->value;
+						auto& sab = v.aabb;
 						if (sab.to.x > ab.from.x && sab.from.y < ab.to.y) {
 							if (!s->flag) {
 								s->flag = 1;
-								results.push_back(s);
+								results.Emplace(&v);
 							}
 							if constexpr (enableLimit) {
 								if (--*limit == 0) break;
@@ -411,12 +411,13 @@ namespace xx {
 					for (++cIdx; cIdx < crIdx.to.x; cIdx++) {
 						c = cells[rIdx * numCols + cIdx];
 						while (c) {
-							auto&& s = c->self;
-							auto& sab = s->value.aabb;
+							auto s = c->self;
+							auto& v = s->value;
+							auto& sab = v.aabb;
 							if (sab.from.y < ab.to.y) {
 								if (!s->flag) {
 									s->flag = 1;
-									results.push_back(s);
+									results.Emplace(&v);
 								}
 								if constexpr (enableLimit) {
 									if (--*limit == 0) break;
@@ -430,12 +431,13 @@ namespace xx {
 					if (cIdx == crIdx.to.x) {
 						auto c = cells[rIdx * numCols + cIdx];
 						while (c) {
-							auto&& s = c->self;
-							auto& sab = s->value.aabb;
+							auto s = c->self;
+							auto& v = s->value;
+							auto& sab = v.aabb;
 							if (sab.from.x < ab.to.x && sab.from.y < ab.to.y) {
 								if (!s->flag) {
 									s->flag = 1;
-									results.push_back(s);
+									results.Emplace(&v);
 								}
 								if constexpr (enableLimit) {
 									if (--*limit == 0) break;
@@ -458,203 +460,68 @@ namespace xx {
 
 }
 
+/*
+some examples
+
+
+struct Foo {
+	xx::FromTo<XY> aabb;
+
+	void Init(XY const& pos, XY const& size) {
+		auto s2 = size / 2;
+		aabb.from = pos - s2;
+		aabb.to = pos + s2;
+	}
+
+	void MoveBy(XY const& offset) {
+		aabb.from += offset;
+		aabb.to += offset;
+	}
+};
 
 
 
+	xx::SpaceABGrid<Foo> sg;
+	sg.Init(10, 10, 10);
+
+	XY pos{ 5,5 }, siz{ 9, 9 };
+	auto& f = sg.EmplaceInit(pos, siz);
+	auto& o = xx::SpaceABNode<Foo>::From(f);
+	xx::CoutN("from ", o.crIdx.from, " to ", o.crIdx.to);
+
+	sg.ForeachPoint({ 6,6 }, [](Foo& f) {
+		xx::CoutN("found f from ", f.aabb.from, " to ", f.aabb.to);
+		});
+
+	xx::SpaceABWeak<Foo> w(f);
+	xx::CoutN("w exists? ", !!w);
+
+	f.MoveBy({7,7});
+	sg.Update(f);
+	xx::CoutN("from ", o.crIdx.from, " to ", o.crIdx.to);
+
+	sg.ForeachPoint({ 13,13 }, [](Foo& f) {
+		xx::CoutN("found f from ", f.aabb.from, " to ", f.aabb.to);
+		});
+
+	auto& f2 = sg.EmplaceInit(pos, siz);
+	xx::CoutN("add f2");
 
 
-//template<typename T = int32_t, typename SizeType = uint16_t, SizeType cap = 16>
-//struct FixedListPool;
-
-//// copy code fom List ( maybe combine with List ? )
-//template<typename T = int32_t, typename SizeType = uint16_t, SizeType cap = 16>
-//struct FixedListCore {
-//	typedef T ChildType;
-//	using Pool = FixedListPool<T, SizeType, cap>;
-
-//	Pool* pool;
-//	SizeType len;
-//	T buf[0];
-
-//	FixedListCore() = delete;
-//	FixedListCore(FixedListCore const& o) = delete;
-//	FixedListCore& operator=(FixedListCore const& o) = delete;
-//	~FixedListCore() noexcept {
-//		Clear();
-//	}
-
-//	template<typename...Args>
-//	T& Emplace(Args&&...args) {
-//		assert(len < cap);
-//		return *new (&buf[len++]) T(std::forward<Args>(args)...);
-//	}
-
-//	template<typename ...TS>
-//	void Add(TS&&...vs) {
-//		(Emplace(std::forward<TS>(vs)), ...);
-//	}
-
-//	void RemoveAt(SizeType idx) {
-//		assert(idx >= 0 && idx < len);
-//		--len;
-//		if constexpr (IsPod_v<T>) {
-//			buf[idx].~T();
-//			::memmove(buf + idx, buf + idx + 1, (len - idx) * sizeof(T));
-//		} else {
-//			for (SizeType i = idx; i < len; ++i) {
-//				buf[i] = (T&&)buf[i + 1];
-//			}
-//			buf[len].~T();
-//		}
-//	}
-
-//	void SwapRemoveAt(SizeType idx) {
-//		assert(idx >= 0 && idx < len);
-//		buf[idx].~T();
-//		--len;
-//		if (len != idx) {
-//			if constexpr (IsPod_v<T>) {
-//				::memcpy(&buf[idx], &buf[len], sizeof(T));
-//			} else {
-//				new (&buf[idx]) T((T&&)buf[len]);
-//			}
-//		}
-//	}
-
-//	void Clear() {
-//		if (!cap) return;
-//		if (len) {
-//			for (SizeType i = 0; i < len; ++i) {
-//				buf[i].~T();
-//			}
-//			len = 0;
-//		}
-//	}
-
-//	T const& operator[](SizeType idx) const noexcept {
-//		assert(idx >= 0 && idx < len);
-//		return buf[idx];
-//	}
-
-//	T& operator[](SizeType idx) noexcept {
-//		assert(idx >= 0 && idx < len);
-//		return buf[idx];
-//	}
-
-//	struct Iter {
-//		T* ptr;
-//		bool operator!=(Iter const& other) noexcept { return ptr != other.ptr; }
-//		Iter& operator++() noexcept { ++ptr; return *this; }
-//		T& operator*() noexcept { return *ptr; }
-//	};
-//	Iter begin() noexcept { return Iter{ buf }; }
-//	Iter end() noexcept { return Iter{ buf + len }; }
-//	Iter begin() const noexcept { return Iter{ buf }; }
-//	Iter end() const noexcept { return Iter{ buf + len }; }
-//};
+	sg.ForeachPoint({ 8,8 }, [](Foo& f) {
+		xx::CoutN("found f from ", f.aabb.from, " to ", f.aabb.to);
+		});
 
 
-//// wrapper
-//template<typename T = int32_t, typename SizeType = uint16_t, SizeType cap = 16>
-//struct FixedList {
-//	using Pool = FixedListPool<T, SizeType, cap>;
-//	using Core = FixedListCore<T, SizeType, cap>;
+	sg.ForeachAABB({ {0,0},{99,99} });
+	if (!sg.results.Empty()) {
+		for (auto& p : sg.results) {
+			xx::CoutN("found f from ", p->aabb.from, " to ", p->aabb.to);
+		}
+	}
+	sg.ClearResults();
 
-//	Core* core{};
+	sg.Remove(f);
+	xx::CoutN("w exists? ", !!w);
 
-//	FixedList() = default;
-//	FixedList(FixedList const& o) = delete;
-//	FixedList& operator=(FixedList const& o) = delete;
-//	FixedList(FixedList&& o) : core(std::exchange(o.core, nullptr)) {};
-//	FixedList& operator=(FixedList&& o) {
-//		swap(core, o.core);
-//		return *this;
-//	}
-
-//	void Alloc(Pool& owner);
-
-//	~FixedList() noexcept {
-//		if (core) core->Clear();
-//		// todo: release core from pool
-//	}
-
-//	template<typename...Args>
-//	T& Emplace(Args&&...args) {
-//		assert(core);
-//		return core->Emplace(std::forward<Args>(args)...);
-//	}
-
-//	template<typename ...TS>
-//	void Add(TS&&...vs) {
-//		assert(core);
-//		(core->Emplace(std::forward<TS>(vs)), ...);
-//	}
-
-//	void RemoveAt(SizeType idx) {
-//		assert(core);
-//		core->RemoveAt(idx);
-//	}
-
-//	void SwapRemoveAt(SizeType idx) {
-//		assert(core);
-//		core->SwapRemoveAt(idx);
-//	}
-
-//	void Clear() {
-//		assert(core);
-//		core->Clear();
-//	}
-
-//	T const& operator[](SizeType idx) const noexcept {
-//		assert(core);
-//		return core->operator[](idx);
-//	}
-
-//	T& operator[](SizeType idx) noexcept {
-//		assert(core);
-//		return core->operator[](idx);
-//	}
-
-//	Core::Iter begin() noexcept { assert(core); return core->begin(); }
-//	Core::Iter end() noexcept { assert(core); return core->end(); }
-//	Core::Iter begin() const noexcept { assert(core); return core->begin(); }
-//	Core::Iter end() const noexcept { assert(core); return core->end(); }
-//};
-
-//template<typename T, typename SizeType, SizeType cap>
-//struct FixedListPool {
-//	using Node = FixedList<T, SizeType>;
-//	static constexpr size_t nodeSize = sizeof(Node) + sizeof(T) * cap;
-//	static constexpr size_t blockSize = nodeSize * 64;
-
-//	xx::Listi32<void*> blocks;
-//	int32_t cap{}, len{}, freeHead{ -1 }, freeCount{};
-
-//	XX_FORCE_INLINE void Reserve() {
-//		cap += 64;
-//		blocks.Emplace(malloc(blockSize));
-//	}
-
-//	//XX_FORCE_INLINE void* RefBlock(int32_t index) const {
-//	//	assert(index >= 0 && index < this->cap);
-//	//	return *(Block*)this->blocks[(uint32_t&)index >> 6];
-//	//}
-
-//	//XX_FORCE_INLINE Node<T>& RefNode(int32_t index) const {
-//	//	auto& block = RefBlock(index);
-//	//	auto& node = block.buf[index & 0b111111];
-//	//	assert(node.index == index);
-//	//	return node;
-//	//}
-
-
-//	// todo
-//};
-
-//template<typename T, typename SizeType, SizeType cap>
-//void FixedList<T, SizeType, cap>::Alloc(Pool& owner) {
-
-//}
-
-
-
+*/
