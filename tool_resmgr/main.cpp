@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 		auto sg = xx::MakeScopeGuard([&] { delete gLooper; gLooper = {}; });
 		gLooper->showFps = true;
 		//gLooper->showWindow = false;	// todo
-		gLooper->title = "xx2dw_tool_patheditor";
+		gLooper->title = "xx2dw_tool_regmgr";
 		gLooper->Init();
 		gLooper->Run<true>();		// break when running == false
 	}

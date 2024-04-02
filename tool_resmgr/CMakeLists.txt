@@ -5,18 +5,26 @@ if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(name tool_patheditor)
+set(name tool_resmgr)
 project(${name})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_definitions(-DDISABLE_ENGINE_AUDIO)
+
+file(GLOB sources
+	../sqlite3/sqlite3*.*
+)
+add_library(sqlite3 ${sources})
+
+
+#add_definitions(-DDISABLE_ENGINE_AUDIO)
 add_definitions(-DENABLE_ENGINE_IMGUI)
 
 include_directories(
 	./
+	../sqlite3
 	../imgui
 	../imgui/backends
 	../miniaudio
@@ -31,6 +39,7 @@ include_directories(
 )
 
 file(GLOB sources
+	../sqlite3/sqlite3*.h
 	../nameof/include/*.hpp
 	../glad/*.h
 	../stb/*.h
@@ -74,7 +83,7 @@ add_subdirectory(../glfw glfw)
 
 add_subdirectory(../imgui_cmake_desktop imgui)
 
-target_link_libraries(${name} glfw libzstd_static imgui)
+target_link_libraries(${name} glfw libzstd_static imgui sqlite3)
 
 if(MSVC)
 
