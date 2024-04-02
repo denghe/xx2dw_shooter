@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
-#include "scene_test1.h"
+#include "scene_test2.h"
 #include "scene_main_menu.h"
 #include "xx_blocklink.h"
 
-namespace Test1 {
+namespace Test2 {
 	void Scene::Init() {
 		gScene = this;
 
@@ -20,29 +20,19 @@ namespace Test1 {
 		// init grids & data
 		grids.InitAll(gCfg.numGridRows, gCfg.numGridCols, gCfg.unitSizei);
 
-		//for (int32_t i = 1; i < 10000; ++i) {
-		//	petsPos.Emplace(gLooper.srdd.idxs[i]);
-		//}
 
-		for (int32_t j = 0; j < gCfg.petIndexRotateStep; j++) {
+		for (int j = 0; j < gCfg.petIndexRotateStep; ++j) {
 			auto jinc = g2PI / gCfg.petIndexRotateStep * j;
 			auto& petsPos = petsPoss.Emplace();
-			int32_t n = gCfg.numMaxPets;
-			auto radius = 1.5f;
-			while (true) {
-				auto radians = std::asin(0.5f / radius) * 2;
-				auto step = (int32_t)std::floor(g2PI / radians);
-				auto inc = g2PI / step;
-				for (int32_t i = 0; i < step; ++i) {
-					auto a = inc * i + jinc;
-					petsPos.Emplace(Calc::RotatePoint({radius, 0}, a));
-					if (--n <= 0) goto LabEnd;
-				}
-				radius += 1.f;
+			float a{1}, b{ 0.08f }, s{ 20 }, step{ 1 };
+			for (int i = 0; i < gCfg.numMaxPets; ++i) {
+				auto rot = std::log(b / a * s) / b;
+				s += step;
+				auto r = a * std::exp(b * rot);
+				XY p{ r * std::cos(rot + jinc), r * std::sin(rot + jinc) };
+				petsPos.Emplace(p);
 			}
-		LabEnd:;
 		}
-
 
 		auto& hero = grids.Get<Hero>().EmplaceInit(gCfg.mapSize_2);
 	}
@@ -140,8 +130,8 @@ namespace Test1 {
 
 	int Hero::Update() {
 		petPosIndex += 1;
-		if (petPosIndex >= (float)gCfg.petIndexRotateStep) {
-			petPosIndex -= (float)gCfg.petIndexRotateStep;
+		if (auto max = (float)gScene->petsPoss.len; petPosIndex >= max) {
+			petPosIndex -= max;
 		}
 		return UpdateLogic();
 	}

@@ -1,9 +1,9 @@
 ﻿#include "pch.h"
-#include "scene_test1.h"
+#include "scene_test3.h"
 #include "scene_main_menu.h"
 #include "xx_blocklink.h"
 
-namespace Test1 {
+namespace Test3 {
 	void Scene::Init() {
 		gScene = this;
 
@@ -20,29 +20,22 @@ namespace Test1 {
 		// init grids & data
 		grids.InitAll(gCfg.numGridRows, gCfg.numGridCols, gCfg.unitSizei);
 
-		//for (int32_t i = 1; i < 10000; ++i) {
-		//	petsPos.Emplace(gLooper.srdd.idxs[i]);
-		//}
 
-		for (int32_t j = 0; j < gCfg.petIndexRotateStep; j++) {
+		for (int j = 0; j < gCfg.petIndexRotateStep; ++j) {
 			auto jinc = g2PI / gCfg.petIndexRotateStep * j;
 			auto& petsPos = petsPoss.Emplace();
-			int32_t n = gCfg.numMaxPets;
-			auto radius = 1.5f;
-			while (true) {
-				auto radians = std::asin(0.5f / radius) * 2;
-				auto step = (int32_t)std::floor(g2PI / radians);
-				auto inc = g2PI / step;
-				for (int32_t i = 0; i < step; ++i) {
-					auto a = inc * i + jinc;
-					petsPos.Emplace(Calc::RotatePoint({radius, 0}, a));
-					if (--n <= 0) goto LabEnd;
-				}
-				radius += 1.f;
-			}
-		LabEnd:;
-		}
 
+			float a{ 1 }, b{ 0.15f }, rot{}, s{ 1 };
+			auto n = gCfg.numMaxPets;
+			do {
+				auto r = a + b * rot;
+				auto drot = (-r + std::sqrt(r * r + 2 * b * s)) / b;
+				rot += drot;
+				auto r_ = a + b * rot;
+				XY p{ r_ * std::cos(rot + jinc), r_ * std::sin(rot + jinc) };
+				petsPos.Emplace(p);
+			} while (--n > 0);
+		}
 
 		auto& hero = grids.Get<Hero>().EmplaceInit(gCfg.mapSize_2);
 	}
@@ -124,10 +117,12 @@ namespace Test1 {
 	}
 
 	xx::Task<> Hero::UpdateLogic_() {
-		int32_t n = 0;
+		int32_t n{};
+		float nn{ 1 };
 		for (int32_t i = 0; i < gCfg.numMaxPets; ++i) {
 			gScene->grids.Get<Pet>().EmplaceInit(*this, i);
-			if (++n == 100) {
+			if (++n == (int32_t)nn) {
+				nn += 0.01f;
 				n = 0;
 				co_yield 0;
 			}
@@ -140,8 +135,8 @@ namespace Test1 {
 
 	int Hero::Update() {
 		petPosIndex += 1;
-		if (petPosIndex >= (float)gCfg.petIndexRotateStep) {
-			petPosIndex -= (float)gCfg.petIndexRotateStep;
+		if (auto max = (float)gScene->petsPoss.len; petPosIndex >= max) {
+			petPosIndex -= max;
 		}
 		return UpdateLogic();
 	}

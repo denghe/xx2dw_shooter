@@ -96,6 +96,7 @@ struct Camera {
 	 	int32_t rowFrom, rowTo, colFrom, colTo; 
 		camera.FillRowColIdxRange(gCfg.physNumRows, gCfg.physNumCols, gCfg.physCellSize,
 			rowFrom, rowTo, colFrom, colTo);
+
 		for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
 			for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
 				auto idx = sgcPhysItems.CrIdxToCellIdx({ colIdx, rowIdx });
@@ -104,6 +105,19 @@ struct Camera {
 				});
 			}
 		}
+
+		grids.Foreach([&]<typename T>(SGS::SG<T>&grid) {
+			for (int32_t rowIdx = rowFrom; rowIdx < rowTo; ++rowIdx) {
+				for (int32_t colIdx = colFrom; colIdx < colTo; ++colIdx) {
+					auto idx = grid.CrIdxToCIdx({ colIdx, rowIdx });
+					grid.ForeachCell(idx, [&](T& o) {
+						bases.Emplace(&o);
+					});
+				}
+			}
+		});
+
+
 	*/
 	void FillRowColIdxRange(int32_t physNumRows, int32_t physNumCols, int32_t physCellSize, int32_t& rowFrom, int32_t& rowTo, int32_t& colFrom, int32_t& colTo) {
 		int32_t halfNumRows = int32_t(gEngine->windowSize.y / scale) / physCellSize / 2;
