@@ -103,9 +103,11 @@ struct EngineBase1 : EngineBase0 {
                 EngineBase1::Instance().OnMouseUp_(EmscriptenMouseEvent{ .button = (uint16_t)button });
             }
             });
+#endif
     }
 
     void GLInit2() {
+#ifndef __EMSCRIPTEN__
         glfwSetFramebufferSizeCallback(wnd, [](GLFWwindow* wnd, int w, int h) {
             gEngine->SetWindowSize((float)w, (float)h);
         });

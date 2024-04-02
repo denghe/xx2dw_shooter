@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    da: (a, b, c) => {
+    ia: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    ca: (a, b) => {
+    ha: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Oa ? 0 : mb(a, b);
     },
-    ba: a => {
+    ga: a => {
       var _nb;
       nb = ib[a];
       g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    ia: a => Y.activeTexture(a),
+    ea: a => Y.activeTexture(a),
     G: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -744,7 +744,7 @@ var Y,
       35051 == a ? Y.Fa = b : 35052 == a && (Y.Ba = b);
       Y.bindBuffer(a, fb[b]);
     },
-    I: (a, b) => {
+    H: (a, b) => {
       Y.bindFramebuffer(a, gb[b]);
     },
     d: (a, b) => {
@@ -758,8 +758,8 @@ var Y,
     j: (a, b, c, d) => {
       c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
-    J: a => Y.clear(a),
-    K: (a, b, c, d) => Y.clearColor(a, b, c, d),
+    I: a => Y.clear(a),
+    J: (a, b, c, d) => Y.clearColor(a, b, c, d),
     W: a => {
       Y.compileShader(X[a]);
     },
@@ -817,18 +817,18 @@ var Y,
         hb[d] = null;
       }
     },
-    H: a => Y.disable(a),
+    K: a => Y.disable(a),
     s: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    ga: (a, b, c, d) => {
+    ca: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    aa: a => Y.enable(a),
+    fa: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
-    ea: (a, b, c, d, f) => {
+    aa: (a, b, c, d, f) => {
       Y.framebufferTexture2D(a, b, c, W[d], f);
     },
     n: (a, b) => {
@@ -914,7 +914,7 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ha: (a, b) => {
+    da: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
     z: (a, b, c) => {
@@ -954,7 +954,7 @@ var Y,
       };
       f.src = G(b);
     },
-    fa: function (a, b) {
+    ba: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

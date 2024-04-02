@@ -24,7 +24,7 @@ xx::Task<> ResFrames::AsyncLoad(std::vector<std::pair<std::string, xx::Ref<Frame
 #endif
 	for (auto& ff : ffs) {
 #ifdef __EMSCRIPTEN__
-		tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
+		EngineBase3::Instance().tasks.Add([pff = &ff, &downloadCount, this]()->xx::Task<> {
 			auto& ff = *pff;
 			*ff.second = co_await EngineBase3::Instance().AsyncLoadFrameFromUrl(ff.first);
 			++downloadCount;

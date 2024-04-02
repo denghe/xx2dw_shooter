@@ -40,7 +40,7 @@ namespace Test3 {
 
 	struct Pet : Base {
 		static constexpr int32_t cTypeId{ 1 };
-		xx::SpaceWeak<Hero> ownerWeak;
+		xx::SpacesWeak<Hero> ownerWeak;
 		int32_t petIndex{};
 		void Init(Hero& owner_, int32_t petIndex_);
 		int32_t Update();

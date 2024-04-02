@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    da: (a, b, c) => {
+    ia: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    ca: (a, b) => {
+    ha: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Oa ? 0 : mb(a, b);
     },
-    ba: a => {
+    ga: a => {
       var _nb;
       nb = ib[a];
       g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    ia: a => Y.activeTexture(a),
+    ea: a => Y.activeTexture(a),
     x: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -744,7 +744,7 @@ var Y,
       35051 == a ? Y.Fa = b : 35052 == a && (Y.Ba = b);
       Y.bindBuffer(a, fb[b]);
     },
-    B: (a, b) => {
+    A: (a, b) => {
       Y.bindFramebuffer(a, gb[b]);
     },
     b: (a, b) => {
@@ -755,11 +755,11 @@ var Y,
     },
     o: a => Y.blendEquation(a),
     p: (a, b) => Y.blendFunc(a, b),
-    j: (a, b, c, d) => {
+    k: (a, b, c, d) => {
       c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
-    D: a => Y.clear(a),
-    E: (a, b, c, d) => Y.clearColor(a, b, c, d),
+    C: a => Y.clear(a),
+    D: (a, b, c, d) => Y.clearColor(a, b, c, d),
     V: a => {
       Y.compileShader(X[a]);
     },
@@ -784,14 +784,14 @@ var Y,
         f && (Y.deleteBuffer(f), f.name = 0, fb[d] = null, d == Y.Fa && (Y.Fa = 0), d == Y.Ba && (Y.Ba = 0));
       }
     },
-    F: (a, b) => {
+    E: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
           f = gb[d];
         f && (Y.deleteFramebuffer(f), f.name = 0, gb[d] = null);
       }
     },
-    k: a => {
+    j: a => {
       if (a) {
         var b = V[a];
         b && (Y.deleteProgram(b), b.name = 0, V[a] = null);
@@ -810,25 +810,25 @@ var Y,
         f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    I: (a, b) => {
+    H: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         Y.deleteVertexArray(hb[d]);
         hb[d] = null;
       }
     },
-    A: a => Y.disable(a),
+    I: a => Y.disable(a),
     z: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    ga: (a, b, c, d) => {
+    ca: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    aa: a => Y.enable(a),
+    fa: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
-    ea: (a, b, c, d, f) => {
+    aa: (a, b, c, d, f) => {
       Y.framebufferTexture2D(a, b, c, W[d], f);
     },
     n: (a, b) => {
@@ -906,7 +906,7 @@ var Y,
       for (var f = "", k = 0; k < b; ++k) f += G(A[c + 4 * k >> 2], d ? A[d + 4 * k >> 2] : void 0);
       Y.shaderSource(X[a], f);
     },
-    C: (a, b, c, d, f, k, e, m, h) => {
+    B: (a, b, c, d, f, k, e, m, h) => {
       if (Y.Ba) Y.texImage2D(a, b, c, d, f, k, e, m, h);else if (h) {
         var r = m - 5120;
         r = 0 == r ? ka : 1 == r ? w : 2 == r ? x : 4 == r ? y : 6 == r ? ma : 5 == r || 28922 == r || 28520 == r || 30779 == r || 30782 == r ? A : la;
@@ -914,13 +914,13 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ha: (a, b) => {
+    da: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
-    G: (a, b, c) => {
+    F: (a, b, c) => {
       Y.uniform2f(rb(a), b, c);
     },
-    H: a => {
+    G: a => {
       a = V[a];
       Y.useProgram(a);
       Y.Na = a;
@@ -954,7 +954,7 @@ var Y,
       };
       f.src = G(b);
     },
-    fa: function (a, b) {
+    ba: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

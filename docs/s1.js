@@ -644,7 +644,7 @@ var Y,
       }
       return !1;
     },
-    ba: (a, b, c) => {
+    fa: (a, b, c) => {
       a = P(a);
       if (!a) return -4;
       a.width = b;
@@ -726,7 +726,7 @@ var Y,
       } else eb(a, E, t ? K : B ? p : M);
       return a;
     },
-    aa: (a, b) => {
+    ea: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!A[b],
@@ -747,7 +747,7 @@ var Y,
       a = P(a);
       return !a || b.Ua ? 0 : ob(a, b);
     },
-    $: a => {
+    da: a => {
       var _pb;
       pb = kb[a];
       g.Ya = Y = (_pb = pb) === null || _pb === void 0 ? void 0 : _pb.Sa;
@@ -773,7 +773,7 @@ var Y,
       C[d >> 2] = f;
       return 0;
     },
-    fa: a => Y.activeTexture(a),
+    ba: a => Y.activeTexture(a),
     z: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -821,7 +821,7 @@ var Y,
         f && (Y.deleteBuffer(f), f.name = 0, hb[d] = null, d == Y.Ma && (Y.Ma = 0), d == Y.Ha && (Y.Ha = 0));
       }
     },
-    C: (a, b) => {
+    B: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = A[b + 4 * c >> 2],
           f = ib[d];
@@ -847,21 +847,21 @@ var Y,
         f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    F: (a, b) => {
+    E: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = A[b + 4 * c >> 2];
         Y.deleteVertexArray(jb[d]);
         jb[d] = null;
       }
     },
-    B: a => Y.disable(a),
+    F: a => Y.disable(a),
     G: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    da: (a, b, c, d) => {
+    _: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    _: a => Y.enable(a),
+    ca: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
@@ -951,13 +951,13 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, m, e, h, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ea: (a, b) => {
+    $: (a, b) => {
       Y.uniform1i(tb(a), b);
     },
-    D: (a, b, c) => {
+    C: (a, b, c) => {
       Y.uniform2f(tb(a), b, c);
     },
-    E: a => {
+    D: a => {
       a = V[a];
       Y.useProgram(a);
       Y.Ta = a;
@@ -991,7 +991,7 @@ var Y,
       };
       f.src = H(b);
     },
-    ca: function (a, b) {
+    aa: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

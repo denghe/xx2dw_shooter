@@ -350,7 +350,7 @@ var za,
       }
       return !1;
     },
-    aa: (a, b, c) => {
+    ca: (a, b, c) => {
       a = N(a);
       if (!a) return -4;
       a.width = b;
@@ -362,7 +362,7 @@ var za,
     fa: (a, b, c, d) => Ga(a, b, c, d, 5, "mousedown"),
     da: (a, b, c, d) => Ga(a, b, c, d, 8, "mousemove"),
     ea: (a, b, c, d) => Ga(a, b, c, d, 6, "mouseup"),
-    $: (a, b) => {
+    ba: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -383,7 +383,7 @@ var za,
       a = N(a);
       return !a || b.Ia ? 0 : Ka(a, b);
     },
-    _: a => {
+    aa: a => {
       var _La;
       La = Ia[a];
       e.Ma = W = (_La = La) === null || _La === void 0 ? void 0 : _La.Fa;
@@ -409,7 +409,7 @@ var za,
       z[d >> 2] = g;
       return 0;
     },
-    ca: a => W.activeTexture(a),
+    _: a => W.activeTexture(a),
     z: (a, b) => {
       W.attachShader(Q[a], T[b]);
     },
@@ -457,7 +457,7 @@ var za,
         g && (W.deleteBuffer(g), g.name = 0, P[d] = null, d == W.Aa && (W.Aa = 0), d == W.wa && (W.wa = 0));
       }
     },
-    C: (a, b) => {
+    B: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
           g = R[d];
@@ -483,21 +483,21 @@ var za,
         g && (W.deleteTexture(g), g.name = 0, S[d] = null);
       }
     },
-    G: (a, b) => {
+    E: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         W.deleteVertexArray(U[d]);
         U[d] = null;
       }
     },
-    B: a => W.disable(a),
+    G: a => W.disable(a),
     y: (a, b, c, d) => {
       W.drawArraysInstanced(a, b, c, d);
     },
-    E: (a, b, c, d) => {
+    F: (a, b, c, d) => {
       W.drawElements(a, b, c, d);
     },
-    Z: a => W.enable(a),
+    $: a => W.enable(a),
     e: a => {
       W.enableVertexAttribArray(a);
     },
@@ -587,13 +587,13 @@ var za,
       } else W.texImage2D(a, b, c, d, g, l, f, n, null);
     },
     b: (a, b, c) => W.texParameteri(a, b, c),
-    ba: (a, b) => {
+    Z: (a, b) => {
       W.uniform1i(Pa(a), b);
     },
-    D: (a, b, c) => {
+    C: (a, b, c) => {
       W.uniform2f(Pa(a), b, c);
     },
-    F: a => {
+    D: a => {
       a = Q[a];
       W.useProgram(a);
       W.Ha = a;

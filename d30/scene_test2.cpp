@@ -114,10 +114,12 @@ namespace Test2 {
 	}
 
 	xx::Task<> Hero::UpdateLogic_() {
-		int32_t n = 0;
+		int32_t n{};
+		float nn{ 1 };
 		for (int32_t i = 0; i < gCfg.numMaxPets; ++i) {
 			gScene->grids.Get<Pet>().EmplaceInit(*this, i);
-			if (++n == 100) {
+			if (++n == (int32_t)nn) {
+				nn += 0.01f;
 				n = 0;
 				co_yield 0;
 			}

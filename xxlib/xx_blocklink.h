@@ -57,7 +57,7 @@ namespace xx {
 	};
 
 
-
+	// warning: T can't be BaseType. BaseType need offset convert
 	template<typename T, template<typename...> typename Node>
 	struct BlockLinkWeak {
 		//static_assert(HasMember_version<Node<T>>);

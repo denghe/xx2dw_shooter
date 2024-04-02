@@ -58,4 +58,8 @@ xcopy /S/Y web\s28\s28.* docs
 
 xcopy /S/Y web\s29\s29.* docs
 
+xcopy /S/Y web\s30\s30.* docs
+xcopy /S/Y d30_res\*.png docs\d30_res\
+
 xcopy /S/Y res\*.* docs\res\
+xcopy /S/Y res\index.html docs\

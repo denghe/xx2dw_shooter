@@ -27,16 +27,20 @@ struct Engine : EngineBase3 {
 
         // EM_BOOL OnMouseXXXXXXXXXXX(EmscriptenMouseEvent const& e) { return EM_TRUE; }
 
-        if constexpr (Has_OnMouseDown<Derived>) {
-            emscripten_set_mousedown_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+        emscripten_set_mousedown_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+            if constexpr (Has_OnMouseDown<Derived>) {
                 return ((Derived*)ud)->OnMouseDown(*e);
-            });
-        }
-        if constexpr (Has_OnMouseUp<Derived>) {
-            emscripten_set_mouseup_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+            } else {
+                return ((Derived*)ud)->OnMouseDown_(*e);
+            }
+        });
+        emscripten_set_mouseup_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+            if constexpr (Has_OnMouseUp<Derived>) {
                 return ((Derived*)ud)->OnMouseUp(*e);
-            });
-        }
+            } else {
+                return ((Derived*)ud)->OnMouseUp_(*e);
+            }
+        });
         if constexpr (Has_OnClick<Derived>) {
             emscripten_set_click_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
                 return ((Derived*)ud)->OnClick(*e);
@@ -47,11 +51,13 @@ struct Engine : EngineBase3 {
                 return ((Derived*)ud)->OnDblClick(*e);
             });
         }
-        if constexpr (Has_OnMouseMove<Derived>) {
-            emscripten_set_mousemove_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+        emscripten_set_mousemove_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
+            if constexpr (Has_OnMouseMove<Derived>) {
                 return ((Derived*)ud)->OnMouseMove(*e);
-            });
-        }
+            } else {
+                return ((Derived*)ud)->OnMouseMove_(*e);
+            }
+        });
         if constexpr (Has_OnMouseEnter<Derived>) {
             emscripten_set_mouseenter_callback("canvas", this, true, [](int, const EmscriptenMouseEvent* e, void* ud)->EM_BOOL {
                 return ((Derived*)ud)->OnMouseEnter(*e);

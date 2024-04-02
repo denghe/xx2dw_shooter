@@ -27,6 +27,7 @@ namespace Test1 {
 		for (int32_t j = 0; j < gCfg.petIndexRotateStep; j++) {
 			auto jinc = g2PI / gCfg.petIndexRotateStep * j;
 			auto& petsPos = petsPoss.Emplace();
+
 			int32_t n = gCfg.numMaxPets;
 			auto radius = 1.5f;
 			while (true) {
@@ -43,8 +44,8 @@ namespace Test1 {
 		LabEnd:;
 		}
 
-
 		auto& hero = grids.Get<Hero>().EmplaceInit(gCfg.mapSize_2);
+
 	}
 
 	void Scene::BeforeUpdate() {
@@ -124,10 +125,12 @@ namespace Test1 {
 	}
 
 	xx::Task<> Hero::UpdateLogic_() {
-		int32_t n = 0;
+		int32_t n{};
+		float nn{ 1 };
 		for (int32_t i = 0; i < gCfg.numMaxPets; ++i) {
 			gScene->grids.Get<Pet>().EmplaceInit(*this, i);
-			if (++n == 100) {
+			if (++n == (int32_t)nn) {
+				nn += 0.01f;
 				n = 0;
 				co_yield 0;
 			}

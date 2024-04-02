@@ -1,5 +1,6 @@
 #pragma once
 #include "xx_typetraits.h"
+#include "xx_string.h"
 
 namespace xx {
 
@@ -291,4 +292,32 @@ namespace xx {
 
 	template<typename T>
 	using Listi = List<T, ptrdiff_t>;
+
+
+	template<typename T>
+	struct IsXxList : std::false_type {};
+	template<typename T, typename S>
+	struct IsXxList<List<T, S>> : std::true_type {};
+	template<typename T, typename S>
+	struct IsXxList<List<T, S>&> : std::true_type {};
+	template<typename T, typename S>
+	struct IsXxList<List<T, S> const&> : std::true_type {};
+	template<typename T>
+	constexpr bool IsXxList_v = IsXxList<T>::value;
+
+	template<typename T>
+	struct StringFuncs<T, std::enable_if_t<IsXxList_v<T>>> {
+		static inline void Append(std::string& s, T const& in) {
+			s.push_back('[');
+			if (auto inLen = in.len) {
+				for (decltype(inLen) i = 0; i < inLen; ++i) {
+					::xx::Append(s, in[i]);
+					s.push_back(',');
+				}
+				s[s.size() - 1] = ']';
+			} else {
+				s.push_back(']');
+			}
+		}
+	};
 }

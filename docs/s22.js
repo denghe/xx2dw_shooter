@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    da: (a, b, c) => {
+    ha: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    ca: (a, b) => {
+    ga: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Oa ? 0 : mb(a, b);
     },
-    ba: a => {
+    fa: a => {
       var _nb;
       nb = ib[a];
       g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    ha: a => Y.activeTexture(a),
+    da: a => Y.activeTexture(a),
     G: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -821,10 +821,10 @@ var Y,
     q: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    fa: (a, b, c, d) => {
+    ba: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    aa: a => Y.enable(a),
+    ea: a => Y.enable(a),
     e: a => {
       Y.enableVertexAttribArray(a);
     },
@@ -914,7 +914,7 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ga: (a, b) => {
+    ca: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
     y: (a, b, c) => {
@@ -954,7 +954,7 @@ var Y,
       };
       f.src = G(b);
     },
-    ea: function (a, b) {
+    aa: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

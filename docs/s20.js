@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    ca: (a, b, c) => {
+    ga: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    ba: (a, b) => {
+    fa: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Oa ? 0 : mb(a, b);
     },
-    aa: a => {
+    ea: a => {
       var _nb;
       nb = ib[a];
       g.Sa = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.La;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    ga: a => Y.activeTexture(a),
+    ca: a => Y.activeTexture(a),
     C: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -810,21 +810,21 @@ var Y,
         f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    H: (a, b) => {
+    G: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         Y.deleteVertexArray(hb[d]);
         hb[d] = null;
       }
     },
-    E: a => Y.disable(a),
+    H: a => Y.disable(a),
     I: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    ea: (a, b, c, d) => {
+    aa: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    $: a => Y.enable(a),
+    da: a => Y.enable(a),
     h: a => {
       Y.enableVertexAttribArray(a);
     },
@@ -914,13 +914,13 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    fa: (a, b) => {
+    ba: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
-    F: (a, b, c) => {
+    E: (a, b, c) => {
       Y.uniform2f(rb(a), b, c);
     },
-    G: a => {
+    F: a => {
       a = V[a];
       Y.useProgram(a);
       Y.Na = a;
@@ -954,7 +954,7 @@ var Y,
       };
       f.src = G(b);
     },
-    da: function (a, b) {
+    $: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);

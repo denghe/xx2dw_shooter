@@ -7,6 +7,7 @@ Looper gLooper;
 
 #ifdef __EMSCRIPTEN__
 int32_t main() {
+	gLooper.EngineInit();
 	emscripten_request_animation_frame_loop([](double ms, void*)->EM_BOOL {
 		return gLooper.JsLoopCallback(ms);
 	}, nullptr);
@@ -16,6 +17,6 @@ int32_t main() {
 	gLooper.showFps = true;
 	gLooper.title = "xx2dw_d30";
 	gLooper.Init();
-	gLooper.Run<false>();
+	gLooper.Run<true>();
 }
 #endif

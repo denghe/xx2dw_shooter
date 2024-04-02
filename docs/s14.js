@@ -611,7 +611,7 @@ var Y,
       }
       return !1;
     },
-    ga: (a, b, c) => {
+    la: (a, b, c) => {
       a = Ta(a);
       if (!a) return -4;
       a.width = b;
@@ -689,7 +689,7 @@ var Y,
       } else cb(a, L, B ? I : z ? p : K);
       return a;
     },
-    fa: (a, b) => {
+    ka: (a, b) => {
       b >>= 2;
       b = {
         alpha: !!y[b],
@@ -710,7 +710,7 @@ var Y,
       a = Ta(a);
       return !a || b.Pa ? 0 : mb(a, b);
     },
-    ea: a => {
+    ja: a => {
       var _nb;
       nb = ib[a];
       g.Ta = Y = (_nb = nb) === null || _nb === void 0 ? void 0 : _nb.Ma;
@@ -736,7 +736,7 @@ var Y,
       A[d >> 2] = f;
       return 0;
     },
-    la: a => Y.activeTexture(a),
+    ia: a => Y.activeTexture(a),
     A: (a, b) => {
       Y.attachShader(V[a], X[b]);
     },
@@ -744,7 +744,7 @@ var Y,
       35051 == a ? Y.Ga = b : 35052 == a && (Y.Ca = b);
       Y.bindBuffer(a, fb[b]);
     },
-    D: (a, b) => {
+    C: (a, b) => {
       Y.bindFramebuffer(a, gb[b]);
     },
     b: (a, b) => {
@@ -758,8 +758,8 @@ var Y,
     i: (a, b, c, d) => {
       c && b ? Y.bufferData(a, w, d, c, b) : Y.bufferData(a, b, d);
     },
-    F: a => Y.clear(a),
-    G: (a, b, c, d) => Y.clearColor(a, b, c, d),
+    E: a => Y.clear(a),
+    F: (a, b, c, d) => Y.clearColor(a, b, c, d),
     Z: a => {
       Y.compileShader(X[a]);
     },
@@ -784,7 +784,7 @@ var Y,
         f && (Y.deleteBuffer(f), f.name = 0, fb[d] = null, d == Y.Ga && (Y.Ga = 0), d == Y.Ca && (Y.Ca = 0));
       }
     },
-    H: (a, b) => {
+    G: (a, b) => {
       for (var c = 0; c < a; ++c) {
         var d = y[b + 4 * c >> 2],
           f = gb[d];
@@ -810,25 +810,25 @@ var Y,
         f && (Y.deleteTexture(f), f.name = 0, W[d] = null);
       }
     },
-    K: (a, b) => {
+    J: (a, b) => {
       for (var c = 0; c < a; c++) {
         var d = y[b + 4 * c >> 2];
         Y.deleteVertexArray(hb[d]);
         hb[d] = null;
       }
     },
-    u: a => Y.disable(a),
+    v: a => Y.disable(a),
     p: (a, b, c, d) => {
       Y.drawArraysInstanced(a, b, c, d);
     },
-    ja: (a, b, c, d) => {
+    ga: (a, b, c, d) => {
       Y.drawElements(a, b, c, d);
     },
-    C: a => Y.enable(a),
+    K: a => Y.enable(a),
     f: a => {
       Y.enableVertexAttribArray(a);
     },
-    ha: (a, b, c, d, f) => {
+    ea: (a, b, c, d, f) => {
       Y.framebufferTexture2D(a, b, c, W[d], f);
     },
     o: (a, b) => {
@@ -907,7 +907,7 @@ var Y,
       for (var f = "", k = 0; k < b; ++k) f += G(A[c + 4 * k >> 2], d ? A[d + 4 * k >> 2] : void 0);
       Y.shaderSource(X[a], f);
     },
-    E: (a, b, c, d, f, k, e, m, h) => {
+    D: (a, b, c, d, f, k, e, m, h) => {
       if (Y.Ca) Y.texImage2D(a, b, c, d, f, k, e, m, h);else if (h) {
         var r = m - 5120;
         r = 0 == r ? ka : 1 == r ? w : 2 == r ? x : 4 == r ? y : 6 == r ? ma : 5 == r || 28922 == r || 28520 == r || 30779 == r || 30782 == r ? A : la;
@@ -915,13 +915,13 @@ var Y,
       } else Y.texImage2D(a, b, c, d, f, k, e, m, null);
     },
     a: (a, b, c) => Y.texParameteri(a, b, c),
-    ka: (a, b) => {
+    ha: (a, b) => {
       Y.uniform1i(rb(a), b);
     },
-    I: (a, b, c) => {
+    H: (a, b, c) => {
       Y.uniform2f(rb(a), b, c);
     },
-    J: a => {
+    I: a => {
       a = V[a];
       Y.useProgram(a);
       Y.Oa = a;
@@ -932,7 +932,7 @@ var Y,
     g: (a, b, c, d, f, k) => {
       Y.vertexAttribPointer(a, b, c, !!d, f, k);
     },
-    v: (a, b, c, d) => Y.viewport(a, b, c, d),
+    u: (a, b, c, d) => Y.viewport(a, b, c, d),
     W: function (a, b, c, d) {
       var f = document.createElement("canvas");
       f.width = b;
@@ -955,7 +955,7 @@ var Y,
       };
       f.src = G(b);
     },
-    ia: function (a, b) {
+    fa: function (a, b) {
       var c = window["gCanvas" + a];
       a = window["gCanvasCtx" + a];
       a.clearRect(0, 0, c.width, c.height);
