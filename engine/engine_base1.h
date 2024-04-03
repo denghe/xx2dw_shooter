@@ -10,8 +10,9 @@
 #include <engine_texturepacker.h>
 #include <engine_tiledmap_sede.h>
 #ifdef ENABLE_ENGINE_IMGUI
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_stdlib.h>
 #endif
 
 struct EngineBase1 : EngineBase0 {

@@ -12,10 +12,13 @@ namespace Scene_MainMenu {
 	struct Scene : ::ImGuiScene {
 		void ImGuiUpdate() override;
 
-		Windows currentWindow{};
+		std::string dbFileName, errorMessage;
+
+		Windows currentWindow{}, lastWindow{};
 		void OpenWindow(Windows w);
 		void Draw_File_New();
 		void Draw_File_Open();
+		void Draw_Error();
 	};
 
 }

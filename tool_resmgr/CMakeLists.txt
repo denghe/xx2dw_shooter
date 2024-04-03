@@ -27,6 +27,7 @@ include_directories(
 	../sqlite3
 	../imgui
 	../imgui/backends
+	../imgui/misc/cpp
 	../miniaudio
 	../nameof/include
 	../zstd/lib

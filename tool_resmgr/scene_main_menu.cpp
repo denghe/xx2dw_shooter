@@ -51,6 +51,8 @@ namespace Scene_MainMenu {
 		Draw_File_New();
 		Draw_File_Open();
 		// ...
+		Draw_Error();
+		lastWindow = currentWindow;
 
 #else
 		static bool showDemo{ true};
@@ -67,11 +69,11 @@ namespace Scene_MainMenu {
 
 	void Scene::Draw_File_New() {
 		if (currentWindow != Windows::File_New) return;
+		auto isFirst = lastWindow != currentWindow;
 
 		auto& io = ImGui::GetIO();
 		auto mvp = ImGui::GetMainViewport();
-		// todo: calculate pos
-		static constexpr float wndHeight = 100;
+		static constexpr float wndHeight = 170;
 		static constexpr float lrMargin = 30;
 		const auto tbMargin = (mvp->WorkSize.y - wndHeight) / 2;
 		const auto wndWidth = mvp->WorkSize.x - lrMargin * 2;
@@ -84,18 +86,66 @@ namespace Scene_MainMenu {
 		wf |= ImGuiWindowFlags_NoResize;
 		wf |= ImGuiWindowFlags_NoCollapse;
 		wf |= ImGuiWindowFlags_NoNav;
-		//wf |= ImGuiWindowFlags_NoBackground;
-		//wf |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 		wf |= ImGuiWindowFlags_UnsavedDocument;
-		if (ImGui::Begin("File_New", nullptr, wf)) {
-			// todo: draw please input resmgr.sqlite3 dir:
+		if (ImGui::Begin("new db", nullptr, wf)) {
+			ImGui::Text("please input the db file name:");
+			ImGui::SetNextItemWidth(-FLT_MIN);
+			if (isFirst) {
+				ImGui::SetKeyboardFocusHere(0);
+			}
+			ImGui::InputText("##dbFileName", &dbFileName);
+			ImGui::Dummy({ 0.0f, 5.0f });
+			ImGui::Separator();
+			ImGui::Dummy({ 0.0f, 5.0f });
+
+			ImGui::Dummy({ 0.0f, 0.0f });
+			ImGui::SameLine(ImGui::GetWindowWidth() - (ImGui::GetStyle().ItemSpacing.x + 120 + 10 + 120));
+			if (ImGui::Button("Submit", { 120, 35 })) {
+				// todo: check
+			}
+			ImGui::SameLine(ImGui::GetWindowWidth() - (ImGui::GetStyle().ItemSpacing.x + 120));
+			if (ImGui::Button("Cancel", { 120, 35 })) {
+				currentWindow = {};
+			}
 		}
 		ImGui::End();
 	}
 
 	void Scene::Draw_File_Open() {
 		if (currentWindow != Windows::File_Open) return;
-		xx::CoutN("File--Open");
+		auto isFirst = lastWindow != currentWindow;
 		// todo
+		currentWindow = {};
+		errorMessage = "File--Open todo";
+	}
+
+	void Scene::Draw_Error() {
+		if (errorMessage.empty()) return;
+
+		auto& io = ImGui::GetIO();
+		auto mvp = ImGui::GetMainViewport();
+		static constexpr float wndHeight = 300;
+		static constexpr float lrMargin = 100;
+		const auto tbMargin = (mvp->WorkSize.y - wndHeight) / 2;
+		const auto wndWidth = mvp->WorkSize.x - lrMargin * 2;
+		ImGui::SetNextWindowPos({ lrMargin, tbMargin }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ wndWidth, wndHeight }, ImGuiCond_FirstUseEver);
+
+		ImGuiWindowFlags wf{};
+		wf |= ImGuiWindowFlags_NoScrollbar;
+		wf |= ImGuiWindowFlags_NoMove;
+		wf |= ImGuiWindowFlags_NoResize;
+		wf |= ImGuiWindowFlags_NoCollapse;
+		wf |= ImGuiWindowFlags_NoNav;
+		wf |= ImGuiWindowFlags_UnsavedDocument;
+		if (ImGui::Begin("error message:", nullptr, wf)) {
+			ImGui::InputTextMultiline("##errorMessage", &errorMessage, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 9), ImGuiInputTextFlags_ReadOnly);
+			ImGui::Dummy({ 0.0f, 0.0f });
+			ImGui::SameLine(ImGui::GetWindowWidth() - (ImGui::GetStyle().ItemSpacing.x + 90));
+			if (ImGui::Button("OK", { 90, 35 })) {
+				errorMessage.clear();
+			}
+		}
+		ImGui::End();
 	}
 }
