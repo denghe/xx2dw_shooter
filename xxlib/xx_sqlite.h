@@ -318,6 +318,7 @@ namespace xx::SQLite {
         // 同 上面这个构造函数. 是否成功需要用 operator bool() 来判断
         void Open(std::string_view fn, OpenFlags const& flags = OpenFlags::ReadWrite | OpenFlags::Create) noexcept;
 
+        void Close();
         ~Connection();
 
         Connection(Connection const &) = delete;
@@ -523,11 +524,15 @@ namespace xx::SQLite {
         qGetTableCount(*this), qAttach(*this), qDetach(*this) {
     }
 
-    inline Connection::~Connection() {
+    inline void Connection::Close() {
         if (ctx) {
             sqlite3_close(ctx);
             ctx = nullptr;
         }
+    }
+
+    inline Connection::~Connection() {
+        Close();
     }
 
     inline Connection::operator bool() const noexcept {

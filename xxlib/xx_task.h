@@ -144,7 +144,7 @@ namespace xx {
         // T: Task<> or callable
         template<typename T>
         BlockLinkVI Add(T &&t) {
-            if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)
+            if constexpr (std::is_convertible_v<Task<>, T>) {           // ([](...)->xx::Task<>{})(...)         // warning: can't capture in []
                 if (t) return {};
                 return (BlockLinkVI)tasks.EmplaceNode(std::forward<T>(t));
             } else {

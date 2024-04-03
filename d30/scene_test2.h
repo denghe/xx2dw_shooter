@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "looper.h"
-#include <xx_spaces.h>
 
 namespace Test2 {
 	using FR = xx::ForeachResult;

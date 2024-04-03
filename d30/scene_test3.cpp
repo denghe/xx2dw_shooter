@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "scene_test3.h"
 #include "scene_main_menu.h"
-#include "xx_blocklink.h"
 
 namespace Test3 {
 	void Scene::Init() {

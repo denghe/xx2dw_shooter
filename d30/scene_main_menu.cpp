@@ -4,9 +4,7 @@
 #include "scene_test1.h"
 #include "scene_test2.h"
 #include "scene_test3.h"
-#include "xx_spaceab.h"
-
-
+#include "scene_test4.h"
 
 void SceneMainMenu::Init() {
 	rootNode.Emplace()->Init();
@@ -29,6 +27,10 @@ void SceneMainMenu::Init() {
 
 	rootNode->MakeChildren<Button>()->Init(3, basePos + XY{ 0, -100 }, { 0.5f, 0.5f }, gLooper.s9cfg, U"test3", [&]() {
 		gLooper.DelaySwitchTo<Test3::Scene>();
+		}, 3);
+
+	rootNode->MakeChildren<Button>()->Init(3, basePos + XY{ 0, -150 }, { 0.5f, 0.5f }, gLooper.s9cfg, U"test4", [&]() {
+		gLooper.DelaySwitchTo<Test4::Scene>();
 		}, 3);
 
 }

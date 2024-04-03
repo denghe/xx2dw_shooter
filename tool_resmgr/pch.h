@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#pragma execution_character_set("utf-8")
+#pragma once
 #ifndef XX2DW_SHOOTER_TOOL_RESMGR_PCH_H_
 #define XX2DW_SHOOTER_TOOL_RESMGR_PCH_H_
 
