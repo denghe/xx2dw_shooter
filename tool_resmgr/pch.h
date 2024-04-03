@@ -4,6 +4,8 @@
 
 #include <engine.h>
 #include <xx_sqlite.h>
+#include <xx_spaces.h>
 #include <stb_image_write.h>
+using FR = xx::ForeachResult;
 
 #endif

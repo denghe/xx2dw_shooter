@@ -9,3 +9,17 @@ struct Scene {
 	virtual void Update() {};
 	virtual void Draw() {};
 };
+
+#ifdef ENABLE_ENGINE_IMGUI
+
+struct ImGuiScene : Scene {
+	virtual void ImGuiUpdate() = 0;
+	virtual void Init() override {
+		EngineBase1::Instance().imguiUpdate = [this] { this->ImGuiUpdate(); };
+	}
+	virtual ~ImGuiScene() override {
+		EngineBase1::Instance().imguiUpdate = {};
+	}
+};
+
+#endif
