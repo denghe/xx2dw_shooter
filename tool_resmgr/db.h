@@ -2,9 +2,11 @@
 #include "pch.h"
 
 struct DB {
-	std::string path;
+	std::filesystem::path rootDir;
 	xx::SQLite::Connection conn;
-	bool OpenOrCreate(std::string path_);
-	bool IsOpened() const;
+	operator bool() const;
+	void NewOrOpen(std::string path);	// conn == true: success
+	void Close();
 	void CreateTables();
+	void CheckFiles();
 };

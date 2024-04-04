@@ -503,7 +503,12 @@ namespace xx::SQLite {
         std::string f(fn);
         lastErrorCode = sqlite3_open_v2(f.c_str(), &ctx, (int)flags, nullptr);
         if (lastErrorCode != SQLITE_OK) {
-            assert(ctx == nullptr);
+            if (ctx) {
+                lastErrorMessage = sqlite3_errmsg(ctx);
+                Close();
+            } else {
+                lastErrorMessage = "Unable to open the database file";
+            }
             return;
         }
         qAttach.SetQuery("ATTACH DATABASE ? AS ?");
