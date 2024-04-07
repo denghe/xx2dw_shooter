@@ -82,8 +82,8 @@ namespace Scene_MainMenu {
 		static constexpr float lrMargin = 30;
 		const auto tbMargin = (mvp->WorkSize.y - wndHeight) / 2;
 		const auto wndWidth = mvp->WorkSize.x - lrMargin * 2;
-		ImGui::SetNextWindowPos({ lrMargin, tbMargin }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize({ wndWidth, wndHeight }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos({ lrMargin, tbMargin });
+		ImGui::SetNextWindowSize({ wndWidth, wndHeight });
 
 		ImGuiWindowFlags wf{};
 		wf |= ImGuiWindowFlags_NoScrollbar;
@@ -131,8 +131,8 @@ namespace Scene_MainMenu {
 		auto& io = ImGui::GetIO();
 		auto mvp = ImGui::GetMainViewport();
 		static constexpr float margin{ 10 };
-		ImGui::SetNextWindowPos({ mvp->WorkPos.x + margin, mvp->WorkPos.y + margin }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize({ mvp->WorkSize.x - margin * 2, mvp->WorkSize.y - margin * 2 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos({ mvp->WorkPos.x + margin, mvp->WorkPos.y + margin });
+		ImGui::SetNextWindowSize({ mvp->WorkSize.x - margin * 2, mvp->WorkSize.y - margin * 2 });
 
 		if (isFirst) {
 			ImportFilesTask = ImportFilesTask_();
@@ -187,22 +187,25 @@ namespace Scene_MainMenu {
 		auto& io = ImGui::GetIO();
 		auto mvp = ImGui::GetMainViewport();
 		static constexpr float width{ 450 }, margin{ 10 };
-		ImGui::SetNextWindowPos({ mvp->WorkPos.x + margin, mvp->WorkPos.y + margin }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize({ width, mvp->WorkSize.y - margin * 2 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos({ mvp->WorkPos.x + margin, mvp->WorkPos.y + margin });
+		ImGui::SetNextWindowSize({ width, mvp->WorkSize.y - margin * 2 });
 
 		ImGuiWindowFlags wf{};
 		wf |= ImGuiWindowFlags_NoScrollbar;
 		wf |= ImGuiWindowFlags_NoMove;
 		wf |= ImGuiWindowFlags_NoResize;
 		wf |= ImGuiWindowFlags_NoCollapse;
-		wf |= ImGuiWindowFlags_NoNav;
-		wf |= ImGuiWindowFlags_UnsavedDocument;
 		if (ImGui::Begin("file browser", nullptr, wf)) {
-			// todo draw file names table ?
-			// navgate ? preview ?
+			for( auto& [k, v] : pngs) {
+				if (ImGui::Selectable((char*)k.c_str(), selectedFileName == k)) {
+					selectedFileName = k;
+				}
+			}
 		}
 		ImGui::End();
 
+
+		// todo: tab window
 	}
 
 	/********************************************************************************************************/
@@ -217,8 +220,8 @@ namespace Scene_MainMenu {
 		static constexpr float lrMargin = 100;
 		const auto tbMargin = (mvp->WorkSize.y - wndHeight) / 2;
 		const auto wndWidth = mvp->WorkSize.x - lrMargin * 2;
-		ImGui::SetNextWindowPos({ lrMargin, tbMargin }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize({ wndWidth, wndHeight }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos({ lrMargin, tbMargin });
+		ImGui::SetNextWindowSize({ wndWidth, wndHeight });
 
 		ImGuiWindowFlags wf{};
 		wf |= ImGuiWindowFlags_NoScrollbar;

@@ -29,6 +29,7 @@ namespace Scene_MainMenu {
 		xx::Task<> ImportFilesTask_();
 
 		void Draw_File_Browse();
+		std::u8string selectedFileName;
 
 		void Draw_Error();
 		std::string errorMessage;

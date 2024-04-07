@@ -79,15 +79,14 @@ bool SnakeBody::Update() {
 }
 
 void SnakeBody::Draw() {
-	auto& grid = gSceneTest1->grid;
-	int idx;
+	xx::Ref<Frame>* f;
 	if (prev) {
-		if (isTail) idx = 2;
-		else idx = 1;
+		if (isTail) f = &gRes.bug_tail;
+		else f = &gRes.bug_body;
 	} else {
-		idx = 0;
+		f = &gRes.bug_head1;
 	}
-	auto& q = Quad::DrawOnce(gLooper.frames_snake[idx]);
+	auto& q = Quad::DrawOnce(*f);
 	q.pos = gSceneTest1->camera.ToGLPos(pos);
 	q.anchor = cAnchor;
 	q.scale = gSceneTest1->camera.scale * cScale;
